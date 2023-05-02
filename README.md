@@ -2,7 +2,11 @@
 DV-TrioTrain is an automated pipeline for extending DeepVariant (DV), a deep learning based variant caller. See the [original DeepVariant github page](https://github.com/google/deepvariant) to learn more.
 
 ## Background
-The DeepVariant-TrioTrain pipeline works by iteratively feeding DeepVariant labeled examples from trio-binned, short-read (Illumina) Whole Genome Sequence (WGS) data. For each trio provided, TrioTrain will perform 2 iterations of re-training, one for each parent. The starting parent is a user-specified parameter, either "Mother" or "Father." With the first iteration, an existing DeepVariant model is used to initalize the weights and build upon prior learning. Subsequent iterations begin with a prior iteration's selected checkpoint.
+The DeepVariant-TrioTrain pipeline works by iteratively feeding DeepVariant labeled examples from trio-binned, short-read (Illumina) Whole Genome Sequence (WGS) data. 
+
+![workflow diagram](https://raw.githubusercontent.com/Descent098/ezcv/master/.github/logo.png)
+
+For each trio provided, TrioTrain will perform 2 iterations of re-training, one for each parent. The starting parent is a user-specified parameter, either "Mother" or "Father." With the first iteration, an existing DeepVariant model is used to initalize the weights and build upon prior learning. Subsequent iterations begin with a prior iteration's selected checkpoint.
 
 As a training iteration proceeds, learning is evaluated using labeled examples from the parents' offspring. The same individual's genome is used for both iterations run for a trio. Our assumption is that a model trained on a parent genome will be better at genotyping variants inherited from that parent in the offspring's genome. Model weights that produce the maximum F1-score are selected for further testing, and to become the starting point for the next iteration. 
 
