@@ -95,7 +95,7 @@ If you have any difficulty using TrioTrain, feel free to [open an issue (fix thi
 
 ## License
 
-[GNU General Public license](LICENSE)
+[GPL-3.0 license](LICENSE)
 
 ## Acknowledgements
 
