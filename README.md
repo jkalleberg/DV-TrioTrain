@@ -1,7 +1,40 @@
 # DV-TrioTrain v0.8
 DV-TrioTrain is an automated pipeline for extending DeepVariant (DV), a deep learning based variant caller. See the [original DeepVariant github page](https://github.com/google/deepvariant) to learn more.
 
-The DeepVariant-TrioTrain pipeline works by iteratively feeding DeepVariant labeled examples from trio-binned, short-read (Illumina) Whole Genome Sequence (WGS) data. 
+The DeepVariant-TrioTrain (DV-TT) pipeline is designed for [transfer learning](https://machinelearningmastery.com/transfer-learning-for-deep-learning/), when provided new data sources and context. During model development, DV-TrioTrain iteratively feeds labeled examples from parent-offspring duos, enabling the model to incorporate inheritance expectations. Additionally, the v0.8 DT-TT is the first tool to reproducably expand training DV into non-human, mammalian genomes. Note that DV-TT currently expects short-read (Illumina) Whole Genome Sequence (WGS) data from trio-binned samples for re-training.
+
+However, models built by DV-TrioTrain **do not require trio-binned data for variant calling.** In contrast to the [DeepTrio](https://github.com/google/deepvariant/blob/r1.5/docs/deeptrio-details.md) joint-caller, DV-TT models are trained to prioritize features of inherited variants producing more accurate calls in individual samples. Published DV-TrioTrain models can be used as an alternative checkpoint with DeepVariant's one-step, single-sample variant caller. An index of available models can be found [here](pretrained_models).
+
+## How to customize DeepVariant
+We recommend using Apptainer (formerly known as Singularity), for local cluster computing.
+```
+BIN_VERSION="1.4.0"
+docker run \
+  -v "YOUR_INPUT_DIR":"/input" \
+  -v "YOUR_OUTPUT_DIR:/output" \
+  google/deepvariant:"${BIN_VERSION}" \
+  /opt/deepvariant/bin/run_deepvariant \
+  --model_type=WGS \
+  --ref=/input/YOUR_REF \
+  --reads=/input/YOUR_BAM \
+  --output_vcf=/output/YOUR_OUTPUT_VCF \
+  --output_gvcf=/output/YOUR_OUTPUT_GVCF \
+  --num_shards=$(nproc) \ **This will use all your cores to run make_examples. Feel free to change.**
+  --dry_run=false **Default is false. If set to true, commands will be printed out but not executed.
+```
+
+DV-TrioTrain v0.8 currently supports initializing new DV models with the following models:
+* the default, human DV v1.4 format (includes the insert size channel)
+* the human WGS Allele Frequency model (default + one additional channel)
+* any custom model satisfying the channel expectations above
+
+DV-TT produces new DV models for germline variant-calling in diploid organisms. However, there are some species-dependent behaviors in the pipeline. The current species supported include:
+* humans
+* cows
+* mosquitoes
+* **(your favorite species could go here)**
+  * the DV-TT pipeline can be easily re-configured for your favorite species, assuming your already have the necessary training data.
+ 
 
 ![workflow diagram](docs/images/Workflow_Sm_Horizontal.png)
 
