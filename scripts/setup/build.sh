@@ -23,6 +23,9 @@ bash scripts/setup/build_containers.sh DeepVariant-GPU
 # Install CPU-specific apptainer container
 bash scripts/setup/build_containers.sh DeepVariant-CPU
 
+# Install the happ.py apptainer container
+bash scripts/setup/build_happy.sh
+
 # Download the appropriate shuffling script from Google Genomoics Health Group
 bash scripts/setup/download_shuffle.sh
 
