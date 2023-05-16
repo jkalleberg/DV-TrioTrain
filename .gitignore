@@ -159,6 +159,11 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
+# files created during setup
+*.run
+*.txt
+shuffle_tfrecords_beam.py
+
 # image files
 *.svg
 /pileups/
@@ -180,7 +185,9 @@ cython_debug/
 *.vcf.gz.tbi
 *.vcf.gz
 *.gz
+*.fasta.fai
 *.fa.fai
+*.fasta
 *.fa
 *.bed
 *.bam.bai
@@ -190,5 +197,6 @@ cython_debug/
 *.data-00000-of-00001
 *.index
 *.meta
+*model.ckpt.example_info.json
 
 

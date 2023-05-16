@@ -23,4 +23,13 @@ bash scripts/setup/build_containers.sh DeepVariant-GPU
 # Install CPU-specific apptainer container
 bash scripts/setup/build_containers.sh DeepVariant-CPU
 
+# Download the appropriate shuffling script from Google Genomoics Health Group
+bash scripts/setup/download_shuffle.sh
+
+# Download pre-trained models
+bash scripts/setup/download_models.sh
+
+# Download GIAB trio data v4.2.1 for benchmarking
+bash scripts/setup/download_GIAB.sh
+
 echo -e "=== scripts/setup/build.sh > end $(date)"
