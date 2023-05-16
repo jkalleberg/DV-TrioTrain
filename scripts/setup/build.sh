@@ -38,4 +38,7 @@ bash scripts/setup/download_GIAB.sh
 # Install the conda env needed for python package 'triotrain'
 source scripts/setup/build_beam.sh
 
+# Create the rtg-tools reference files for the Human ref genome GRCh38
+bash scripts/setup/build_rtg_tools.sh
+
 echo -e "=== scripts/setup/build.sh > end $(date)"
