@@ -1,12 +1,12 @@
 # DV-TrioTrain v0.8
-DV-TrioTrain is an automated pipeline for extending DeepVariant (DV), a deep-learning-based variant caller. See the [original DeepVariant github page](https://github.com/google/deepvariant) to learn more.
+DeepVariant-TrioTrain is an automated pipeline for extending DeepVariant (DV), a deep-learning-based variant caller. See the [original DeepVariant github page](https://github.com/google/deepvariant) to learn more.
 
 ### Background
 Current DeepVariant models were only trained on human data. Our work developing TrioTrain illustrates the limitations of applying models built exclusively with human-genome datasets in other species. Previous work built species-specific DeepVariant models for [mosquito genomes](https://google.github.io/deepvariant/posts/2018-12-05-improved-non-human-variant-calling-using-species-specific-deepvariant-models/), and the [endangered Kākāpō parot](https://www.biorxiv.org/content/10.1101/2022.10.22.513130v1.full). However, previous research has not assessed re-training DV with other non-human mammalian species. 
 
-We built TrioTrain to enable us to extend DeepVariant with cattle, bison, and yak genomes. We provide DV-TT as a template for similar comparative genomics research in other domestic animal species, or any diploid species without NIST-GIAB reference materials. 
+We built DeepVariant-TrioTrain (DV-TT) pipeline to enable us to extend DeepVariant with cattle, bison, and yak genomes. We provide DV-TT as a template for similar comparative genomics research in other domestic animal species, or any diploid species without NIST-GIAB reference materials. 
 
-The DeepVariant-TrioTrain (DV-TT) pipeline is designed for [transfer learning](https://machinelearningmastery.com/transfer-learning-for-deep-learning/), relying on new data sources and context to expand on prior experience. During model development, DV-TrioTrain iteratively feeds labeled examples from parent-offspring duos, enabling the model to incorporate inheritance expectations.  Additionally, the v0.8 DT-TT is the first tool to reproducably expand training DV into non-human, mammalian genomes. 
+DV-TrioTrain is designed for [transfer learning](https://machinelearningmastery.com/transfer-learning-for-deep-learning/), relying on new data sources and context to expand on prior experience. During model development, DV-TrioTrain iteratively feeds labeled examples from parent-offspring duos, enabling the model to incorporate inheritance expectations.  Additionally, the v0.8 DT-TT is the first tool to reproducably expand training DV into non-human, mammalian genomes. 
 
 While DV-TT currently expects short-read (Illumina) Whole Genome Sequence (WGS) data from trio-binned samples for re-training, models built by DV-TrioTrain **do not require trio-binned data for variant calling.** 
 
