@@ -35,4 +35,7 @@ bash scripts/setup/download_models.sh
 # Download GIAB trio data v4.2.1 for benchmarking
 bash scripts/setup/download_GIAB.sh
 
+# Install the conda env needed for python package 'triotrain'
+source scripts/setup/build_beam.sh
+
 echo -e "=== scripts/setup/build.sh > end $(date)"
