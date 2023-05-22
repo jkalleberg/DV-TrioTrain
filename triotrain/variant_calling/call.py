@@ -10,13 +10,15 @@ import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import List, Union
-
-import helpers as h
-from iteration import Iteration
 from regex import compile
-from sbatch import SBATCH, SubmitSBATCH
-from compare import CompareHappy
-from convert import ConvertHappy
+
+# get the relative path to the triotrain/ dir
+h_path = str(Path(__file__).parent.parent.parent)
+sys.path.append(h_path)
+import helpers
+import model_training.slurm as s
+from variant_calling.compare import CompareHappy
+from variant_calling.convert import ConvertHappy
 
 
 @dataclass
@@ -26,12 +28,12 @@ class CallVariants:
     """
 
     # required values
-    itr: Iteration
+    itr: helpers.Iteration
     slurm_resources: dict
     model_label: str
 
     # optional values
-    benchmarking_file: Union[h.WriteFiles, None] = None
+    benchmarking_file: Union[helpers.h.WriteFiles, None] = None
     call_variants_job_nums: List = field(default_factory=list)
     overwrite: bool = False
     track_resources: bool = False
@@ -53,7 +55,7 @@ class CallVariants:
             ), "missing a h.WriteFiles object to save SLURM job IDs"
 
         self._select_ckpt_job = [self.itr.current_genome_dependencies[3]]
-        self._compare_dependencies = h.create_deps(num=self.itr.total_num_tests)
+        self._compare_dependencies = helpers.h.create_deps(num=self.itr.total_num_tests)
         self.logger_msg = f"[{self.itr._mode_string}] - [{self._phase}]"
 
     def set_genome(self) -> None:
@@ -92,11 +94,11 @@ class CallVariants:
         """
         Collect any SLURM job ids for running tests to avoid submitting a job while it's already running.
         """
-        self._ignoring_select_ckpt = h.check_if_all_same(self._select_ckpt_job, None)
+        self._ignoring_select_ckpt = helpers.h.check_if_all_same(self._select_ckpt_job, None)
 
         if not self._ignoring_select_ckpt:
-            self._num_to_ignore = len(h.find_NaN(self._select_ckpt_job))
-            select_ckpt_run = h.find_not_NaN(self._select_ckpt_job)
+            self._num_to_ignore = len(helpers.h.find_NaN(self._select_ckpt_job))
+            select_ckpt_run = helpers.h.find_not_NaN(self._select_ckpt_job)
             if select_ckpt_run:
                 self.jobs_to_run = list(range(0, self.itr.total_num_tests))
             else:
@@ -107,7 +109,7 @@ class CallVariants:
         elif self.call_variants_job_nums:
             num_job_ids = len(self.call_variants_job_nums)
             if num_job_ids == self.itr.total_num_tests:
-                self.jobs_to_run = h.find_not_NaN(self.call_variants_job_nums)
+                self.jobs_to_run = helpers.h.find_not_NaN(self.call_variants_job_nums)
                 self._num_to_run = len(self.jobs_to_run)
                 self._num_to_ignore = len(h.find_NaN(self.call_variants_job_nums))
                 if self.jobs_to_run:
@@ -472,7 +474,7 @@ class CallVariants:
                 print(cmd)
             print("-------------------------------------")
 
-    def make_job(self, index: int = 0) -> Union[SBATCH, None]:
+    def make_job(self, index: int = 0) -> Union[s.SBATCH, None]:
         """
         Defines the contents of the SLURM job for the call_variant phase for TrioTrain Pipeline.
         """
@@ -481,7 +483,7 @@ class CallVariants:
         # initialize a SBATCH Object
         self.handler_label = f"{self._phase}: {self.prefix}"
 
-        slurm_job = SBATCH(
+        slurm_job = s.SBATCH(
             self.itr,
             self.job_name,
             self.model_label,
@@ -558,7 +560,7 @@ class CallVariants:
             vcf_pattern = compile(vcf_output_regex)
 
         # Confirm Genome's output VCF does not already exist
-        self.existing_output_vcf, self.num_vcfs_found, files = h.check_if_output_exists(
+        self.existing_output_vcf, self.num_vcfs_found, files = helpers.h.check_if_output_exists(
             vcf_pattern,
             "DeepVariant VCF outputs",
             Path(self.outdir),
@@ -571,7 +573,7 @@ class CallVariants:
             if self.overwrite:
                 self._outputs_exist = False
             else:
-                missing_files = h.check_expected_outputs(
+                missing_files = helpers.h.check_expected_outputs(
                     self.num_vcfs_found,
                     expected_outputs,
                     logger_msg,
@@ -636,7 +638,7 @@ class CallVariants:
                 else:
                     slurm_job.write_job()
 
-            submit_slurm_job = SubmitSBATCH(
+            submit_slurm_job = s.SubmitSBATCH(
                 self.itr.job_dir,
                 f"{self.job_name}.sh",
                 self.handler_label,
@@ -669,7 +671,7 @@ class CallVariants:
                     display_mode=self.itr.dryrun_mode,
                 )
                 if self._compare_dependencies:
-                    self._compare_dependencies[dependency_index] = h.generate_job_id()
+                    self._compare_dependencies[dependency_index] = helpers.h.generate_job_id()
             else:
                 submit_slurm_job.display_command(
                     current_job=self.job_num,
@@ -700,7 +702,7 @@ class CallVariants:
         if self.itr.debug_mode:
             self.itr.total_num_tests = 2
 
-        call_vars_results = h.check_if_all_same(self._compare_dependencies, None)
+        call_vars_results = helpers.h.check_if_all_same(self._compare_dependencies, None)
 
         if call_vars_results is False:
             if self._compare_dependencies and len(self._compare_dependencies) == 1:
@@ -779,7 +781,7 @@ class CallVariants:
                 self._skipped_counter = self._num_to_ignore
                 if (
                     self._compare_dependencies
-                    and h.check_if_all_same(self._compare_dependencies, None) is False
+                    and helpers.h.check_if_all_same(self._compare_dependencies, None) is False
                 ):
                     self.itr.logger.info(
                         f"{self.logger_msg}: compare_happy dependencies updated to {self._compare_dependencies}"
@@ -815,7 +817,7 @@ class CallVariants:
                 self.load_variables()
 
                 for r in self.jobs_to_run:
-                    skip_re_runs = h.check_if_all_same(
+                    skip_re_runs = helpers.h.check_if_all_same(
                         self.call_variants_job_nums, None
                     )
                     if skip_re_runs:

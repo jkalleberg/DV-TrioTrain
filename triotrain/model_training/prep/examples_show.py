@@ -21,13 +21,14 @@ from logging import Logger
 from os import environ, getcwd, path
 from pathlib import Path
 from typing import List, Union
-
-import helpers as h
-import helpers_logger
-from examples_make import MakeExamples
-from iteration import Iteration
 from regex import Pattern, findall
-from sbatch import SBATCH, SubmitSBATCH
+
+# get the relative path to the triotrain/ dir
+h_path = str(Path(__file__).parent.parent.parent)
+sys.path.append(h_path)
+import helpers
+import model_training.slurm as s
+import model_training.prep as prep
 
 
 def collect_args():
@@ -160,7 +161,7 @@ class ShowExamples:
     Define what data to store for the 'show_examples' phase of the TrioTrain Pipeline.
     """
     # required values
-    itr: Iteration
+    itr: helpers.Iteration
     slurm_resources: dict
     model_label: str
     show_regions_file: Union[str, Path]
@@ -255,7 +256,7 @@ class ShowExamples:
         """
         Set up the prefix patterns for both inputs and outputs
         """
-        make_examples = MakeExamples(
+        make_examples = prep.MakeExamples(
             self.itr, self.slurm_resources, self.model_label, train_mode=self.train_mode
         )
         make_examples.set_genome()
@@ -316,7 +317,7 @@ class ShowExamples:
         self.job_name = f"{self._phase}-{self.job_label}"
         self.handler_label = f"{self._phase}: {self.prefix}"
 
-        self.slurm_job = SBATCH(
+        self.slurm_job = s.SBATCH(
             self.itr, self.job_name, self.model_label, self.handler_label, self.logger_msg
         )
 
@@ -396,7 +397,7 @@ class ShowExamples:
         self.png_regex = rf"{self.regions_path.stem}\w+:\w+->\w+.\w+.png"
 
         # See if PNGs made using the region file already exist
-        (self._existing_pngs, pngs_found, png_files,) = h.check_if_output_exists(
+        (self._existing_pngs, pngs_found, png_files,) = helpers.h.check_if_output_exists(
             self.png_regex,
             "image PNGs",
             self.pileup_path,
@@ -426,7 +427,7 @@ class ShowExamples:
                 f"{self.logger_msg}: no PNGs with '{self.regions_path.stem}' pattern detected"
             )
 
-        slurm_job = SubmitSBATCH(
+        slurm_job = s.SubmitSBATCH(
             self.itr.job_dir,
             f"{self.job_name}.sh",
             self.handler_label,
@@ -440,7 +441,7 @@ class ShowExamples:
 
         if self.itr.dryrun_mode:
             slurm_job.display_command(display_mode=self.itr.dryrun_mode)
-            self._output_jobnum.append(h.generate_job_id())
+            self._output_jobnum.append(helpers.h.generate_job_id())
         else:
             slurm_job.display_command(debug_mode=self.itr.debug_mode)
             slurm_job.get_status(debug_mode=self.itr.debug_mode)
@@ -457,7 +458,7 @@ class ShowExamples:
         """
         Check if 1+ SLURM job files were submitted to the SLURM queue successfully
         """
-        show_examples_results = h.check_if_all_same(self._output_jobnum, None)
+        show_examples_results = helpers.h.check_if_all_same(self._output_jobnum, None)
         if show_examples_results is False:
             if len(self._output_jobnum) == 1:
                 if self.itr.dryrun_mode:
@@ -520,12 +521,12 @@ def __init__():
     args = collect_args()
 
     # Collect start time
-    h.Wrapper(__file__, "start").wrap_script(h.timestamp())
+    helpers.h.Wrapper(__file__, "start").wrap_script(helpers.h.timestamp())
 
     # Create error log
     current_file = path.basename(__file__)
     module_name = path.splitext(current_file)[0]  
-    logger = helpers_logger.get_logger(module_name)
+    logger = helpers.log.get_logger(module_name)
     
     # Check command line args
     try:
@@ -536,7 +537,7 @@ def __init__():
 
     # Load in environment vars into Python
     env_path = Path(args.env_file)
-    env = h.Env(str(env_path), logger)
+    env = helpers.h.Env(str(env_path), logger)
 
     # Parse out current run name & num
     itr_name = env_path.stem.split("-")[1]
@@ -555,7 +556,7 @@ def __init__():
         total_tests = int(num_tests)
 
         # Confirm SLURM resource config file provide is valid
-        resource_file = h.TestFile(args.resource_config, logger)
+        resource_file = helpers.h.TestFile(args.resource_config, logger)
         resource_file.check_existing(debug_mode=args.debug)
 
         if resource_file.file_exists:
@@ -568,7 +569,7 @@ def __init__():
             return
 
         if not args.demo_mode:
-            current_itr = Iteration(
+            current_itr = helpers.Iteration(
                 current_trio_num=itr_num,
                 next_trio_num="None",
                 current_genome_num=itr_num,
@@ -576,12 +577,12 @@ def __init__():
                 total_num_tests=total_tests,
                 train_genome=args.genome,
                 eval_genome="Child",
-                env=h.Env(args.env_file, logger),
+                env=helpers.h.Env(args.env_file, logger),
                 logger=logger,
                 args=args,
             )
         else:
-            current_itr = Iteration(
+            current_itr = helpers.Iteration(
                 current_trio_num=1,
                 next_trio_num="None",
                 current_genome_num=itr_num,
@@ -589,7 +590,7 @@ def __init__():
                 total_num_tests=total_tests,
                 train_genome=args.genome,
                 eval_genome="Child",
-                env=h.Env(args.env_file, logger),
+                env=helpers.h.Env(args.env_file, logger),
                 logger=logger,
                 args=args,
             )
@@ -637,7 +638,7 @@ def __init__():
         )
         slurm.run()
 
-    h.Wrapper(__file__, "end").wrap_script(h.timestamp())
+    helpers.h.Wrapper(__file__, "end").wrap_script(helpers.h.timestamp())
 
 
 # Execute functions created when run from command line

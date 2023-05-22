@@ -8,11 +8,14 @@ usage:
 import sys
 from dataclasses import dataclass, field
 from typing import List, Union
-
-import helpers as h
-from iteration import Iteration
 from regex import compile
-from sbatch import SBATCH, SubmitSBATCH
+from pathlib import Path
+
+# get the relative path to the triotrain/ dir
+h_path = str(Path(__file__).parent.parent.parent)
+sys.path.append(h_path)
+import helpers
+import model_training.slurm as s
 
 
 @dataclass
@@ -22,12 +25,12 @@ class SelectCheckpoint:
     """
 
     # required values
-    itr: Iteration
+    itr: helpers.Iteration
     slurm_resources: dict
     model_label: str
 
     # optional values
-    benchmarking_file: Union[h.WriteFiles, None] = None
+    benchmarking_file: Union[helpers.h.WriteFiles, None] = None
     overwrite: bool = False
     select_ckpt_job_num: List = field(default_factory=list)
     track_resources: bool = False
@@ -49,14 +52,14 @@ class SelectCheckpoint:
                 self.benchmarking_file is not None
             ), "unable to proceed, missing a h.WriteFiles object to save SLURM job IDs"
 
-        self._model_testing_dependency = h.create_deps(1)
+        self._model_testing_dependency = helpers.h.create_deps(1)
 
     def find_restart_jobs(self) -> None:
         """
         Collect any SLURM job ids for running tests to avoid
         submitting a job while it's already running
         """
-        self._ignoring_training = h.check_if_all_same(self.train_eval_job_num, None)
+        self._ignoring_training = helpers.h.check_if_all_same(self.train_eval_job_num, None)
 
         if not self._ignoring_training:
             self.itr.logger.info(f"{self.logger_msg}: training was submitted...")
@@ -71,11 +74,11 @@ class SelectCheckpoint:
                 )
             num_job_ids = len(self.select_ckpt_job_num)
             if num_job_ids == 1:
-                jobs_to_run = h.find_not_NaN(self.select_ckpt_job_num)
-                jobs_to_ignore = h.find_NaN(self.select_ckpt_job_num)
+                jobs_to_run = helpers.h.find_not_NaN(self.select_ckpt_job_num)
+                jobs_to_ignore = helpers.h.find_NaN(self.select_ckpt_job_num)
                 self._num_to_run = len(jobs_to_run)
                 self._num_to_ignore = len(jobs_to_ignore)
-                self._model_testing_dependency = h.create_deps(1)
+                self._model_testing_dependency = helpers.h.create_deps(1)
                 if jobs_to_run:
                     self._run_jobs = True
                     for index in jobs_to_run:
@@ -138,7 +141,7 @@ class SelectCheckpoint:
                 self._outputs_exist = False
             else:
                 self.find_selected_ckpt_files(phase=phase)
-                missing_files = h.check_expected_outputs(
+                missing_files = helpers.h.check_expected_outputs(
                     self.num_model_files_found,
                     number_outputs_expected,
                     logging_msg,
@@ -178,7 +181,7 @@ class SelectCheckpoint:
                     f"[DRY RUN] - {self.logger_msg} - [{self.itr.train_genome}]: benchmarking is active"
                 )
 
-    def make_job(self) -> Union[SBATCH, None]:
+    def make_job(self) -> Union[s.SBATCH, None]:
         """
         Define the contents of the SLURM job for selecting the next checkpoint for TrioTrain Pipeline.
         """
@@ -190,7 +193,7 @@ class SelectCheckpoint:
         )
         self.handler_label = f"{self._phase}: {self.itr.train_genome}"
 
-        slurm_job = SBATCH(
+        slurm_job = s.SBATCH(
             self.itr,
             self.job_name,
             self.model_label,
@@ -284,7 +287,7 @@ class SelectCheckpoint:
                     next_env_file = (
                         f"envs/{analysis_name}-run{self.itr.next_trio_num}.env"
                     )
-                    next_env = h.Env(next_env_file, self.itr.logger)
+                    next_env = helpers.h.Env(next_env_file, self.itr.logger)
 
                     if f"{self.itr.next_genome}StartCkptName" in next_env.contents:
                         self.ckpt_selected = True
@@ -320,7 +323,7 @@ class SelectCheckpoint:
             self.existing_model_weights,
             self.num_model_files_found,
             model_weights_files,
-        ) = h.check_if_output_exists(
+        ) = helpers.h.check_if_output_exists(
             model_weights_pattern,
             "new model weights files",
             self.itr.train_dir,
@@ -343,7 +346,7 @@ class SelectCheckpoint:
                     slurm_job.write_job()
 
             # submit the training eval job to queue
-            slurm_job = SubmitSBATCH(
+            slurm_job = s.SubmitSBATCH(
                 self.itr.job_dir,
                 f"{self.job_name}.sh",
                 self.handler_label,
@@ -355,7 +358,7 @@ class SelectCheckpoint:
             )
             if self.itr.dryrun_mode:
                 slurm_job.display_command(display_mode=self.itr.dryrun_mode)
-                self._model_testing_dependency[0] = h.generate_job_id()
+                self._model_testing_dependency[0] = helpers.h.generate_job_id()
                 self.itr.current_genome_dependencies[
                     3
                 ] = self._model_testing_dependency[0]
@@ -381,7 +384,7 @@ class SelectCheckpoint:
         """
         Check if the SLURM job file was submitted to the SLURM queue successfully
         """
-        select_ckpt_results = h.check_if_all_same(self._model_testing_dependency, None)
+        select_ckpt_results = helpers.h.check_if_all_same(self._model_testing_dependency, None)
         if select_ckpt_results is False:
             if self.itr.dryrun_mode:
                 print(
@@ -405,7 +408,7 @@ class SelectCheckpoint:
         if self.track_resources and self.benchmarking_file is not None:
             self.benchmark()
 
-    def run(self) -> Iteration:
+    def run(self) -> helpers.Iteration:
         """
         Combine all the steps required to submit a job to SLURM queue into one step
         """

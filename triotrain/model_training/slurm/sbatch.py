@@ -12,10 +12,13 @@ from logging import Logger
 from pathlib import Path
 from subprocess import run
 from typing import Union
-
-import helpers as h
-from iteration import Iteration
 from regex import compile
+import sys
+
+# get the relative path to the triotrain/ dir
+h_path = str(Path(__file__).parent.parent.parent)
+sys.path.append(h_path)
+import helpers
 
 
 @dataclass
@@ -23,7 +26,7 @@ class SBATCH:
     """
     Create a custom SBATCH class object, which results in an sbatch file.
     """
-    itr: Iteration
+    itr: helpers.Iteration
     job_name: str
     error_file_label: Union[str, None]
     handler_status_label: Union[str,None]
@@ -140,7 +143,7 @@ class SBATCH:
         """
         if self.itr.debug_mode:
             self.itr.logger.debug(f"{self.logger_msg}: checking for prior SBATCH file... ")
-        result = h.TestFile(self._jobfile_str, self.itr.logger)
+        result = helpers.h.TestFile(self._jobfile_str, self.itr.logger)
         result.check_missing()
         return result.file_exists
 
@@ -257,11 +260,11 @@ class SubmitSBATCH:
                     ["sbatch"] + self.slurm_dependency + [f"{str(self.job_file)}"]
                 )
             elif isinstance(self.prior_job, list):
-                no_priors = h.check_if_all_same(self.prior_job, None)
+                no_priors = helpers.h.check_if_all_same(self.prior_job, None)
                 if no_priors:
                     self.cmd = ["sbatch", str(self.job_file)]
                 else:
-                    self.slurm_dependency = h.collect_job_nums(
+                    self.slurm_dependency = helpers.h.collect_job_nums(
                         self.prior_job, allow_dep_failure=allow_dep_failure
                     )
                     self.cmd = (

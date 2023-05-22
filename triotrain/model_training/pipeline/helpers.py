@@ -5,18 +5,20 @@ description: contains Iteration-specific helper functions
 usage:
     from pipeline_helpers import Setup
 """
+import sys
 import argparse
 import json
 from dataclasses import dataclass, field
 from logging import Logger
 from pathlib import Path
 from typing import List, Union
-
 from regex import compile
 
-from triotrain.helpers import helper_func as h
-from triotrain.model_training.prep.create_environment import Environment
-
+# get the relative path to the triotrain/ dir
+h_path = str(Path(__file__).parent.parent.parent)
+sys.path.append(h_path)
+from helpers import helper_func as h
+from model_training.prep.create_environment import Environment
 
 @dataclass
 class Setup:

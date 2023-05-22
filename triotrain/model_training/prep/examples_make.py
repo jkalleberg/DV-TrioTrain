@@ -8,12 +8,14 @@ usage:
 import sys
 from dataclasses import dataclass, field
 from typing import List, Union
+from pathlib import Path
 
-import helpers as h
-from examples_beam_shuffle import BeamShuffleExamples
-from examples_re_shuffle import ReShuffleExamples
-from iteration import Iteration
-from sbatch import SBATCH, SubmitSBATCH
+# get the relative path to the triotrain/ dir
+h_path = str(Path(__file__).parent.parent.parent)
+sys.path.append(h_path)
+import helpers
+import model_training.prep as prep
+import model_training.slurm as s
 
 
 @dataclass
@@ -23,12 +25,12 @@ class MakeExamples:
     """
 
     # required values
-    itr: Iteration
+    itr: helpers.Iteration
     slurm_resources: dict
     model_label: str
 
     # optional values
-    benchmarking_file: Union[h.WriteFiles, None] = None
+    benchmarking_file: Union[helpers.h.WriteFiles, None] = None
     make_examples_job_nums: List = field(default_factory=list)
     overwrite: bool = False
     total_shards: int = 1
@@ -115,11 +117,11 @@ class MakeExamples:
         if self.make_examples_job_nums:
             num_job_ids = len(self.make_examples_job_nums)
             if num_job_ids == self._total_regions:
-                self.jobs_to_run = h.find_not_NaN(self.make_examples_job_nums)
-                self.jobs_to_ignore = h.find_NaN(self.make_examples_job_nums)
+                self.jobs_to_run = helpers.h.find_not_NaN(self.make_examples_job_nums)
+                self.jobs_to_ignore = helpers.h.find_NaN(self.make_examples_job_nums)
                 self._num_to_run = len(self.jobs_to_run)
                 self._num_to_ignore = len(self.jobs_to_ignore)
-                self._beam_shuffle_dependencies = h.create_deps(self._total_regions)
+                self._beam_shuffle_dependencies = helpers.h.create_deps(self._total_regions)
 
                 if self.jobs_to_run:
                     updated_jobs_list = []
@@ -220,7 +222,7 @@ class MakeExamples:
                         f"[DRY RUN] - {self.logger_msg}: benchmarking is active"
                     )
 
-    def make_job(self, index: int = 0) -> Union[SBATCH, None]:
+    def make_job(self, index: int = 0) -> Union[s.SBATCH, None]:
         """
         Define the contents of the SLURM job for the 'make_examples' phase for TrioTrain Pipeline.
         """
@@ -231,7 +233,7 @@ class MakeExamples:
         self.job_name = f"examples-parallel-{self.job_label}"
         self.handler_label = f"{self._phase}: {self.prefix}-shard$t"
 
-        slurm_job = SBATCH(
+        slurm_job = s.SBATCH(
             self.itr,
             self.job_name,
             self.model_label,
@@ -319,7 +321,7 @@ class MakeExamples:
             self._existing_tfrecords,
             self._num_tfrecords_found,
             self._tfrecord_files_list,
-        ) = h.check_if_output_exists(
+        ) = helpers.h.check_if_output_exists(
             examples_pattern,
             "labeled tfrecord shards",
             self.itr.examples_dir,
@@ -329,11 +331,11 @@ class MakeExamples:
         )
 
         if self._existing_tfrecords and self._num_tfrecords_found is not None:
-            if self.overwrite and self.make_examples_job_nums and h.check_if_all_same(self.make_examples_job_nums, None) is False:
+            if self.overwrite and self.make_examples_job_nums and helpers.h.check_if_all_same(self.make_examples_job_nums, None) is False:
                 self._outputs_exist = False
                 self._num_tfrecords_found = 0
             else:
-                missing_files = h.check_expected_outputs(
+                missing_files = helpers.h.check_expected_outputs(
                     self._num_tfrecords_found,
                     expected_outputs,
                     logger_msg,
@@ -382,7 +384,7 @@ class MakeExamples:
             self.itr.logger.info(
                 f"{self.logger_msg}{self.region_logger_msg}: re-submitting job to overwrite any existing tfrecords files"
             )
-        submit_slurm_job = SubmitSBATCH(
+        submit_slurm_job = s.SubmitSBATCH(
             self.itr.job_dir,
             f"{self.job_name}.sh",
             self.handler_label,
@@ -399,7 +401,7 @@ class MakeExamples:
                 display_mode=self.itr.dryrun_mode,
             )
             self._beam_shuffle_dependencies.insert(
-                dependency_index, h.generate_job_id()
+                dependency_index, helpers.h.generate_job_id()
             )
 
         else:
@@ -426,7 +428,7 @@ class MakeExamples:
         """
         if self.itr.debug_mode:
             self._total_regions = 5
-        make_examples_results = h.check_if_all_same(
+        make_examples_results = helpers.h.check_if_all_same(
             self._beam_shuffle_dependencies, None
         )
         if make_examples_results is False:
@@ -474,7 +476,7 @@ class MakeExamples:
         """
         Determine if final data_prep outputs already exist.
         """
-        re_shuffle = ReShuffleExamples(
+        re_shuffle = prep.ReShuffleExamples(
             itr=self.itr,
             slurm_resources=self.slurm_resources,
             model_label=self.model_label,
@@ -487,7 +489,7 @@ class MakeExamples:
 
         if re_shuffle._outputs_exist and find_beam_tfrecords:
 
-            beam = BeamShuffleExamples(
+            beam = prep.BeamShuffleExamples(
                 itr=self.itr,
                 slurm_resources=self.slurm_resources,
                 model_label=self.model_label,
@@ -547,7 +549,7 @@ class MakeExamples:
                 sys.exit(1)
 
             if not self._beam_shuffle_dependencies:
-                self._beam_shuffle_dependencies = h.create_deps(self._total_regions)
+                self._beam_shuffle_dependencies = helpers.h.create_deps(self._total_regions)
 
             for r in self.jobs_to_run:
                 region_index = self.make_examples_job_nums[r]

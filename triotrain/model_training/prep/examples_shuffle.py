@@ -8,10 +8,13 @@ usage:
 import sys
 from dataclasses import dataclass, field
 from typing import List, Union
+from pathlib import Path
 
-import helpers as h
-from iteration import Iteration
-from sbatch import SBATCH, SubmitSBATCH
+# get the relative path to the triotrain/ dir
+h_path = str(Path(__file__).parent.parent.parent)
+sys.path.append(h_path)
+import helpers
+import model_training.slurm as s
 
 
 @dataclass
@@ -21,12 +24,12 @@ class BeamShuffleExamples:
     """
 
     # required values
-    itr: Iteration
+    itr: helpers.Iteration
     slurm_resources: dict
     model_label: str
 
     # optional values
-    benchmarking_file: Union[h.WriteFiles, None] = None
+    benchmarking_file: Union[helpers.h.WriteFiles, None] = None
     make_examples_jobs: Union[List[Union[str, None]], None] = field(
         default_factory=list
     )
@@ -77,7 +80,7 @@ class BeamShuffleExamples:
             self.genome_index = 1
             self.trio_dependency = self.itr.current_genome_dependencies[1]
 
-        self._re_shuffle_dependencies = h.create_deps(self._total_regions)
+        self._re_shuffle_dependencies = helpers.h.create_deps(self._total_regions)
 
         # The final remainder region (e.g. #168) could have plenty of examples to be shuffled and would also be sharded during beam shuffling
         self.total_shuffle_outputs_expected1 = int((self._total_regions) * self.n_parts)
@@ -124,13 +127,13 @@ class BeamShuffleExamples:
         """
         Collect any SLURM job ids for running tests to avoid submitting a job while it's already running.
         """
-        self._ignoring_make_examples = h.check_if_all_same(
+        self._ignoring_make_examples = helpers.h.check_if_all_same(
             self.make_examples_jobs, None
         )
 
         if not self._ignoring_make_examples:
-            self._num_to_ignore = len(h.find_NaN(self.make_examples_jobs))
-            self.jobs_to_run = h.find_not_NaN(self.make_examples_jobs)
+            self._num_to_ignore = len(helpers.h.find_NaN(self.make_examples_jobs))
+            self.jobs_to_run = helpers.h.find_not_NaN(self.make_examples_jobs)
             self._num_to_run = len(self.jobs_to_run)
             self._run_jobs = True
 
@@ -142,10 +145,10 @@ class BeamShuffleExamples:
 
             num_job_ids = len(self.shuffle_examples_job_nums)
             if num_job_ids == self._total_regions:
-                self.jobs_to_run = h.find_not_NaN(self.shuffle_examples_job_nums)
+                self.jobs_to_run = helpers.h.find_not_NaN(self.shuffle_examples_job_nums)
                 self._num_to_run = len(self.jobs_to_run)
-                self._num_to_ignore = len(h.find_NaN(self.shuffle_examples_job_nums))
-                self._re_shuffle_dependencies = h.create_deps(self._total_regions)
+                self._num_to_ignore = len(helpers.h.find_NaN(self.shuffle_examples_job_nums))
+                self._re_shuffle_dependencies = helpers.h.create_deps(self._total_regions)
 
                 if self.jobs_to_run:
                     self._run_jobs = True
@@ -241,7 +244,7 @@ class BeamShuffleExamples:
                         f"[DRY RUN] - {self.logger_msg}: benchmarking is active"
                     )
 
-    def make_job(self, index: int = 0) -> Union[SBATCH, None]:
+    def make_job(self, index: int = 0) -> Union[s.SBATCH, None]:
         """
         Define the contents of the SLURM job for the beam_shuffle phase for TrioTrain Pipeline.
         """
@@ -249,7 +252,7 @@ class BeamShuffleExamples:
         self.job_name = f"beam-shuffle-{self.job_label}"
         self.handler_label = f"{self._phase}: {self.prefix}"
 
-        slurm_job = SBATCH(
+        slurm_job = s.SBATCH(
             self.itr,
             self.job_name,
             self.model_label,
@@ -324,7 +327,7 @@ class BeamShuffleExamples:
             self._existing_shuff_examples,
             self._num_shuff_tfrecords_found,
             shuff_tfrecord_files,
-        ) = h.check_if_output_exists(
+        ) = helpers.h.check_if_output_exists(
             shuff_examples_pattern,
             "shuffled tfrecord shards",
             self.itr.examples_dir,
@@ -361,7 +364,7 @@ class BeamShuffleExamples:
             self._existing_config,
             self._num_config_found,
             config_files,
-        ) = h.check_if_output_exists(
+        ) = helpers.h.check_if_output_exists(
             shuffled_config_regex,
             "shuffled pbtxt files",
             self.itr.examples_dir,
@@ -385,7 +388,7 @@ class BeamShuffleExamples:
             else:
                 slurm_job.write_job()
 
-        slurm_job = SubmitSBATCH(
+        slurm_job = s.SubmitSBATCH(
             self.itr.job_dir,
             f"{self.job_name}.sh",
             self.handler_label,
@@ -409,7 +412,7 @@ class BeamShuffleExamples:
                 display_mode=self.itr.dryrun_mode,
             )
             if self._re_shuffle_dependencies:
-                self._re_shuffle_dependencies[dependency_index] = h.generate_job_id()
+                self._re_shuffle_dependencies[dependency_index] = helpers.h.generate_job_id()
         else:
             slurm_job.display_command(debug_mode=self.itr.debug_mode)
             slurm_job.get_status(
@@ -438,7 +441,7 @@ class BeamShuffleExamples:
         if self._re_shuffle_dependencies is None:
             no_beam_jobs_submitted = True
         else:
-            no_beam_jobs_submitted = h.check_if_all_same(
+            no_beam_jobs_submitted = helpers.h.check_if_all_same(
                 self._re_shuffle_dependencies, None
             )
 
@@ -507,7 +510,7 @@ class BeamShuffleExamples:
             self._existing_shuff_examples
             and self._num_shuff_tfrecords_found is not None
         ):
-            missing_shuffled_files1 = h.check_expected_outputs(
+            missing_shuffled_files1 = helpers.h.check_expected_outputs(
                 self._num_shuff_tfrecords_found,
                 expected_shuffle_outputs,
                 logger_msg,
@@ -522,7 +525,7 @@ class BeamShuffleExamples:
                 self.itr.logger.info(
                     f"{logger_msg}: determining if incomplete shuffled files is due to the final region producing very few examples...",
                 )
-                missing_shuffled_files2 = h.check_expected_outputs(
+                missing_shuffled_files2 = helpers.h.check_expected_outputs(
                     self._num_shuff_tfrecords_found,
                     self.total_shuffle_outputs_expected2,
                     logger_msg,
@@ -553,7 +556,7 @@ class BeamShuffleExamples:
             self._outputs_exist = False
         else:
             if self._existing_config and self._num_config_found is not None:
-                missing_config_file = h.check_expected_outputs(
+                missing_config_file = helpers.h.check_expected_outputs(
                     self._num_config_found,
                     expected_config_outputs,
                     logger_msg,
@@ -607,7 +610,7 @@ class BeamShuffleExamples:
                 self._skipped_counter = self._num_to_ignore
                 if (
                     self._re_shuffle_dependencies
-                    and h.check_if_all_same(self._re_shuffle_dependencies, None)
+                    and helpers.h.check_if_all_same(self._re_shuffle_dependencies, None)
                     is False
                 ):
                     self.itr.logger.info(
@@ -640,7 +643,7 @@ class BeamShuffleExamples:
                     sys.exit(1)
 
                 for r in self.jobs_to_run:
-                    skip_re_runs = h.check_if_all_same(
+                    skip_re_runs = helpers.h.check_if_all_same(
                         self.shuffle_examples_job_nums, None
                     )
                     if skip_re_runs:

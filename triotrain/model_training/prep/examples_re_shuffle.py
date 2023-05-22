@@ -8,10 +8,13 @@ usage:
 import sys
 from dataclasses import dataclass, field
 from typing import List, Union
+from pathlib import Path
 
-import helpers as h
-from iteration import Iteration
-from sbatch import SBATCH, SubmitSBATCH
+# get the relative path to the triotrain/ dir
+h_path = str(Path(__file__).parent.parent.parent)
+sys.path.append(h_path)
+import helpers
+import model_training.slurm as s
 
 
 @dataclass
@@ -21,7 +24,7 @@ class ReShuffleExamples:
     """
 
     # required values
-    itr: Iteration
+    itr: helpers.Iteration
     slurm_resources: dict
     model_label: str
 
@@ -29,7 +32,7 @@ class ReShuffleExamples:
     beam_shuffling_jobs: Union[List[Union[str, None]], None] = field(
         default_factory=list
     )
-    benchmarking_file: Union[h.WriteFiles, None] = None
+    benchmarking_file: Union[helpers.h.WriteFiles, None] = None
     overwrite: bool = False
     re_shuffle_job_num: List = field(default_factory=list)
     track_resources: bool = False
@@ -77,18 +80,18 @@ class ReShuffleExamples:
             self.all_merged_tfrecords_pattern = f"{self.genome}{self.region_pattern}"
 
         self.total_outputs_expected = 1
-        self._re_shuffle_dependencies = h.create_deps(1)
+        self._re_shuffle_dependencies = helpers.h.create_deps(1)
 
     def find_restart_jobs(self) -> None:
         """
         Collect any SLURM job ids for running tests to avoid submitting a job while it's already running.
         """
-        self._ignoring_beam_shuffle = h.check_if_all_same(
+        self._ignoring_beam_shuffle = helpers.h.check_if_all_same(
             self.beam_shuffling_jobs, None
         )
         if not self._ignoring_beam_shuffle:
-            self._num_to_ignore = len(h.find_NaN(self.beam_shuffling_jobs))
-            self._num_to_run = len(h.find_not_NaN(self.beam_shuffling_jobs))
+            self._num_to_ignore = len(helpers.h.find_NaN(self.beam_shuffling_jobs))
+            self._num_to_run = len(helpers.h.find_not_NaN(self.beam_shuffling_jobs))
             self._run_jobs = True
 
         elif self.re_shuffle_job_num:
@@ -99,10 +102,10 @@ class ReShuffleExamples:
 
             num_job_ids = len(self.re_shuffle_job_num)
             if num_job_ids == 1:
-                jobs_to_run = h.find_not_NaN(self.re_shuffle_job_num)
+                jobs_to_run = helpers.h.find_not_NaN(self.re_shuffle_job_num)
                 self._num_to_run = len(jobs_to_run)
-                self._num_to_ignore = len(h.find_NaN(self.re_shuffle_job_num))
-                self._re_shuffle_dependencies = h.create_deps(1)
+                self._num_to_ignore = len(helpers.h.find_NaN(self.re_shuffle_job_num))
+                self._re_shuffle_dependencies = helpers.h.create_deps(1)
 
                 if jobs_to_run:
                     self._run_jobs = True
@@ -191,7 +194,7 @@ class ReShuffleExamples:
                         f"[DRY RUN] - {self.logger_msg}: benchmarking is active"
                     )
 
-    def make_job(self) -> Union[SBATCH, None]:
+    def make_job(self) -> Union[s.SBATCH, None]:
         """
         Define the contents of the SLURM job for the re_shuffle phase for TrioTrain Pipeline
         """
@@ -202,7 +205,7 @@ class ReShuffleExamples:
         self.job_name = f"re-shuffle-{self.genome}{self.itr.current_trio_num}"
         self.handler_label = f"{self._phase}: {self.genome}"
 
-        slurm_job = SBATCH(
+        slurm_job = s.SBATCH(
             self.itr,
             self.job_name,
             self.model_label,
@@ -249,7 +252,7 @@ class ReShuffleExamples:
         Determine if merging is necessary
         """
         # Define the text output
-        self.merged_config = h.WriteFiles(
+        self.merged_config = helpers.h.WriteFiles(
             str(self.itr.examples_dir),
             f"{self.pattern}.labeled.shuffled.merged.dataset_config.pbtxt",
             self.itr.logger,
@@ -298,7 +301,7 @@ class ReShuffleExamples:
             self._merged_tfrecords_exist,
             num_merged_tfrecords,
             files_list,
-        ) = h.check_if_output_exists(
+        ) = helpers.h.check_if_output_exists(
             merged_shards_regex,
             "merged tfrecords files",
             self.itr.examples_dir,
@@ -307,7 +310,7 @@ class ReShuffleExamples:
             debug_mode=self.itr.debug_mode,
         )
 
-        missing_files = h.check_expected_outputs(
+        missing_files = helpers.h.check_expected_outputs(
             num_merged_tfrecords,
             expected_outputs,
             msg,
@@ -332,7 +335,7 @@ class ReShuffleExamples:
             else:
                 slurm_job.write_job()
 
-        submit_slurm_job = SubmitSBATCH(
+        submit_slurm_job = s.SubmitSBATCH(
             self.itr.job_dir,
             f"{self.job_name}.sh",
             self.handler_label,
@@ -347,10 +350,10 @@ class ReShuffleExamples:
 
         if self.itr.dryrun_mode:
             submit_slurm_job.display_command(display_mode=self.itr.dryrun_mode)
-            self._train_dependency = h.generate_job_id()
+            self._train_dependency = helpers.h.generate_job_id()
             self.itr.current_genome_dependencies[self.index] = self._train_dependency
             if self.index > 0:
-                self.itr.next_genome_dependencies[self.index] = h.generate_job_id()
+                self.itr.next_genome_dependencies[self.index] = helpers.h.generate_job_id()
         else:
             submit_slurm_job.display_command(debug_mode=self.itr.debug_mode)
             submit_slurm_job.get_status(debug_mode=self.itr.debug_mode)
@@ -440,7 +443,7 @@ class ReShuffleExamples:
                     ):
                         self._outputs_exist = True
 
-    def run(self) -> Union[Iteration, None]:
+    def run(self) -> Union[helpers.Iteration, None]:
         """
         Combine all the steps required to submit a job to SLURM queue into one step
         """

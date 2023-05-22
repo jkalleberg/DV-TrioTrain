@@ -20,19 +20,13 @@ import re
 import sys
 from pathlib import Path
 
-# Custom helper modules
-# sys.path.append(str(Path.cwd() / "triotrain"))
-
 import helpers 
 print(helpers.h.timestamp())
-breakpoint()
-from triotrain.model_training.pipeline.args import check_args, collect_args, get_args, get_defaults
-from triotrain.model_training.pipeline.helpers import Setup
 
-from triotrain.model_training.pipeline.run import Run
+import model_training as pipe
 breakpoint()
 
-def initalize_weights(setup: Setup, itr: helpers.Iteration):
+def initalize_weights(setup: pipe.Setup, itr: helpers.Iteration):
     """
     Determine what weights to use to initalize model
     """
@@ -229,9 +223,9 @@ def run_trio_train(eval_genome="Child"):
         2. re-training with a parent-child duo within a trio
     """
     # Collect command line arguments
-    parser = collect_args()
-    channel_defaults = get_defaults(parser, "channel_info")
-    args = get_args(parser=parser)
+    parser = pipe.collect_args()
+    channel_defaults = pipe.get_defaults(parser, "channel_info")
+    args = pipe.get_args(parser=parser)
 
     breakpoint()
 
@@ -244,7 +238,7 @@ def run_trio_train(eval_genome="Child"):
     logger = helpers.log.get_logger(module_name)
 
     # Check command line args
-    check_args(args=args, logger=logger, default_channels=channel_defaults)
+    pipe.check_args(args=args, logger=logger, default_channels=channel_defaults)
 
     # Process any trio dependencies in args
     convert = lambda i: None if i == "None" else str(i)
@@ -260,7 +254,7 @@ def run_trio_train(eval_genome="Child"):
         current_genome_deps = helpers.h.create_deps()
         next_genome_deps = helpers.h.create_deps()
 
-    pipeline = Setup(
+    pipeline = pipe.Setup(
         logger,
         args,
         eval_genome,
@@ -432,7 +426,7 @@ def run_trio_train(eval_genome="Child"):
 
         ### Create GIAB Benchmarkinging Runs --------------------------###
         if current_itr.args.first_genome is None:
-            Run(
+            pipe.Run(
                 itr=current_itr,
                 resource_file=pipeline.args.resource_config,
                 num_tests=pipeline.meta.num_tests,
@@ -452,7 +446,7 @@ def run_trio_train(eval_genome="Child"):
             and current_itr.current_genome_num >= 1
         ):
 
-            Run(
+            pipe.Run(
                 itr=current_itr,
                 resource_file=pipeline.args.resource_config,
                 est_examples=pipeline.args.est_examples,
@@ -480,7 +474,7 @@ def run_trio_train(eval_genome="Child"):
             current_itr.logger.info(
                 f"{logging_msg}: --demo_mode is active"
             )
-            Run(
+            pipe.Run(
                 itr=current_itr,
                 resource_file=args.resource_config,
                 est_examples=pipeline.args.est_examples,
@@ -497,7 +491,7 @@ def run_trio_train(eval_genome="Child"):
 
         ### Create Baseline Runs --------------------------------------###
         elif current_itr.current_trio_num == 0:
-            Run(
+            pipe.Run(
                 itr=current_itr,
                 resource_file=pipeline.args.resource_config,
                 next_genome=pipeline.next_genome,
