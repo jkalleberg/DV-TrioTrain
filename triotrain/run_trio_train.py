@@ -7,7 +7,7 @@ description: executes the TrioTrain pipeline
 3) submits jobs to the SLURM queue to produce outputs. 
 
 example:
-    python3 -m triotrain.model_training.run_trio_train        \\
+    python3 triotrain/model_training/run_trio_train.py        \\
         -f Father                                             \\
         -m metadata/demo_metadata_file.csv                    \\
         -n test                                               \\

@@ -10,14 +10,28 @@ import json
 from logging import Logger
 from pathlib import Path
 from sys import exit
+import re
+import importlib
 
+# use the doc string from __main__
+def get_docstring(script_name, script_path):
+    spec = importlib.util.spec_from_file_location(script_name, script_path)
+    foo = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(foo)
+    return foo.__doc__
 
 def collect_args():
     """
     process the command line arguments to execute script.
     """
+    # get the relative path to the triotrain/ dir
+    h_path = Path(__file__).parent.parent.parent
+    doc = get_docstring(
+        script_name = "run_trio_train.py",
+        script_path = str(h_path / "run_trio_train.py"))
+
     parser = argparse.ArgumentParser(
-        description=__doc__,
+        description=doc,
         formatter_class=argparse.RawTextHelpFormatter,
     )
     parser.add_argument(
