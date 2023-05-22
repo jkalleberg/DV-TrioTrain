@@ -20,11 +20,8 @@ import re
 import sys
 from pathlib import Path
 
-import helpers 
-print(helpers.h.timestamp())
-
+import helpers
 import model_training as pipe
-breakpoint()
 
 def initalize_weights(setup: pipe.Setup, itr: helpers.Iteration):
     """

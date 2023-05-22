@@ -594,9 +594,6 @@ class CompareHappy:
             
             # determine if jobs need to be submitted
             self.find_outputs(find_all=True)
-            
-            # ConvertHappy(itr=self.itr, slurm_resources=self.slurm_resources, model_label=self.model_label).double_check(self._phase)
-            # breakpoint()
 
             if self._outputs_exist:
                 return
