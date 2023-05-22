@@ -14,8 +14,8 @@ from typing import List, Union
 
 from regex import compile
 
-import helpers as h
-from create_environment import Environment
+from triotrain.helpers import helper_func as h
+from triotrain.model_training.prep.create_environment import Environment
 
 
 @dataclass

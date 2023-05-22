@@ -12,8 +12,7 @@ from logging import Logger
 from os import environ, getcwd
 from pathlib import Path
 from typing import Union
-import helpers as h
-
+import helpers.helper_func as h
 
 @dataclass
 class Iteration:
@@ -180,9 +179,7 @@ class Iteration:
             self.code_path = self.env.contents["CodePath"]
             self.job_dir = Path(str(self.env.contents["JobDir"]))
             self.log_dir = Path(str(self.env.contents["LogDir"]))
-            self.model_label = self.run_name
-            # if self.
-            # self.examples_dir = Path(str(self.env.contents["ExamplesDir"]))            
+            self.model_label = self.run_name           
 
     def check_working_dir(self) -> None:
         """

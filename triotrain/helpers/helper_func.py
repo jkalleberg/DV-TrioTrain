@@ -9,13 +9,12 @@ import datetime as dt
 import os
 import subprocess
 import sys
-from csv import QUOTE_NONE, DictWriter, writer
+from csv import DictWriter, writer
 from dataclasses import dataclass, field
 from logging import Logger
 from pathlib import Path
 from random import randint
 from typing import Dict, List, Text, Union
-
 import dotenv
 import regex
 from natsort import natsorted

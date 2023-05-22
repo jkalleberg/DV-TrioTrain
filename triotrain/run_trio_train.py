@@ -1,16 +1,16 @@
-#!/usr/bin/env/ python3
+#!/usr/bin/python3
 """
-description: executes the TrioTrain process of DeepVariant.
+description: executes the TrioTrain pipeline
 
 1) initializes environment config files (.env). 
 2) writes SBATCH job files for each phase of the pipeline.
 3) submits jobs to the SLURM queue to produce outputs. 
 
 example:
-    python3 scripts/model_training/run_trio_train.py        \\
-        -f Mother                                           \\
-        -m metadata/demo_metadata_file.csv                  \\
-        -n test                                             \\
+    python3 -m triotrain.model_training.run_trio_train        \\
+        -f Father                                             \\
+        -m metadata/demo_metadata_file.csv                    \\
+        -n test                                               \\
         -r resources_used.json
 """
 
@@ -21,14 +21,18 @@ import sys
 from pathlib import Path
 
 # Custom helper modules
-import helpers as h
-import helpers_logger
-from iteration import Iteration
-from pipeline_args import check_args, collect_args, get_args, get_defaults
-from pipeline_helpers import Setup
-from pipeline_run import Run
+# sys.path.append(str(Path.cwd() / "triotrain"))
 
-def initalize_weights(setup: Setup, itr: Iteration):
+import helpers 
+print(helpers.h.timestamp())
+breakpoint()
+from triotrain.model_training.pipeline.args import check_args, collect_args, get_args, get_defaults
+from triotrain.model_training.pipeline.helpers import Setup
+
+from triotrain.model_training.pipeline.run import Run
+breakpoint()
+
+def initalize_weights(setup: Setup, itr: helpers.Iteration):
     """
     Determine what weights to use to initalize model
     """
@@ -77,7 +81,7 @@ def initalize_weights(setup: Setup, itr: Iteration):
                     / "envs"
                     / f"{setup.args.name}-run{setup.prior_trio_num}.env"
                 )                
-                prior_env = h.Env(str(prior_env_path), itr.logger)
+                prior_env = helpers.h.Env(str(prior_env_path), itr.logger)
                 try:
                     prior_env.check_out()
                     check_this_env = prior_env
@@ -140,7 +144,7 @@ def initalize_weights(setup: Setup, itr: Iteration):
                                 itr_num=next_itr,
                             )
                             
-                        next_env = h.Env(
+                        next_env = helpers.h.Env(
                             str(next_env_path),
                             itr.logger,
                             debug_mode=setup.args.debug,
@@ -227,15 +231,17 @@ def run_trio_train(eval_genome="Child"):
     # Collect command line arguments
     parser = collect_args()
     channel_defaults = get_defaults(parser, "channel_info")
-    args = get_args(parser=parser)    
+    args = get_args(parser=parser)
+
+    breakpoint()
 
     # Collect start time
-    h.Wrapper(__file__, "start").wrap_script(h.timestamp())
+    helpers.h.Wrapper(__file__, "start").wrap_script(helpers.h.timestamp())
 
     # Create error log
     current_file = os.path.basename(__file__)
     module_name = os.path.splitext(current_file)[0]
-    logger = helpers_logger.get_logger(module_name)
+    logger = helpers.log.get_logger(module_name)
 
     # Check command line args
     check_args(args=args, logger=logger, default_channels=channel_defaults)
@@ -249,10 +255,10 @@ def run_trio_train(eval_genome="Child"):
         if current_genome_deps[3] is not None:
             next_genome_deps = [None, None, current_genome_deps[3], None]
         else:
-            next_genome_deps = h.create_deps()
+            next_genome_deps = helpers.h.create_deps()
     else:
-        current_genome_deps = h.create_deps()
-        next_genome_deps = h.create_deps()
+        current_genome_deps = helpers.h.create_deps()
+        next_genome_deps = helpers.h.create_deps()
 
     pipeline = Setup(
         logger,
@@ -316,7 +322,7 @@ def run_trio_train(eval_genome="Child"):
         new_env = pipeline.meta.env
 
         if pipeline.args.first_genome is None:
-            current_itr = Iteration(
+            current_itr = helpers.Iteration(
                 current_trio_num=None,
                 next_trio_num=pipeline.next_trio_num,
                 current_genome_num=pipeline.meta.itr_num,
@@ -333,7 +339,7 @@ def run_trio_train(eval_genome="Child"):
             )
 
         elif pipeline.meta.itr_num == 0:
-            current_itr = Iteration(
+            current_itr = helpers.Iteration(
                 current_trio_num=pipeline.meta.itr_num,
                 next_trio_num=pipeline.next_trio_num,
                 current_genome_num=pipeline.meta.itr_num,
@@ -349,7 +355,7 @@ def run_trio_train(eval_genome="Child"):
                 next_genome=pipeline.next_genome,
             )
         else:
-            current_itr = Iteration(
+            current_itr = helpers.Iteration(
                 current_trio_num=int(pipeline.current_trio_num),
                 next_trio_num=pipeline.next_trio_num,
                 current_genome_num=pipeline.meta.itr_num,
@@ -411,7 +417,7 @@ def run_trio_train(eval_genome="Child"):
         # If tracking resources used from SLURM jobs,
         # inialize a file to store metrics
         if pipeline.args.benchmark:
-            output_file = h.WriteFiles(
+            output_file = helpers.h.WriteFiles(
                 path_to_file=str(current_itr.results_dir),
                 file=f"{current_itr.model_label}.SLURM.job_numbers.csv",
                 logger=logger,
@@ -464,10 +470,10 @@ def run_trio_train(eval_genome="Child"):
             ).run()
 
             # --- switch the dependencies so that prior becomes current before the next iteration starts ---#
-            # no_prior_jobs_run = h.check_if_all_same(pipeline.next_genome_deps, None)
+            # no_prior_jobs_run = helpers.h.check_if_all_same(pipeline.next_genome_deps, None)
             pipeline.end_iteration()
             pipeline.current_genome_deps = pipeline.next_genome_deps
-            pipeline.next_genome_deps = h.create_deps()
+            pipeline.next_genome_deps = helpers.h.create_deps()
 
         ### Create Demo Runs ------------------------------------------###
         elif current_itr.demo_mode:
@@ -507,14 +513,14 @@ def run_trio_train(eval_genome="Child"):
             ).run()
 
             # --- switch the dependencies so that prior becomes current before the next iteration starts ---#
-            are_next_genome_jobs_running = h.check_if_all_same(
+            are_next_genome_jobs_running = helpers.h.check_if_all_same(
                 pipeline.next_genome_deps, None
             )
             pipeline.end_iteration()
             print(f"NO NEXT GENOME JOBS RUNNING? {are_next_genome_jobs_running}")
 
             pipeline.current_genome_deps = pipeline.next_genome_deps
-            pipeline.next_genome_deps = h.create_deps()
+            pipeline.next_genome_deps = helpers.h.create_deps()
 
         # elif no_prior_jobs_run and itr != begining:
         #     logger.info(
@@ -523,7 +529,7 @@ def run_trio_train(eval_genome="Child"):
         #     continue
 
     ### ---------------------------- ###
-    h.Wrapper(__file__, "end").wrap_script(h.timestamp())
+    helpers.h.Wrapper(__file__, "end").wrap_script(helpers.h.timestamp())
 
 
 def __init__():
