@@ -50,6 +50,8 @@ was not evaluated further during TrioTrain's development.
 *  Each `VCF/BED/BAM` file must contain only one sample per file.
 *  The `VCF/BED/BAM` files must be sorted and compatible with the reference genome provided to the pipeline.
 *  The `VCF` files are bgzipped and tabix indexed.
+*  Truth `VCF` files exclude any homozygous reference genotypes.
+*  Truth `VCF` files exclude any sites that violate Mendelian inheritance expectations.
 *  The `BAM` files are tabix indexed.
 *  The pipeline will uncompress compressed `BED` files.
 *  All files must exist before the execution of the pipeline.
@@ -63,6 +65,8 @@ file location on disk for each trio is used to retrain DeepVariant.
 
 *  Each row corresponds to one complete family trio resulting in two iterations of TrioTrain.
 *  Row order determines the sequential order of how trios are used during re-training.
+*  There are 24 **REQUIRED** columns with headers that must be in the order described in detail
+in the [Metadata Format](#metadata-format) section.
 
 At a minimum, this metadata file must provide
 absolute paths to the following input files:
@@ -80,12 +84,50 @@ absolute paths to the following input files:
     * One or more (1+) benchmark `.vcf.gz` files, with the corresponding `.vcf.gz.tbi` index.
     * One or more (1+) benchmark `.bed.gz` files.
 
-### General Note
+### General Notes
 If the data are available, you can perform additional iterations of TrioTrain by adding rows for additional trio(s) to the metadata `.csv` file. 
 
 Likewise, further test replicates can be achieved by adding columns in sets of three [`BAM,TruthVCF,TruthBED`] for each additional test genome 
 to the metadata `.csv` file. Further metadata format details are below.
 
+## Metadata Format
 
+| Column Number | Column Name      | Description                     | Data Type | 
+| ------------- | -----------      | ------------------------------- | --------- |
+| 1             | RunOrder         | Sequential number for each trio | integer   |
+| 2             | RunName          | The name of the output directory to be created; a unique memo/note for the analysis | string without spaces |
+| 3             | ChildSampleID    | A primary, unique identifier for a child; must match the SampleID in the child’s VCF/BAM/BED files | alpha-numeric characters |
+| 4             | ChildLabID       | A secondary, unique ID for a child ; defaults to ChildSampleID | alpha-numeric characters |
+| 5             | FatherSampleID   | A primary, unique identifier for a father; must match the SampleID in the father’s VCF/BAM/BED files | alpha-numeric characters |
+| 6             | FatherLabID      | A secondary, unique ID for a father; defaults to  to FatherSampleID | alpha-numeric characters |
+| 7             | MotherSampleID   | A primary, unique identifier for a mother; must match the SampleID in the mother’s VCF/BAM/BED files | alpha-numeric characters |
+| 8             | MotherLabID      | A secondary, unique ID for a mother; defaults to  to MotherSampleID | alpha-numeric characters |
+| 9             | ChildSex         | The sex of the child, where F=female, M=male, and U=unknown | `F`, `M`, `U` |
+| 10            | RefFASTA         | The absolute path to the reference file | `/path/to/file` |
+| 11            | PopVCF           | The absolute path to the population allele frequency file; if blank, allele frequency information will not be included in the TensorFlow records during example image creation | `/path/to/file` |
+| 12            | RegionsFile      | **over-rides RegionShuffling if included**; a `.bed` file where each line represents a genomic region for shuffling; each shuffling region produce a set of file shards which depends upon the number of CPUs requested via SLURM | `/path/to/file` |
+| 13            | ChildReadsBAM    | The absolute path to the child's aligned reads | `/path/to/file` |
+| 14            | ChildTruthVCF    | The absolute path to the child's truth genotypes | `/path/to/file` |
+| 15            | ChildCallableBED | The absolute path to the child's callable regions | `/path/to/file` |
+| 16            | FatherReadsBAM   | The absolute path to the fathers's aligned reads | `/path/to/file` |
+| 17            | FatherTruthVCF   | The absolute path to the father's truth genotypes | `/path/to/file` |
+| 18            | FatherCallableBED| The absolute path to the father's callable regions | `/path/to/file` |
+| 19            | MotherReadsBAM   | The absolute path to the mother's aligned reads | `/path/to/file` |
+| 20            | MotherVCF        | The absolute path to the mother's truth genotypes | `/path/to/file` |
+| 21            | MotherCallableBED| The absolute path to the mother's callable regions | `/path/to/file` |
+| 22            | Test1ReadsBAM    | The absolute path to a test genome's aligned reads | `/path/to/file` |
+| 23            | Test1TruthVCF    | The absolute path to a test genome's truth genotypes | `/path/to/file` |
+| 24            | Test1CallableBED | The absolute path to a test genome's callable regions | `/path/to/file` |
 
+### Adding more test genomes
+Each additional testing genome can be supplied by adding three (3) more columns in the following order:
+| Column Number | Column Name      | Description                     | Data Type | 
+| ------------- | -----------      | ------------------------------- | --------- |
+| 25            | Test#ReadsBAM    | The absolute path to a test genome's aligned reads | `/path/to/file` |
+| 26            | Test#TruthVCF    | The absolute path to a test genome's truth genotypes | `/path/to/file` |
+| 27            | Test#CallableBED | The absolute path to a test genome's callable regions | `/path/to/file` |
 
+**NOTE:** The `#` in `Test#` does not correspond to the order each test is performed, as testing is performed in parallel. However, the number for each test genomes must be sequential to provide a unique label for output files.
+
+## TrioTrain Outputs
+<add a description here!>
