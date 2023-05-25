@@ -1,0 +1,6 @@
+site_name: My Docs
+
+plugins: 
+  - 
+  - open-in-new-tab
+
