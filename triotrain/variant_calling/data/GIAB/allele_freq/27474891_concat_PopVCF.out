@@ -1,0 +1,50 @@
+=== scripts/setup/modules.sh start > Mon May 22 14:20:31 CDT 2023
+2023-05-22 14:20:31 INFO: Wipe Lewis Modules... 
+2023-05-22 14:20:32 INFO: Done Wipe Lewis Modules
+2023-05-22 14:20:32 INFO: Loading Lewis Modules... 
+2023-05-22 14:20:38 INFO: Done Loading Lewis Modules
+2023-05-22 14:20:38 INFO: Conda Base Environment:
+/cluster/software/miniconda3
+2023-05-22 14:20:38 INFO: Python Version:
+Python 3.8.5
+2023-05-22 14:20:38 INFO: Java Version:
+openjdk version "1.8.0_362"
+OpenJDK Runtime Environment (build 1.8.0_362-b08)
+OpenJDK 64-Bit Server VM (build 25.362-b08, mixed mode)
+2023-05-22 14:20:38 INFO: Apptainer Version:
+apptainer version 1.1.7-1.el7
+2023-05-22 14:20:38 INFO: Adding Apptainer variables... 
+INFO: This step is required to build DeepVariant image(s)
+INFO: Using defaults, DeepVariant version 1.4.0
+2023-05-22 14:20:38 INFO: Done adding Apptainer variables
+2023-05-22 14:20:38 INFO: DeepVariant Version: 1.4.0
+2023-05-22 14:20:38 INFO: Apptainer Cache: /storage/hpc/group/UMAG_test/WORKING/jakth2/DV-TrioTrain/APPTAINER_CACHE
+2023-05-22 14:20:38 INFO: Apptainer Tmp: /storage/hpc/group/UMAG_test/WORKING/jakth2/DV-TrioTrain/APPTAINER_TMPDIR
+2023-05-22 14:20:38 INFO: Loading bash helper functions... 
+2023-05-22 14:20:38 INFO: Done Loading bash helper functions
+=== scripts/setup/modules.sh > end Mon May 22 14:20:38 CDT 2023
+Checking the headers and starting positions of 24 files
+Concatenating ./triotrain/variant_calling/data/GIAB/allele_freq/cohort-chr1.release_missing2ref.no_calls.vcf.gz	18.225329 seconds
+Concatenating ./triotrain/variant_calling/data/GIAB/allele_freq/cohort-chr2.release_missing2ref.no_calls.vcf.gz	19.162984 seconds
+Concatenating ./triotrain/variant_calling/data/GIAB/allele_freq/cohort-chr3.release_missing2ref.no_calls.vcf.gz	15.398956 seconds
+Concatenating ./triotrain/variant_calling/data/GIAB/allele_freq/cohort-chr4.release_missing2ref.no_calls.vcf.gz	15.344449 seconds
+Concatenating ./triotrain/variant_calling/data/GIAB/allele_freq/cohort-chr5.release_missing2ref.no_calls.vcf.gz	14.110653 seconds
+Concatenating ./triotrain/variant_calling/data/GIAB/allele_freq/cohort-chr6.release_missing2ref.no_calls.vcf.gz	13.790297 seconds
+Concatenating ./triotrain/variant_calling/data/GIAB/allele_freq/cohort-chr7.release_missing2ref.no_calls.vcf.gz	13.114836 seconds
+Concatenating ./triotrain/variant_calling/data/GIAB/allele_freq/cohort-chr8.release_missing2ref.no_calls.vcf.gz	12.216337 seconds
+Concatenating ./triotrain/variant_calling/data/GIAB/allele_freq/cohort-chr9.release_missing2ref.no_calls.vcf.gz	10.582847 seconds
+Concatenating ./triotrain/variant_calling/data/GIAB/allele_freq/cohort-chr10.release_missing2ref.no_calls.vcf.gz	11.217408 seconds
+Concatenating ./triotrain/variant_calling/data/GIAB/allele_freq/cohort-chr11.release_missing2ref.no_calls.vcf.gz	13.626539 seconds
+Concatenating ./triotrain/variant_calling/data/GIAB/allele_freq/cohort-chr12.release_missing2ref.no_calls.vcf.gz	10.983348 seconds
+Concatenating ./triotrain/variant_calling/data/GIAB/allele_freq/cohort-chr13.release_missing2ref.no_calls.vcf.gz	8.270453 seconds
+Concatenating ./triotrain/variant_calling/data/GIAB/allele_freq/cohort-chr14.release_missing2ref.no_calls.vcf.gz	7.437790 seconds
+Concatenating ./triotrain/variant_calling/data/GIAB/allele_freq/cohort-chr15.release_missing2ref.no_calls.vcf.gz	6.864530 seconds
+Concatenating ./triotrain/variant_calling/data/GIAB/allele_freq/cohort-chr16.release_missing2ref.no_calls.vcf.gz	7.601813 seconds
+Concatenating ./triotrain/variant_calling/data/GIAB/allele_freq/cohort-chr17.release_missing2ref.no_calls.vcf.gz	6.783107 seconds
+Concatenating ./triotrain/variant_calling/data/GIAB/allele_freq/cohort-chr18.release_missing2ref.no_calls.vcf.gz	8.372866 seconds
+Concatenating ./triotrain/variant_calling/data/GIAB/allele_freq/cohort-chr19.release_missing2ref.no_calls.vcf.gz	7.241481 seconds
+Concatenating ./triotrain/variant_calling/data/GIAB/allele_freq/cohort-chr20.release_missing2ref.no_calls.vcf.gz	7.447762 seconds
+Concatenating ./triotrain/variant_calling/data/GIAB/allele_freq/cohort-chr21.release_missing2ref.no_calls.vcf.gz	4.331927 seconds
+Concatenating ./triotrain/variant_calling/data/GIAB/allele_freq/cohort-chr22.release_missing2ref.no_calls.vcf.gz	4.753632 seconds
+Concatenating ./triotrain/variant_calling/data/GIAB/allele_freq/cohort-chrX.release_missing2ref.no_calls.vcf.gz	9.993349 seconds
+Concatenating ./triotrain/variant_calling/data/GIAB/allele_freq/cohort-chrY.release_missing2ref.no_calls.vcf.gz	0.642818 seconds
