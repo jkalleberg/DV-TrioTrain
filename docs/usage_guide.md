@@ -13,7 +13,8 @@ TrioTrain and DeepVariant use several input file formats:
     `samtools faidx` command.
 
 1.  Aligned reads file(s) in [BAM](http://genome.sph.umich.edu/wiki/BAM) format
-    and a corresponding `.bai` index file . The reads must be aligned to the
+    and a corresponding `.bai` index file **OR** in [CRAM](https://www.ga4gh.org/product/cram/)
+    format with a corresponding `.csi` index file. The reads must be aligned to the
     reference genome described above.
 
 1. Benchmarking variant file(s), or "truth genotypes," in [VCF](https://samtools.github.io/hts-specs/VCFv4.3.pdf) format 
@@ -47,19 +48,27 @@ was not evaluated further during TrioTrain's development.
 
 ### Input Assumptions
 
-*  Each `VCF/BED/BAM` file must contain only one sample per file.
-*  The `VCF/BED/BAM` files must be sorted and compatible with the reference genome provided to the pipeline.
-*  The `VCF` files are bgzipped and tabix indexed.
-*  Truth `VCF` files exclude any homozygous reference genotypes.
-*  Truth `VCF` files exclude any sites that violate Mendelian inheritance expectations.
-*  The `BAM` files are tabix indexed.
-*  The pipeline will uncompress compressed `BED` files.
 *  All files must exist before the execution of the pipeline.
+*  `VCF/BED/BAM/CRAM`
+    *  Each file must contain only one sample per file.
+    *  The files must be sorted and indexed.
+    *  All must be compatible with the reference genome `FASTA` provided to the pipeline.
+    *  `VCF` files
+        *  These files should be compressed with `bgzip`
+        *  Benchmark `VCF` files used as truth labels:
+            *  Excludes any homozygous reference genotypes.
+            *  Excludes any sites that violate Mendelian inheritance expectations.
+    * `BED` files
+        * Compressed files will be decompressed automatically.
+        * These files use [0-based coordinates](https://bedtools.readthedocs.io/en/latest/content/overview.html?highlight=0-based#bed-starts-are-zero-based-and-bed-ends-are-one-based) 
+    *  `BAM/CRAM` files
+        * Either file type can be provided to TrioTrain.
+
 
 ##  Providing input files to TrioTrain
 
 Input files are handled by the primary input file for TrioTrain: a metadata file in `.csv` format. This file contains pedigree and 
-file location on disk for each trio is used to retrain DeepVariant.
+file locations saved to disk for each trio is used to re-train DeepVariant.
 
 ### Metadata Assumptions
 
