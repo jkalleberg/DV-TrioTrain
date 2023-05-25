@@ -1,6 +1,9 @@
-site_name: My Docs
+site_name: DeepVariant-TrioTrain
+
+nav:
+  - Home: README.md
 
 plugins: 
-  - 
+  - search 
   - open-in-new-tab
 
