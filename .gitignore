@@ -192,6 +192,9 @@ shuffle_tfrecords_beam.py
 *.bed
 *.bam.bai
 *.bam
+*.md5
+*.csi
+*.coverage
 
 # dv model files
 *.data-00000-of-00001
