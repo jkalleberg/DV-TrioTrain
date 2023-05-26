@@ -1,9 +1,12 @@
 site_name: DeepVariant-TrioTrain
 
 nav:
-  - Home: README.md
+  - Home: index.md
+  - About: about.md
 
 plugins: 
   - search 
   - open-in-new-tab
 
+markdown_extensions:
+  - admonition
