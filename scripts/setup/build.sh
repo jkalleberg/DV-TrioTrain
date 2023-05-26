@@ -38,6 +38,14 @@ bash scripts/setup/download_models.sh
 # Download GIAB trio data v4.2.1 for benchmarking
 bash scripts/setup/download_GIAB.sh
 
+# RUN INTERACTIVELY TO MAKE SURE IT WORKS!
+bash triotrain/variant_calling/data/GIAB/bam/AJtrio.download 
+
+bash triotrain/variant_calling/data/GIAB/bam/HCtrio.download 
+
+# then calculate coverage with an SBATCH job 
+# bash triotrain/scripts/setup/run_jobs.sh
+
 # Create the rtg-tools reference files for the Human ref genome GRCh38
 # NOTE: this must be run after download_GIAB!
 bash scripts/setup/setup_rtg_tools.sh

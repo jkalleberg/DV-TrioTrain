@@ -222,34 +222,59 @@ mkdir -p bam
 
 # Our GIAB Trio1 ----------------------------------------------------------#
 # BAM and BAI with MD5 checksums can be found here: https://github.com/genome-in-a-bottle/giab_data_indexes/blob/c4d3b95c2ebf14c175151e4723f82e8980722e90/AshkenazimTrio/alignment.index.AJtrio_Illumina_2x250bps_novoalign_GRCh37_GRCh38_NHGRI_06062016
-if [ ! -f ./bam/AJtrio.run ]; then
-    echo "INFO: Downloading AJ Trio checksum now..."
-    curl -C - https://raw.githubusercontent.com/genome-in-a-bottle/giab_data_indexes/master/AshkenazimTrio/alignment.index.AJtrio_Illumina_2x250bps_novoalign_GRCh37_GRCh38_NHGRI_06062016 -o ./bam/AJtrio_Illumina_2x250bps_novoaligns_GRCh37_GRCh38.txt 
 
-    echo "source ./scripts/setup/modules.sh" > ./bam/AJtrio.run
+echo "INFO: Downloading AJ Trio checksum now..."
+curl -C - https://raw.githubusercontent.com/genome-in-a-bottle/giab_data_indexes/master/AshkenazimTrio/alignment.index.AJtrio_Illumina_2x250bps_novoalign_GRCh37_GRCh38_NHGRI_06062016 -o ./bam/AJtrio_Illumina_2x250bps_novoaligns_GRCh37_GRCh38.txt 
+
+if [ ! -f ./bam/AJtrio.download ]; then 
+    echo "source ./scripts/setup/modules.sh" > ./bam/AJtrio.download
 
     awk -F '\t' 'NR!=1 { 
         "basename " $1 | getline filename
         close("basename" $1)
         }
-        filename~/GRCh38/==0 {
-            print "echo INFO: downloading ["filename"] now..."
-            print "curl -o triotrain/variant_calling/data/GIAB/bam/"filename" -C - "$1
+        index(filename, "GRCh38") {
+            print "echo INFO: downloading ["filename"] now..." 
+            print "curl -o triotrain/variant_calling/data/GIAB/bam/"filename" -C - "$1 
             print "echo "$2"\ttriotrain/variant_calling/data/GIAB/bam/"filename" > triotrain/variant_calling/data/GIAB/bam/"filename".md5"
             print "echo INFO: Checking ["filename"] for corruption..."
             print "md5sum -c triotrain/variant_calling/data/GIAB/bam/"filename".md5"
+            }' ./bam/AJtrio_Illumina_2x250bps_novoaligns_GRCh37_GRCh38.txt  >> ./bam/AJtrio.download
+else
+    echo "INFO: file found | 'triotrain/variant_calling/data/GIAB/bam/AJtrio.download'"
+fi
+
+if [ ! -f ./bam/AJtrio.run ]; then
+    echo "source ./scripts/setup/modules.sh" > ./bam/AJtrio.run
+    awk -F '\t' 'NR!=1 { 
+        "basename " $1 | getline filename
+        close("basename" $1)
+        }
+        index(filename, "GRCh38") {
             "basename " filename " .bam" | getline label
             close("basename" filename " .bam")
-            print "echo INFO: Calculating Average Coverage for ["label"] now..." 
-            print "samtools coverage triotrain/variant_calling/data/GIAB/bam/"filename" --output triotrain/variant_calling/data/GIAB/bam/"label".coverage"
-            print "awk '\''{ total += $6; count++ } END { print \""label" AVERAGE COVERAGE = \" total/count }'\'' triotrain/variant_calling/data/GIAB/bam/"label".coverage"
-            print "echo ===================================================="
+            print "if [ ! -f ./triotrain/variant_calling/data/GIAB/bam/"label".coverage ]; then"
+            print "    echo \"INFO: Calculating Coverage for ["label"] now...\"" 
+            print "    samtools coverage ./triotrain/variant_calling/data/GIAB/bam/"filename" --output triotrain/variant_calling/data/GIAB/bam/"label".coverage"
+            print "else"
+            print "    echo \"INFO: file found | ./triotrain/variant_calling/data/GIAB/bam/"label".coverage\""
+            print "fi" 
+            
+            print "if [ ! -f ./triotrain/variant_calling/data/GIAB/bam/$sampleID.avg_coverage.txt ]; then"
+            print "    echo \"INFO: Calculating Average Coverage for [$sampleID] now...\"" 
+            print "    awk '\''{ total += $6; count++ } END { print \""label" AVERAGE COVERAGE = \" total/count }'\'' triotrain/variant_calling/data/GIAB/bam/"label".coverage > triotrain/variant_calling/data/GIAB/bam/$sampleID.avg_coverage.txt"
+            print "else"
+            print "    echo \"INFO: file found | ./triotrain/variant_calling/data/GIAB/bam/$sampleID.avg_coverage.txt\""
+            print "fi" 
+            
+            print "echo - - - - - - - - - - - - - - - - - - - - - - - - - - -"
             "basename " $3 | getline secondfile
             close("basename" $3)
             print "curl -o triotrain/variant_calling/data/GIAB/bam/"secondfile" -C - "$3
             print "echo "$4"\ttriotrain/variant_calling/data/GIAB/bam/"secondfile" > triotrain/variant_calling/data/GIAB/bam/"secondfile".md5"
             print "echo INFO: Checking ["secondfile"] for corruption..."
             print "md5sum -c triotrain/variant_calling/data/GIAB/bam/"secondfile".md5"
+            print "echo ===================================================="
             } ' ./bam/AJtrio_Illumina_2x250bps_novoaligns_GRCh37_GRCh38.txt >> ./bam/AJtrio.run
 
     # if running on an interactive session with lots of memory, 
@@ -263,34 +288,57 @@ fi
 # BAM and BAI with MD5 checksums can be found here: https://github.com/genome-in-a-bottle/giab_data_indexes/blob/master/ChineseTrio/alignment.index.ChineseTrio_Illumina300X100X_wgs_novoalign_GRCh37_GRCh38_NHGRI_04062016 
 # 
 
-if [ ! -f ./bam/HCtrio.run ]; then
-    echo "INFO: Downloading HC Trio checksum now..."
+echo "INFO: Downloading HC Trio checksum now..."
     curl -C - https://raw.githubusercontent.com/genome-in-a-bottle/giab_data_indexes/master/ChineseTrio/alignment.index.ChineseTrio_Illumina300X100X_wgs_novoalign_GRCh37_GRCh38_NHGRI_04062016 -o ./bam/HCtrio_Illumina300X100X_wgs_novoalign_GRCh37_GRCh38.txt 
 
-    echo "source ./scripts/setup/modules.sh" > ./bam/HCtrio.run
+if [ ! -f ./bam/HCtrio.download ]; then
+    echo "source ./scripts/setup/modules.sh" > ./bam/HCtrio.download
 
     awk -F '\t' 'NR!=1 { 
         "basename " $1 | getline filename
         close("basename" $1)
         }
-        filename~/GRCh38/==0 {
-            print "echo INFO: downloading ["filename"] now..."
-            print "curl -o triotrain/variant_calling/data/GIAB/bam/"filename" -C - "$1
+        index(filename, "GRCh38") {
+            print "echo INFO: downloading ["filename"] now..." 
+            print "curl -o triotrain/variant_calling/data/GIAB/bam/"filename" -C - "$1 
             print "echo "$2"\ttriotrain/variant_calling/data/GIAB/bam/"filename" > triotrain/variant_calling/data/GIAB/bam/"filename".md5"
             print "echo INFO: Checking ["filename"] for corruption..."
             print "md5sum -c triotrain/variant_calling/data/GIAB/bam/"filename".md5"
+            }' ./bam/HCtrio_Illumina300X100X_wgs_novoalign_GRCh37_GRCh38.txt >> ./bam/HCtrio.download
+else
+    echo "INFO: file found | 'triotrain/variant_calling/data/GIAB/bam/HCtrio.download'"
+fi
+
+if [ ! -f ./bam/HCtrio.run ]; then
+    echo "source ./scripts/setup/modules.sh" > ./bam/HCtrio.run
+    awk -F '\t' 'NR!=1 { 
+        "basename " $1 | getline filename
+        close("basename" $1)
+        }
+        index(filename, "GRCh38") {
+            print "sampleID=$(cut -d. -f1 <<< "filename")"
             "basename " filename " .bam" | getline label
             close("basename" filename " .bam")
-            print "echo INFO: Calculating Average Coverage for ["label"] now..." 
-            print "samtools coverage triotrain/variant_calling/data/GIAB/bam/"filename" --output triotrain/variant_calling/data/GIAB/bam/"label".coverage"
-            print "awk '\''{ total += $6; count++ } END { print \""label" AVERAGE COVERAGE = \" total/count }'\'' triotrain/variant_calling/data/GIAB/bam/"label".coverage"
-            print "echo ===================================================="
+            print "if [ ! -f ./triotrain/variant_calling/data/GIAB/bam/"label".coverage ]; then"
+            print "    echo \"INFO: Calculating Coverage for ["label"] now...\"" 
+            print "    samtools coverage ./triotrain/variant_calling/data/GIAB/bam/"filename" --output triotrain/variant_calling/data/GIAB/bam/"label".coverage"
+            print "else"
+            print "    echo \"INFO: file found | ./triotrain/variant_calling/data/GIAB/bam/"label".coverage\""
+            print "fi"  
+            print "if [ ! -f ./triotrain/variant_calling/data/GIAB/bam/$sampleID.avg_coverage.txt ]; then"
+            print "    echo \"INFO: Calculating Average Coverage for [$sampleID] now...\"" 
+            print "    awk '\''{ total += $6; count++ } END { print \""label" AVERAGE COVERAGE = \" total/count }'\'' triotrain/variant_calling/data/GIAB/bam/"label".coverage > triotrain/variant_calling/data/GIAB/bam/$sampleID.avg_coverage.txt"
+            print "else"
+            print "    echo \"INFO: file found | ./triotrain/variant_calling/data/GIAB/bam/$sampleID.avg_coverage.txt\""
+            print "fi" 
+            print "echo - - - - - - - - - - - - - - - - - - - - - - - - - - -"
             "basename " $3 | getline secondfile
             close("basename" $3)
             print "curl -o triotrain/variant_calling/data/GIAB/bam/"secondfile" -C - "$3
             print "echo "$4"\ttriotrain/variant_calling/data/GIAB/bam/"secondfile" > triotrain/variant_calling/data/GIAB/bam/"secondfile".md5"
             print "echo INFO: Checking ["secondfile"] for corruption..."
             print "md5sum -c triotrain/variant_calling/data/GIAB/bam/"secondfile".md5"
+            print "echo ===================================================="
             } ' ./bam/HCtrio_Illumina300X100X_wgs_novoalign_GRCh37_GRCh38.txt >> ./bam/HCtrio.run
 
     # if running on an interactive session with lots of memory, 
@@ -298,7 +346,7 @@ if [ ! -f ./bam/HCtrio.run ]; then
     # . ./HCtrio.run
 
 else
-    echo "INFO: file found | './HCtrio.run'"
+    echo "INFO: file found | 'triotrain/variant_calling/data/GIAB/bam/HCtrio.run'"
 fi
 
 echo -e "=== scripts/setup/download_humanGIABdata.sh > end $(date)"
