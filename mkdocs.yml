@@ -17,7 +17,7 @@ nav:
       - Getting help: user-guide/get-help.md
       - How to cite: user-guide/citation.md
   - About: 
-      - About: about/about.md
+      - Learn more: about/about.md
       - License: about/license.md
 
 plugins: 

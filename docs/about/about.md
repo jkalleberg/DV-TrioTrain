@@ -57,9 +57,7 @@ Testing occurs for all model iterations with a set of genomes previously unseen 
 
 Variants produced during a training iteration by a candidate model are compared against a user-defined benchmark set with hap.py, a standardized benchmarking tool recommended by the Global Alliance for Genomic Health (GA4GH). See GA4GH's resources on [Germline Small Variant Benchmarking Tools and Standards](https://github.com/ga4gh/benchmarking-tools), or the [original Illumina hap.py github page](https://github.com/Illumina/hap.py) to learn more.
 
-## License
 
-[GPL-3.0 license](LICENSE)
 
 ## Authors
 
