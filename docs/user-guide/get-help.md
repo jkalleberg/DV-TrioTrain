@@ -1,12 +1,14 @@
-# Getting help
+# Get help
 
-See the [User Guide] for more complete documentation of all of MkDocs' features.
-
-To get help with MkDocs, please use the [GitHub discussions] or [GitHub issues].
+See the [User Guide](usage_guide.md) for more complete documentation of all of TrioTrain's features.
 
 ## Feedback and technical support
 
-For questions, suggestions, or technical assistance, feel free to [open an issue on the DV-TrioTrain github page](https://github.com/jkalleberg/DV-TrioTrain/issues) or
-reach out to Jenna Kalleberg at <jakth2@mail.missouri.org>
+To get help with TrioTrain, please use the [GitHub discussions] or [GitHub issues](https://github.com/jkalleberg/DV-TrioTrain/issues).
 
-[User Guide]: user-guide/
+For technical feedback, feel free to
+reach out to Jenna Kalleberg at <jakth2@mail.missouri.org>.
+
+## Contributing to TrioTrain
+
+Please [open a Github pull request](https://github.com/jkalleberg/DV-TrioTrain/pulls) if you wish to contribute to TrioTrain.

@@ -1,26 +1,24 @@
 # Getting Started
 
+There are two main audiences of DV-TrioTrain:
+
+1. Model builders - for those who want to customize a new DeepVariant model, either with new data or in a new species.
+
+2. Model users - for those who want to call variants with an existing, custom DeepVariant model.
+
 ---
 
-## Installation
+## Model users
 
-To install DV-TrioTrain, run the following command from the command line:
-
-```bash
-pip install mkdocs
-```
-
-For more details, see the [Installation Guide].
-
-<a name="usage"></a>
+A major benefit of using DeepVariant over alternatives like GATK is that non-human genomics researchers do not have to become model builders to enable them to be model users. Once you've chosen a model checkpoint, you're ready to go!
 
 ### How to customize DeepVariant with an existing TrioTrain model
 
-Published DV-TrioTrain models can be used as an alternative checkpoint with DeepVariant's one-step, single-sample variant caller. An index of available models can be found [here (fix this link)](pretrained_models).
+Published DV-TrioTrain models can be used as an alternative checkpoint with DeepVariant's one-step, single-sample variant caller. An index of available models can be found [here](../user-guide/existing_models.md).
 
 We recommend using Apptainer (a.k.a. Singularity), for local cluster computing.
 
-```
+```bash
 BIN_VERSION="1.4.0"
 docker run \
   -v "YOUR_INPUT_DIR":"/input" \
@@ -38,6 +36,17 @@ docker run \
 
 ---
 
+## Installation
+
+To install DV-TrioTrain, run the following command from the command line:
+
+```bash
+pip install dv_triotrain
+```
+
+For more details, see the [Installation Guide](user-guilde/installation.md).
+
+
 ## Creating a new project
 
 Getting started is super easy. To create a new project, run the following
@@ -47,10 +56,6 @@ command from the command line:
 mkdocs new my-project
 cd my-project
 ```
-
-Take a moment to review the initial project that has been created for you.
-
-![The initial MkDocs layout](img/initial-layout.png)
 
 
 ## Other Commands and Options
@@ -72,17 +77,6 @@ mkdocs build --help
 
 ## Getting help
 
-See the [User Guide] for more complete documentation of all of MkDocs' features.
+See the [User Guide](user-guide/usage_guide.md) for more complete documentation of all of TrioTrain's features.
 
-To get help with MkDocs, please use the [GitHub discussions] or [GitHub issues].
-
-
-[docs_dir]: user-guide/configuration.md#docs_dir
-[deploy]: user-guide/deploying-your-docs.md
-[nav]: user-guide/configuration.md#nav
-[GitHub discussions]: https://github.com/mkdocs/mkdocs/discussions
-[GitHub issues]: https://github.com/mkdocs/mkdocs/issues
-[site_name]: user-guide/configuration.md#site_name
-[site_url]: user-guide/configuration.md#site_url
-[theme]: user-guide/configuration.md#theme
-[User Guide]: user-guide/README.md
+To get help with TrioTrain, please use the [GitHub discussions (fix this link)]() or [GitHub issues (fix this link)]().
