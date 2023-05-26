@@ -26,6 +26,9 @@ bash scripts/setup/build_containers.sh DeepVariant-CPU
 # Install the happ.py apptainer container
 bash scripts/setup/build_happy.sh
 
+# Install the conda env needed for python package 'triotrain'
+source scripts/setup/build_beam.sh
+
 # Download the appropriate shuffling script from Google Genomoics Health Group
 bash scripts/setup/download_shuffle.sh
 
@@ -35,10 +38,8 @@ bash scripts/setup/download_models.sh
 # Download GIAB trio data v4.2.1 for benchmarking
 bash scripts/setup/download_GIAB.sh
 
-# Install the conda env needed for python package 'triotrain'
-source scripts/setup/build_beam.sh
-
 # Create the rtg-tools reference files for the Human ref genome GRCh38
-bash scripts/setup/build_rtg_tools.sh
+# NOTE: this must be run after download_GIAB!
+bash scripts/setup/setup_rtg_tools.sh
 
 echo -e "=== scripts/setup/build.sh > end $(date)"
