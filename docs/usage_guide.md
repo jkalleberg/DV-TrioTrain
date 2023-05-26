@@ -1,14 +1,15 @@
 # TrioTrain Usage Guide
 
-TrioTrain is a pipeline to automate re-training of DeepVariant models. Visit the DeepVariant 
-[usage guide](https://github.com/google/deepvariant/blob/r1.5/docs/deepvariant-details.md) to 
+TrioTrain is a pipeline to automate re-training of DeepVariant models. Visit the DeepVariant
+[usage guide](https://github.com/google/deepvariant/blob/r1.5/docs/deepvariant-details.md) to
 learn more in-depth details about how DeepVariant works. 
 
 ## Overview
+
 TrioTrain and DeepVariant use several input file formats:
 
-1.  A reference genome in [FASTA](https://en.wikipedia.org/wiki/FASTA_format)
-    format and a corresponding
+1. A reference genome in [FASTA](https://en.wikipedia.org/wiki/FASTA_format)
+format and a corresponding
     [`.fai` index file](http://www.htslib.org/doc/faidx.html) generated using the
     `samtools faidx` command.
 
