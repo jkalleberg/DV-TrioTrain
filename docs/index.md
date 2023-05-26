@@ -13,10 +13,12 @@ While the DV-TT pipeline assumes re-training data are from trio-binned samples, 
 
 ---
 
+## Contributing to TrioTrain
+
+Please [open a Github pull request](https://github.com/jkalleberg/DV-TrioTrain/pulls) if you wish to contribute to TrioTrain.
+
+---
+
 ## License
 
 [GPL-3.0 license](about/license.md)
-
-### Contributing to TrioTrain
-
-Please [open a pull request (fix this link)]() if you wish to contribute to TrioTrain.
