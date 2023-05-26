@@ -1,4 +1,4 @@
-# Get help
+# Get Help
 
 See the [User Guide](usage_guide.md) for more complete documentation of all of TrioTrain's features.
 
