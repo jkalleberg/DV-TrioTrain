@@ -13,7 +13,9 @@ nav:
   - Home: index.md
   - Getting Started: getting-started/getting-started.md
   - User Guide:
+      - Overview: user-guide/usage_guide.md
       - Installation: user-guide/installation.md
+      - Models: user-guide/existing_models.md
       - Getting help: user-guide/get-help.md
       - How to cite: user-guide/citation.md
   - About: 
@@ -37,3 +39,4 @@ theme:
 # Extensions
 markdown_extensions:
   - admonition
+  - tables
