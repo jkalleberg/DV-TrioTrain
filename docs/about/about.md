@@ -1,9 +1,5 @@
 # DV-TrioTrain v0.8
 
-DeepVariant-TrioTrain (DV-TT) is an automated pipeline for extending DeepVariant (DV), a deep-learning-based germline variant caller. See the [original DeepVariant github page](https://github.com/google/deepvariant) to learn more about DeepVariant.
-
-<a name="background"></a>
-
 ## Background
 
 Default DeepVariant models were only trained on human data. Our work developing DeepVariant-TrioTrain (DV-TT) illustrates the limitations of applying models built exclusively with human-genome datasets in other species. Species-specific DeepVariant models exist for [mosquito genomes](https://google.github.io/deepvariant/posts/2018-12-05-improved-non-human-variant-calling-using-species-specific-deepvariant-models/), and the [endangered Kākāpō parot](https://www.biorxiv.org/content/10.1101/2022.10.22.513130v1.full). However, DV-TrioTrain is the first tool to reproducably expand training DV into non-human, mammalian genomes from multiple species.
@@ -24,15 +20,13 @@ We built the DV-TT pipeline to extend DeepVariant with cattle, bison, and yak ge
         * The DV-TT pipeline can be easily re-configured for your favorite species, assuming the necessary training data exist.
         * See the [User Guide] for more details.
 
-DV-TrioTrain is designed for [transfer learning](https://machinelearningmastery.com/transfer-learning-for-deep-learning/), relying on new data sources and context to expand on prior experience. During model development, DV-TrioTrain iteratively feeds labeled examples from parent-offspring duos, enabling the model to incorporate inheritance expectations.
-
-While the DV-TT pipeline assumes re-training data are from trio-binned samples, models built by DV-TrioTrain **do not require trio-binned data for variant calling.** In contrast to the [DeepTrio](https://github.com/google/deepvariant/blob/r1.5/docs/deeptrio-details.md) joint-caller, DV-TT models are trained to prioritize features of inherited variants to produce fewer Mendelian Inheritance Errors (MIE) in individual samples.
-
 ---
 
 ## How TrioTrain works
 
-![workflow diagram](img/Workflow_Sm_Horizontal.png)
+DV-TrioTrain is designed for [transfer learning](https://machinelearningmastery.com/transfer-learning-for-deep-learning/), relying on new data sources and context to expand on prior experience. During model development, DV-TrioTrain iteratively feeds labeled examples from parent-offspring duos, enabling the model to incorporate inheritance expectations.
+
+![workflow diagram](../img/Workflow_Sm_Horizontal.png)
 
 ### Initialization
 
@@ -63,4 +57,14 @@ Testing occurs for all model iterations with a set of genomes previously unseen 
 
 Variants produced during a training iteration by a candidate model are compared against a user-defined benchmark set with hap.py, a standardized benchmarking tool recommended by the Global Alliance for Genomic Health (GA4GH). See GA4GH's resources on [Germline Small Variant Benchmarking Tools and Standards](https://github.com/ga4gh/benchmarking-tools), or the [original Illumina hap.py github page](https://github.com/Illumina/hap.py) to learn more.
 
-[User Guide]: user-guide/README.md
+## License
+
+[GPL-3.0 license](LICENSE)
+
+## Authors
+
+Jenna Kalleberg (<jakth2@mail.missouri.org>)
+
+## Acknowledgements
+
+Many thanks to the developers and contributors of the many open source packages used by TrioTrain:

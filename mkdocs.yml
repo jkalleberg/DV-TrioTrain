@@ -1,12 +1,39 @@
+# Project information
 site_name: DeepVariant-TrioTrain
+site_author: Jenna Kalleberg
+site_description: >-
+  Extend DeepVariant automatically for species without GIAB-quality benchmark truth sets.
 
+# Repository
+repo_url: https://github.com/jkalleberg/DV-TrioTrain
+repo_name: jkalleberg/DV-TrioTrain
+
+# Page tree
 nav:
   - Home: index.md
-  - About: about.md
+  - Getting Started: getting-started/getting-started.md
+  - User Guide:
+      - Installation: user-guide/installation.md
+      - Getting help: user-guide/get-help.md
+      - How to cite: user-guide/citation.md
+  - About: 
+      - About: about/about.md
+      - License: about/license.md
 
 plugins: 
   - search 
   - open-in-new-tab
 
+# Configuration
+theme:
+  name: material
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.top
+    - toc.integrate
+
+
+# Extensions
 markdown_extensions:
   - admonition

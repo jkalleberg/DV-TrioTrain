@@ -1,11 +1,12 @@
-# DV-TrioTrain Setup
+# Cofiguring DV-TrioTrain for your system
 
-### Prerequisites
+## Prerequisites
 
 * Unix-like operating system (cannot run on Windows)
 * Python 3.8
 * Access to a SLURM-based High Performance Computing Cluster
 
+## Configuration Walk-through
 ```bash
 #!/bin/bash
 # scripts/setup/build.sh
