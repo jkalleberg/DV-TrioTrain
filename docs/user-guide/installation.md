@@ -27,9 +27,15 @@ These are pre-built software packages available locally on the MU Lewis Computin
 
 You can view a template of this `modules.sh` on [Github](https://github.com/jkalleberg/DV-TrioTrain/scripts/setup/modules.sh).
 
-TrioTrain assumes that modules listed in `scripts/setup/modules.sh` are available. If you're building TrioTrain via Github, you will be able to edit the `modules.sh` file directly to match your system. However, if you're building TrioTrain via the Python package, you will need to specify an alternative `modules.sh` file via the `--module-file` argument with `python3 triotrain/model_train/run_trio_train.py`.
+TrioTrain assumes that modules listed in `scripts/setup/modules.sh` are available. If you're building TrioTrain via Github, you will be able to edit the `modules.sh` file directly to match your system. However, if you're building TrioTrain via the Python package, you will need to specify an alternative `modules.sh` file.
+
+Example:
+``` bash
+python3 triotrain/model_train/run_trio_train.py --module-file </path/to/your/module.sh
+```
 
 ## Configuration Walk-through
+
 ```bash
 #!/bin/bash
 # scripts/setup/build.sh
