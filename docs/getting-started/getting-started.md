@@ -54,7 +54,7 @@ To install DV-TrioTrain, run the following command from the command line:
 pip install dv_triotrain
 ```
 
-For more details, see the [Installation Guide](user-guilde/installation.md).
+For more details, see the [Installation Guide](../user-guide/installation.md).
 
 ## Running the Demo
 

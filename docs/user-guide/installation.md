@@ -6,6 +6,29 @@
 * Python 3.8
 * Access to a SLURM-based High Performance Computing Cluster
 
+### System Requirements
+
+The following HPC modules are required:
+
+| Tool           | Version     |
+| ------         | -------     |
+| `gcc`          | 10.2.0      |
+| `curl`         | 7.72.0      |
+| `minicoda3`    | 4.9         |
+| `java/openjdk` | 17.0.3      |
+| `apptainer`    | 1.1.7-1.el7 |
+| `picard`       | 2.26.10     |
+| `cuda`         | 11.1.0      |
+| `bcftools`     | 1.14        |
+| `htslib`       | 1.14        |
+| `samtools`     | 1.14        |
+
+These are pre-built software packages available locally on the MU Lewis Computing Cluster, loaded in with `module load <module_name>`. On our cluster, we can search for modules with `module avail <tool_name>` or `module spider <tool_name>`. If you're unfamiliar with SLURM, navigating your computing cluster, or what shared-software is available, reach out to your system's Cluster Administrator.
+
+You can view a template of this `modules.sh` on [Github](https://github.com/jkalleberg/DV-TrioTrain/scripts/setup/modules.sh).
+
+TrioTrain assumes that modules listed in `scripts/setup/modules.sh` are available. If you're building TrioTrain via Github, you will be able to edit the `modules.sh` file directly to match your system. However, if you're building TrioTrain via the Python package, you will need to specify an alternative `modules.sh` file via the `--module-file` argument with `python3 triotrain/model_train/run_trio_train.py`.
+
 ## Configuration Walk-through
 ```bash
 #!/bin/bash
