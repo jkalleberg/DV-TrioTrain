@@ -74,9 +74,17 @@ def collect_args():
         metavar="</path/file>",
     )
     parser.add_argument(
+        "--modules",
+        dest="modules",
+        help="[REQUIRED]\ninput file (.sh)\nhelper script which loads the local software packages",
+        default="./scripts/setup/modules.sh",
+        type=str,
+        metavar="</path/file>"
+    )
+    parser.add_argument(
         "--benchmark",
         dest="benchmark",
-        help="activates collection of resource usage for the entire pipeline",
+        help="if True, triggers the pipeline to save resource usage by each phase",
         action="store_true",
     )
     parser.add_argument(
@@ -172,6 +180,7 @@ def collect_args():
         help="if True, call_variants and benchmarking will expect trios",
         action="store_true",
     )
+    
     demo = parser.add_argument_group("pipeline demo")
     demo.add_argument(
         "--demo-mode",
@@ -376,6 +385,8 @@ def check_args(args: argparse.Namespace, logger: Logger, default_channels: str) 
         assert (
             args.resource_config
         ), "Missing --resources; Please designate a path to pipeline compute resources in JSON format"
+
+        assert (Path(args.modules).is_file), f"unable to find the modules file | '{args.modules}'"
 
         if args.demo_mode:
             assert (

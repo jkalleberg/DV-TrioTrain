@@ -49,6 +49,9 @@ class SBATCH:
             "source ${CONDA_BASE}/etc/profile.d/conda.sh",
             "conda deactivate",
         ]
+        
+        print("MODULE FILE:", self.itr.args.modules)
+        breakpoint()
 
         if self.itr.env is not None:
             self._start_sbatch = [
