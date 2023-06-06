@@ -82,8 +82,6 @@ format
 
 Input files are handled by the primary input file for TrioTrain: a metadata file in `.csv` format. This file contains pedigree and file locations saved to disk for each trio is used to re-train DeepVariant.
 
-### Assumptions
-
 - Each row corresponds to one complete family trio resulting in two iterations of TrioTrain.
 - Row order determines the sequential order of how trios are used during re-training.
 - There are 24 **REQUIRED** columns with headers that must be in the order specified in the [Metadata Format](#metadata-format) section.
@@ -93,7 +91,7 @@ Input files are handled by the primary input file for TrioTrain: a metadata file
 
     Likewise, further test replicates can be achieved by adding columns in sets of three [`BAM,TruthVCF,TruthBED`] for each additional test genome to the metadata `.csv` file.
 
-### Requirements
+### Minimum data required
 
 At a minimum, this metadata file must provide absolute paths to the following input files:
 
