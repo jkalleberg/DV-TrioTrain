@@ -10,6 +10,7 @@ ls
 ```
 
 You should see the following in this directory:
+
 ```bash
 APPTAINER_CACHE   deepvariant_1.4.0-gpu.sif  docs    hap.py_v0.3.12.sif  miniconda_envs  README.md  triotrain
 APPTAINER_TMPDIR  deepvariant_1.4.0.sif      errors  LICENSE             mkdocs.yml      scripts
@@ -103,7 +104,7 @@ allele_freq  bam  benchmark  reference
 
 The contents of the directories BEFORE running SLURM jobs includes:
 
-**1. `allele_freq`**
+**1. `allele_freq/`**
 
 ```bash
 # ls triotrain/variant_calling/data/GIAB/allele_freq/
@@ -134,7 +135,7 @@ cohort-chr20.release_missing2ref.no_calls.vcf.gz.tbi  concat_PopVCFs.sh
 cohort-chr21.release_missing2ref.no_calls.vcf.gz      PopVCF.merge.list
 ```
 
-**2. `bam`**
+**2. `bam/`**
 
 ```bash
 # ls triotrain/variant_calling/data/GIAB/bam/
@@ -143,7 +144,7 @@ AJtrio_Illumina_2x250bps_novoaligns_GRCh37_GRCh38.txt  HCtrio_Illumina300X100X_w
 AJtrio.run                                             HCtrio.run
 ```
 
-**3. `benchmark`**
+**3. `benchmark/`**
 
 ```bash
 # ls triotrain/variant_calling/data/GIAB/benchmark/
@@ -161,7 +162,7 @@ HG004_GRCh38_1_22_v4.2_benchmark.vcf.gz.tbi  HG007_GRCh38_1_22_v4.2_benchmark.vc
 HG004_README_v4.2.1.txt                      HG007_README_v4.2.1.txt
 ```
 
-**4. `reference`**
+**4. `reference/`**
 
 ```bash
 # ls triotrain/variant_calling/data/GIAB/reference/
@@ -169,9 +170,6 @@ GRCh38_no_alt_analysis_set.fasta  GRCh38_no_alt_analysis_set.fasta.fai  md5check
 ```
 
 ## 5. Download Raw GIAB data
-
-
-
 
 The following commands can either be wrapped with SBATCH, or run interactively at the command line if you have enough memory.
 
