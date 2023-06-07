@@ -276,7 +276,7 @@ download () {
             index(filename, "GRCh38") {
                 print "echo $(date \"+%Y-%m-%d %H:%M:%S\") INFO: downloading ["filename"] now..." 
                 print "curl -o ./triotrain/variant_calling/data/GIAB/bam/"filename" -C - "$1
-                print "echo $(date \"+%Y-%m-%d %H:%M:%S\") INFO: downloading ["filename"]... done!"
+                print "echo $(date \"+%Y-%m-%d %H:%M:%S\") INFO: downloading ["filename"]... done"
                 }
 
                 filename ~ /HG002.GRCh38/ {
@@ -294,7 +294,7 @@ download () {
             index(filename, "GRCh38") {
                 print "echo $(date \"+%Y-%m-%d %H:%M:%S\") INFO: checking ["filename"] for corruption..."
                 print "md5sum -c ./triotrain/variant_calling/data/GIAB/bam/"filename".md5"
-                print "echo $(date \"+%Y-%m-%d %H:%M:%S\") INFO: checking ["filename"] for corruption... done!"
+                print "echo $(date \"+%Y-%m-%d %H:%M:%S\") INFO: checking ["filename"] for corruption... done"
             
                 print "echo ----------------------------------------------------"
             }
@@ -308,7 +308,7 @@ download () {
             index(secondfile, "GRCh38") {
                 print "echo $(date \"+%Y-%m-%d %H:%M:%S\") INFO: downloading ["secondfile"] now..."  
                 print "curl -o ./triotrain/variant_calling/data/GIAB/bam/"secondfile" -C - "$3
-                print "echo $(date \"+%Y-%m-%d %H:%M:%S\") INFO: downloading ["secondfile"] ... done!"
+                print "echo $(date \"+%Y-%m-%d %H:%M:%S\") INFO: downloading ["secondfile"] ... done"
                 }
 
                 secondfile ~ /HG002.GRCh38/ {
@@ -326,7 +326,7 @@ download () {
             index(secondfile, "GRCh38") {
                 print "echo $(date \"+%Y-%m-%d %H:%M:%S\") INFO: checking ["secondfile"] for corruption..."
                 print "md5sum -c ./triotrain/variant_calling/data/GIAB/bam/"secondfile".md5"
-                print "echo $(date \"+%Y-%m-%d %H:%M:%S\") INFO: checking ["secondfile"] for corruption... done!"
+                print "echo $(date \"+%Y-%m-%d %H:%M:%S\") INFO: checking ["secondfile"] for corruption... done"
             
                 print "echo ===================================================="
             }' "./bam/${file_input}"  >> "./bam/${trio_name}.download"
@@ -375,7 +375,7 @@ calc_cov () {
                 print "if [ ! -f ./triotrain/variant_calling/data/GIAB/bam/"label".coverage.out ]; then"
                 print "    echo \"$(date \"+%Y-%m-%d %H:%M:%S\")  INFO: Calculating Coverage for ["label"] now...\"" 
                 print "    samtools coverage ./triotrain/variant_calling/data/GIAB/bam/"filename" --output ./triotrain/variant_calling/data/GIAB/bam/"label".coverage.out"
-                print "    echo \"$(date \"+%Y-%m-%d %H:%M:%S\")  INFO: Calculating Coverage for ["label"] now... done!\""
+                print "    echo \"$(date \"+%Y-%m-%d %H:%M:%S\")  INFO: Calculating Coverage for ["label"] now... done\""
                 print "else"
                 print "    echo \"$(date \"+%Y-%m-%d %H:%M:%S\")  INFO: bash file found | ./triotrain/variant_calling/data/GIAB/bam/"label".coverage.out\""
                 print "fi" 
@@ -383,7 +383,7 @@ calc_cov () {
                 print "if [ ! -f ./triotrain/variant_calling/data/GIAB/bam/$sampleID.avg_coverage.out ]; then"
                 print "    echo \"$(date \"+%Y-%m-%d %H:%M:%S\")  INFO: Calculating Average Coverage for [$sampleID] now...\"" 
                 print "    awk '\''{ total += $6; count++ } END { print \""label" AVERAGE COVERAGE = \" total/count }'\'' ./triotrain/variant_calling/data/GIAB/bam/"label".coverage.out > ./triotrain/variant_calling/data/GIAB/bam/$sampleID.avg_coverage.out"
-                print "    echo \"$(date \"+%Y-%m-%d %H:%M:%S\")  INFO: Calculating Average Coverage for [$sampleID] now... done!\""
+                print "    echo \"$(date \"+%Y-%m-%d %H:%M:%S\")  INFO: Calculating Average Coverage for [$sampleID] now... done\""
                 print "else"
                 print "    echo \"$(date \"+%Y-%m-%d %H:%M:%S\")  INFO: output file found | ./triotrain/variant_calling/data/GIAB/bam/$sampleID.avg_coverage.out\""
                 print "fi" 
@@ -416,7 +416,7 @@ curl -C - https://raw.githubusercontent.com/genome-in-a-bottle/giab_data_indexes
 # therefore, download the correct one. 
 
 curl -C - https://ftp.ncbi.nlm.nih.gov/ReferenceSamples/giab/data/AshkenazimTrio/HG002_NA24385_son/NIST_Illumina_2x250bps/novoalign_bams/HG002_corrected_md5sums.feb19upload.txt -o ./bam/HG002_corrected_md5sums.feb19upload.txt
-echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: Downloading AJ Trio checksum now... done!"
+echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: Downloading AJ Trio checksum now... done"
 
 download "AJtrio_Illumina_2x250bps_novoaligns_GRCh37_GRCh38.txt"
 calc_cov "AJtrio_Illumina_2x250bps_novoaligns_GRCh37_GRCh38.txt" 
@@ -429,7 +429,7 @@ calc_cov "AJtrio_Illumina_2x250bps_novoaligns_GRCh37_GRCh38.txt"
 ## CHECKSUMS -----------
 echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: Downloading HC Trio checksum now..."
 curl -C - https://raw.githubusercontent.com/genome-in-a-bottle/giab_data_indexes/master/ChineseTrio/alignment.index.ChineseTrio_Illumina300X100X_wgs_novoalign_GRCh37_GRCh38_NHGRI_04062016 -o ./bam/HCtrio_Illumina300X100X_wgs_novoalign_GRCh37_GRCh38.txt 
-echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: Downloading HC Trio checksum now... done!"
+echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: Downloading HC Trio checksum now... done"
 
 download "HCtrio_Illumina300X100X_wgs_novoalign_GRCh37_GRCh38.txt"
 calc_cov "HCtrio_Illumina300X100X_wgs_novoalign_GRCh37_GRCh38.txt"
