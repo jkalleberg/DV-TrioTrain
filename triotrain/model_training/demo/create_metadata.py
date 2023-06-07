@@ -5,6 +5,24 @@ example:
     python3 triotrain/model_training/demo/create_metadata.py
 """
 
+from pathlib import Path
+import os
+import sys
+import regex
+
+# get the relative path to the triotrain/ dir
+h_path = str(Path(__file__).parent.parent.parent)
+sys.path.append(h_path)
+import helpers
+
+# Collect start time
+helpers.h.Wrapper(__file__, "start").wrap_script(helpers.h.timestamp())
+
+# Create error log
+current_file = os.path.basename(__file__)
+module_name = os.path.splitext(current_file)[0]
+logger = helpers.log.get_logger(module_name)
+
 defaults = {
     "RunOrder": 1,
     "RunName": "demo",
@@ -38,5 +56,50 @@ defaults = {
     "Test3CallableBED" : "/triotrain/variant_calling/data/GIAB/benchmark/HG007_GRCh38_1_22_v4.2_benchmark.bed",
     }
 
+cwd = Path.cwd()
+output_dict = dict()
+
 for k,v in defaults.items():
-    print("KEY:", k, "; VALUE:", v) 
+    match = regex.search(r"\/triotrain\/variant_calling\/.*", str(v))
+    if match:
+        helpers.h.add_to_dict(
+            update_dict=output_dict,
+            new_key=k,
+            new_val=f"{cwd}{v}",
+            logger=logger,
+            logger_msg="[demo]"
+        )
+    else:
+        helpers.h.add_to_dict(
+            update_dict=output_dict,
+            new_key=k,
+            new_val=v,
+            logger=logger,
+            logger_msg="[demo]"
+        )
+
+# print(output_dict)
+
+output_file = helpers.h.WriteFiles(
+    path_to_file=str(cwd / "triotrain" / "variant_calling" / "data" / "GIAB"),
+    file=f"GIAB.Human_demo_metadata.csv",
+    logger=logger,
+    logger_msg="[demo]",
+    )
+
+output_file.check_missing()
+
+if output_file._file_exists:
+    logger.info("[demo]: demo metadata file already exists... SKIPPING AHEAD")
+else:
+    logger.info("[demo]: creating a demo metadata file now...")
+    output_file.add_rows(
+        col_names=output_dict.keys(),
+        data_dict=output_dict
+    )
+    output_file.check_missing()
+    if output_file._file_exists:
+        logger.info("[demo]: successfully created the demo metadata file") 
+
+# Collect end time
+helpers.h.Wrapper(__file__, "start").wrap_script(helpers.h.timestamp())
