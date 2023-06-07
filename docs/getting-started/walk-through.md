@@ -95,6 +95,8 @@ Create a local copy of the GIAB trio data v4.2.1 for benchmarking. Run the follo
 bash scripts/setup/download_GIAB.sh
 ```
 
+### Expected Intermediate Data Outputs
+
 After completing, you should see the following directories:
 
 ```bash
@@ -139,9 +141,9 @@ cohort-chr21.release_missing2ref.no_calls.vcf.gz      PopVCF.merge.list
 
 ```bash
 # ls triotrain/variant_calling/data/GIAB/bam/
-AJtrio.download                                        HCtrio.download
+AJtrio.download                                        HCtrio.download  HCtrio.run
 AJtrio_Illumina_2x250bps_novoaligns_GRCh37_GRCh38.txt  HCtrio_Illumina300X100X_wgs_novoalign_GRCh37_GRCh38.txt
-AJtrio.run                                             HCtrio.run
+AJtrio.run                                             HG002_corrected_md5sums.feb19upload.txt  
 ```
 
 **3. `benchmark/`**
@@ -175,12 +177,38 @@ The following commands can either be wrapped with SBATCH, or run interactively a
 
 ```bash
 # Downloading raw data files for each GIAB trio
+# ensure you're in the DV-TrioTrain directory!
+bash scripts/start_interactive.sh
+. scripts/setup/modules.sh
+
+bash triotrain/variant_calling/data/GIAB/allele_freq/concat_PopVCFs.sh
 bash triotrain/variant_calling/data/GIAB/bam/AJtrio.download 
 bash triotrain/variant_calling/data/GIAB/bam/HCtrio.download
+```
 
-# Submit SLURM job to calculate coverage as a sanity check
-./allele_freq/concat_PopVCFs.sh
-triotrain/variant_calling/data/GIAB/bam/AJtrio.run
+### Expected Raw Data Outputs
+
+**1. `allele_freq/`**
+
+```bash
+# ls triotrain/variant_calling/data/GIAB/allele_freq/
+```
+
+**2. `bam/`**
+
+```bash
+# ls triotrain/variant_calling/data/GIAB/bam/
+
+```
+
+## 6. Submit SLURM job to calculate coverage as a sanity check
+
+```bash
+bash scripts/start_interactive.sh
+. scripts/setup/modules.sh
+
+bash triotrain/variant_calling/data/GIAB/bam/AJtrio.run
+bash triotrain/variant_calling/data/GIAB/bam/HCtrio.run
 ```
 
 ## 6. Create supplmentary reference files
@@ -197,4 +225,14 @@ These files are required by `rtg-tools mendelian`. This step is specific to the 
 
 ```bash
 bash scripts/setup/setup_rtg_tools.sh
+```
+
+## 7. Create the demo metadata file
+
+```bash
+# ensure you're running from the DV-TrioTrain directory!
+bash scripts/start_interactive.sh
+. scripts/setup/modules.sh
+. scripts/start_conda.sh
+python triotrain/model_training/demo/create_metadata.py
 ```
