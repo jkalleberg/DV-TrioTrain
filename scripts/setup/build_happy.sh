@@ -3,7 +3,7 @@
 
 echo "=== scripts/setup/build_happy.sh > start $(date)"
 
-echo "INFO: Creating Apptainer CACHE/ and TMP/, if needed"
+echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: Creating Apptainer CACHE/ and TMP/, if needed"
 install --directory --verbose ${APPTAINER_CACHEDIR}
 install --directory --verbose ${APPTAINER_TMPDIR}
 

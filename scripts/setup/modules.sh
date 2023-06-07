@@ -52,15 +52,15 @@ apptainer --version
 
 # Source DeepVariant version and CACHE Dir
 echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: Adding Apptainer variables... "
-echo "INFO: This step is required to build DeepVariant image(s)"
+echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: This step is required to build DeepVariant image(s)"
 
 if [ -z "$1" ]
 then
-    echo "INFO: Using defaults, DeepVariant version 1.4.0"
+    echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: Using defaults, DeepVariant version 1.4.0"
     export BIN_VERSION_DV="1.4.0"
     export BIN_VERSION_DT="1.4.0"
 else
-    echo "INFO: Using inputs, DeepVariant version $1"
+    echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: Using inputs, DeepVariant version $1"
     export BIN_VERSION_DV="$1"
     export BIN_VERSION_DT="$1"
 fi
