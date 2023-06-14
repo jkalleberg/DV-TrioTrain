@@ -1,5 +1,7 @@
 # Software Assumptions
 
+If you're unfamiliar with SLURM, navigating your computing cluster, or what shared-software is available to you, reach out to your HPC system's Cluster Administrator.
+
 ## Prerequisites
 
 * Unix-like operating system (cannot run on Windows)
@@ -8,24 +10,17 @@
 
 ## System Requirements
 
-If you're unfamiliar with SLURM, navigating your computing cluster, or what shared-software is available to you, reach out to your system's Cluster Administrator.
-
 The following software are required:
 
-| Tool           | Version     |
-| ------         | -------     |
-| `gcc`          | 10.2.0      |
-| `curl`         | 7.72.0      |
-| `minicoda3`    | 4.9         |
-| `java/openjdk` | 17.0.3      |
-| `apptainer`    | 1.1.7-1.el7 |
-| `picard`       | 2.26.10     |
-| `cuda`         | 11.1.0      |
-| `bcftools`     | 1.14        |
-| `htslib`       | 1.14        |
-| `samtools`     | 1.14        |
+| Tool           | Version     | | Tool           | Version     |
+| ------         | -------     | | ------         | -------     |
+| `gcc`          | 10.2.0      | | `cuda`         | 11.1.0      |
+| `curl`         | 7.72.0      | | `picard`       | 2.26.10     |
+| `minicoda3`    | 4.9         | | `bcftools`     | 1.14        |
+| `java/openjdk` | 17.0.3      | | `htslib`       | 1.14        |
+| `apptainer`    | 1.1.7-1.el7 | |`samtools`     | 1.14        |
 
-TrioTrain expects these software packages, referred to as "modules", to be pre-built, and available locally on your SLURM-based HPC cluster. For example, on the MU Lewis Computing cluster, we can:
+TrioTrain expects these software packages (modules), to be pre-built, and available locally on your SLURM-based HPC cluster. For example, on the MU Lewis Computing cluster, we can:
 
 ```bash
 # Search for modules with:
@@ -39,36 +34,24 @@ module spider <tool_search_string>
 module load <module_name>
 ```
 
-!!! note
-    TrioTrain requires a bash helper script, `modules.sh` to find and load the locally-available software.
-    
-    You can view the [default script on Github.](https://github.com/jkalleberg/DV-TrioTrain/scripts/setup/modules.sh)
-
-    TrioTrain assumes that default `modules.sh` works for your cluster. If you're building TrioTrain via Github, you will be able to edit the `modules.sh` file directly to match your system. However, if you're building TrioTrain via the Python package, you will need to specify an alternative helper script.
-
-    Example:
-
-    ``` bash
-    python3 triotrain/model_train/run_trio_train.py --modules </path/to/your/module.sh>
-    ```
+These locally-available software are loaded via an executable bash helper script (`modules.sh`).
 
 ---
 
 ## Install TrioTrain
 
+!!! note
+    **TrioTrain assumes that the default `modules.sh` script [(view on GitHub)](https://github.com/jkalleberg/DV-TrioTrain/scripts/setup/modules.sh) works for your cluster.**
+
+    If you're building TrioTrain via Github, you will be able to edit `modules.sh` directly to match your system.
+    
+    However, if you're building TrioTrain via the Python package, you will need to specify an alternative helper script via  `python3 triotrain/model_train/run_trio_train.py --modules </path/to/your/module.sh>`
+
 There are two supported options for DV-TrioTrain:
 
-1. Clone from Github
+1. Clone from Github: `git clone git@github.com:jkalleberg/DV-TrioTrain.git`
 
-```bash
-git clone git@github.com:jkalleberg/DV-TrioTrain.git
-```
-
-1. Install the `triotrain` Python package
-
-```bash
-pip install triotrain
-```
+2. Install the Python package: `pip install triotrain`
 
 ---
 

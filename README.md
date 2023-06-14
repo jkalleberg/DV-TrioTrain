@@ -11,7 +11,7 @@ DeepVariant-TrioTrain is an automated pipeline for extending DeepVariant (DV), a
 <a name="background"></a>
 
 ### Background
-Default DeepVariant models were only trained on human data. Our work developing DeepVariant-TrioTrain (DV-TT) illustrates the limitations of applying models built exclusively with human-genome datasets in other species. Previous work built species-specific DeepVariant models for [mosquito genomes](https://google.github.io/deepvariant/posts/2018-12-05-improved-non-human-variant-calling-using-species-specific-deepvariant-models/), and the [endangered Kākāpō parot](https://www.biorxiv.org/content/10.1101/2022.10.22.513130v1.full). However, previous research has not assessed re-training DV with other non-human mammalian species. DV-TrioTrain is the first tool to reproducably expand training DV into non-human, mammalian genomes.
+Default DeepVariant models were only trained on human data. Our work developing DeepVariant-TrioTrain (DV-TT) illustrates the limitations of applying models built exclusively with human-genome datasets in other species. Previous work built species-specific DeepVariant models for [mosquito genomes](https://google.github.io/deepvariant/posts/2018-12-05-improved-non-human-variant-calling-using-species-specific-deepvariant-models/), and the [endangered Kākāpō parot](https://www.biorxiv.org/content/10.1101/2022.10.22.513130v1.full). However, DV-TrioTrain is the first tool to reproducably expand training DV into non-human, mammalian genomes.
 
 DV-TrioTrain v0.8 currently supports initializing a new DV model with one the following:
 *   the default, human DV v1.4 format (includes the insert size channel)
@@ -57,36 +57,6 @@ docker run \
 ```
 
 ---
-
-<a name="overview"></a>
-## How TrioTrain works
-![workflow diagram](docs/images/Workflow_Sm_Horizontal.png)
-
-### Training
-For each trio provided, TrioTrain will perform 2 iterations of re-training, one for each parent. The starting parent is a user-specified parameter, either `Mother` or `Father`. With the first iteration, an existing DeepVariant model is used to initalize the weights and build upon prior learning. Subsequent iterations begin with a prior iteration's selected checkpoint.
-
-### Evaluation
-As a training iteration proceeds, learning is evaluated using labeled examples from the parents' offspring. The same individual's genome is used for both iterations run for a trio. Our assumption is that a model trained on a parent genome will be better at genotyping variants inherited from that parent in the offspring's genome.
-
-### Selection 
-Model weights that produce the maximum F1-score in the offspring's genomeare selected for further testing, and to become the starting point for the next iteration. 
-
-### Testing
-Testing occurs for all model iterations with a set of genomes previously unseen by the model. Variants are called with the model iterations by providing a custom checkpoint to the single-step variant caller.
-
-### Comparision
-Variants produced during a training iteration by a candidate model are compared against a user-defined benchmark set with hap.py, a standardized benchmarking tool recommended by the Global Alliance for Genomic Health (GA4GH). See GA4GH's resources on [Germline Small Variant Benchmarking Tools and Standards](https://github.com/ga4gh/benchmarking-tools), or the [original Illumina hap.py github page](https://github.com/Illumina/hap.py) to learn more.
-
-<a name="install"></a>
-## DV-TrioTrain Setup
-
-### Prerequisites
-
-*   Unix-like operating system (cannot run on Windows)
-*   Python 3.8
-*   Access to a SLURM-based High Performance Computing Cluster
-
-<a name="background"></a>
 ## Feedback and technical support
 
 For questions, suggestions, or technical assistance, feel free to [open an issue](https://github.com/jkalleberg/DV-TrioTrain/issues) page or 
