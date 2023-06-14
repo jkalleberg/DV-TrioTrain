@@ -33,8 +33,6 @@ DV-TT produces new DV model(s) for germline variant-calling in diploid organisms
 
 During model development, DV-TrioTrain iteratively feeds labeled examples from parent-offspring duos, enabling the model to incorporate inheritance expectations. While the DV-TT pipeline assumes re-training data are from trio-binned samples, **models built by DV-TrioTrain do not require trio-binned data for variant calling.** In contrast to the [DeepTrio](https://github.com/google/deepvariant/blob/r1.5/docs/deeptrio-details.md) joint-caller, DV-TT models are trained to prioritize features of inherited variants to produce fewer Mendelian Inheritance Errors (MIE) in individual samples.
 
----
-
 <a name="usage"></a>
 
 ## How to customize DeepVariant with a TrioTrain model
@@ -58,8 +56,6 @@ docker run \
   --num_shards=$(nproc) \ **This will use all your cores to run make_examples. Feel free to change.**
   --dry_run=false **Default is false. If set to true, commands will be printed out but not executed.
 ```
-
----
 
 <a name="citation"></a>
 
