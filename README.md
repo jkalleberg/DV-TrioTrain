@@ -2,15 +2,13 @@
 
 DeepVariant-TrioTrain is an automated pipeline for extending DeepVariant (DV), a deep-learning-based germline variant caller. See the [original DeepVariant github page](https://github.com/google/deepvariant) to learn more.
 
-##### Table of Contents
+## Table of Contents
 
-[Background](#background)  
+* [Background](#background)  
+* [Genotyping Tutorial](#usage)
+* [Citation](#citation)
 
-[Genotyping Tutorial](#usage)
-
-[Citation](#citation)
-
-### Background
+## Background
 
 Default DeepVariant models were only trained on human data. Our work developing DeepVariant-TrioTrain (DV-TT) illustrates the limitations of applying models built exclusively with human-genome datasets in other species. Previous work built species-specific DeepVariant models for [mosquito genomes](https://google.github.io/deepvariant/posts/2018-12-05-improved-non-human-variant-calling-using-species-specific-deepvariant-models/), and the [endangered Kākāpō parot](https://www.biorxiv.org/content/10.1101/2022.10.22.513130v1.full). However, DV-TrioTrain is the first tool to reproducably expand training DV into non-human, mammalian genomes.
 
@@ -22,7 +20,7 @@ DV-TrioTrain v0.8 currently supports initializing a new DV model with one the fo
 
 We built the DV-TT pipeline to extend DeepVariant with cattle, bison, and yak genomes. Specifically, TrioTrain builds upon the existing DV model for short-read (Illumina) Whole Genome Sequence (WGS) data, and adds population-level allele frequency data from over 5,500 published cattle samples from SRA. Currently, population-scale, long-read data is scarce in non-human species, but the DV-TT framework enables continued extension of DV as those data become available.
 
-#### Why TrioTrain?
+### Why TrioTrain?
 
 TrioTrain provides a template for model development for any diploid species without NIST-GIAB reference materials. Our goal is to motivate adoption of scalable, data-driven variant calling models in domestic animal species. We propose that comparative genomics approaches in deep learning model development offer performance benefits over species-specific models.
 
@@ -39,7 +37,7 @@ During model development, DV-TrioTrain iteratively feeds labeled examples from p
 
 <a name="usage"></a>
 
-### How to customize DeepVariant with a TrioTrain model
+## How to customize DeepVariant with a TrioTrain model
 
 Published DV-TrioTrain models can be used as an alternative checkpoint with DeepVariant's one-step, single-sample variant caller. An index of available models can be found [here (fix this link)](pretrained_models).
 
@@ -63,14 +61,6 @@ docker run \
 
 ---
 
-### Feedback and technical support
-
-For questions, suggestions, or technical assistance, feel free to [open an issue](https://github.com/jkalleberg/DV-TrioTrain/issues) page or reach out to Jenna Kalleberg at [jakth2@mail.missouri.org](jakth2@mail.missouri.edu)
-
-### Contributing to TrioTrain
-
-Please [open a pull request](https://github.com/jkalleberg/DV-TrioTrain/pulls) if you wish to contribute to TrioTrain.
-
 <a name="citation"></a>
 
 ## How to cite
@@ -83,10 +73,18 @@ Please also cite:
 Ryan Poplin, Pi-Chuan Chang, David Alexander, Scott Schwartz, Thomas Colthurst, Alexander Ku, Dan Newburger, Jojo Dijamco, Nam Nguyen, Pegah T. Afshar, Sam S. Gross, Lizzie Dorfman, Cory Y. McLean, and Mark A. DePristo.<br/>
 doi: <https://doi.org/10.1038/nbt.4235>
 
-## License
+### Feedback and technical support
+
+For questions, suggestions, or technical assistance, feel free to [open an issue](https://github.com/jkalleberg/DV-TrioTrain/issues) page or reach out to Jenna Kalleberg at [jakth2@mail.missouri.org](jakth2@mail.missouri.edu)
+
+### Contributing to TrioTrain
+
+Please [open a pull request](https://github.com/jkalleberg/DV-TrioTrain/pulls) if you wish to contribute to TrioTrain.
+
+### License
 
 [GPL-3.0 license](LICENSE)
 
-## Acknowledgements
+### Acknowledgements
 
 Many thanks to the developers and contributors of the many open source packages used by TrioTrain:
