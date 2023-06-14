@@ -1,4 +1,5 @@
 # DV-TrioTrain v0.8
+
 DeepVariant-TrioTrain is an automated pipeline for extending DeepVariant (DV), a deep-learning-based germline variant caller. See the [original DeepVariant github page](https://github.com/google/deepvariant) to learn more.
 
 ##### Table of Contents
@@ -21,6 +22,8 @@ DV-TrioTrain v0.8 currently supports initializing a new DV model with one the fo
 
 We built the DV-TT pipeline to extend DeepVariant with cattle, bison, and yak genomes. Specifically, TrioTrain builds upon the existing DV model for short-read (Illumina) Whole Genome Sequence (WGS) data, and adds population-level allele frequency data from over 5,500 published cattle samples from SRA. Currently, population-scale, long-read data is scarce in non-human species, but the DV-TT framework enables continued extension of DV as those data become available.
 
+#### Why TrioTrain?
+
 TrioTrain provides a template for model development for any diploid species without NIST-GIAB reference materials. Our goal is to motivate adoption of scalable, data-driven variant calling models in domestic animal species. We propose that comparative genomics approaches in deep learning model development offer performance benefits over species-specific models.
 
 DV-TT produces new DV model(s) for germline variant-calling in diploid organisms. However, there are some species-dependent behaviors in the pipeline. The current species supported include:
@@ -30,19 +33,19 @@ DV-TT produces new DV model(s) for germline variant-calling in diploid organisms
 * mosquitoes
 * *your favorite species could go here* - the DV-TT pipeline can be easily re-configured for your favorite species, assuming your already have the necessary training data.
 
-DV-TrioTrain is designed for [transfer learning](https://machinelearningmastery.com/transfer-learning-for-deep-learning/), relying on new data sources and context to expand on prior experience. During model development, DV-TrioTrain iteratively feeds labeled examples from parent-offspring duos, enabling the model to incorporate inheritance expectations. 
-
-While the DV-TT pipeline assumes re-training data are from trio-binned samples, models built by DV-TrioTrain **do not require trio-binned data for variant calling.** In contrast to the [DeepTrio](https://github.com/google/deepvariant/blob/r1.5/docs/deeptrio-details.md) joint-caller, DV-TT models are trained to prioritize features of inherited variants to produce fewer Mendelian Inheritance Errors (MIE) in individual samples. 
+During model development, DV-TrioTrain iteratively feeds labeled examples from parent-offspring duos, enabling the model to incorporate inheritance expectations. While the DV-TT pipeline assumes re-training data are from trio-binned samples, **models built by DV-TrioTrain do not require trio-binned data for variant calling.** In contrast to the [DeepTrio](https://github.com/google/deepvariant/blob/r1.5/docs/deeptrio-details.md) joint-caller, DV-TT models are trained to prioritize features of inherited variants to produce fewer Mendelian Inheritance Errors (MIE) in individual samples.
 
 ---
 
 <a name="usage"></a>
 
 ### How to customize DeepVariant with a TrioTrain model
+
 Published DV-TrioTrain models can be used as an alternative checkpoint with DeepVariant's one-step, single-sample variant caller. An index of available models can be found [here (fix this link)](pretrained_models).
 
 We recommend using Apptainer (a.k.a. Singularity), for local cluster computing.
-```
+
+```bash
 BIN_VERSION="1.4.0"
 docker run \
   -v "YOUR_INPUT_DIR":"/input" \
@@ -62,11 +65,11 @@ docker run \
 
 ### Feedback and technical support
 
-For questions, suggestions, or technical assistance, feel free to [open an issue](https://github.com/jkalleberg/DV-TrioTrain/issues) page or reach out to Jenna Kalleberg at jakth2@mail.missouri.org
+For questions, suggestions, or technical assistance, feel free to [open an issue](https://github.com/jkalleberg/DV-TrioTrain/issues) page or reach out to Jenna Kalleberg at [jakth2@mail.missouri.org](jakth2@mail.missouri.edu)
 
 ### Contributing to TrioTrain
 
-Please [open a pull request (fix this link)]() if you wish to contribute to TrioTrain. 
+Please [open a pull request](https://github.com/jkalleberg/DV-TrioTrain/pulls) if you wish to contribute to TrioTrain.
 
 <a name="citation"></a>
 
@@ -76,17 +79,13 @@ Please [open a pull request (fix this link)]() if you wish to contribute to Trio
 
 Please also cite:
 
-> [A universal SNP and small-indel variant caller using deep neural networks. _Nature Biotechnology_ 36, 983–987 (2018).](https://rdcu.be/7Dhl) <br/>
+> [A universal SNP and small-indel variant caller using deep neural networks. *Nature Biotechnology* 36, 983–987 (2018).](https://rdcu.be/7Dhl) <br/>
 Ryan Poplin, Pi-Chuan Chang, David Alexander, Scott Schwartz, Thomas Colthurst, Alexander Ku, Dan Newburger, Jojo Dijamco, Nam Nguyen, Pegah T. Afshar, Sam S. Gross, Lizzie Dorfman, Cory Y. McLean, and Mark A. DePristo.<br/>
-doi: https://doi.org/10.1038/nbt.4235
+doi: <https://doi.org/10.1038/nbt.4235>
 
 ## License
 
 [GPL-3.0 license](LICENSE)
-
-### Authors
-
-Jenna Kalleberg (jakth2@mail.missouri.org)
 
 ## Acknowledgements
 
