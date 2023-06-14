@@ -63,6 +63,8 @@ Running a local copy of a container requires us to create a local copy of the `m
 bash scripts/setup/download_models.sh
 ```
 
+**Expected Outputs**
+
 You should see the following directories created:
 
 ```bash
@@ -75,16 +77,14 @@ The directory contents should include:
 ```bash
 # ls triotrain/model_training/pretrained_models/v1.4.0_withIS_noAF/
 model.ckpt.data-00000-of-00001  model.ckpt.example_info.json  model.ckpt.index  model.ckpt.meta
-```
 
-```bash
 # ls triotrain/model_training/pretrained_models/v1.4.0_withIS_withAF/
 wgs_af.model.ckpt.data-00000-of-00001  wgs_af.model.ckpt.index
 wgs_af.model.ckpt.example_info.json    wgs_af.model.ckpt.meta
 ```
 
 !!! note
-    These models are the human-trained models produced by Google Genomics Health Group. An index of the models used can be found [here](existing_models.md).
+    These models are the human-trained models produced by Google Genomics Health Group. An index of the models used can be found [here](../user-guide/existing_models.md).
 
 ## 4. Download Intermediate GIAB data
 
@@ -95,7 +95,7 @@ Create a local copy of the GIAB trio data v4.2.1 for benchmarking. Run the follo
 bash scripts/setup/download_GIAB.sh
 ```
 
-### Expected Intermediate Data Outputs
+**Expected Outputs**
 
 After completing, you should see the following directories:
 
@@ -186,18 +186,38 @@ bash triotrain/variant_calling/data/GIAB/bam/AJtrio.download
 bash triotrain/variant_calling/data/GIAB/bam/HCtrio.download
 ```
 
-### Expected Raw Data Outputs
+**Expected Outputs**
 
 **1. `allele_freq/`**
 
 ```bash
-# ls triotrain/variant_calling/data/GIAB/allele_freq/
+# ls triotrain/variant_calling/data/GIAB/allele_freq/ | grep cohort.release
+cohort.release_missing2ref.no_calls.vcf.gz
+cohort.release_missing2ref.no_calls.vcf.gz.csi
+
 ```
 
 **2. `bam/`**
 
 ```bash
-# ls triotrain/variant_calling/data/GIAB/bam/
+# ls triotrain/variant_calling/data/GIAB/bam/ | grep HG002
+HG002_corrected_md5sums.feb19upload.txt
+HG002.GRCh38.2x250.bam
+HG002.GRCh38.2x250.bam.bai
+HG002.GRCh38.2x250.bam.bai.md5
+HG002.GRCh38.2x250.bam.md5
+HG002.GRCh38.2x250.coverage.out
+
+# ls triotrain/variant_calling/data/GIAB/bam/ | grep HG003
+
+# ls triotrain/variant_calling/data/GIAB/bam/ | grep HG004
+
+# ls triotrain/variant_calling/data/GIAB/bam/ | grep HG005
+
+# ls triotrain/variant_calling/data/GIAB/bam/ | grep HG006
+
+# ls triotrain/variant_calling/data/GIAB/bam/ | grep HG007
+
 
 ```
 
@@ -217,7 +237,7 @@ After the Human reference genome is downloaded, supplementary files must also be
 
 ### Reference dictionary file with `picard`
 
-MISSING: ADD THIS IN!
+TODO: ADD THIS IN!
 
 ### Files for `rtg-tools`
 

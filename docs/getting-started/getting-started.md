@@ -68,8 +68,8 @@ cd /path/to/working_dir
 Then, complete these guides in order:
 
 1. [Installation Guide](installation.md)
-1. [Configuration Guide](../user-guide/installation.md)
-1. [Demo Walk-Through](../user-guide/installation.md)
+1. [Configuration Guide](configuration.md)
+1. [Demo Walk-Through](walk-through.md)
 
 ### Other Commands and Options
 

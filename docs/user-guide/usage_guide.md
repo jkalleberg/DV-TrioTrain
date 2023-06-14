@@ -1,7 +1,6 @@
 # TrioTrain Usage Guide
 
-TrioTrain is a pipeline to automate re-training of DeepVariant models. Visit the DeepVariant
-[usage guide](https://github.com/google/deepvariant/blob/r1.5/docs/deepvariant-details.md) to
+TrioTrain is a pipeline to automate re-training of DeepVariant models. [Visit the DeepVariant usage guide](https://github.com/google/deepvariant/blob/r1.5/docs/deepvariant-details.md) to
 learn more in-depth details about how DeepVariant works. 
 
 ## Required Data
@@ -149,4 +148,4 @@ Each additional testing genome can be supplied by adding three (3) more columns 
 
 ## TrioTrain Outputs
 
-add a description here!
+TODO: add a description here!
