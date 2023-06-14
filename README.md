@@ -1,10 +1,12 @@
 # DV-TrioTrain v0.8
 DeepVariant-TrioTrain is an automated pipeline for extending DeepVariant (DV), a deep-learning-based germline variant caller. See the [original DeepVariant github page](https://github.com/google/deepvariant) to learn more.
 
-##### Table of Contents  
+##### Table of Contents
+
 [Background](#background)  
+
 [Genotyping Tutorial](#usage)
-[Install DV-TrioTrain](#install)  
+
 [Citation](#citation)
 
 ### Background
