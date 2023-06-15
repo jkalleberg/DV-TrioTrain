@@ -66,9 +66,7 @@ for e in ${Ext[@]}; do
         check_sum=$(cat ./reference/md5checksums.txt | grep "${REFFILE}${e}")
         old_path="./"
         new_path="./reference/"
-        valid_check_sum="${check_sum/$old_path/$new_path}" 
-        # echo $check_sum
-        # echo $valid_check_sum
+        valid_check_sum="${check_sum/$old_path/$new_path}"
         echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: $(echo $valid_check_sum | md5sum -c)"
     else
         echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: file found | '${REFFILE}${e}'"
