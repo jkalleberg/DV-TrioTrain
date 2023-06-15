@@ -210,18 +210,20 @@ HCtrio.run
 ls triotrain/variant_calling/data/GIAB/benchmark/
 
 # Output ---------
-HG002_GRCh38_1_22_v4.2_benchmark.bed         HG005_GRCh38_1_22_v4.2_benchmark.bed
-HG002_GRCh38_1_22_v4.2_benchmark.vcf.gz      HG005_GRCh38_1_22_v4.2_benchmark.vcf.gz
-HG002_GRCh38_1_22_v4.2_benchmark.vcf.gz.tbi  HG005_GRCh38_1_22_v4.2_benchmark.vcf.gz.tbi
-HG002_README_v4.2.1.txt                      HG005_README_v4.2.1.txt
+HG002_GRCh38_1_22_v4.2_benchmark.bed         HG005_GRCh38_1_22_v4.2_benchmark.vcf.gz
+HG002_GRCh38_1_22_v4.2_benchmark.vcf.gz      HG005_GRCh38_1_22_v4.2_benchmark.vcf.gz.tbi
+HG002_GRCh38_1_22_v4.2_benchmark.vcf.gz.tbi  HG005_README_v4.2.1.txt
+HG002_README_v4.2.1.txt                      HG006_benchmark.md5
 HG003_GRCh38_1_22_v4.2_benchmark.bed         HG006_GRCh38_1_22_v4.2_benchmark.bed
 HG003_GRCh38_1_22_v4.2_benchmark.vcf.gz      HG006_GRCh38_1_22_v4.2_benchmark.vcf.gz
 HG003_GRCh38_1_22_v4.2_benchmark.vcf.gz.tbi  HG006_GRCh38_1_22_v4.2_benchmark.vcf.gz.tbi
 HG003_README_v4.2.1.txt                      HG006_README_v4.2.1.txt
-HG004_GRCh38_1_22_v4.2_benchmark.bed         HG007_GRCh38_1_22_v4.2_benchmark.bed
-HG004_GRCh38_1_22_v4.2_benchmark.vcf.gz      HG007_GRCh38_1_22_v4.2_benchmark.vcf.gz
-HG004_GRCh38_1_22_v4.2_benchmark.vcf.gz.tbi  HG007_GRCh38_1_22_v4.2_benchmark.vcf.gz.tbi
-HG004_README_v4.2.1.txt                      HG007_README_v4.2.1.txt
+HG004_GRCh38_1_22_v4.2_benchmark.bed         HG007_benchmark.md5
+HG004_GRCh38_1_22_v4.2_benchmark.vcf.gz      HG007_GRCh38_1_22_v4.2_benchmark.bed
+HG004_GRCh38_1_22_v4.2_benchmark.vcf.gz.tbi  HG007_GRCh38_1_22_v4.2_benchmark.vcf.gz
+HG004_README_v4.2.1.txt                      HG007_GRCh38_1_22_v4.2_benchmark.vcf.gz.tbi
+HG005_benchmark.md5                          HG007_README_v4.2.1.txt
+HG005_GRCh38_1_22_v4.2_benchmark.bed
 ```
 
 ---
@@ -365,7 +367,7 @@ HG007.GRCh38_full_plus_hs38d1_analysis_set_minus_alts.100x.bam.bai.md5
 HG007.GRCh38_full_plus_hs38d1_analysis_set_minus_alts.100x.bam.md5
 ```
 
-## 7. Sanity Check
+<!-- ## 8. Sanity Check
 
 Calculate the average coverage from the autosomes and sex chromosomes for each sample by running the following at the command line:
 
@@ -373,7 +375,7 @@ Calculate the average coverage from the autosomes and sex chromosomes for each s
 # Calculate per-chr coverage for each GIAB trio, then calculate an average.
 bash triotrain/variant_calling/data/GIAB/bam/AJtrio.run
 bash triotrain/variant_calling/data/GIAB/bam/HCtrio.run
-```
+``` -->
 
 ## 8. Create supplmentary reference files
 
@@ -381,7 +383,9 @@ After the Human reference genome is downloaded, supplementary files must also be
 
 ### Reference dictionary file with `picard`
 
-TODO: ADD THIS IN!
+```bash
+picard CreateSequenceDictionary --REFERENCE ./triotrain/variant_calling/data/GIAB/reference/GRCh38_no_alt_analysis_set.fasta --OUTPUT ./triotrain/variant_calling/data/GIAB/reference/GRCh38_no_alt_analysis_set.dict --SPECIES human
+```
 
 ### Files for `rtg-tools`
 
