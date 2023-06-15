@@ -12,21 +12,21 @@ repo_name: jkalleberg/DV-TrioTrain
 nav:
   - Home: index.md
   - Getting Started:
-    - Start Here!: getting-started/getting-started.md
-    - Installation: getting-started/installation.md
-    - Configuration Guide: getting-started/configuration.md
-    - Human GIAB Demo: getting-started/walk-through.md
+      - Start Here!: getting-started/getting-started.md
+      - Installation: getting-started/installation.md
+      - Configuration Guide: getting-started/configuration.md
+      - Human GIAB Tutorial: getting-started/walk-through.md
   - User Guide:
       - Overview: user-guide/usage_guide.md
       - Models: user-guide/existing_models.md
       - Getting help: user-guide/get-help.md
       - How to cite: user-guide/citation.md
-  - About: 
+  - About:
       - Learn more: about/about.md
       - License: about/license.md
 
-plugins: 
-  - search 
+plugins:
+  - search
   - open-in-new-tab
 
 # Configuration
@@ -37,7 +37,6 @@ theme:
     - navigation.tabs.sticky
     - navigation.top
     - toc.integrate
-
 
 # Extensions
 markdown_extensions:

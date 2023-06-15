@@ -55,9 +55,9 @@ TrioTrain builds new models by starting with an existing DeepVariant model. Vers
 
 TrioTrain can optionally add the allele frequency channel, if given population-level allele frequency data (PopVCF).
 
-### Configure TrioTrain
+### Setup TrioTrain
 
-Getting started with TrioTrain is straight-foward, but requires some configuration to work on your SLURM-based HPC cluster.
+Getting started with TrioTrain is straight-foward, but requires some configuration to work on your SLURM-based HPC cluster. The user guides below will walk you through what components require tweaking, depending on your system.
 
 First, change directories to your working directory.
 
@@ -69,7 +69,7 @@ Then, complete these guides in order:
 
 1. [Installation Guide](installation.md)
 1. [Configuration Guide](configuration.md)
-1. [Demo Walk-Through](walk-through.md)
+1. [Human GIAB Tutorial](walk-through.md)
 
 ### Other Commands and Options
 
