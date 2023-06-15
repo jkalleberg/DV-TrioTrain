@@ -120,7 +120,7 @@ We will be using both of the Human GIAB trios, and the v4.2.1 GIAB benchmarking 
 
 | TrioNumber | TrioName     | CommonID | SampleID | Relationship |
 | ---------- | ------------ | -------- | -------- | ------------ |
-| 1          | AshkenaziJew | HGO02    | NA24385  | Son          |
+| 1          | AshkenaziJew | HG002    | NA24385  | Son          |
 |            |              | HG003    | NA24149  | Father       |
 |            |              | HG004    | NA24143  | Mother       |
 | 2          | HanChinese   | HG005    | NA24631  | Son          |
