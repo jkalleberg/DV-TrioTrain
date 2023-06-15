@@ -49,8 +49,8 @@ REFDIR=ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/000/001/405/GCA_000001405.15_G
 REFFILE=GCA_000001405.15_GRCh38_no_alt_analysis_set
 
 if [ ! -f ./reference/md5checksums.txt ]; then
-    echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: Downloading GRCh38 checksum now..."
-    curl --continue-at - ${REFDIR}/md5checksums.txt -o ./reference/md5checksums.txt
+    echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: downloading GRCh38 checksum now..."
+    curl -s --continue-at - ${REFDIR}/md5checksums.txt -o ./reference/md5checksums.txt
 else
     echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: file found | './reference/md5checksums.txt'"
 fi
@@ -61,8 +61,8 @@ declare -a Ext=(".fna.gz" ".fna.fai")
 if [ ! -f "./reference/GRCh38_no_alt_analysis_set.fasta" ]; then 
     for e in ${Ext[@]}; do
         if [ -f ./reference/md5checksums.txt ]; then
-            echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: Downloading ${REFFILE}${e} now..."
-            curl --continue-at - "${REFDIR}/${REFFILE}${e}" -o "./reference/${REFFILE}${e}" 
+            echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: downloading ${REFFILE}${e} now..."
+            curl -s --continue-at - "${REFDIR}/${REFFILE}${e}" -o "./reference/${REFFILE}${e}" 
             echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: checking ${REFFILE}${e} for corruption..."
             check_sum=$(cat ./reference/md5checksums.txt | grep "${REFFILE}${e}")
             old_path="./"
@@ -102,15 +102,15 @@ AF_DIR="https://storage.googleapis.com/brain-genomics-public/research/cohort/1KG
 for i in {{1..22},X,Y}
 do  
     if [ ! -f ./allele_freq/cohort-chr${i}.release_missing2ref.no_calls.vcf.gz ]; then
-        echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: Downloading chr${i} PopVCF..."
-        curl --continue-at - ${AF_DIR}/cohort-chr${i}.release_missing2ref.no_calls.vcf.gz -o ./allele_freq/cohort-chr${i}.release_missing2ref.no_calls.vcf.gz 
+        echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: downloading chr${i} PopVCF..."
+        curl -s --continue-at - ${AF_DIR}/cohort-chr${i}.release_missing2ref.no_calls.vcf.gz -o ./allele_freq/cohort-chr${i}.release_missing2ref.no_calls.vcf.gz 
     else
         echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: file found | 'chr${i} PopVCF'"
     fi
 
     if [ ! -f ./allele_freq/cohort-chr${i}.release_missing2ref.no_calls.vcf.gz.tbi ]; then
-        echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: Downloading chr${i} index ..." 
-        curl --continue-at - ${AF_DIR}/cohort-chr${i}.release_missing2ref.no_calls.vcf.gz.tbi -o ./allele_freq/cohort-chr${i}.release_missing2ref.no_calls.vcf.gz.tbi 
+        echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: downloading chr${i} index ..." 
+        curl -s --continue-at - ${AF_DIR}/cohort-chr${i}.release_missing2ref.no_calls.vcf.gz.tbi -o ./allele_freq/cohort-chr${i}.release_missing2ref.no_calls.vcf.gz.tbi 
     else
         echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: file found | 'chr${i} index'"
     fi
@@ -148,72 +148,77 @@ mkdir -p benchmark
 
 # Define where to get the truth data
 TRUTHDIR=https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/release
+benchmark_version="_GRCh38_1_22_v4.2.1_benchmark"
+bench_ext=(".bed" ".vcf.gz" ".vcf.gz.tbi")
 
 #-------------------------------------------------------------------#
 #                            GIAB Trio1                             #
 #-------------------------------------------------------------------#
 declare -A Trio1=(["HG002"]="HG002_NA24385_son" ["HG003"]="HG003_NA24149_father" ["HG004"]="HG004_NA24143_mother")
 for t in ${!Trio1[@]}; do
-    echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: Downloading ${t}=${Trio1[${t}]} benchmarking files now..."
-    if [ ! -f "./benchmark/${t}_GRCh38_1_22_v4.2_benchmark.bed" ]; then
-        curl --continue-at - ${TRUTHDIR}/AshkenazimTrio/${Trio1[${t}]}/NISTv4.2.1/GRCh38/${t}_GRCh38_1_22_v4.2_benchmark.bed -o ./benchmark/${t}_GRCh38_1_22_v4.2_benchmark.bed 
-    else
-        echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: file found | '${t}_GRCh38_1_22_v4.2_benchmark.bed'"
-    fi
-
-    if [ ! -f "./benchmark/${t}_GRCh38_1_22_v4.2_benchmark.vcf.gz" ]; then 
-        curl --continue-at - ${TRUTHDIR}/AshkenazimTrio/${Trio1[${t}]}/NISTv4.2.1/GRCh38/${t}_GRCh38_1_22_v4.2_benchmark.vcf.gz -o ./benchmark/${t}_GRCh38_1_22_v4.2_benchmark.vcf.gz 
-    else
-        echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: file found | '${t}_GRCh38_1_22_v4.2_benchmark.vcf.gz'"
-    fi
-
-    if [ ! -f "./benchmark/${t}_GRCh38_1_22_v4.2_benchmark.vcf.gz.tbi" ]; then  
-        curl --continue-at - ${TRUTHDIR}/AshkenazimTrio/${Trio1[${t}]}/NISTv4.2.1/GRCh38/${t}_GRCh38_1_22_v4.2_benchmark.vcf.gz.tbi -o ./benchmark/${t}_GRCh38_1_22_v4.2_benchmark.vcf.gz.tbi
-    else
-        echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: file found | '${t}_GRCh38_1_22_v4.2_benchmark.vcf.gz.tbi'"
-    fi
+    echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: downloading ${t}=${Trio1[${t}]} benchmarking files now..."
+    for e in ${!bench_ext[@]}; do
+        if [ ! -f "./benchmark/${t}${benchmark_version}${bench_ext[${e}]}" ]; then
+            echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: downloading ${t}${benchmark_version}${bench_ext[${e}]}..."
+            curl --continue-at - ${TRUTHDIR}/AshkenazimTrio/${Trio1[${t}]}/NISTv4.2.1/GRCh38/${t}${benchmark_version}${bench_ext[${e}]} -o ./benchmark/${t}${benchmark_version}${bench_ext[${e}]}
+            # No MD5 listed on NIST FTP SITE!
+        else
+            echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: file found | '${t}${benchmark_version}${bench_ext[${e}]}'"
+        fi
+    done
 
     # Download the README
     if [ ! -f "./benchmark/${t}_README_v4.2.1.txt" ]; then
-        curl --continue-at - ${TRUTHDIR}/AshkenazimTrio/${Trio1[${t}]}/NISTv4.2.1/README_v4.2.1.txt -o ./benchmark/${t}_README_v4.2.1.txt 
+        echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: downloading ${t} readme..."
+        curl -s --continue-at - ${TRUTHDIR}/AshkenazimTrio/${Trio1[${t}]}/NISTv4.2.1/README_v4.2.1.txt -o ./benchmark/${t}_README_v4.2.1.txt 
     else
         echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: file found | '${t}_README_v4.2.1.txt'"
     fi
-
-    # unable to check for file corruption, lacking a checksum file on ncbi site
 done
 
 #-------------------------------------------------------------------#
 #                            GIAB Trio2                             #
 #-------------------------------------------------------------------#
 declare -A Trio2=(["HG005"]="HG005_NA24631_son" ["HG006"]="HG006_NA24694_father" ["HG007"]="HG007_NA24695_mother")
+
 for t in ${!Trio2[@]}; do
-    echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: Downloading ${t}=${Trio2[${t}]} benchmarking files now..."
-    if [ ! -f "./benchmark/${t}_GRCh38_1_22_v4.2_benchmark.bed" ]; then
-        curl --continue-at - ${TRUTHDIR}/ChineseTrio/${Trio2[${t}]}/NISTv4.2.1/GRCh38/${t}_GRCh38_1_22_v4.2.1_benchmark.bed -o ./benchmark/${t}_GRCh38_1_22_v4.2_benchmark.bed
+    echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: downloading ${t}=${Trio2[${t}]} benchmarking files now..."
+
+    # Download the MD5
+    if [ ! -f "./benchmark/${t}_benchmark.md5" ]; then
+        echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: downloading ${t} MD5..."
+        curl -s --continue-at - ${TRUTHDIR}/ChineseTrio/${Trio2[${t}]}/NISTv4.2.1/md5.in -o ./benchmark/${t}_benchmark.md5 
     else
-        echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: file found | '${t}_GRCh38_1_22_v4.2_benchmark.bed'"
+        echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: file found | '${t}_benchmark.md5'"
     fi
-    
-    if [ ! -f "./benchmark/${t}_GRCh38_1_22_v4.2_benchmark.vcf.gz" ]; then
-        curl --continue-at - ${TRUTHDIR}/ChineseTrio/${Trio2[${t}]}/NISTv4.2.1/GRCh38/${t}_GRCh38_1_22_v4.2.1_benchmark.vcf.gz -o ./benchmark/${t}_GRCh38_1_22_v4.2_benchmark.vcf.gz 
-    else
-        echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: file found | '${t}_GRCh38_1_22_v4.2_benchmark.vcf.gz'"
-    fi 
-    
-    if [ ! -f "./benchmark/${t}_GRCh38_1_22_v4.2_benchmark.vcf.gz.tbi" ]; then
-        curl --continue-at - ${TRUTHDIR}/ChineseTrio/${Trio2[${t}]}/NISTv4.2.1/GRCh38/${t}_GRCh38_1_22_v4.2.1_benchmark.vcf.gz.tbi -o ./benchmark/${t}_GRCh38_1_22_v4.2_benchmark.vcf.gz.tbi
-    else
-        echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: file found | '${t}_GRCh38_1_22_v4.2_benchmark.vcf.gz.tbi'"
-    fi
+
+    for e in ${!bench_ext[@]}; do
+        if [ ! -f "./benchmark/${t}${benchmark_version}${bench_ext[${e}]}" ]; then
+            echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: downloading ${t}${benchmark_version}${bench_ext[${e}]}..."
+            curl --continue-at - ${TRUTHDIR}/ChineseTrio/${Trio2[${t}]}/NISTv4.2.1/GRCh38/${t}${benchmark_version}${bench_ext[${e}]} -o ./benchmark/${t}${benchmark_version}${bench_ext[${e}]}
+
+            echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: checking ./benchmark/${t}${benchmark_version}${bench_ext[${e}]} for corruption..."
+            check_sum=$(cat ./benchmark/${t}_benchmark.md5 | grep "${t}${benchmark_version}${bench_ext[${e}]}" | head -n1)
+            old_path="GRCh38/"
+            new_path="./benchmark/"
+            valid_check_sum="${check_sum/$old_path/$new_path}"
+            msg=$(echo $valid_check_sum | md5sum -c -)
+            if [ $? -eq 0 ]; then 
+                echo $(date '+%Y-%m-%d %H:%M:%S') INFO: $msg || error_exit $msg tracker_file.txt
+            fi
+        else
+            echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: file found | '${t}${benchmark_version}${bench_ext[${e}]}'"
+        fi
+    done
     
     # Download the README
     if [ ! -f "./benchmark/${t}_README_v4.2.1.txt" ]; then
-        curl --continue-at - ${TRUTHDIR}/ChineseTrio/${Trio1[${t}]}/NISTv4.2.1/README_v4.2.1.txt -o ./benchmark/${t}_README_v4.2.1.txt 
+        echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: downloading ${t} readme..."
+        curl -s --continue-at - ${TRUTHDIR}/ChineseTrio/${Trio2[${t}]}/NISTv4.2.1/README_v4.2.1.txt -o ./benchmark/${t}_README_v4.2.1.txt 
     else
         echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: file found | '${t}_README_v4.2.1.txt'"
     fi
-    # unable to check for file corruption, lacking a checksum file on ncbi site
+    
 done
 
 ## --------------- Download GIAB Aligned Reads ----------------------
@@ -413,18 +418,18 @@ mkdir -p bam
 # BAM and BAI with MD5 checksums can be found here: https://github.com/genome-in-a-bottle/giab_data_indexes/blob/c4d3b95c2ebf14c175151e4723f82e8980722e90/AshkenazimTrio/alignment.index.AJtrio_Illumina_2x250bps_novoalign_GRCh37_GRCh38_NHGRI_06062016
 
 ## CHECKSUMS -----------
-echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: Downloading AJ Trio checksum now..."
-curl -C - https://raw.githubusercontent.com/genome-in-a-bottle/giab_data_indexes/master/AshkenazimTrio/alignment.index.AJtrio_Illumina_2x250bps_novoalign_GRCh37_GRCh38_NHGRI_06062016 -o ./bam/AJtrio_Illumina_2x250bps_novoaligns_GRCh37_GRCh38.txt 
+echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: downloading AJ Trio checksum now..."
+curl -s -C - https://raw.githubusercontent.com/genome-in-a-bottle/giab_data_indexes/master/AshkenazimTrio/alignment.index.AJtrio_Illumina_2x250bps_novoalign_GRCh37_GRCh38_NHGRI_06062016 -o ./bam/AJtrio_Illumina_2x250bps_novoaligns_GRCh37_GRCh38.txt 
 
 # NOTE: 07 JUNE 2023:
 # The checksum for HG002 does not match the ^ above MD5,
 # therefore, download the correct one. 
 
-curl -C - https://ftp.ncbi.nlm.nih.gov/ReferenceSamples/giab/data/AshkenazimTrio/HG002_NA24385_son/NIST_Illumina_2x250bps/novoalign_bams/HG002_corrected_md5sums.feb19upload.txt -o ./bam/HG002_corrected_md5sums.feb19upload.txt
-echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: Downloading AJ Trio checksum now... done"
+curl -s -C - https://ftp.ncbi.nlm.nih.gov/ReferenceSamples/giab/data/AshkenazimTrio/HG002_NA24385_son/NIST_Illumina_2x250bps/novoalign_bams/HG002_corrected_md5sums.feb19upload.txt -o ./bam/HG002_corrected_md5sums.feb19upload.txt
+echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: downloading AJ Trio checksum now... done"
 
 download "AJtrio_Illumina_2x250bps_novoaligns_GRCh37_GRCh38.txt"
-calc_cov "AJtrio_Illumina_2x250bps_novoaligns_GRCh37_GRCh38.txt" 
+# calc_cov "AJtrio_Illumina_2x250bps_novoaligns_GRCh37_GRCh38.txt" 
 
 #-------------------------------------------------------------------#
 #                            GIAB Trio2                             #
@@ -432,11 +437,11 @@ calc_cov "AJtrio_Illumina_2x250bps_novoaligns_GRCh37_GRCh38.txt"
 # BAM and BAI with MD5 checksums can be found here: https://github.com/genome-in-a-bottle/giab_data_indexes/blob/master/ChineseTrio/alignment.index.ChineseTrio_Illumina300X100X_wgs_novoalign_GRCh37_GRCh38_NHGRI_04062016 
 
 ## CHECKSUMS -----------
-echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: Downloading HC Trio checksum now..."
-curl -C - https://raw.githubusercontent.com/genome-in-a-bottle/giab_data_indexes/master/ChineseTrio/alignment.index.ChineseTrio_Illumina300X100X_wgs_novoalign_GRCh37_GRCh38_NHGRI_04062016 -o ./bam/HCtrio_Illumina300X100X_wgs_novoalign_GRCh37_GRCh38.txt 
-echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: Downloading HC Trio checksum now... done"
+echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: downloading HC Trio checksum now..."
+curl -s -C - https://raw.githubusercontent.com/genome-in-a-bottle/giab_data_indexes/master/ChineseTrio/alignment.index.ChineseTrio_Illumina300X100X_wgs_novoalign_GRCh37_GRCh38_NHGRI_04062016 -o ./bam/HCtrio_Illumina300X100X_wgs_novoalign_GRCh37_GRCh38.txt 
+echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: downloading HC Trio checksum now... done"
 
 download "HCtrio_Illumina300X100X_wgs_novoalign_GRCh37_GRCh38.txt"
-calc_cov "HCtrio_Illumina300X100X_wgs_novoalign_GRCh37_GRCh38.txt"
+# calc_cov "HCtrio_Illumina300X100X_wgs_novoalign_GRCh37_GRCh38.txt"
 
 echo -e "=== scripts/setup/download_humanGIABdata.sh > end $(date)"
