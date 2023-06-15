@@ -117,14 +117,18 @@ do
 done
 
 # Merge the chr AF into a genome-wide AF
-for i in {{1..22},X,Y}
- do
-  echo "././triotrain/variant_calling/data/GIAB/allele_freq/cohort-chr$i.release_missing2ref.no_calls.vcf.gz" >> ./allele_freq/PopVCF.merge.list
-done
+if [ ! -f "./allele_freq/PopVCF.merge.list" ]; then 
+    for i in {{1..22},X,Y}
+    do
+        echo "././triotrain/variant_calling/data/GIAB/allele_freq/cohort-chr$i.release_missing2ref.no_calls.vcf.gz" >> ./allele_freq/PopVCF.merge.list
+    done
+fi
 
+if [ ! -f "./allele_freq/concat_PopVCFs.sh" ]; then 
 echo -e "source ./scripts/setup/modules.sh
 bcftools concat --file-list ./triotrain/variant_calling/data/GIAB/allele_freq/PopVCF.merge.list -Oz -o ./triotrain/variant_calling/data/GIAB/allele_freq/cohort.release_missing2ref.no_calls.vcf.gz
 bcftools index ./triotrain/variant_calling/data/GIAB/allele_freq/cohort.release_missing2ref.no_calls.vcf.gz" > ./allele_freq/concat_PopVCFs.sh
+fi
 
 ##===================================================================
 ##                       Trio-Specific Files                             
@@ -275,7 +279,7 @@ download () {
 
             index(filename, "GRCh38") {
                 print "echo $(date \"+%Y-%m-%d %H:%M:%S\") INFO: downloading ["filename"] now..." 
-                print "curl -o ./triotrain/variant_calling/data/GIAB/bam/"filename" -C - "$1
+                print "curl -o ./triotrain/variant_calling/data/GIAB/bam/"filename" -C - "$1" --keepalive-time 300"
                 print "echo $(date \"+%Y-%m-%d %H:%M:%S\") INFO: downloading ["filename"]... done"
                 }
 

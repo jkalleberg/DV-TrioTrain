@@ -1,5 +1,5 @@
 echo $(date "+%Y-%m-%d %H:%M:%S") INFO: downloading [HG005.GRCh38_full_plus_hs38d1_analysis_set_minus_alts.300x.bam] now...
-curl -o ./triotrain/variant_calling/data/GIAB/bam/HG005.GRCh38_full_plus_hs38d1_analysis_set_minus_alts.300x.bam -C - ftp://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data/ChineseTrio/HG005_NA24631_son/HG005_NA24631_son_HiSeq_300x/NHGRI_Illumina300X_Chinesetrio_novoalign_bams/HG005.GRCh38_full_plus_hs38d1_analysis_set_minus_alts.300x.bam
+curl -o ./triotrain/variant_calling/data/GIAB/bam/HG005.GRCh38_full_plus_hs38d1_analysis_set_minus_alts.300x.bam -C - ftp://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data/ChineseTrio/HG005_NA24631_son/HG005_NA24631_son_HiSeq_300x/NHGRI_Illumina300X_Chinesetrio_novoalign_bams/HG005.GRCh38_full_plus_hs38d1_analysis_set_minus_alts.300x.bam --keepalive-time 300
 echo $(date "+%Y-%m-%d %H:%M:%S") INFO: downloading [HG005.GRCh38_full_plus_hs38d1_analysis_set_minus_alts.300x.bam]... done
 echo 50080d14ba49462cfc6348e1fb41b5b3	./triotrain/variant_calling/data/GIAB/bam/HG005.GRCh38_full_plus_hs38d1_analysis_set_minus_alts.300x.bam > ./triotrain/variant_calling/data/GIAB/bam/HG005.GRCh38_full_plus_hs38d1_analysis_set_minus_alts.300x.bam.md5
 echo $(date "+%Y-%m-%d %H:%M:%S") INFO: checking [HG005.GRCh38_full_plus_hs38d1_analysis_set_minus_alts.300x.bam] for corruption...
@@ -15,7 +15,7 @@ md5sum -c ./triotrain/variant_calling/data/GIAB/bam/HG005.GRCh38_full_plus_hs38d
 echo $(date "+%Y-%m-%d %H:%M:%S") INFO: checking [HG005.GRCh38_full_plus_hs38d1_analysis_set_minus_alts.300x.bam.bai] for corruption... done
 echo ====================================================
 echo $(date "+%Y-%m-%d %H:%M:%S") INFO: downloading [HG006.GRCh38_full_plus_hs38d1_analysis_set_minus_alts.100x.bam] now...
-curl -o ./triotrain/variant_calling/data/GIAB/bam/HG006.GRCh38_full_plus_hs38d1_analysis_set_minus_alts.100x.bam -C - ftp://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data/ChineseTrio/HG006_NA24694-huCA017E_father/NA24694_Father_HiSeq100x/NHGRI_Illumina100X_Chinesetrio_novoalign_bams/HG006.GRCh38_full_plus_hs38d1_analysis_set_minus_alts.100x.bam
+curl -o ./triotrain/variant_calling/data/GIAB/bam/HG006.GRCh38_full_plus_hs38d1_analysis_set_minus_alts.100x.bam -C - ftp://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data/ChineseTrio/HG006_NA24694-huCA017E_father/NA24694_Father_HiSeq100x/NHGRI_Illumina100X_Chinesetrio_novoalign_bams/HG006.GRCh38_full_plus_hs38d1_analysis_set_minus_alts.100x.bam --keepalive-time 300
 echo $(date "+%Y-%m-%d %H:%M:%S") INFO: downloading [HG006.GRCh38_full_plus_hs38d1_analysis_set_minus_alts.100x.bam]... done
 echo 3a7c239988862e5a4556eb8781058b1f	./triotrain/variant_calling/data/GIAB/bam/HG006.GRCh38_full_plus_hs38d1_analysis_set_minus_alts.100x.bam > ./triotrain/variant_calling/data/GIAB/bam/HG006.GRCh38_full_plus_hs38d1_analysis_set_minus_alts.100x.bam.md5
 echo $(date "+%Y-%m-%d %H:%M:%S") INFO: checking [HG006.GRCh38_full_plus_hs38d1_analysis_set_minus_alts.100x.bam] for corruption...
@@ -31,7 +31,7 @@ md5sum -c ./triotrain/variant_calling/data/GIAB/bam/HG006.GRCh38_full_plus_hs38d
 echo $(date "+%Y-%m-%d %H:%M:%S") INFO: checking [HG006.GRCh38_full_plus_hs38d1_analysis_set_minus_alts.100x.bam.bai] for corruption... done
 echo ====================================================
 echo $(date "+%Y-%m-%d %H:%M:%S") INFO: downloading [HG007.GRCh38_full_plus_hs38d1_analysis_set_minus_alts.100x.bam] now...
-curl -o ./triotrain/variant_calling/data/GIAB/bam/HG007.GRCh38_full_plus_hs38d1_analysis_set_minus_alts.100x.bam -C - ftp://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data/ChineseTrio/HG007_NA24695-hu38168_mother/NA24695_Mother_HiSeq100x/NHGRI_Illumina100X_Chinesetrio_novoalign_bams/HG007.GRCh38_full_plus_hs38d1_analysis_set_minus_alts.100x.bam
+curl -o ./triotrain/variant_calling/data/GIAB/bam/HG007.GRCh38_full_plus_hs38d1_analysis_set_minus_alts.100x.bam -C - ftp://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data/ChineseTrio/HG007_NA24695-hu38168_mother/NA24695_Mother_HiSeq100x/NHGRI_Illumina100X_Chinesetrio_novoalign_bams/HG007.GRCh38_full_plus_hs38d1_analysis_set_minus_alts.100x.bam --keepalive-time 300
 echo $(date "+%Y-%m-%d %H:%M:%S") INFO: downloading [HG007.GRCh38_full_plus_hs38d1_analysis_set_minus_alts.100x.bam]... done
 echo 3b8442105a4a45f71c3c1bda8af238dd	./triotrain/variant_calling/data/GIAB/bam/HG007.GRCh38_full_plus_hs38d1_analysis_set_minus_alts.100x.bam > ./triotrain/variant_calling/data/GIAB/bam/HG007.GRCh38_full_plus_hs38d1_analysis_set_minus_alts.100x.bam.md5
 echo $(date "+%Y-%m-%d %H:%M:%S") INFO: checking [HG007.GRCh38_full_plus_hs38d1_analysis_set_minus_alts.100x.bam] for corruption...
