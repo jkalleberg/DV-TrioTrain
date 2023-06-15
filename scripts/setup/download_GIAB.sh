@@ -58,20 +58,22 @@ fi
 # Define the file extensions to be downloaded:
 declare -a Ext=(".fna.gz" ".fna.fai")
 
-for e in ${Ext[@]}; do
-    if [ -f ./reference/md5checksums.txt ]; then
-        echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: Downloading ${REFFILE}${e} now..."
-        curl --continue-at - "${REFDIR}/${REFFILE}${e}" -o "./reference/${REFFILE}${e}" 
-        echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: checking ${REFFILE}${e} for corruption..."
-        check_sum=$(cat ./reference/md5checksums.txt | grep "${REFFILE}${e}")
-        old_path="./"
-        new_path="./reference/"
-        valid_check_sum="${check_sum/$old_path/$new_path}"
-        echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: $(echo $valid_check_sum | md5sum -c)"
-    else
-        echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: file found | '${REFFILE}${e}'"
-    fi
-done
+if [ ! -f "./reference/GRCh38_no_alt_analysis_set.fasta" ]; then 
+    for e in ${Ext[@]}; do
+        if [ -f ./reference/md5checksums.txt ]; then
+            echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: Downloading ${REFFILE}${e} now..."
+            curl --continue-at - "${REFDIR}/${REFFILE}${e}" -o "./reference/${REFFILE}${e}" 
+            echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: checking ${REFFILE}${e} for corruption..."
+            check_sum=$(cat ./reference/md5checksums.txt | grep "${REFFILE}${e}")
+            old_path="./"
+            new_path="./reference/"
+            valid_check_sum="${check_sum/$old_path/$new_path}"
+            echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: $(echo $valid_check_sum | md5sum -c)"
+        else
+            echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: file found | '${REFFILE}${e}'"
+        fi
+    done
+fi
 
 if [ -f "./reference/${REFFILE}.fna.gz" ]; then
     echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: Unzipping GRCh38 and re-naming reference files now..."
@@ -380,14 +382,15 @@ calc_cov () {
                 print "    echo \"$(date \"+%Y-%m-%d %H:%M:%S\")  INFO: Calculating Coverage for ["label"] now... done\""
                 print "else"
                 print "    echo \"$(date \"+%Y-%m-%d %H:%M:%S\")  INFO: bash file found | ./triotrain/variant_calling/data/GIAB/bam/"label".coverage.out\""
-                print "fi" 
-                
-                print "if [ ! -f ./triotrain/variant_calling/data/GIAB/bam/$sampleID.avg_coverage.out ]; then"
-                print "    echo \"$(date \"+%Y-%m-%d %H:%M:%S\")  INFO: Calculating Average Coverage for [$sampleID] now...\"" 
-                print "    awk '\''{ total += $6; count++ } END { print \""label" AVERAGE COVERAGE = \" total/count }'\'' ./triotrain/variant_calling/data/GIAB/bam/"label".coverage.out > ./triotrain/variant_calling/data/GIAB/bam/$sampleID.avg_coverage.out"
-                print "    echo \"$(date \"+%Y-%m-%d %H:%M:%S\")  INFO: Calculating Average Coverage for [$sampleID] now... done\""
+                print "fi"
+                print "echo ----------------------------------------------------"
+                split(label, output, ".")
+                print "if [ ! -f ./triotrain/variant_calling/data/GIAB/bam/"output[1]".avg_coverage.out ]; then"
+                print "    echo \"$(date \"+%Y-%m-%d %H:%M:%S\")  INFO: Calculating Average Coverage for ["output[1]"] now...\"" 
+                print "    awk '\''{ total += $6; count++ } END { print \""label" AVERAGE COVERAGE = \" total/count }'\'' ./triotrain/variant_calling/data/GIAB/bam/"label".coverage.out > ./triotrain/variant_calling/data/GIAB/bam/"output[1]".avg_coverage.out"
+                print "    echo \"$(date \"+%Y-%m-%d %H:%M:%S\")  INFO: Calculating Average Coverage for ["output[1]"] now... done\""
                 print "else"
-                print "    echo \"$(date \"+%Y-%m-%d %H:%M:%S\")  INFO: output file found | ./triotrain/variant_calling/data/GIAB/bam/$sampleID.avg_coverage.out\""
+                print "    echo \"$(date \"+%Y-%m-%d %H:%M:%S\")  INFO: output file found | ./triotrain/variant_calling/data/GIAB/bam/"output[1]".avg_coverage.out\""
                 print "fi" 
                 
                 print "echo ===================================================="
