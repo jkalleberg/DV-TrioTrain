@@ -29,7 +29,7 @@ APPTAINER_TMPDIR  deepvariant_1.4.0.sif      errors  LICENSE             mkdocs.
 !!! note
     You will need to change this bash script to match your own system resources. Reach out to your cluster's sys admin with any questions.
 
-    For example, on the MU Lewis Research Compute Cluster, the default `start_interactive.sh` requests an entire compute node with: `srun --pty -p <partition_name> --time=0-06:00:00 --exclusive --mem=0 -A <account_name> /bin/bash`
+    For example, when running this tutorial on the MU Lewis Research Compute Cluster, the default `start_interactive.sh` requests an entire compute node with: `srun --pty -p <partition_name> --time=0-06:00:00 --exclusive --mem=0 -A <account_name> /bin/bash`
 
 An interactive session ensures you do not run resource-intensive code on the login node, which could negatively impact other users. [You can view a template on Github.](https://github.com/jkalleberg/DV-TrioTrain/blob/bac33c732065fa7fa1e92097e8f31da383261f4f/scripts/start_interactive.sh)
 
@@ -137,9 +137,11 @@ There are (5) types of intermediate data required:
 * a benchmarking regions file (`.bed`) for each sample
 * the GRCh38 reference genome (`.fasta`), with corresponding index file (`.fai`)
 
-All the steps to download these intermediate data are contained in a single script, which [you can view on Github.](https://github.com/jkalleberg/DV-TrioTrain/blob/bac33c732065fa7fa1e92097e8f31da383261f4f/scripts/setup/download_GIAB.sh) Run the following at the command line:
+All the steps to download these intermediate data are contained in a single script, which [you can view on Github.](https://github.com/jkalleberg/DV-TrioTrain/blob/bac33c732065fa7fa1e92097e8f31da383261f4f/scripts/setup/download_GIAB.sh)
 
 ---
+
+Run the following at the command line:
 
 ```bash
 # Downloads the checksums and intermediate files:
@@ -238,7 +240,7 @@ GRCh38_no_alt_analysis_set.fasta  GRCh38_no_alt_analysis_set.fasta.fai  md5check
 
 ---
 
-### Intermediate Scripts
+## 6. Intermediate Scripts
 
 !!! note
     These scripts can either be wrapped with SBATCH, or run interactively at the command line if you have enough memory. However, each script can take awhile to complete, particularly the `.download` scripts (1hr+). The NIST FTP server runs slowly, causing `curl` to timeout. **You may need to run these scripts repeatedly until the entire file is transfered.**
@@ -253,7 +255,7 @@ In addition to the intermediate data, `download_GIAB.sh` also creates (5) bash s
 
 ---
 
-## 6. Merge the PopVCF
+### a. Merge the PopVCF
 
 !!! note
     The PopVCF was produced by the One Thousand Genomes Project (1kGP) and used to train the Human WGS.AF model. [You can view the raw files on Google Cloud Platform.](https://console.cloud.google.com/storage/browser/brain-genomics-public/research/cohort/1KGP/cohort_dv_glnexus_opt/v3_missing2ref?pageState=(%22StorageObjectListTable%22:(%22f%22:%22%255B%255D%22))&prefix=&forceOnObjectsSortingFiltering=false)
@@ -276,7 +278,7 @@ cohort.release_missing2ref.no_calls.vcf.gz
 cohort.release_missing2ref.no_calls.vcf.gz.csi
 ```
 
-## 7. Download Raw GIAB data
+### b. Download Raw GIAB data
 
 !!! note
     These BAM/BAI files orginate from the GIAB FTP site. An index of all available data for these samples can be found on [GitHub.](https://github.com/genome-in-a-bottle/giab_data_indexes)
@@ -367,40 +369,62 @@ HG007.GRCh38_full_plus_hs38d1_analysis_set_minus_alts.100x.bam.bai.md5
 HG007.GRCh38_full_plus_hs38d1_analysis_set_minus_alts.100x.bam.md5
 ```
 
-<!-- ## 8. Sanity Check
+## 7. Create Inputs for TrioTrain
 
-Calculate the average coverage from the autosomes and sex chromosomes for each sample by running the following at the command line:
+Details about the input data required can be [found in the TrioTrain User Guide.](../user-guide/usage_guide.md#metadata-format)
 
-```bash
-# Calculate per-chr coverage for each GIAB trio, then calculate an average.
-bash triotrain/variant_calling/data/GIAB/bam/AJtrio.run
-bash triotrain/variant_calling/data/GIAB/bam/HCtrio.run
-``` -->
+### **a. Reference Dictionary File**
 
-## 8. Create supplmentary reference files
+!!! note
+    This step is specific to the Human reference genome GRCh38. Cattle-specific input files are packaged with TrioTrain. If you are working with a new species, you will need to create this file for your reference genome.
 
-After the Human reference genome is downloaded, supplementary files must also be created.
-
-### Reference dictionary file with `picard`
+This file is used to define the genomic co-ordinates for TrioTrain's region shuffling. By default, only the autosomes and X chromosome will be used; however, this can be overwritten by providing an alternative region file (`.bed`) in the metadata file (`.csv`).
 
 ```bash
-picard CreateSequenceDictionary --REFERENCE ./triotrain/variant_calling/data/GIAB/reference/GRCh38_no_alt_analysis_set.fasta --OUTPUT ./triotrain/variant_calling/data/GIAB/reference/GRCh38_no_alt_analysis_set.dict --SPECIES human
+picard CreateSequenceDictionary \
+    --REFERENCE ./triotrain/variant_calling/data/GIAB/reference/GRCh38_no_alt_analysis_set.fasta \
+    --OUTPUT ./triotrain/variant_calling/data/GIAB/reference/GRCh38_no_alt_analysis_set.dict \
+    --SPECIES human
 ```
 
-### Files for `rtg-tools`
+---
 
-These files are required by `rtg-tools mendelian`. This step is specific to the Human reference genome GRCh38.
+### **b. Metadata file**
+
+Details about the format of this required input can be [found in the TrioTrain User Guide.](../user-guide/usage_guide.md#required-data)
+
+This script is specific to the tutorial, and produces an example of the `metadata.csv` using the previously downloaded Human GIAB data. However, the output file is typically manually created by the user.
+
+Assuming all prior tutotiral steps were successfully completed, this module adds the local path based on expectations of where tutorial data are stored. Absolute paths to these inputs are required within the resulting metadata file to help the DeepVariant and hap.py Apptainer/Singularity containers identify local files. We provide this script to illustrate that this TrioTrain input file is a user-created input.
+
 
 ```bash
+# Ensure the previously built conda env is active
+source ./scripts/start_conda.sh
+python triotrain/model_training/demo/create_metadata.py
+```
+
+---
+
+### **c. SLURM Resource Config File**
+
+---
+
+### **d.** *(OPTIONAL)* **Reference Sequence Data File**
+
+!!! note
+    This step is specific to the Human reference genome GRCh38. Cattle-specific input files are packaged with TrioTrain. If you are working with a new species, you will need to create this file for your reference genome.
+
+If you have additional trios for model testing, TrioTrain can help calculate Mendelian Inheritance Errors using `rtg-tools mendelian`, which requires a Sequence Data File (SDF) for each reference genome.
+
+Additional details about `rtg-tools` can be [found on GitHub](https://github.com/RealTimeGenomics/rtg-tools), or by [reviewing the PDF documentation here](https://cdn.rawgit.com/RealTimeGenomics/rtg-tools/master/installer/resources/tools/RTGOperationsManual.pdf).
+
+```bash
+# Ensure the previously built conda env is active
+source ./scripts/start_conda.sh
+
+# Create the Human reference SDF to ensure rtg-tools behaves as expected
 bash scripts/setup/setup_rtg_tools.sh
 ```
 
-## 9. Create the demo metadata file
-
-```bash
-# ensure you're running from the DV-TrioTrain directory!
-bash scripts/start_interactive.sh
-. scripts/setup/modules.sh
-. scripts/start_conda.sh
-python triotrain/model_training/demo/create_metadata.py
-```
+---
