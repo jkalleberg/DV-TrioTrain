@@ -1,9 +1,8 @@
 # TrioTrain Usage Guide
 
-TrioTrain is a pipeline to automate re-training of DeepVariant models. [Visit the DeepVariant usage guide](https://github.com/google/deepvariant/blob/r1.5/docs/deepvariant-details.md) to
-learn more in-depth details about how DeepVariant works. 
+TrioTrain is a pipeline to automate re-training of DeepVariant models. [Visit the DeepVariant usage guide](https://github.com/google/deepvariant/blob/r1.5/docs/deepvariant-details.md) to learn more in-depth details about how DeepVariant works.
 
-## Required Data
+## Required Raw Data
 
 TrioTrain and DeepVariant use several input file formats:
 
@@ -11,48 +10,49 @@ TrioTrain and DeepVariant use several input file formats:
     - must be in [`FASTA`](https://en.wikipedia.org/wiki/FASTA_format)
 format
     - includes the corresponding
-    [`.fai` index file](http://www.htslib.org/doc/faidx.html) generated using the `samtools faidx` command.
+    [`.fai` index file](http://www.htslib.org/doc/faidx.html) generated with `samtools faidx` and located in the same directory.
+    - includes the corresponding [Sequence Data File (SDF)](https://github.com/RealTimeGenomics/rtg-tools) generated with `rtg-tools format`. This file should be saved under `DV-TrioTrain/triotrain/model_training/data/rtg_tools/` in a directory named as `<species_common_name>_reference/`
 
 1. **Aligned reads file(s)**
     - must be aligned to the reference genome above
     - can be in either
         1. [`BAM`](http://genome.sph.umich.edu/wiki/BAM) format
         1. [`CRAM`](https://www.ga4gh.org/product/cram/) format
-    - includes the corresponding index file matching the reads format above
+    - includes the corresponding index file based on the format chosen above and located in the same directory
         1. `.bai` index file
         1. `.csi` index file
 
 1. **Benchmarking variant file(s)**
     - also referred to as  "truth genotypes", or "gold-standard genotypes"
     - must be in in [`VCF`](https://samtools.github.io/hts-specs/VCFv4.3.pdf) format
-    - includes a corresponding `.tbi` index file generated with `tabix`
+    - includes a corresponding `.tbi` index generated with `tabix` and located in the same directory
   
 1. **Benchmarking region file(s)**
     - also referred to as "callable regions"
     - must be in [`BED`](https://bedtools.readthedocs.io/en/latest/content/general-usage.html) format
-    - must match the co-ordinantes of the reference genome above.
+    - must be compatible with the specified reference genome
   
 1. **A model checkpoint for DeepVariant**
-    - used for warm-start a new model, or initializing weights with a previous model
-    - can either:
-        1. be downloaded from Google Cloud Platform (GCP)
-        2. were created previously by a prior TrioTrain iteration
-    - a checkpoint consists of four (4) file formats:
+    - used for warm-start a new model  initializing weights with a previous model
+    - can either be:
+        1. downloaded from Google Cloud Platform (GCP)
+        2. created previously by a prior TrioTrain iteration
+    - a checkpoint consists of four (4) file formats, all located in the same directory:
         - `.data-00000-of-00001`
         - `.index`
         - `.meta`
-        - `.example_info.json` - defines the channels to include in the variant examples in TensorFlow Record [(`tfRecord`)](https://www.tensorflow.org/tutorials/load_data/tfrecord) format.
+        - `.example_info.json` &mdash; defines the channels to include in the variant examples in TensorFlow Record [(`tfRecord`)](https://www.tensorflow.org/tutorials/load_data/tfrecord) format.
 
         !!! note
             Examples made with different channel(s), a different tfRecord shape, or a different DeepVariant version can be incompatible with alternative models. Get details about model features, such as shape, version and channels [here](existing_models.md).
 
-            **Check the shape of a model with:**
+            *Check the shape of a model with:*
 
             `jq '.' <model_name>.example_info.json`.           
 
 1. *(OPTIONAL)* **Population Allele Frequencies**
     - must be in [`VCF`](https://samtools.github.io/hts-specs/VCFv4.3.pdf) format
-    - includes a corresponding `.tbi` index file generated with `tabix`
+    - includes a corresponding `.tbi` index generated with `tabix` and located in the same directory
     - genotypes should be removed
 
 !!! note
@@ -97,7 +97,7 @@ At a minimum, this metadata file must provide absolute paths to the following in
 1. TrioTrain performs two iterations of re-training, one for each parent in a trio. The following genomic data are **REQUIRED** for the entire family trio:
     - Three (3) aligned read data `.bam` files, with the corresponding `.bai` index.
     - Three (3) benchmark `.vcf.gz` files, with the corresponding `.vcf.gz.tbi` index.
-    - Three (3) benchmark region `.bed.gz` files.
+    - Three (3) benchmark region `.bed` files.
 
 1. TrioTrain tests the model produced for each iteration using a set of genomes previously unseen by the model. The following genomic data are **REQUIRED** from individual(s) outside of the family trio:
     - One or more (1+) aligned read data `.bam` files, with the corresponding `.bai` index.
