@@ -14,7 +14,7 @@ from dataclasses import dataclass, field
 from logging import Logger
 from pathlib import Path
 from random import randint
-from typing import Dict, List, Text, Union
+from typing import Dict, List, Text, Union, Match
 import dotenv
 import regex
 from natsort import natsorted
@@ -29,7 +29,7 @@ def timestamp():
     return str(formatted_time)
 
 
-def random_with_N_digits(n) -> int:
+def random_with_N_digits(n: int) -> int:
     """
     Create a number of an arbitrary length (n)
     """
@@ -59,7 +59,7 @@ class Wrapper:
         self.name = name
         self.message = message
 
-    def wrap_script(self, time):
+    def wrap_script(self, time: str):
         """
         display the script boundaries
         """
@@ -81,7 +81,7 @@ class TestFile:
         self.file_exists: bool
         self.logger = logger
 
-    def check_missing(self, logger_msg: Union[str, None] = None, debug_mode=False):
+    def check_missing(self, logger_msg: Union[str, None] = None, debug_mode: bool = False):
         """
         Confirms if a file is non-existant.
         """
@@ -100,7 +100,7 @@ class TestFile:
                 self.logger.debug(f"{msg}file is missing, as expected | '{self.file}'")
             self.file_exists = False
 
-    def check_existing(self, logger_msg: Union[str, None] = None, debug_mode=False):
+    def check_existing(self, logger_msg: Union[str, None] = None, debug_mode: bool = False):
         """
         Confirms if a file exists already.
         """
@@ -136,15 +136,15 @@ class Env:
         self.env_file = env_file
         self.env_path = Path(self.env_file)
         self.logger = logger
-        self.contents = dotenv.dotenv_values(self.env_path)
+        self.contents: Dict[str, Union[str, None]] = dotenv.dotenv_values(self.env_path)
         self.debug_mode = debug_mode
-        self.updated_keys = dict()
+        self.updated_keys: Dict[str, Union[str, None]] = dict()
 
     def check_out(self) -> None:
         """
         Opens and returns the environment file contents object
         """
-        if self.contents is not None and len(self.contents) != 0:
+        if len(self.contents) != 0:
             if self.debug_mode:
                 self.logger.debug(
                     f"[{self.env_path.name}] contains {len(self.contents)} variables"
@@ -161,15 +161,14 @@ class Env:
         self.check_out()
         self.var_count = 0
         for var in variables:
-            if var is not None and self.contents is not None:
-                if var in self.contents:
-                    if self.debug_mode:
-                        self.logger.debug(f"[{self.env_path.name}] contains [{var}]")
-                    self.var_count += 1
-                else:
-                    self.logger.warning(
-                        f"[{self.env_path.name}] does not have a variable called [{var}]"
-                    )
+            if var in self.contents:
+                if self.debug_mode:
+                    self.logger.debug(f"[{self.env_path.name}] contains [{var}]")
+                self.var_count += 1
+            else:
+                self.logger.warning(
+                    f"[{self.env_path.name}] does not have a variable called [{var}]"
+                )
 
         if self.var_count == len(variables):
             if self.debug_mode:
@@ -256,7 +255,7 @@ class Env:
     def load(
         self,
         *variables: str,
-    ) -> List[Text]:
+    ) -> List[Union[str, Text]]:
         """
         Search env for existing variables.
 
@@ -267,10 +266,10 @@ class Env:
             self.logger.debug(
                 f"[{Path(self.env_file).name}] configured {self.var_count} variables"
             )
-        return_list = []
+        return_list: List[Text] = []
         for var in variables:
             if var in self.contents and self.contents[f"{var}"] is not None:
-                return_list.append(self.contents[f"{var}"])
+                return_list.append(str(self.contents[f"{var}"]))
             else:
                 raise KeyError(
                     f"Unable to load '{var}', because missing from '{self.env_file}'"
@@ -301,9 +300,9 @@ class WriteFiles:
     dryrun_mode: bool = False
 
     # internal parameters
-    _file_exists: bool = field(default=False, init=False, repr=False)
-    _file_lines: list = field(default_factory=list, init=False, repr=False)
-    _file_dict: dict = field(default_factory=dict, init=False, repr=False)
+    file_exists: bool = field(default=False, init=False, repr=False)
+    file_lines: List[str] = field(default_factory=list, init=False, repr=False)
+    file_dict: Dict[str, str] = field(default_factory=dict, init=False, repr=False)
 
     def __post_init__(self):
         self.path = Path(self.path_to_file)
@@ -317,9 +316,9 @@ class WriteFiles:
         """
         file = TestFile(self.file_path, self.logger)
         file.check_missing(logger_msg=self.logger_msg, debug_mode=self.debug_mode)
-        self._file_exists = file.file_exists
+        self.file_exists = file.file_exists
 
-    def write_list(self, line_list: list):
+    def write_list(self, line_list: List[str]):
         """
         Take an iterable list of lines and write them to a text file.
         """
@@ -345,13 +344,13 @@ class WriteFiles:
             with open(
                 f"{self.path}/{self.file}", mode="r", encoding="UTF-8"
             ) as filehandle:
-                self._file_lines = filehandle.readlines()
+                self.file_lines = filehandle.readlines()
 
             assert len(line_list) == len(
-                self._file_lines
-            ), f"expected {len(line_list)} lines in {self.file}, but there were {len(self._file_lines)} found"
+                self.file_lines
+            ), f"expected {len(line_list)} lines in {self.file}, but there were {len(self.file_lines)} found"
 
-    def add_rows(self, col_names: list, data_dict: Dict):
+    def add_rows(self, col_names: List[str], data_dict: Dict[str, str]):
         """
         Append rows to a csv.
         """
@@ -369,7 +368,7 @@ class WriteFiles:
                 with open(str(self.file_path), mode="a") as file:
                     dictwriter = DictWriter(file, fieldnames=col_names)
                     dictwriter.writerow(data_dict)
-                    self._file_dict.update(data_dict)
+                    self.file_dict.update(data_dict)
             else:
                 if self.debug_mode:
                     debug_msg = f"initializing | '{self.file}'"
@@ -383,9 +382,9 @@ class WriteFiles:
                     dictwriter.writeheader()
                     dictwriter.writerow(data_dict)
 
-                self._file_dict = data_dict
+                self.file_dict = data_dict
 
-    def write_csv(self, write_dict: dict) -> None:
+    def write_csv(self, write_dict: Dict[str, str]) -> None:
         """
         Save or display counts from [run_name]-[iteration]-[test_number] only.
         """
@@ -427,7 +426,7 @@ class WriteFiles:
                     self.logger.info(f"{self.logger_msg}: {logging_msg}")
 
 
-def collect_job_nums(dependency_list: List, allow_dep_failure: bool = False):
+def collect_job_nums(dependency_list: List[str], allow_dep_failure: bool = False):
     """
     Function to format Slurm Job Numbers into SLURM dependency strings.
     """
@@ -447,14 +446,14 @@ def collect_job_nums(dependency_list: List, allow_dep_failure: bool = False):
     return list_dependency
 
 
-def check_if_all_same(list_of_elem, item):
+def check_if_all_same(list_of_elem: List[Union[str, int]], item: Union[str, int]):
     """
     Using List comprehension, check if all elements in list are same and matches the given item.
     """
     return all([elem == item for elem in list_of_elem])
 
 
-def find_NaN(list_of_elem) -> List[int]:
+def find_NaN(list_of_elem: List[Union[str, int, None]]) -> List[int]:
     """
     Returns a list of indexs within a list which are 'None'
     """
@@ -462,7 +461,7 @@ def find_NaN(list_of_elem) -> List[int]:
     return list
 
 
-def find_not_NaN(list_of_elem) -> List[int]:
+def find_not_NaN(list_of_elem: List[Union[str, int, None]]) -> List[int]:
     """
     Returns a list of indexs within a list which are not 'None'
     """
@@ -471,22 +470,22 @@ def find_not_NaN(list_of_elem) -> List[int]:
 
 
 def check_if_output_exists(
-    match_pattern: Union[str, regex.Pattern],
+    match_pattern: regex.Pattern,
     file_type: str,
     search_path: Path,
     label: str,
     logger: Logger,
-    debug_mode=False,
+    debug_mode: bool = False,
 ):
     """
     Using a regex string/Pattern, confirms if file(s) exist and counts the number of files matching the regex.
     """
-    files = []
+    files: List[str] = list()
     n_matches = 0
     if search_path.exists():
         if Path(search_path).is_dir():
             for file in os.listdir(str(search_path)):
-                match = regex.search(match_pattern, str(file))
+                match: Match[str] = regex.search(match_pattern, str(file))
                 if match:
                     files.append(match.group())
 
@@ -498,7 +497,7 @@ def check_if_output_exists(
                 logger.debug(f"{label}: files found | {unique_files_list}")
 
             for file in files:
-                filename = search_path / file
+                filename: Path = search_path / file
                 if filename.exists():
                     n_matches += 1
         else:
@@ -595,7 +594,7 @@ def process_resource(txt: str):
     return txt
 
 
-def create_deps(num: int = 4) -> list:
+def create_deps(num: int = 4) -> List[None]:
     """
     Create a list of None of a certain length.
     """
@@ -624,7 +623,7 @@ def count_variants(
     count_ref: bool = False,
     use_bcftools: bool = True,
     debug_mode: bool = False,
-) -> Union[List[str], int, dict, None]:
+) -> Union[List[str], int, Dict[str, int], None]:
     """
     Use 'bcftools +smpl-stats' to count either REF/REF or PASS positions.
     """
@@ -672,7 +671,7 @@ def count_variants(
             else:
                 raise ChildProcessError("Unable to run bcftools +smpl-stats")
 
-        elif command is not None:
+        else:
             bcftools_smpl_stats = subprocess.Popen(
                 ["bcftools", "+smpl-stats", str(truth_vcf)],
                 stdout=subprocess.PIPE,
@@ -729,12 +728,12 @@ def count_variants(
 
 
 def add_to_dict(
-    update_dict: dict,
+    update_dict: Dict[str, Union[str, int, float]],
     new_key: str,
     new_val: Union[str, int, float],
     logger: Logger,
     logger_msg: str,
-    valid_keys: Union[list, None] = None,
+    valid_keys: Union[List[str], None] = None,
     replace_value: bool = False,
 ) -> None:
     """
@@ -743,7 +742,7 @@ def add_to_dict(
     if valid_keys is not None:
         if new_key not in valid_keys:
             logger.error(f"{logger_msg}: invalid metadata key | '{new_key}'")
-            valid_key_string = ", ".join(valid_keys)
+            valid_key_string: str = ", ".join(valid_keys)
             logger.error(
                 f"{logger_msg}: use one of the following valid keys | '{valid_key_string}'\nExiting..."
             )

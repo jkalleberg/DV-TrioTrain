@@ -9,13 +9,15 @@ import datetime as dt
 import logging
 import sys
 from pathlib import Path
+from typing import TextIO
+
 
 class LogFormatter(logging.Formatter):
     """
     Sets a cutsom log formmat for INFO messages vs debug, warning, and error messages.
     """
 
-    def format(self, record):
+    def format(self, record: logging.LogRecord):
         # Save the original format configured by the user
         # when the logger formatter was instantiated
         format_orig = self._style._fmt
@@ -49,7 +51,7 @@ def file_timestamp() -> str:
     return str(formatted_time)
 
 
-def get_file_handler(log_file) -> logging.FileHandler:
+def get_file_handler(log_file: str) -> logging.FileHandler:
     """
     Writes any log messages from code warnings or
     errors to a log file
@@ -72,7 +74,7 @@ def get_stream_handler() -> logging.StreamHandler:
     return stream_handler
 
 
-def get_logger(name):
+def get_logger(name: str):
     """
     Inializes a logging object to handle any print messages
     """
