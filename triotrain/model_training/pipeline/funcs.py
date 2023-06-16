@@ -17,7 +17,7 @@ from regex import compile
 # get the relative path to the triotrain/ dir
 h_path = str(Path(__file__).parent.parent.parent)
 sys.path.append(h_path)
-from helpers import helper_func as h
+import helpers
 from model_training.prep.create_environment import Environment
 
 @dataclass
@@ -30,7 +30,7 @@ class Setup:
     eval_genome: str = "Child"
     demo_mode: bool = False
     demo_chr: str = "29"
-    current_genome_deps: List[Union[str, None]] = field(default_factory=h.create_deps)
+    current_genome_deps: List[Union[str, None]] = field(default_factory=helpers.h.create_deps)
     next_genome_deps: List[Union[str, None]] = field(default_factory=h.create_deps)
     _checkpoint_used: Union[str, None] = field(default=None, init=False, repr=False)
 

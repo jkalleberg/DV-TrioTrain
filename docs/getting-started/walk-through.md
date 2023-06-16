@@ -397,7 +397,6 @@ This script is specific to the tutorial, and produces an example of the `metadat
 
 Assuming all prior tutotiral steps were successfully completed, this module adds the local path based on expectations of where tutorial data are stored. Absolute paths to these inputs are required within the resulting metadata file to help the DeepVariant and hap.py Apptainer/Singularity containers identify local files. We provide this script to illustrate that this TrioTrain input file is a user-created input.
 
-
 ```bash
 # Ensure the previously built conda env is active
 source ./scripts/start_conda.sh
