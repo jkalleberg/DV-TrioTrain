@@ -10,8 +10,8 @@ TrioTrain and DeepVariant use several input file formats:
     - must be in [`FASTA`](https://en.wikipedia.org/wiki/FASTA_format)
 format
     - includes the corresponding
-    [`.fai` index file](http://www.htslib.org/doc/faidx.html) generated with `samtools faidx` and located in the same directory.
-    - includes the corresponding [Sequence Data File (SDF)](https://github.com/RealTimeGenomics/rtg-tools) generated with `rtg-tools format`. This file should be saved under `DV-TrioTrain/triotrain/model_training/data/rtg_tools/` in a directory named as `<species_common_name>_reference/`
+    [`.fai` index file](http://www.htslib.org/doc/faidx.html) generated with `samtools faidx` and located in the same directory
+    - includes the corresponding [Sequence Data File (SDF)](https://github.com/RealTimeGenomics/rtg-tools) generated with `rtg-tools format` and located at the same path in a sub-directory called rtg_tools
 
 1. **Aligned reads file(s)**
     - must be aligned to the reference genome above
