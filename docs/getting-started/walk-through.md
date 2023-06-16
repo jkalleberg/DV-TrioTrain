@@ -401,7 +401,7 @@ Assuming all prior tutotiral steps were successfully completed, this module adds
 ```bash
 # Ensure the previously built conda env is active
 source ./scripts/start_conda.sh
-python triotrain/model_training/demo/create_metadata.py
+python triotrain/model_training/tutorial/create_metadata.py
 ```
 
 ---

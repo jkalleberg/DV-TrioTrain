@@ -1,19 +1,21 @@
 #!/usr/bin/python3
 """
-description: creates a demo metadata file from the Human GIAB data downloaded during the walk-through
+description: creates a tutorial metadata file from the Human GIAB data downloaded during the walk-through
 example:
-    python3 triotrain/model_training/demo/create_metadata.py
+    python3 triotrain/model_training/tutorial/create_metadata.py
 """
 
 from pathlib import Path
 import os
 import sys
 import regex
+from typing import Dict, Union
 
 # get the relative path to the triotrain/ dir
 h_path = str(Path(__file__).parent.parent.parent)
 sys.path.append(h_path)
 import helpers
+import logging
 
 # Collect start time
 helpers.h.Wrapper(__file__, "start").wrap_script(helpers.h.timestamp())
@@ -21,11 +23,11 @@ helpers.h.Wrapper(__file__, "start").wrap_script(helpers.h.timestamp())
 # Create error log
 current_file = os.path.basename(__file__)
 module_name = os.path.splitext(current_file)[0]
-logger = helpers.log.get_logger(module_name)
+logger: logging.Logger = helpers.log.get_logger(module_name)
 
 defaults = {
     "RunOrder": 1,
-    "RunName": "demo",
+    "RunName": "tutorial",
     "ChildSampleID": "NA24385",
     "ChildLabID": "HG002",
     "FatherSampleID": "NA24149",
@@ -57,7 +59,7 @@ defaults = {
     }
 
 cwd = Path.cwd()
-output_dict = dict()
+output_dict: Dict[str, str] = dict()
 
 for k,v in defaults.items():
     match = regex.search(r"\/triotrain\/variant_calling\/.*", str(v))
@@ -67,7 +69,7 @@ for k,v in defaults.items():
             new_key=k,
             new_val=f"{cwd}{v}",
             logger=logger,
-            logger_msg="[demo]"
+            logger_msg="[tutorial]"
         )
     else:
         helpers.h.add_to_dict(
@@ -75,31 +77,31 @@ for k,v in defaults.items():
             new_key=k,
             new_val=v,
             logger=logger,
-            logger_msg="[demo]"
+            logger_msg="[tutorial]"
         )
 
 # print(output_dict)
 
 output_file = helpers.h.WriteFiles(
     path_to_file=str(cwd / "triotrain" / "variant_calling" / "data" / "GIAB"),
-    file=f"GIAB.Human_demo_metadata.csv",
+    file=f"GIAB.Human_tutorial_metadata.csv",
     logger=logger,
-    logger_msg="[demo]",
+    logger_msg="[tutorial]",
     )
 
 output_file.check_missing()
 
-if output_file._file_exists:
-    logger.info("[demo]: demo metadata file already exists... SKIPPING AHEAD")
+if output_file.file_exists:
+    logger.info("[tutorial]: tutorial metadata file already exists... SKIPPING AHEAD")
 else:
-    logger.info("[demo]: creating a demo metadata file now...")
+    logger.info("[tutorial]: creating a tutorial metadata file now...")
     output_file.add_rows(
         col_names=output_dict.keys(),
         data_dict=output_dict
     )
     output_file.check_missing()
-    if output_file._file_exists:
-        logger.info("[demo]: successfully created the demo metadata file") 
+    if output_file.file_exists:
+        logger.info("[tutorial]: successfully created the tutorial metadata file") 
 
 # Collect end time
 helpers.h.Wrapper(__file__, "start").wrap_script(helpers.h.timestamp())
