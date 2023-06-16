@@ -55,7 +55,7 @@ bash scripts/setup/build_happy.sh
 
 ## 4. Install the Conda environment
 
-This conda environment includes the DeepVariant requirements, such as Apache Beam, Tensorflow, etc.
+This conda environment includes the DeepVariant requirements, such as Apache Beam, Tensorflow, etc. The conda environment can take awhile to build. We recommend requesting ample memory during your interactive session before proceeding.
 
 !!! note
     `source` is used instead of `bash` to by-pass system issues with `conda activate` specific to MU Lewis, which may not be required for your system.
