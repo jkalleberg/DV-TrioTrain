@@ -9,7 +9,7 @@ from pathlib import Path
 import os
 import sys
 import regex
-from typing import Dict, Union
+from typing import Dict
 
 # get the relative path to the triotrain/ dir
 h_path = str(Path(__file__).parent.parent.parent)
