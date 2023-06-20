@@ -439,9 +439,11 @@ Use the following template
 ## 8. Run Shuffling Demo
 
 ```bash
-python3 triotrain/model_training/run_trio_train.py                          \
-    -f Father                                                               \
+python3 triotrain/run_trio_train.py                                         \
+    -g Father                                                               \
     -m triotrain/model_training/tutorial/GIAB.Human_tutorial_metadata.csv   \
     -n test                                                                 \
-    -r triotrain/model_training/tutorial/resources_used.json
+    -r triotrain/model_training/tutorial/resources_used.json                \
+    --dry-run                                                               \
+    --demo-mode
 ```
