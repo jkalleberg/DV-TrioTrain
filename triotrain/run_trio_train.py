@@ -272,6 +272,8 @@ def run_trio_train(eval_genome="Child"):
 
     if pipeline.args.begin is not None:
         begining = pipeline.args.begin
+    elif pipeline.args.demo_mode:
+        begining = 1
     else:
         begining = 0
 
