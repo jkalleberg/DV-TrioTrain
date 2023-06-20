@@ -65,7 +65,42 @@ format
     
     However, re-training involves a small proportion of the total genomes processed by UMAG group (55 of ~6,000). Thus, removing BQSR would  decrease the quality of the entire cohort's GATK genotypes used in other research. The impact of including BQSR in our truth labels was not evaluated further during TrioTrain's development.
 
-## Providing required data to TrioTrain
+## TrioTrain-Specific Inputs
+
+### Configuring SLURM resources
+
+SLURM resources are handled by TrioTrain via a JSON file with nested dictionaries in the following format:
+
+```json
+
+{"phase_name": {
+    "SLURM_SBATCH_PARAMETER": "value",
+    "SLURM_SBATCH_PARAMETER": "value",
+    "SLURM_SBATCH_PARAMETER": "value",
+    }
+}
+```
+
+There are (8) required phases within TrioTrain's SLURM config file. Valid `phase_names` for these include:
+
+1. `make_examples`
+2. `beam_shuffle`
+3. `re_shuffle`
+4. `train_eval`
+5. `select_ckpt`
+6. `call_variants`
+7. `compare_happy`
+8. `convert_happy`
+
+Additionally, there are (3) optional phase names for TrioTrain's supplementary analyes that include:
+
+1. `show_examples` &mdash; for running TrioTrain in 'demo' mode
+2. `summary_stats` &mdash; for calculating per-VCF stats for each test genome
+3. `mie_summary` &mdash; for calculating Mendelian Inheritance Error rate in trio-binned test genomes
+
+The value for each `phase_name` is a nested dictionary that contains key:value pairs of parameters for running SBATCH job files. [You can view valid SBATCH options in the SLURM documentation.](https://slurm.schedmd.com/sbatch.html)
+
+### Providing required data to TrioTrain
 
 Input files are handled by the primary input file for TrioTrain, a metadata file in `.csv` format. These metadata files are used to define different re-training approaches. For example, you can alter the order in which trios are seen when building a new model between two different metadata files. Metadata includes trio pedigree information, and the absolute file paths for the local data you want to give DeepVariant.
 

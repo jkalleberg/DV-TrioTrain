@@ -54,7 +54,7 @@ There are two options:
 !!! warning
     You will need to tailor this step to match your HPC cluster. Reach out to your system admin with any questions.
 
-This executable is how TrioTrain finds the [required software](installation.md#system-requirements) on your local HPC. TrioTrain will repeatedly use this script to load all modules and some required bash helper functions. [You can view the template script on GitHub.](https://github.com/jkalleberg/DV-TrioTrain/blob/bac33c732065fa7fa1e92097e8f31da383261f4f/scripts/setup/modules.sh)
+This executable is how TrioTrain finds the [required software](installation.md#system-requirements) on your local HPC. TrioTrain will repeatedly use this script to load all modules and the required bash helper functions. [You can view the template script on GitHub.](https://github.com/jkalleberg/DV-TrioTrain/blob/bac33c732065fa7fa1e92097e8f31da383261f4f/scripts/setup/modules.sh)
 
 Within the template, edit the lines with `module load <module_name/version>` to match your system (i.e. add a valid module name).
 
@@ -223,7 +223,7 @@ bash scripts/setup/download_GIAB.sh
 ## 6. Process Raw Data
 
 !!! note
-    These scripts can either be wrapped with SBATCH, or run interactively at the command line if you have enough memory. However, each script can take awhile to complete, particularly the `.download` scripts (1hr+). The NIST FTP server runs slowly, causing `curl` to timeout. **You may need to run these scripts repeatedly until the entire file is transfered.**
+    These scripts can either be wrapped with SBATCH, or run interactively at the command line if you have enough memory. However, each script can take awhile to complete, particularly the `.download` scripts (1hr+). 
 
 In addition to the raw data, `download_GIAB.sh` also creates (3) bash scripts to process raw data into the formats expected by the tutorial:
 
@@ -254,6 +254,9 @@ bash triotrain/variant_calling/data/GIAB/allele_freq/concat_PopVCFs.sh
 
 ### b. Download GIAB Sequence Data
 
+!!! warning
+    The NIST FTP server runs slowly, causing `curl` to timeout. **You may need to run these scripts repeatedly until all data is transfered.**
+
 We need to download the large sequence data files, and confirm they are not corrupted by checking the MD5 checksums, where available. These BAM/BAI files orginate from the GIAB FTP site. [An index of GIAB data created with these samples can be found on GitHub.](https://github.com/genome-in-a-bottle/giab_data_indexes)
 
 Run the following at the command line:
@@ -273,7 +276,6 @@ bash triotrain/variant_calling/data/GIAB/bam/AJtrio.download
     HG002.GRCh38.2x250.bam.bai
     HG002.GRCh38.2x250.bam.bai.md5
     HG002.GRCh38.2x250.bam.md5
-    HG002.GRCh38.2x250.coverage.out
     ```
 
 ??? success "Expected Intermediate Data | HG003:"
@@ -343,12 +345,12 @@ bash triotrain/variant_calling/data/GIAB/bam/HCtrio.download
 
 ## 7. Create TrioTrain Inputs
 
-There are (3) required input files we must create before we can run TrioTrain. Complete details about all required data can be [found in the TrioTrain User Guide.](../user-guide/usage_guide.md#assumptions)
+There are (3) required input files we must create before we can run TrioTrain. [Complete details about all required data can be found in the TrioTrain User Guide.](../user-guide/usage_guide.md#assumptions)
 
-### a. Reference Dictionary File
+### a. [Reference Dictionary File (`.dict`)](../user-guide/usage_guide.md#required-raw-data)
 
 !!! warning
-    This step is specific to the Human reference genome GRCh38 as cattle-specific input files are packaged with TrioTrain. If you are working with a new species, you will need to create this file for your reference genome.
+    This step is specific to the Human reference genome GRCh38 as cattle-specific input files are packaged with TrioTrain. **If you are working with a new species, you will need to create this file for your reference genome.**
 
 We need a reference dictionary file in the same directory as the reference genome. This file defines the genomic co-ordinates possible with TrioTrain's region shuffling. By default, region shuffling will only use the autosomes and X chromosome. However, you can expand or contract the shuffling area by providing an alternative region file (`.bed`) in the [metadata file (`.csv`).](walk-through.md#b-metadata-file)
 
@@ -370,7 +372,7 @@ picard CreateSequenceDictionary \
     GRCh38_no_alt_analysis_set.dict
     ```
 
-### b. Metadata file
+### b. [Metadata file (`.csv`)](../user-guide/usage_guide.md#providing-required-data-to-triotrain)
 
 We also need a metadata file to tell TrioTrain where to find all of previously downloaded Human GIAB data. This file contains pedigree information, and the absolute paths for file inputs. Absolute paths are required to help the Apptainer/Singularity containers identify local files. [Formatting specifications for this required input can be found in the TrioTrain User Guide.](../user-guide/usage_guide.md#required-data)
 
@@ -394,16 +396,7 @@ python triotrain/model_training/tutorial/create_metadata.py
 
 ### c. SLURM Resource Config File
 
-The last required input we need for TrioTrain is a JSON file with nested dictionaries in the following format:
-
-```json
-{"phase_name": {
-    "SLURM_SBATCH_PARAMETER": "value",
-    "SLURM_SBATCH_PARAMETER": "value",
-    "SLURM_SBATCH_PARAMETER": "value",
-    }
-}
-```
+The last required input we need for TrioTrain is 
 
 ---
 
