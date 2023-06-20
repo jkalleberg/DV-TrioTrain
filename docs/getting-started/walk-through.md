@@ -352,7 +352,7 @@ There are (3) required input files we must create before we can run TrioTrain. [
 !!! warning
     This step is specific to the Human reference genome GRCh38 as cattle-specific input files are packaged with TrioTrain. **If you are working with a new species, you will need to create this file for your reference genome.**
 
-We need a reference dictionary file in the same directory as the reference genome. This file defines the genomic co-ordinates possible with TrioTrain's region shuffling. By default, region shuffling will only use the autosomes and X chromosome. However, you can expand or contract the shuffling area by providing an alternative region file (`.bed`) in the [metadata file (`.csv`).](walk-through.md#b-metadata-file)
+We need a reference dictionary file in the same directory as the reference genome. This file defines the genomic co-ordinates possible with TrioTrain's region shuffling. By default, region shuffling will only use the autosomes and X chromosome. However, you can expand or contract the shuffling area by providing an alternative region file (`.bed`) in the [metadata file (`.csv`).](#b-metadata-file-csv)
 
 Run at the command line:
 
@@ -374,7 +374,7 @@ picard CreateSequenceDictionary \
 
 ### b. [Metadata file (`.csv`)](../user-guide/usage_guide.md#providing-required-data-to-triotrain)
 
-We also need a metadata file to tell TrioTrain where to find all of previously downloaded Human GIAB data. This file contains pedigree information, and the absolute paths for file inputs. Absolute paths are required to help the Apptainer/Singularity containers identify local files. [Formatting specifications for this required input can be found in the TrioTrain User Guide.](../user-guide/usage_guide.md#required-data)
+We also need a metadata file to tell TrioTrain where to find all of previously downloaded Human GIAB data. This file contains pedigree information, and the absolute paths for file inputs. Absolute paths are required to help the Apptainer/Singularity containers identify local files. [Formatting specifications for this required input can be found in the TrioTrain User Guide.](../user-guide/usage_guide.md#metadata-format)
 
 For the tutorial, we've created a helper script to automatically create an example of this file. This script uses expectations of where the tutorial data are stored to add local paths. However, outside of the tutorial, the metadata file is a user-created input.
 
@@ -387,34 +387,61 @@ python triotrain/model_training/tutorial/create_metadata.py
 
 ??? success "Expected Output:"
     ```bash title="Run at the command line"
-    ls triotrain/variant_calling/data/GIAB/
+    ls triotrain/model_training/tutorial
     ```
 
     ```bash title="Check output"
-    allele_freq  bam  benchmark  GIAB.Human_tutorial_metadata.csv  reference
+    create_metadata.py  GIAB.Human_tutorial_metadata.csv  __init__.py  resources_used.json
     ```
 
-### c. SLURM Resource Config File
+### c. [SLURM Resource Config File (`.json`)](../user-guide/usage_guide.md#configuring-slurm-resources)
 
-The last required input we need for TrioTrain is 
+The last required input we need for TrioTrain is the SLURM resource config file (`.json`). This file tells TrioTrain what resources to request from your HPC cluster when submitting SLURM jobs. [Formatting specifications for this required input can be found in the TrioTrain User Guide.](../user-guide/usage_guide.md#resource-config-format)
 
----
+??? example "Example | Resource Config File"
+    ``` title="triotrain/model_training/tutorial/resources_used.json"
+    --8<-- "./triotrain/model_training/tutorial/resources_used.json"
+    ```
 
-### **d.** *(OPTIONAL)* **Reference Sequence Data File**
+The hardware listed for each phase in the above example (e.g. mem, ntasks, gpus, etc.) are provided to illustrate which phases are memory intensive, but should not be interpretedate as the minimum or the optimum resources required for each phase. The MU Lewis Research Computing Cluster is heterogenous, so several of the example phases request resources to maximize the number of compute nodes possible.
 
-!!! note
-    This step is specific to the Human reference genome GRCh38. Cattle-specific input files are packaged with TrioTrain. If you are working with a new species, you will need to create this file for your reference genome.
-
-If you have additional trios for model testing, TrioTrain can help calculate Mendelian Inheritance Errors using `rtg-tools mendelian`, which requires a Sequence Data File (SDF) for each reference genome.
-
-Additional details about `rtg-tools` can be [found on GitHub](https://github.com/RealTimeGenomics/rtg-tools), or by [reviewing the PDF documentation here](https://cdn.rawgit.com/RealTimeGenomics/rtg-tools/master/installer/resources/tools/RTGOperationsManual.pdf).
+For the tutorial, copy the above example into a new file, and manually edit the SBATCH parameters to match your HPC cluster (i.e. changing the partition list, account, and email address).
 
 ```bash
-# Ensure the previously built conda env is active
-source ./scripts/start_conda.sh
+cp ./triotrain/model_training/tutorial/resources_used.json </path/to/new_file.json>
+vi </path/to/new_file.json>     # update resources manually 
+```
 
-# Create the Human reference SDF to ensure rtg-tools behaves as expected
+### d. *(OPTIONAL)* Reference Sequence Data File
+
+!!! warning
+    This step is specific to the Human reference genome GRCh38. Cattle-specific input files are packaged with TrioTrain. **If you are working with a new species, you will need to create this file for your reference genome.**
+
+If you have trio-binned test genomes, TrioTrain can help calculate Mendelian Inheritance Error rate using `rtg-tools mendelian`. However, you must create a Sequence Data File (SDF) for each reference genome in the same directory as the reference genome in a sub-directory called `rtg_tools/`. Additional details about `rtg-tools` can be [found on GitHub](https://github.com/RealTimeGenomics/rtg-tools), or by [reviewing the PDF documentation here](https://cdn.rawgit.com/RealTimeGenomics/rtg-tools/master/installer/resources/tools/RTGOperationsManual.pdf).
+
+To create the Human reference SDF, run the following at the command line:
+
+```bash
+
+source ./scripts/start_conda.sh     # Ensure the previously built conda env is active
 bash scripts/setup/setup_rtg_tools.sh
 ```
 
+Use the following template 
+
+??? example "Example | Creating the SDF"
+    ```bash title="./scripts/setup/setup_rtg_tools.sh"
+    --8<-- "scripts/setup/setup_rtg_tools.sh"
+    ```
+
 ---
+
+## 8. Run Shuffling Demo
+
+```bash
+python3 triotrain/model_training/run_trio_train.py                          \
+    -f Father                                                               \
+    -m triotrain/model_training/tutorial/GIAB.Human_tutorial_metadata.csv   \
+    -n test                                                                 \
+    -r triotrain/model_training/tutorial/resources_used.json
+```

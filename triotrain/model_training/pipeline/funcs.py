@@ -31,7 +31,7 @@ class Setup:
     demo_mode: bool = False
     demo_chr: str = "29"
     current_genome_deps: List[Union[str, None]] = field(default_factory=helpers.h.create_deps)
-    next_genome_deps: List[Union[str, None]] = field(default_factory=h.create_deps)
+    next_genome_deps: List[Union[str, None]] = field(default_factory=helpers.h.create_deps)
     _checkpoint_used: Union[str, None] = field(default=None, init=False, repr=False)
 
     def __post_init__(self) -> None:
@@ -53,7 +53,7 @@ class Setup:
             resource_dict = json.load(file)
         return resource_dict
 
-    def process_env(self, itr_num: int = 0) -> h.Env:
+    def process_env(self, itr_num: int = 0) -> helpers.h.Env:
         """
         use the metadata csv file to build analysis structure.
         """

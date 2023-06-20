@@ -1,8 +1,4 @@
-# TrioTrain Usage Guide
-
-TrioTrain is a pipeline to automate re-training of DeepVariant models. [Visit the DeepVariant usage guide](https://github.com/google/deepvariant/blob/r1.5/docs/deepvariant-details.md) to learn more in-depth details about how DeepVariant works.
-
-## Assumptions
+# TrioTrain Data
 
 TrioTrain and DeepVariant use several input file formats; however, all files must:
 
@@ -67,9 +63,12 @@ format
 
 ## TrioTrain-Specific Inputs
 
-### Configuring SLURM resources
+### Configuring SLURM Resources
 
-SLURM resources are handled by TrioTrain via a JSON file with nested dictionaries in the following format:
+SLURM resources are handled by TrioTrain via a resource configuration file (`.json`).
+#### Resource Config Format
+
+Contains nested dictionaries in the following format:
 
 ```json
 
@@ -104,7 +103,7 @@ The value for each `phase_name` is a nested dictionary that contains key:value p
 
 Input files are handled by the primary input file for TrioTrain, a metadata file in `.csv` format. These metadata files are used to define different re-training approaches. For example, you can alter the order in which trios are seen when building a new model between two different metadata files. Metadata includes trio pedigree information, and the absolute file paths for the local data you want to give DeepVariant.
 
-### Format expectations
+#### Metadata Assumptions
 
 - The first row includes column headers which will become variable names within TrioTrain
 - Each row corresponds to one complete family trio resulting in (2) re-training iterations, one for each parent
@@ -116,7 +115,7 @@ Input files are handled by the primary input file for TrioTrain, a metadata file
 
     Likewise, further test replicates can be achieved by adding columns in sets of three [`BAM,TruthVCF,TruthBED`] for each additional test genome.
 
-### Minimum data required
+#### Minimum Data Required
 
 At a minimum, the metadata file must provide absolute paths to the following input files:
 
@@ -130,7 +129,9 @@ At a minimum, the metadata file must provide absolute paths to the following inp
     - One or more (1+) benchmark `.vcf.gz` files, with the corresponding `.vcf.gz.tbi` index.
     - One or more (1+) benchmark `.bed` files.
 
-## Metadata Format
+---
+
+#### Metadata Format
 
 | Column Number | Column Name      | Description                     | Data Type |
 | ------------- | -----------      | ------------------------------- | --------- |
@@ -159,7 +160,7 @@ At a minimum, the metadata file must provide absolute paths to the following inp
 | 23            | Test1TruthVCF    | The absolute path to a test genome's truth genotypes | `/path/to/file` |
 | 24            | Test1CallableBED | The absolute path to a test genome's callable regions | `/path/to/file` |
 
-### Adding more test genomes
+#### Adding more test genomes
 
 Each additional testing genome can be supplied by adding three (3) more columns in the following order:
 
