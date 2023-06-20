@@ -194,20 +194,20 @@ bash scripts/setup/download_GIAB.sh
     ```
 
     ```bash title="Check outputs"
-    HG002_GRCh38_1_22_v4.2_benchmark.bed         HG005_GRCh38_1_22_v4.2_benchmark.vcf.gz
-    HG002_GRCh38_1_22_v4.2_benchmark.vcf.gz      HG005_GRCh38_1_22_v4.2_benchmark.vcf.gz.tbi
-    HG002_GRCh38_1_22_v4.2_benchmark.vcf.gz.tbi  HG005_README_v4.2.1.txt
+    HG002_GRCh38_1_22_v4.2.1_benchmark.bed         HG005_GRCh38_1_22_v4.2.1_benchmark.vcf.gz
+    HG002_GRCh38_1_22_v4.2.1_benchmark.vcf.gz      HG005_GRCh38_1_22_v4.2.1_benchmark.vcf.gz.tbi
+    HG002_GRCh38_1_22_v4.2.1_benchmark.vcf.gz.tbi  HG005_README_v4.2.1.txt
     HG002_README_v4.2.1.txt                      HG006_benchmark.md5
-    HG003_GRCh38_1_22_v4.2_benchmark.bed         HG006_GRCh38_1_22_v4.2_benchmark.bed
-    HG003_GRCh38_1_22_v4.2_benchmark.vcf.gz      HG006_GRCh38_1_22_v4.2_benchmark.vcf.gz
-    HG003_GRCh38_1_22_v4.2_benchmark.vcf.gz.tbi  HG006_GRCh38_1_22_v4.2_benchmark.vcf.gz.tbi
+    HG003_GRCh38_1_22_v4.2.1_benchmark.bed         HG006_GRCh38_1_22_v4.2.1_benchmark.bed
+    HG003_GRCh38_1_22_v4.2.1_benchmark.vcf.gz      HG006_GRCh38_1_22_v4.2.1_benchmark.vcf.gz
+    HG003_GRCh38_1_22_v4.2.1_benchmark.vcf.gz.tbi  HG006_GRCh38_1_22_v4.2.1_benchmark.vcf.gz.tbi
     HG003_README_v4.2.1.txt                      HG006_README_v4.2.1.txt
-    HG004_GRCh38_1_22_v4.2_benchmark.bed         HG007_benchmark.md5
-    HG004_GRCh38_1_22_v4.2_benchmark.vcf.gz      HG007_GRCh38_1_22_v4.2_benchmark.bed
-    HG004_GRCh38_1_22_v4.2_benchmark.vcf.gz.tbi  HG007_GRCh38_1_22_v4.2_benchmark.vcf.gz
-    HG004_README_v4.2.1.txt                      HG007_GRCh38_1_22_v4.2_benchmark.vcf.gz.tbi
+    HG004_GRCh38_1_22_v4.2.1_benchmark.bed         HG007_benchmark.md5
+    HG004_GRCh38_1_22_v4.2.1_benchmark.vcf.gz      HG007_GRCh38_1_22_v4.2.1_benchmark.bed
+    HG004_GRCh38_1_22_v4.2.1_benchmark.vcf.gz.tbi  HG007_GRCh38_1_22_v4.2.1_benchmark.vcf.gz
+    HG004_README_v4.2.1.txt                      HG007_GRCh38_1_22_v4.2.1_benchmark.vcf.gz.tbi
     HG005_benchmark.md5                          HG007_README_v4.2.1.txt
-    HG005_GRCh38_1_22_v4.2_benchmark.bed
+    HG005_GRCh38_1_22_v4.2.1_benchmark.bed
     ```
 
 ??? success "Expected Raw Data: `reference/`"
@@ -444,6 +444,7 @@ python3 triotrain/run_trio_train.py                                         \
     -m triotrain/model_training/tutorial/GIAB.Human_tutorial_metadata.csv   \
     -n test                                                                 \
     -r triotrain/model_training/tutorial/resources_used.json                \
-    --dry-run                                                               \
-    --demo-mode
+    --demo-mode                                                             \
+    --num-tests 3                                                           \
+    --dry-run                                                               
 ```

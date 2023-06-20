@@ -23,9 +23,10 @@ from math import ceil, isnan
 from os import environ, getcwd, path
 from pathlib import Path
 from typing import List, Union
-import regex
 
+import helpers
 import numpy as np
+import regex
 from pandas import DataFrame, read_csv
 
 
@@ -140,7 +141,7 @@ def collect_args() -> argparse.Namespace:
         default=None,
         help="input file (model.ckpt)\nprovides model weights to use as the warm-starting point.\n(default: %(default)s)",
     )
-    
+
     return parser.parse_args()
     # return parser.parse_args(
     #     [
@@ -160,6 +161,7 @@ def collect_args() -> argparse.Namespace:
     #         "--dry-run",
     #     ]
     # )
+
 
 def check_args(args: argparse.Namespace, logger: Logger):
     """
@@ -226,9 +228,7 @@ class Environment:
     update: bool = False
 
     # internal, imutable values
-    _checkpoint_path: Union[Path, None] = field(
-        default=None, init=False, repr=False
-    )
+    _checkpoint_path: Union[Path, None] = field(default=None, init=False, repr=False)
     _genome_list: list = field(default_factory=list, init=False, repr=False)
     _output_dict: dict = field(default_factory=dict, init=False, repr=False)
     _stable_vars: dict = field(default_factory=dict, init=False, repr=False)
@@ -411,7 +411,7 @@ class Environment:
         env_path = f"envs/{self.analysis_name}-run{self.trio_num}.env"
 
         # Test for existing ENV file name
-        env_file = h.TestFile(env_path, self.logger)
+        env_file = helpers.h.TestFile(env_path, self.logger)
         env_file.check_missing()
 
         # Only create a new ENV object if non-existant, or if --update=True
@@ -420,41 +420,35 @@ class Environment:
             if self.update:
                 msg = "updating"
             else:
-                msg = "using existing"   
+                msg = "using existing"
         else:
             self.file_made = True
             msg = "creating"
-        
+
         if self.demo_mode:
-            self.logger.debug(
-                f"{self.logging_msg}: {msg} demo env file | '{env_path}'"
-            )
+            self.logger.debug(f"{self.logging_msg}: {msg} demo env file | '{env_path}'")
         elif self.debug_mode and self.dryrun_mode:
             self.logger.debug(
-                    f"[DRY RUN] - {self.logging_msg}: --debug set; env file would be created | '{env_path}'"
+                f"[DRY RUN] - {self.logging_msg}: --debug set; env file would be created | '{env_path}'"
             )
         elif self.debug_mode:
-            self.logger.debug(
-                f"{self.logging_msg}: --debug set"
-            )
+            self.logger.debug(f"{self.logging_msg}: --debug set")
         elif self.dryrun_mode:
             self.logger.info(
                 f"[DRY RUN] - {self.logging_msg}: env file would be created | '{env_path}'"
             )
         else:
-            self.logger.info(
-                f"{self.logging_msg}: {msg} env file | '{env_path}'"
-            )
-        
+            self.logger.info(f"{self.logging_msg}: {msg} env file | '{env_path}'")
+
         # Load in the env file to write any missing variables to
-        self.env = h.Env(env_path, self.logger, debug_mode=self.debug_mode)
+        self.env = helpers.h.Env(env_path, self.logger, debug_mode=self.debug_mode)
 
         # Define the row index to use
         if self.trio_num == 0:
             self.index = self.trio_num
         else:
             self.index = self.trio_num - 1
-        
+
         self.logger.info(
             f"{self.logging_msg}: {msg} environment file {self.trio_num + 1}-of-{self.num_of_iterations}"
         )
@@ -499,15 +493,19 @@ class Environment:
             21: "base_channels_alt_allele2",
         }
 
-        if self.channel_info is not None and self.channel_info != default_channels and ".json" in str(self.channel_info):
+        if (
+            self.channel_info is not None
+            and self.channel_info != default_channels
+            and ".json" in str(self.channel_info)
+        ):
             if Path(str(self.channel_info)).is_file():
                 with Path(str(self.channel_info)).open(mode="r") as read_file:
                     channels_found = json.load(read_file)["channels"]
             else:
-                    channels_found = []
+                channels_found = []
         else:
             channels_found = json.loads(str(self.channel_info))["channels"]
-        
+
         for c in channels_found:
             if c not in base_channels:
                 if c in valid_channels.keys():
@@ -561,7 +559,7 @@ class Environment:
         """
         Determine which model ckpt point to use, default, or custom.
         """
-        
+
         if self.checkpoint_name is not None:
             self._checkpoint_path = Path(str(self.checkpoint_name)).parent.resolve()
             self.checkpoint_name = Path(str(self.checkpoint_name)).name
@@ -578,8 +576,7 @@ class Environment:
                     / f"v{self._version}-{self.conditions_used}/"
                 )
                 self.channel_info = (
-                    self._checkpoint_path
-                    / f"{self.checkpoint_name}.example_info.json"
+                    self._checkpoint_path / f"{self.checkpoint_name}.example_info.json"
                 )
                 self.identify_channels(update=True)
             elif found_non_default_ckpt:
@@ -591,24 +588,29 @@ class Environment:
                         self._checkpoint_path
                         / f"{self.checkpoint_name}.example_info.json"
                     )
-        
+
         else:
             if self.itr_num < 2:
                 self._checkpoint_path = (
-                    Path.cwd() / "pretrained_models" / f"v{self._version}-{self.conditions_used}/"
+                    Path.cwd()
+                    / "pretrained_models"
+                    / f"v{self._version}-{self.conditions_used}/"
                 )
                 self.checkpoint_name = "model.ckpt"
                 self.channel_info = (
-                    self._checkpoint_path
-                    / f"{self.checkpoint_name}.example_info.json"
+                    self._checkpoint_path / f"{self.checkpoint_name}.example_info.json"
                 )
                 self.logger.info(
                     f"{self.logging_msg}: using a default model's weights to initalize DeepVariant-v{self._version}"
                 )
                 if self.itr_num == 0:
-                    self._output_dict["BaselineTestCkptPath"] = str(self._checkpoint_path)
-                    self._output_dict["BaselineTestCkptName"] = str(self.checkpoint_name)
-            
+                    self._output_dict["BaselineTestCkptPath"] = str(
+                        self._checkpoint_path
+                    )
+                    self._output_dict["BaselineTestCkptName"] = str(
+                        self.checkpoint_name
+                    )
+
             elif self.itr_num >= 2 and self.trio_num is not None and self.trio_num > 0:
                 self.logger.info(
                     f"{self.logging_msg}: using model weights from previously re-training to initalize DeepVariant-v{self._version}"
@@ -616,11 +618,11 @@ class Environment:
                 self.logger.info(
                     f"{self.logging_msg}: warm-starting checkpoint will be determined shortly..."
                 )
-        
+
         if self._checkpoint_path is not None and self.checkpoint_name is not None:
             self.logger.info(
                 f"{self.logging_msg}: warm-starting with the following checkpoint | '{self._checkpoint_path}/{self.checkpoint_name}'"
-            )        
+            )
 
     def add_empty_variable(self, key: str) -> None:
         """
@@ -635,8 +637,8 @@ class Environment:
             "",
             dryrun_mode=self.dryrun_mode,
             msg=self.logging_msg,
-            update=self.update
-            )
+            update=self.update,
+        )
 
     def iterate_metadata(self, missing_values=["nan", "", None, "NaN", np.nan]):
         """
@@ -658,7 +660,7 @@ class Environment:
             self._output_dict[
                 "BaselineModelResultsDir"
             ] = f"{str(self.output_dir)}/baseline-v{self._version}"
- 
+
         if self.dryrun_mode:
             print(
                 f"-----------------------------  [DRY RUN] Start of Environment File [{self.env.env_file}] -----------------------------"
@@ -673,8 +675,8 @@ class Environment:
 
             if col_num >= 10:
                 # Columns 10+ are paths. Confirm that the paths given exist
-                absolute_path = h.TestFile(str(value), self.logger)
-                
+                absolute_path = helpers.h.TestFile(str(value), self.logger)
+
                 try:
                     if absolute_path.file in missing_values:
                         raise AssertionError(
@@ -712,7 +714,10 @@ class Environment:
                                 )
                             else:
                                 # Remove PopVCF path from baseline env
-                                if f"{col}_Path" not in self.env.contents and f"{col}_File" not in self.env.contents:
+                                if (
+                                    f"{col}_Path" not in self.env.contents
+                                    and f"{col}_File" not in self.env.contents
+                                ):
                                     self.add_empty_variable(col)
                         else:
                             # Separate out remaining path variables
@@ -734,27 +739,36 @@ class Environment:
                             )
 
                 except AssertionError as error:
-
                     if self.trio_num == 0:
                         if "Test" not in col:
-                           self.add_empty_variable(col)
-                           continue
-                    
-                    if None in self.train_order:
-                        if "Child" in col or "Mother" in col or "Father" in col or "Test" in col:
                             self.add_empty_variable(col)
                             continue
-                
+
+                    if None in self.train_order:
+                        if (
+                            "Child" in col
+                            or "Mother" in col
+                            or "Father" in col
+                            or "Test" in col
+                        ):
+                            self.add_empty_variable(col)
+                            continue
+
                 except FileNotFoundError as error:
                     # handle a non-existant or empty value for required inputs
-                    if "BAM" in col or "CRAM" in col or "BED" in col or "TruthVCF" in col:
+                    if (
+                        "BAM" in col
+                        or "CRAM" in col
+                        or "BED" in col
+                        or "TruthVCF" in col
+                    ):
                         self.logger.error(error)
                         self.logger.error(
                             f"{self.logging_msg}: a required BAM/CRAM/BED/TruthVCF does not exist"
                         )
                         self.logger.error(
-                                f"{self.logging_msg}: unable to set a required variable | '{col}'"
-                            )
+                            f"{self.logging_msg}: unable to set a required variable | '{col}'"
+                        )
                         self.logger.error(
                             f"{self.logging_msg}: unable to finish defining environment | '{self.env.env_file}'\nExiting...",
                         )
@@ -770,7 +784,7 @@ class Environment:
                     # if 'nan', add an empty variable
                     self.add_empty_variable(key=col)
                 # Otherwise, add whatever was saved in the metadata file
-                else:                
+                else:
                     self.env.add_to(
                         col,
                         str(value),
@@ -778,7 +792,7 @@ class Environment:
                         msg=self.logging_msg,
                         update=self.update,
                     )
-                
+
                 # Add additional stable variables based on mode
                 if col == "RunName" and self._output_dict is not None:
                     self._run_name = str(value)
@@ -791,12 +805,10 @@ class Environment:
                             "LogDir": f"{str(run_dir / 'logs')}",
                         }
                         self._output_dict.update(more_vars)
-                    
+
                     if None in self.train_order:
-                        self._output_dict[
-                            "BaselineModelResultsDir"
-                        ] = f"{str(run_dir)}"
-                    
+                        self._output_dict["BaselineModelResultsDir"] = f"{str(run_dir)}"
+
                     # Only need these variables with TrioTrain
                     else:
                         train_vars = {
@@ -820,24 +832,25 @@ class Environment:
                     dryrun_mode=self.dryrun_mode,
                     msg=self.logging_msg,
                     update=self.update,
-                )        
-            
+                )
+
         # Keep a record if any keys are changed
-        if self.env.updated_keys.keys():            
+        if self.env.updated_keys.keys():
             keys_str = ",".join(self.env.updated_keys.keys())
-            time_updated = h.timestamp()
+            time_updated = helpers.h.timestamp()
             comment = f"# {time_updated}: updated the following keys | '{keys_str}'"
             self.env.add_to(
                 key=comment,
                 value=None,
                 dryrun_mode=self.dryrun_mode,
-                msg=self.logging_msg)
+                msg=self.logging_msg,
+            )
             # ^ No need to include the update variable as the 'key' is really a text string
 
         if self.dryrun_mode:
             print(
                 f"----------------------------- [DRY RUN] End of Environment File [{self.env.env_file}]----------------------------- "
-            ) 
+            )
 
     def create_dirs(self) -> None:
         """
@@ -846,15 +859,12 @@ class Environment:
         vars_list = [
             "OutPath",
             "ResultsDir",
-            ]
+        ]
         if self.trio_num == 0:
             vars_list.append("BaselineModelResultsDir")
         else:
             # Define required directories
-            vars_list = vars_list + [
-                "RunDir",
-                "JobDir",
-                "LogDir"]
+            vars_list = vars_list + ["RunDir", "JobDir", "LogDir"]
 
             # Only need these directories with TrioTrain
             if None not in self.train_order:
@@ -880,8 +890,10 @@ class Environment:
                 outpath, results_dir, baseline_results_dir = self.env.load(*vars_list)
                 dirs = [outpath, results_dir, baseline_results_dir]
             elif None in self.train_order:
-                outpath, results_dir, run_dir, job_dir, log_dir = self.env.load(*vars_list)
-                dirs = [outpath, results_dir, run_dir, job_dir, log_dir] 
+                outpath, results_dir, run_dir, job_dir, log_dir = self.env.load(
+                    *vars_list
+                )
+                dirs = [outpath, results_dir, run_dir, job_dir, log_dir]
             else:
                 (
                     outpath,
@@ -911,7 +923,7 @@ class Environment:
                     father_compare_dir,
                     mother_compare_dir,
                 ]
-            
+
             # Create required directories
             for new_dir in dirs:
                 if new_dir is not None:
@@ -942,16 +954,20 @@ class Environment:
                 )
         else:
             assert (
-                self.env.env_path.is_file() # type: ignore
+                self.env.env_path.is_file()  # type: ignore
             ), "expected a file to be written, but none found"
             if self.debug_mode:
                 self.logger.debug(f"{self.logging_msg}: loading environment now... ")
             if self.update:
                 return
             else:
-                self.env = h.Env(self.env.env_file, self.logger, debug_mode=self.debug_mode)
-                self.logger.info(f"{self.logging_msg}: loaded environment variables from | '{self.env.env_file}'")
-    
+                self.env = helpers.h.Env(
+                    self.env.env_file, self.logger, debug_mode=self.debug_mode
+                )
+                self.logger.info(
+                    f"{self.logging_msg}: loaded environment variables from | '{self.env.env_file}'"
+                )
+
     def make_a_file(self) -> None:
         """
         Putting together the functions to create one (1) env file into a single function.
@@ -1021,12 +1037,12 @@ def __init__():
     args = collect_args()
 
     # Collect start time
-    h.Wrapper(__file__, "start").wrap_script(h.timestamp())
+    helpers.h.Wrapper(__file__, "start").wrap_script(h.timestamp())
 
     # Create error log
     current_file = path.basename(__file__)
     module_name = path.splitext(current_file)[0]
-    logger = helpers_logger.get_logger(module_name)
+    logger = helpers.log.get_logger(module_name)
 
     # Check command line args
     check_args(args, logger)
@@ -1055,7 +1071,7 @@ def __init__():
         batch_size=args.batch_size,
     )
 
-    h.Wrapper(__file__, "end").wrap_script(h.timestamp())
+    helpers.h.Wrapper(__file__, "end").wrap_script(h.timestamp())
 
 
 # Execute functions created

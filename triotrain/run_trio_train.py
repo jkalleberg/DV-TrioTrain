@@ -224,8 +224,6 @@ def run_trio_train(eval_genome="Child"):
     channel_defaults = pipe.get_defaults(parser, "channel_info")
     args = pipe.get_args(parser=parser)
 
-    breakpoint()
-
     # Collect start time
     helpers.h.Wrapper(__file__, "start").wrap_script(helpers.h.timestamp())
 

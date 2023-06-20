@@ -196,9 +196,16 @@ def collect_args():
         default="29",
     )
     demo.add_argument(
+        "--show-regions",
+        dest="show_regions",
+        help="if True, create PNG images of the multi-channel tensor vector(s)\n(default: %(default)s)",
+        default=False,
+        action="store_true",
+    )
+    demo.add_argument(
         "--show-regions-file",
         dest="show_regions_file",
-        help="[REQUIRED] if --demo-mode=True\ninput file (.bed or .txt)\ncontains location(s) to visualize by creating images of the multi-channel tensor vector(s)\n==== .bed format ====\nCHROM\tSTART\tSTOP\n=====================\n==== .txt format ====\nCHROM:START-STOP\n=====================",
+        help="input file (.bed or .txt)\ncontains location(s) to visualize\n==== .bed format ====\nCHROM\tSTART\tSTOP\n=====================\n==== .txt format ====\nCHROM:START-STOP\n=====================",
         type=str,
         metavar="</path/to/regions_file>",
     )
@@ -388,7 +395,7 @@ def check_args(args: argparse.Namespace, logger: Logger, default_channels: str) 
 
         assert (Path(args.modules).is_file), f"unable to find the modules file | '{args.modules}'"
 
-        if args.demo_mode:
+        if args.demo_mode and args.show_regions:
             assert (
                 args.show_regions_file
             ), "Missing --show-regions-file; Please designate a path to show_examples subset region in either BED or text format"
