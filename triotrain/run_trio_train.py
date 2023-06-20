@@ -292,7 +292,7 @@ def run_trio_train(eval_genome="Child"):
     if end != pipeline.meta.num_of_iterations and pipeline.args.terminate is None:
         end = pipeline.meta.num_of_iterations
 
-    if pipeline.args.demo_mode:
+    if pipeline.args.demo_mode and pipeline.args.show_regions:
         begining = 1
         end = 2
         # Determine if show_regions file is valid
