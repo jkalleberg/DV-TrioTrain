@@ -50,6 +50,13 @@ class SBATCH:
             "conda deactivate",
         ]
         
+        test_modules = helpers.h.TestFile(self.itr.args.modules, logger=self.itr.logger)
+        test_modules.check_existing()
+        
+        if not test_modules.file_exists:
+            self.itr.logger.error(f"{self.logger_msg}: module file provide does not exist | '{self.itr.args.modules}'\nExiting...")
+            sys.exit(1)
+        
         print("MODULE FILE:", self.itr.args.modules)
         breakpoint()
 
