@@ -1,7 +1,6 @@
 {
     "make_examples": {
         "partition": "hpc5,hpc6,BioCompute",
-        "exclude": "lewis4-c6420-hpc6-node1000",
         "nodes": 1,
         "ntasks": 40,
         "mem": 379067,
@@ -58,7 +57,6 @@
     },
     "compare_happy": {
         "partition": "BioCompute,hpc5",
-        "exclude": "lewis4-r630-htc4-node294",
         "nodes": 1,
         "ntasks": 40,
         "mem": "300G",
@@ -68,7 +66,6 @@
     },
     "convert_happy": {
         "partition": "BioCompute,hpc3,hpc5,Lewis",
-        "exclude": "lewis4-r630-htc4-node294",
         "nodes": 1,
         "ntasks": 24,
         "mem": "120G",
