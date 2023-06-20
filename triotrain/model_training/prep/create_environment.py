@@ -1025,7 +1025,11 @@ class Environment:
             self.create_dirs()
         else:
             # Create all analyses env files, as many the number of rows in metadata
-            for row in range(0, self.num_envs):
+            if self.demo_mode:
+                begining = 1
+            else:
+                begining = 0
+            for row in range(begining, self.num_envs):
                 self.trio_num = row
                 self.make_a_file()
                 self.create_dirs()

@@ -445,7 +445,9 @@ python3 triotrain/run_trio_train.py                                         \
     -n test                                                                 \
     -r triotrain/model_training/tutorial/resources_used.json                \
     --demo-mode                                                             \
+    --demo-chr 21                                                           \
     --num-tests 3                                                           \
     --custom-checkpoint triotrain/model_training/pretrained_models/v1.4.0_withIS_withAF/wgs_af.model.ckpt \
     --dry-run                                                               
 ```
+

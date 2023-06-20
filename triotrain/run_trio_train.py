@@ -278,7 +278,7 @@ def run_trio_train(eval_genome="Child"):
         begining = 0
 
     # Define the baseline environment
-    new_env = pipeline.process_env(0)
+    new_env = pipeline.process_env(begining)
 
     if pipeline.args.terminate:
         if pipeline.args.terminate < begining:
@@ -301,7 +301,7 @@ def run_trio_train(eval_genome="Child"):
         pipeline.find_show_regions_file()
  
     number_completed_itrs = 0
-    for itr in range(begining, end):
+    for itr in range(begining+1, end):
         if itr != 0:
             new_env = pipeline.process_env(itr_num=itr)
 
