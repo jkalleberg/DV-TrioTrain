@@ -37,8 +37,22 @@ theme:
     - navigation.tabs.sticky
     - navigation.top
     - toc.integrate
+    - content.code.copy
 
 # Extensions
 markdown_extensions:
   - admonition
+  - def_list
   - tables
+  - attr_list
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:materialx.emoji.twemoji
+      emoji_generator: !!python/name:materialx.emoji.to_svg

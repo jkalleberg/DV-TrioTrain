@@ -74,4 +74,4 @@ bash scripts/setup/download_shuffle.sh
 
 ---
 
-<font size= "4"> **[Next: Complete the Human GIAB Demo >>>](walk-through.md)** </font>
+[:material-arrow-left-box: Install TrioTrain](installation.md){ .md-button } [Complete the Human GIAB Demo :material-arrow-right-box:](walk-through.md){ .md-button }

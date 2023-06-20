@@ -86,5 +86,4 @@ To view a list of options available on a given command, use the `--help` flag wi
 mkdocs build --help
 ```
 
-<font size= "4"> 
-**[Got a question?](../user-guide/get-help.md)** <font size= "4">
+[Got a question :octicons-question-16:](../user-guide/get-help.md){ .md-button }

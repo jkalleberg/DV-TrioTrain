@@ -55,4 +55,4 @@ There are two supported options for DV-TrioTrain:
 
 ---
 
-<font size= "4"> **[Next: Configure TrioTrain >>>](configuration.md)** </font>
+[Configure TrioTrain :material-arrow-right-box:](configuration.md){ .md-button }
