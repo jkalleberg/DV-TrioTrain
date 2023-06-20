@@ -267,7 +267,7 @@ class DTVariantCaller:
             return
 
         # Region File --------------------------------------
-        
+
         if self._species.lower() == "cow":
             use_cow = True
             _regions = Path(f"{getcwd()}/region_files/cow_autosomes_withX.bed")
@@ -451,7 +451,7 @@ class DTVariantCaller:
             dryrun_mode=self.args.dry_run,
         )
         self._pedigree.check_missing()
-        if not self._pedigree._file_exists:
+        if not self._pedigree.file_exists:
             if self.args.dry_run:
                 self.logger.info(
                     f"[DRY_RUN] - {self._logger_msg}: missing the Trio pedigree file..."

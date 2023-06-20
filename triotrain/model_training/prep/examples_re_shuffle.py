@@ -7,8 +7,8 @@ usage:
 """
 import sys
 from dataclasses import dataclass, field
-from typing import List, Union
 from pathlib import Path
+from typing import List, Union
 
 # get the relative path to the triotrain/ dir
 h_path = str(Path(__file__).parent.parent.parent)
@@ -187,7 +187,8 @@ class ReShuffleExamples:
                             f"{self.logger_msg}: writing SLURM job numbers to [{self.benchmarking_file.file}]",
                         )
                     self.benchmarking_file.add_rows(
-                        headers, data_dict=data,
+                        headers,
+                        data_dict=data,
                     )
                 else:
                     self.itr.logger.info(
@@ -214,7 +215,11 @@ class ReShuffleExamples:
         )
 
         if slurm_job.check_sbatch_file():
-            if self.re_shuffle_job_num and self.re_shuffle_job_num[0] is not None and self.overwrite:
+            if (
+                self.re_shuffle_job_num
+                and self.re_shuffle_job_num[0] is not None
+                and self.overwrite
+            ):
                 self.itr.logger.info(
                     f"{self.logger_msg}: --overwrite=True, re-writing the existing SLURM job now..."
                 )
@@ -259,15 +264,14 @@ class ReShuffleExamples:
             logger_msg=msg,
         )
         self.merged_config.check_missing()
-        self._merged_config_exists = self.merged_config._file_exists
+        self._merged_config_exists = self.merged_config.file_exists
 
-        if self.merged_config._file_exists:
-            self.itr.logger.info(f"{msg}: found the [1] merged config.pbtxt file... SKIPPING AHEAD"
+        if self.merged_config.file_exists:
+            self.itr.logger.info(
+                f"{msg}: found the [1] merged config.pbtxt file... SKIPPING AHEAD"
             )
         else:
-            self.itr.logger.info(
-                f"{msg}: missing the merged config.pbtxt file"
-            )
+            self.itr.logger.info(f"{msg}: missing the merged config.pbtxt file")
 
     def find_variable(self, msg: str) -> None:
         """
@@ -283,15 +287,15 @@ class ReShuffleExamples:
                 f"{msg}: found the total number of examples... SKIPPING AHEAD"
             )
         else:
-            self.itr.logger.info(
-                f"{msg}: missing the total number of examples"
-            )
+            self.itr.logger.info(f"{msg}: missing the total number of examples")
 
     def find_merged_tfrecords(self, msg: str, expected_outputs: int = 1) -> None:
         """
         Check if tfrecord files exist already before attempting to create them
         """
-        merged_shards_regex = rf"{self.all_merged_tfrecords_pattern}.labeled.shuffled.merged.tfrecord.gz"
+        merged_shards_regex = (
+            rf"{self.all_merged_tfrecords_pattern}.labeled.shuffled.merged.tfrecord.gz"
+        )
 
         if self.itr.debug_mode:
             self.itr.logger.debug(f"merged pattern = {merged_shards_regex}")
@@ -316,8 +320,8 @@ class ReShuffleExamples:
             msg,
             "merged tfrecords files",
             self.itr.logger,
-            )
-        
+        )
+
         if missing_files is True:
             self._merged_tfrecords_exist = False
         else:
@@ -353,7 +357,9 @@ class ReShuffleExamples:
             self._train_dependency = helpers.h.generate_job_id()
             self.itr.current_genome_dependencies[self.index] = self._train_dependency
             if self.index > 0:
-                self.itr.next_genome_dependencies[self.index] = helpers.h.generate_job_id()
+                self.itr.next_genome_dependencies[
+                    self.index
+                ] = helpers.h.generate_job_id()
         else:
             submit_slurm_job.display_command(debug_mode=self.itr.debug_mode)
             submit_slurm_job.get_status(debug_mode=self.itr.debug_mode)
@@ -412,17 +418,16 @@ class ReShuffleExamples:
         if phase is None:
             merged_logger_msg = self.logger_msg
         else:
-            merged_logger_msg = f"[{self.itr._mode_string}] - [{phase}] - [{self.genome}]"
-        
+            merged_logger_msg = (
+                f"[{self.itr._mode_string}] - [{phase}] - [{self.genome}]"
+            )
+
         self.find_merged_outputs(msg=merged_logger_msg)
         self.find_variable(msg=merged_logger_msg)
 
         if self.itr.demo_mode:
             self.find_merged_tfrecords(msg=merged_logger_msg)
-            if (
-                self._merged_tfrecords_exist
-                and self._merged_config_exists
-            ):
+            if self._merged_tfrecords_exist and self._merged_config_exists:
                 self._outputs_exist = True
         else:
             if self._total_regions is not None:
@@ -431,9 +436,15 @@ class ReShuffleExamples:
                 else:
                     self._expepected_outputs = 1
 
-                self.find_merged_tfrecords(msg=merged_logger_msg, expected_outputs=self._expepected_outputs)
+                self.find_merged_tfrecords(
+                    msg=merged_logger_msg, expected_outputs=self._expepected_outputs
+                )
 
-                if self.overwrite and self.re_shuffle_job_num and self.re_shuffle_job_num[0] is not None:
+                if (
+                    self.overwrite
+                    and self.re_shuffle_job_num
+                    and self.re_shuffle_job_num[0] is not None
+                ):
                     self._outputs_exist = False
                 else:
                     if (
@@ -463,7 +474,6 @@ class ReShuffleExamples:
                 else:
                     self._train_dependency = None
             else:
-
                 if not self._ignoring_beam_shuffle:
                     self.itr.logger.info(
                         f"{self.logger_msg}: beam-shuffle was submitted...",
@@ -495,7 +505,7 @@ class ReShuffleExamples:
         else:
             if self._skip_phase:
                 return
-                
+
             self.find_outputs(find_all=True)
             if self._outputs_exist:
                 return

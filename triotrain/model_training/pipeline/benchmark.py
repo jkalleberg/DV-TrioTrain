@@ -12,6 +12,7 @@ example:
 # Load python libs
 import argparse
 import csv
+import datetime
 import os
 import subprocess
 import sys
@@ -19,12 +20,11 @@ from dataclasses import dataclass, field
 from logging import Logger
 from pathlib import Path
 from typing import Dict
-from regex import compile
-import datetime
 
 import helpers as h
 import helpers_logger
 import pandas as pd
+from regex import compile
 
 
 def collect_args():
@@ -32,8 +32,7 @@ def collect_args():
     Process the command line arguments to execute script.
     """
     parser = argparse.ArgumentParser(
-        description=__doc__,
-        formatter_class=argparse.RawTextHelpFormatter
+        description=__doc__, formatter_class=argparse.RawTextHelpFormatter
     )
     parser.add_argument(
         "-e",
@@ -55,7 +54,7 @@ def collect_args():
         "--find-job-nums",
         dest="find_job_nums",
         help="If True, search the log dirs for potential job numbers to benchmark",
-        action="store_true"
+        action="store_true",
     )
     parser.add_argument(
         "-d",
@@ -130,11 +129,11 @@ class Benchmark:
     args: argparse.Namespace
     logger: Logger
     list_of_phases: list = field(default_factory=list)
-    
+
     # optional values
     use_default_phases: bool = True
     use_neat: bool = False
-    
+
     # internal, imutable values
     _digits_only = compile(r"\d+")
     _job_nums: list = field(default_factory=list, init=False, repr=False)
@@ -152,11 +151,11 @@ class Benchmark:
         self._total_minutes = 0
         self._total_seconds = 0
         self._num_jobs = 0
-    
+
     def get_sec(self, time_str: str) -> int:
         """
         Get seconds from D-HH:MM:SS or HH:MM:SS time
-        Source: https://stackoverflow.com/questions/6402812/how-to-convert-an-hmmss-time-string-to-seconds-in-python 
+        Source: https://stackoverflow.com/questions/6402812/how-to-convert-an-hmmss-time-string-to-seconds-in-python
         """
         time = time_str.split("-")
         if len(time) == 1:
@@ -166,17 +165,19 @@ class Benchmark:
             days = int(time[0])
             hms_string = time[1]
         else:
-            self.logger.error(f"expected either 'D-HH:MM:SS' or 'HH:MM:SS' format, but {len(time)} inputs were detected | '{time}'... SKIPPING AHEAD") 
+            self.logger.error(
+                f"expected either 'D-HH:MM:SS' or 'HH:MM:SS' format, but {len(time)} inputs were detected | '{time}'... SKIPPING AHEAD"
+            )
             return 0
-        h, m, s = hms_string.split(':')
+        h, m, s = hms_string.split(":")
         return int(days) * 86400 + int(h) * 3600 + int(m) * 60 + int(s)
-    
+
     def get_timedelta(self, total_seconds: int) -> datetime.timedelta:
         """
         Convert number of seconds into a timedelta format.
         """
         return datetime.timedelta(seconds=total_seconds)
-    
+
     def get_timedelta_str(self, tdelta) -> str:
         """
         Re-formats a '0 days 00:00:00' timedelta object back into a '0-00:00:00' from SLURM. Used internally by summary() only.
@@ -207,18 +208,20 @@ class Benchmark:
         var_list = ["RunName", "CodePath", "ResultsDir"]
         self.name, code_path, results_dir = env.load(*var_list)
         self._results_dir = Path(results_dir)
-        
+
         if os.getcwd() != code_path:
-            self.logger.error(f"execute {__file__} from {code_path}, not {os.getcwd()}\nExiting...")
+            self.logger.error(
+                f"execute {__file__} from {code_path}, not {os.getcwd()}\nExiting..."
+            )
             sys.exit()
-        
+
         self._search_path = self._results_dir.parent
-    
+
     def find_job_logs(self, phase_name: str = "call_variants") -> None:
         """
         Look for potential job numbers in log files
         """
-        
+
         if phase_name == "make_examples":
             search_pattern = r"examples-parallel-\w+-\w+\.out"
         elif phase_name == "beam_shuffle":
@@ -236,24 +239,26 @@ class Benchmark:
         elif phase_name == "convert_happy":
             search_pattern = r"convert-\D+\d+-\w+\.out"
         else:
-            self.logger.error(f"unable to identify a search pattern for '{phase_name}'... SKIPPING AHEAD")
+            self.logger.error(
+                f"unable to identify a search pattern for '{phase_name}'... SKIPPING AHEAD"
+            )
             return
-        
+
         search_dirs = [d for d in os.listdir(str(self._search_path)) if d != "summary"]
 
-        if self.args.debug: 
+        if self.args.debug:
             iter = [search_dirs[0]]
         else:
             iter = search_dirs
-        
+
         for dir in iter:
             logs_exist, total_jobs_in_phase, log_file_names = h.check_if_output_exists(
-                match_pattern=search_pattern, 
+                match_pattern=search_pattern,
                 file_type="SLURM log files",
                 search_path=self._search_path / dir / "logs",
                 label="benchmarking",
                 logger=self.logger,
-                debug_mode=self.args.debug
+                debug_mode=self.args.debug,
             )
             if logs_exist:
                 if phase_name in self.list_of_phases:
@@ -322,7 +327,7 @@ class Benchmark:
         """
         Iterate through a list of job numbers, and use 'sacct' to calaculate resources used per job.
         """
-        
+
         for count, job in enumerate(self._job_nums):
             current_phase = self._phases_used[count]
 
@@ -424,7 +429,7 @@ class Benchmark:
             add_hour, remainder_m = divmod(self._total_minutes, 60)
             self._total_hours += add_hour
             self._total_minutes = remainder_m
-            add_day, remainder_h = divmod(self._total_hours, 24) 
+            add_day, remainder_h = divmod(self._total_hours, 24)
             self._total_days = add_day
 
             # Remove the 'G' from memory resources ---------------
@@ -460,7 +465,7 @@ class Benchmark:
                 self._core_hours_str = f"{int(self._total_days):,}-{int(remainder_h):,}:{int(self._total_minutes)}:{self._total_seconds}"
                 self.logger.info(
                     f"running total CORE HOURS = {int(self._total_hours):,} | {self._core_hours_str}",
-                ) 
+                )
                 if self.args.debug:
                     self.logger.debug(f"row{int(count + 1):,} = {d}")
 
@@ -479,14 +484,15 @@ class Benchmark:
         df.insert(
             loc=6,
             column="Elapsed_seconds",
-            value=df[["Elapsed"]].applymap(self.get_sec)
-            )
+            value=df[["Elapsed"]].applymap(self.get_sec),
+        )
 
         # Convert to str to timedelta obj for descriptive stats
         df.insert(
             loc=7,
             column="Elapsed_Time",
-            value = df[["Elapsed_seconds"]].applymap(self.get_timedelta))
+            value=df[["Elapsed_seconds"]].applymap(self.get_timedelta),
+        )
 
         # Convert to str to float obj for descriptive stats
         df[["MaxRSS_G", "MaxVMSize_G"]] = df[["MaxRSS_G", "MaxVMSize_G"]].apply(
@@ -494,12 +500,14 @@ class Benchmark:
         )
 
         if self.args.debug:
-            self.logger.debug(
-                f"accounting output for all jobs |'"
+            self.logger.debug(f"accounting output for all jobs |'")
+            print(
+                "---------------------------------------------------------------------------------------------------------------------------------------"
             )
-            print("---------------------------------------------------------------------------------------------------------------------------------------")
             print(df)
-            print("---------------------------------------------------------------------------------------------------------------------------------------")
+            print(
+                "---------------------------------------------------------------------------------------------------------------------------------------"
+            )
 
         # handle elapsed wall time
         durration_summary = pd.DataFrame(
@@ -516,8 +524,7 @@ class Benchmark:
             self.logger.debug(
                 f"Duration\n---------------------------------------------\n{durration_summary}\n---------------------------------------------",
             )
-        
-        
+
         # handle REAL memory usage
         real_mem_summary = pd.DataFrame(
             df.groupby("phase").MaxRSS_G.describe()[["count", "mean", "max"]]
@@ -529,15 +536,16 @@ class Benchmark:
         real_mem_summary.reindex(self.indexes)
 
         if self.args.debug:
-            self.logger.debug(f"Memory Used\n---------------------------------------------\n{real_mem_summary}\n---------------------------------------------")
-        
+            self.logger.debug(
+                f"Memory Used\n---------------------------------------------\n{real_mem_summary}\n---------------------------------------------"
+            )
 
         # Merge and clean up the two dfs ------------
         # remove duplicate columns to avoid 2 count columns with the same value
         counts = list(durration_summary["count"])
         durration_summary.drop("count", inplace=True, axis=1)
         real_mem_summary.drop("count", inplace=True, axis=1)
-        
+
         # join 2 dataframes
         self._merged_df = durration_summary.join(
             real_mem_summary, lsuffix="_runtime", rsuffix="_mem"
@@ -550,7 +558,9 @@ class Benchmark:
         self._merged_df.reindex(self.indexes)
 
         # add the phase core hours
-        self._merged_df.loc[list(self._phase_core_hours), 'core_hours'] = pd.Series(self._phase_core_hours)
+        self._merged_df.loc[list(self._phase_core_hours), "core_hours"] = pd.Series(
+            self._phase_core_hours
+        )
 
         # Create a column with phases, rather than row names
         self._merged_df.reset_index(inplace=True)
@@ -570,7 +580,7 @@ class Benchmark:
     def write_results(self) -> None:
         """
         If dryrun mode, display the intermediate outputs to the screen.
-        
+
         Otherwise, write the intermediate outputs to files.
         """
         if self.args.dry_run:
@@ -582,17 +592,19 @@ class Benchmark:
         else:
             # Define the summary output CSV file to be created
             summary_file = h.WriteFiles(
-                str(self._results_dir), f"{self.name}.summary_resources.csv", self.logger
+                str(self._results_dir),
+                f"{self.name}.summary_resources.csv",
+                self.logger,
             )
             summary_file.check_missing()
-            if summary_file._file_exists:
+            if summary_file.file_exists:
                 if self.args.debug:
                     self.logger.debug(f"{summary_file.file_path.name} written")
             else:
                 self._merged_df.to_csv(summary_file.file_path, index=False)
                 assert (
-                        summary_file.file_path.exists()
-                    ), f"{summary_file.file_path.name} was not written correctly"
+                    summary_file.file_path.exists()
+                ), f"{summary_file.file_path.name} was not written correctly"
                 if self.args.debug:
                     self.logger.debug(f"{summary_file.file_path.name} written")
 
@@ -606,10 +618,11 @@ class Benchmark:
             self.find_job_logs()
         else:
             self.process_csv_file()
-        
+
         self.process_resources()
         self.summary()
         self.write_results()
+
 
 def __init__():
     """
@@ -627,7 +640,7 @@ def __init__():
     current_file = os.path.basename(__file__)
     module_name = os.path.splitext(current_file)[0]
     logger = helpers_logger.get_logger(module_name)
-    
+
     # Check command-line args
     check_args(args, logger)
 

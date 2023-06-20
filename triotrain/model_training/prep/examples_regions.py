@@ -8,12 +8,13 @@ usage:
 # Load python libraries
 import argparse
 import os
+import subprocess
 import sys
 from dataclasses import dataclass, field, fields, replace
 from logging import Logger
 from pathlib import Path
 from typing import Dict, List, Union
-import subprocess
+
 import pandas as pd
 from natsort import natsorted
 
@@ -21,6 +22,7 @@ from natsort import natsorted
 h_path = str(Path(__file__).parent.parent.parent)
 sys.path.append(h_path)
 import helpers
+
 
 def collect_args():
     """
@@ -178,7 +180,11 @@ class MakeRegions:
 
         if self._genome is not None:
             var_list.extend(
-                ["ExamplesDir", f"{self._genome}TruthVCF_Path", f"{self._genome}TruthVCF_File"]
+                [
+                    "ExamplesDir",
+                    f"{self._genome}TruthVCF_Path",
+                    f"{self._genome}TruthVCF_File",
+                ]
             )
             (
                 ref_fasta_path,
@@ -362,10 +368,15 @@ class MakeRegions:
             output_file_path = str(self.itr.default_region_file.parent)
             output_file_name = str(self.itr.default_region_file.name)
 
-        output_file = helpers.h.WriteFiles(output_file_path, output_file_name, self.itr.logger, logger_msg=f"[{self.itr._mode_string}] - [{self._phase}]: default call_variants")
+        output_file = helpers.h.WriteFiles(
+            output_file_path,
+            output_file_name,
+            self.itr.logger,
+            logger_msg=f"[{self.itr._mode_string}] - [{self._phase}]: default call_variants",
+        )
         output_file.check_missing()
-        
-        if not output_file._file_exists:
+
+        if not output_file.file_exists:
             self._autosome_BED_data.to_csv(
                 output_file.path / output_file.file, sep="\t", index=False, header=False
             )
@@ -411,7 +422,11 @@ class MakeRegions:
             self.itr = replace(self.itr, **new_parameters)
 
         # Add num output files created to env file
-        if self.itr.env is not None and add_to_env and f"{self._genome}_NumRegionFiles" not in self.itr.env.contents:
+        if (
+            self.itr.env is not None
+            and add_to_env
+            and f"{self._genome}_NumRegionFiles" not in self.itr.env.contents
+        ):
             self.itr.env.add_to(
                 f"{self._genome}_NumRegionFiles",
                 str(self._num_outputs),
@@ -464,8 +479,8 @@ class MakeRegions:
 
         # Determine if number of regions has already been set
         if (
-            self.itr.env is not None and
-            f"{self._genome}_NumRegionFiles" in self.itr.env.contents
+            self.itr.env is not None
+            and f"{self._genome}_NumRegionFiles" in self.itr.env.contents
             and self.itr.env.contents[f"{self._genome}_NumRegionFiles"] is not None
         ):
             self._num_outputs = int(
@@ -519,7 +534,10 @@ class MakeRegions:
         """
         if self.itr.env is None:
             return
-        if self.itr.env is not None and f"{self._genome}_TotalTruth" in self.itr.env.contents:
+        if (
+            self.itr.env is not None
+            and f"{self._genome}_TotalTruth" in self.itr.env.contents
+        ):
             value = self.itr.env.contents[f"{self._genome}_TotalTruth"]
             if value is not None:
                 self._total_pass_variants = int(value)
@@ -682,7 +700,6 @@ class MakeRegions:
         """
         self._expected_num_lines = 0
         for index, chrom in enumerate(self._chr_names):
-
             self._expected_num_lines += 1
             step = self._sample_length_list.values[index]
             end = self._chr_length_list.values[index]
@@ -749,7 +766,6 @@ class MakeRegions:
             # handle whenever a chrom is divided perfectly
             indexing_errors = int(len(regions_list)) - int(region_index)
             if regions_list is not None:
-
                 if indexing_errors >= 2:
                     # NOTE: BED format does not include the last
                     # position of chromEND, so the regions can overlap
@@ -912,7 +928,7 @@ class MakeRegions:
 # Create regions files function
 def __init__():
     """
-    An example of how to use the module 
+    An example of how to use the module
     """
     # Collect command line arguments
     args = collect_args()
