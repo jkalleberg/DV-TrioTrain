@@ -372,7 +372,7 @@ picard CreateSequenceDictionary \
 
 ### b. Metadata file
 
-We need a metadata file to tell TrioTrain where to find all of previously downloaded Human GIAB data. This file contains pedigree information, and the absolute paths for file inputs. Absolute paths are required to help the Apptainer/Singularity containers identify local files. [Formatting specifications for this required input can be found in the TrioTrain User Guide.](../user-guide/usage_guide.md#required-data)
+We also need a metadata file to tell TrioTrain where to find all of previously downloaded Human GIAB data. This file contains pedigree information, and the absolute paths for file inputs. Absolute paths are required to help the Apptainer/Singularity containers identify local files. [Formatting specifications for this required input can be found in the TrioTrain User Guide.](../user-guide/usage_guide.md#required-data)
 
 For the tutorial, we've created a helper script to automatically create an example of this file. This script uses expectations of where the tutorial data are stored to add local paths. However, outside of the tutorial, the metadata file is a user-created input.
 
@@ -385,14 +385,25 @@ python triotrain/model_training/tutorial/create_metadata.py
 
 ??? success "Expected Output:"
     ```bash title="Run at the command line"
-    ls triotrain/variant_calling/data/GIAB/reference/ | grep .dict
+    ls triotrain/variant_calling/data/GIAB/
     ```
 
     ```bash title="Check output"
-    GRCh38_no_alt_analysis_set.dict
+    allele_freq  bam  benchmark  GIAB.Human_tutorial_metadata.csv  reference
     ```
 
-### **c. SLURM Resource Config File**
+### c. SLURM Resource Config File
+
+The last required input we need for TrioTrain is a JSON file with nested dictionaries in the following format:
+
+```json
+{"phase_name": {
+    "SLURM_SBATCH_PARAMETER": "value",
+    "SLURM_SBATCH_PARAMETER": "value",
+    "SLURM_SBATCH_PARAMETER": "value",
+    }
+}
+```
 
 ---
 
