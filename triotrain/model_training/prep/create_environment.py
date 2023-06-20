@@ -295,7 +295,10 @@ class Environment:
             self.data = read_csv(metadata.file)
             self.column_names = list(self.data)
             self.num_rows = len(self.data)
-            self.num_envs = self.num_rows + 1
+            if self.demo_mode:
+                self.num_envs = self.num_rows
+            else:
+                self.num_envs = self.num_rows + 1
             if None in self.train_order:
                 self.num_of_parents = None
                 self.num_of_iterations = self.num_envs
@@ -426,7 +429,7 @@ class Environment:
             msg = "creating"
 
         if self.demo_mode:
-            self.logger.debug(f"{self.logging_msg}: {msg} demo env file | '{env_path}'")
+            self.logger.info(f"{self.logging_msg}: {msg} demo env file | '{env_path}'")
         elif self.debug_mode and self.dryrun_mode:
             self.logger.debug(
                 f"[DRY RUN] - {self.logging_msg}: --debug set; env file would be created | '{env_path}'"

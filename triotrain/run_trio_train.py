@@ -301,8 +301,8 @@ def run_trio_train(eval_genome="Child"):
         pipeline.find_show_regions_file()
  
     number_completed_itrs = 0
-    for itr in range(begining+1, end):
-        if itr != 0:
+    for itr in range(begining, end):
+        if itr != begining:
             new_env = pipeline.process_env(itr_num=itr)
 
         number_completed_itrs += 1
