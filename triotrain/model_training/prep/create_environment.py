@@ -537,12 +537,12 @@ class Environment:
             conditions.append("withIS")
 
         if self.use_allele_freq:
-            conditions.append("withPop")
+            conditions.append("withAF")
         else:
-            conditions.append("noPop")
+            conditions.append("noAF")
 
         if conditions:
-            self.conditions_used = "-".join(conditions)
+            self.conditions_used = "_".join(conditions)
 
         if update:
             self.logger.info(
@@ -573,7 +573,7 @@ class Environment:
                 self.set_conditions(update=True)
                 self._checkpoint_path = (
                     self._checkpoint_path.parent
-                    / f"v{self._version}-{self.conditions_used}/"
+                    / f"v{self._version}_{self.conditions_used}/"
                 )
                 self.channel_info = (
                     self._checkpoint_path / f"{self.checkpoint_name}.example_info.json"
@@ -593,8 +593,10 @@ class Environment:
             if self.itr_num < 2:
                 self._checkpoint_path = (
                     Path.cwd()
+                    / "triotrain"
+                    / "model_training"
                     / "pretrained_models"
-                    / f"v{self._version}-{self.conditions_used}/"
+                    / f"v{self._version}_{self.conditions_used}/"
                 )
                 self.checkpoint_name = "model.ckpt"
                 self.channel_info = (
@@ -655,11 +657,11 @@ class Environment:
         if self.conditions_used is not None:
             self._output_dict[
                 "BaselineModelResultsDir"
-            ] = f"{str(self.output_dir)}/baseline-v{self._version}-{self.conditions_used}"
+            ] = f"{str(self.output_dir)}/baseline_v{self._version}_{self.conditions_used}"
         else:
             self._output_dict[
                 "BaselineModelResultsDir"
-            ] = f"{str(self.output_dir)}/baseline-v{self._version}"
+            ] = f"{str(self.output_dir)}/baseline_v{self._version}"
 
         if self.dryrun_mode:
             print(
