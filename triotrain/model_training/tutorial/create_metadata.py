@@ -86,7 +86,7 @@ for k, v in defaults.items():
 # print(output_dict)
 
 output_file = helpers.h.WriteFiles(
-    path_to_file=str(cwd / "triotrain" / "variant_calling" / "data" / "GIAB"),
+    path_to_file=str(cwd / "triotrain" / "model_training" / "tutorial"),
     file=f"GIAB.Human_tutorial_metadata.csv",
     logger=logger,
     logger_msg="[tutorial]",
