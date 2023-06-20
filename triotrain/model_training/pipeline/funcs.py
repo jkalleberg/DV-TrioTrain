@@ -29,7 +29,6 @@ class Setup:
     args: argparse.Namespace
     eval_genome: str = "Child"
     demo_mode: bool = False
-    demo_chr: str = "29"
     current_genome_deps: List[Union[str, None]] = field(default_factory=helpers.h.create_deps)
     next_genome_deps: List[Union[str, None]] = field(default_factory=helpers.h.create_deps)
     _checkpoint_used: Union[str, None] = field(default=None, init=False, repr=False)
@@ -67,6 +66,7 @@ class Setup:
             dryrun_mode=self.args.dry_run, 
             debug_mode=self.args.debug,
             demo_mode=self.args.demo_mode,
+            demo_chr=self.args.demo_chr,
             checkpoint_name=self.args.custom_ckpt,
             channel_info=self.args.channel_info,
             update=self.args.update,
@@ -191,7 +191,7 @@ class Setup:
                 ) 
             elif self.demo_mode:
                 print(
-                    f"============================================================\nStarting Demo CHR{self.demo_chr} Iteration {self.meta.itr_num}-of-{self.meta.num_of_iterations} @ {helpers.h.timestamp()}\nINFO: Current [Genome={self.current_genome}; Trio={self.current_trio_num}]\nINFO: Next [Genome={self.next_genome}; Trio={self.next_trio_num}]\n============================================================"
+                    f"============================================================\nStarting Demo CHR{self.args.demo_chr} Iteration {self.meta.itr_num}-of-{self.meta.num_of_iterations} @ {helpers.h.timestamp()}\nINFO: Current [Genome={self.current_genome}; Trio={self.current_trio_num}]\nINFO: Next [Genome={self.next_genome}; Trio={self.next_trio_num}]\n============================================================"
                 )
             elif self.demo_mode is False:
                 if self.meta.itr_num == 0:
