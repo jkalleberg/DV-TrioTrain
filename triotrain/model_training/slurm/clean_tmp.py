@@ -123,7 +123,7 @@ class ClearTmp:
                         self.logger_msg = f"[Baseline] - [{self._phase}]"
                         self._baseline_mode = True
                     else:
-                        self.logger_msg = f"[Trio{self.trio_num}] - [{self._phase}]"
+                        self.logger_msg = f"[TRIO{self.trio_num}] - [{self._phase}]"
                 else:
                     self.logger.error(
                         f"[set_trio]: missing a current trio number\nExiting..."

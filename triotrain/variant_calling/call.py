@@ -517,7 +517,7 @@ class CallVariants:
             ]
         else:
             self.command_list = [
-                f'echo "INFO: testing custom model [Trio-{self.itr.train_genome}{self._trio_num} | {self.model_used}] with test genome #{self.test_num}:"',
+                f'echo "INFO: testing custom model [TRIO-{self.itr.train_genome}{self._trio_num} | {self.model_used}] with test genome #{self.test_num}:"',
                 self.apptainer_cmd_string,
             ]
         slurm_job.create_slurm_job(

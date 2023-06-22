@@ -555,7 +555,7 @@ def __init__():
 
     if args.demo_mode:
         model_label = f"Demo.{args.genome}.CHR{args.demo_chr}"
-        prefix = f"[Demo] - [Trio{itr_num}] - [{args.genome}] - [CHR{args.demo_chr}] - [show_examples]"
+        prefix = f"[DEMO_MODE] - [TRIO{itr_num}] - [CHR{args.demo_chr}] - [show_examples]"
     else:
         model_label = f"{args.genome}"
         prefix = f"[{args.genome}] - [show_examples]"

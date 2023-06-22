@@ -63,9 +63,6 @@ class SBATCH:
             )
             sys.exit(1)
 
-        print("MODULE FILE:", self.itr.args.modules)
-        breakpoint()
-
         if self.itr.env is not None:
             self._start_sbatch = [
                 ". scripts/setup/modules.sh",

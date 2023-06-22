@@ -397,7 +397,7 @@ class MakeExamples:
             self.itr.logger.info(
                 f"{self.logger_msg}{self.region_logger_msg}: re-submitting job to overwrite any existing tfrecords files"
             )
-        submit_slurm_job = s.SubmitSBATCH(
+        slurm_job = s.SubmitSBATCH(
             self.itr.job_dir,
             f"{self.job_name}.sh",
             self.handler_label,
@@ -405,29 +405,35 @@ class MakeExamples:
             f"{self.logger_msg}{self.region_logger_msg}",
         )
 
-        submit_slurm_job.build_command(prior_job_number=None)
+        slurm_job.build_command(prior_job_number=None)
 
-        if self.itr.dryrun_mode:
-            submit_slurm_job.display_command(
-                current_job=self.job_num,
-                total_jobs=total_jobs,
+        if self.itr.demo_mode:
+            slurm_job.display_command(
                 display_mode=self.itr.dryrun_mode,
             )
+
+
+        if self.itr.dryrun_mode:
+            # slurm_job.display_command(
+            #     current_job=self.job_num,
+            #     total_jobs=total_jobs,
+            #     display_mode=self.itr.dryrun_mode,
+            # )
             self._beam_shuffle_dependencies.insert(
                 dependency_index, helpers.h.generate_job_id()
             )
 
         else:
-            submit_slurm_job.display_command(debug_mode=self.itr.debug_mode)
-            submit_slurm_job.get_status(
+            slurm_job.display_command(debug_mode=self.itr.debug_mode)
+            slurm_job.get_status(
                 current_job=self.job_num,
                 total_jobs=total_jobs,
                 debug_mode=self.itr.debug_mode,
             )
 
-            if submit_slurm_job.status == 0:
+            if slurm_job.status == 0:
                 self._beam_shuffle_dependencies.insert(
-                    dependency_index, submit_slurm_job.job_number
+                    dependency_index, slurm_job.job_number
                 )
             else:
                 self.itr.logger.error(
