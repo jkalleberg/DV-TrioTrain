@@ -442,12 +442,13 @@ Use the following template
 python3 triotrain/run_trio_train.py                                         \
     -g Father                                                               \
     -m triotrain/model_training/tutorial/GIAB.Human_tutorial_metadata.csv   \
-    -n test                                                                 \
+    -n demo                                                                 \
     -r triotrain/model_training/tutorial/resources_used.json                \
     --demo-mode                                                             \
     --demo-chr 21                                                           \
     --num-tests 3                                                           \
     --custom-checkpoint triotrain/model_training/pretrained_models/v1.4.0_withIS_withAF/wgs_af.model.ckpt \
+    --output ../TUTORIAL                                                    \
     --dry-run                                                               
 ```
 

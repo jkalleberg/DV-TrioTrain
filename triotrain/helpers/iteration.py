@@ -133,7 +133,7 @@ class Iteration:
         if self.dryrun_mode:
             if not self.env.env_path.exists():
                 self.logger.info(
-                    f"[DRY_RUN] - [{self._mode_string}] - [setup]: env file [{self.env.env_file}] does not exist"
+                    f"[DRY_RUN] - [{self._mode_string}] - [setup]: env file does not exist, as expected | '{self.env.env_file}'"
                 )
 
         if self.demo_mode and self.current_trio_num is not None:

@@ -7,25 +7,24 @@ usage:
 """
 from dataclasses import dataclass, field
 from json import load
+from pathlib import Path
 from sys import exit, path
 from typing import TextIO, Union
-from pathlib import Path
 
 # Custom helper modules
 # get the relative path to the triotrain/ dir
 h_path = str(Path(__file__).parent.parent.parent)
 path.append(h_path)
 
-import helpers 
+import helpers
 import model_training.prep as prep
-from model_training.prep.examples_show import ShowExamples
-
 from model_training.pipeline.select_ckpt import SelectCheckpoint
 from model_training.pipeline.train_eval import TrainEval
-
+from model_training.prep.examples_show import ShowExamples
 from variant_calling.call import CallVariants
 from variant_calling.compare import CompareHappy
 from variant_calling.convert import ConvertHappy
+
 
 @dataclass
 class Run:
@@ -167,7 +166,7 @@ class Run:
         if not self.restart_jobs:
             return
 
-        self._jobIDs = [None] * total_jobs_in_phase        
+        self._jobIDs = [None] * total_jobs_in_phase
         if genome is not None and f"{phase}:{genome}" in self.restart_jobs.keys():
             self.itr.logger.info(
                 f"{logger_msg}: re-starting jobs were provided for '{phase}:{genome}'"
@@ -207,9 +206,9 @@ class Run:
                                 f"{logger_msg} - [region{_num}]: currently running SLURM job ID | {index}"
                             )
                         if phase in ["call_variants", "compare_happy", "convert_happy"]:
-                           self.itr.logger.info(
+                            self.itr.logger.info(
                                 f"{logger_msg} - [test{_num}]: currently running SLURM job ID | {index}"
-                            ) 
+                            )
                     else:
                         self.itr.logger.info(
                             f"{logger_msg}: currently running SLURM job ID | {index}"
@@ -350,7 +349,6 @@ class Run:
                 and self.use_regions_shuffle
                 and self.itr.demo_mode is False
             ):
-
                 self.itr.logger.info(
                     f"[{self.itr._mode_string}] - [setup]: --use-regions-shuffle is set; if missing, making region files now... "
                 )
@@ -362,7 +360,9 @@ class Run:
                 )
 
                 # create the default regions_file for testing, if necessary
-                regions.write_autosomes_withX_regions(output_file_name= f"{self.itr.args.species.lower()}_autosomes_withX.bed")
+                regions.write_autosomes_withX_regions(
+                    output_file_name=f"{self.itr.args.species.lower()}_autosomes_withX.bed"
+                )
 
                 # make the regions_shuffling bed files
                 current_itr = regions.run()
@@ -388,7 +388,6 @@ class Run:
             ### ------ MAKE EXAMPLES ------ ###
             if self.itr.current_genome_num is not None:
                 if self.itr.current_genome_dependencies[index] is None:
-                    
                     phase_skipped_counter = 0
                     # identify any jobs to be re-run
                     if self._n_regions is not None:
@@ -414,27 +413,27 @@ class Run:
 
                     if not self.re_running_jobs and not self.overwrite:
                         make_examples.find_all_outputs()
-                    
+
                         # skip ahead if all outputs exist already
                         if make_examples._outputs_exist:
                             self.itr.logger.info(
                                 f"------------ SKIPPING [{self.itr._mode_string}] - [data_prep_jobs] - [{genome}] ------------"
                             )
                             continue
-                    
-                    # make + submit any make_examples jobs                     
+
+                    # make + submit any make_examples jobs
                     examples_job_nums = make_examples.run()
-                    
+                    breakpoint()
+
                     # Determine if any 'make_examples' jobs were submitted
                     if examples_job_nums is None:
                         no_dependencies_required = True
                     else:
                         no_dependencies_required = helpers.h.check_if_all_same(
-                                examples_job_nums, None
-                            )
+                            examples_job_nums, None
+                        )
                         if no_dependencies_required:
                             phase_skipped_counter += 1
-                    
 
                     ### ------ SHUFFLE EXAMPLES ------ ###
                     if self._n_regions is not None:
@@ -445,7 +444,7 @@ class Run:
                         )
                     else:
                         self.process_re_runs("beam_shuffle", genome=genome)
-                    
+
                     # submit with no dependencies
                     if no_dependencies_required and examples_job_nums is None:
                         shuffle_examples = prep.BeamShuffleExamples(
@@ -470,14 +469,14 @@ class Run:
                             shuffle_examples_job_nums=self._jobIDs,
                             make_examples_jobs=examples_job_nums,
                         )
-                        
+
                     beam_job_nums = shuffle_examples.run()
                     if beam_job_nums is None:
                         no_dependencies_required = True
                     else:
                         no_dependencies_required = helpers.h.check_if_all_same(
-                                beam_job_nums, None
-                            )
+                            beam_job_nums, None
+                        )
                         if no_dependencies_required:
                             phase_skipped_counter += 1
 
@@ -529,7 +528,7 @@ class Run:
                         # Determine if any 're_shuffle_examples' jobs were submitted
                         if no_dependencies_required:
                             phase_skipped_counter += 1
-                        
+
                         if phase_skipped_counter == 3:
                             self.itr.logger.info(
                                 f"------------ SKIPPING [{self.itr._mode_string}] - [data_prep_jobs] - [{self.logger_msg}] ------------"
@@ -540,7 +539,7 @@ class Run:
                                 show_examples = ShowExamples(
                                     itr=self.itr,
                                     slurm_resources=self.resource_dict,
-                                    model_label=self.genome_specific_label, 
+                                    model_label=self.genome_specific_label,
                                     show_regions_file=self.show_regions_file,
                                     train_mode=use_training_genome,
                                 ).run()
@@ -597,7 +596,7 @@ class Run:
                     f"------------ SKIPPING [{self.itr._mode_string}] - [re_training_jobs] - [{self.logger_msg}] ------------"
                 )
                 return
-        
+
         train_job_num = re_training.run()
 
         # Determine if a 'train_eval' job was submitted
@@ -611,7 +610,7 @@ class Run:
 
         if next_genome is not None:
             self.process_re_runs("select_ckpt")
-            
+
             select_ckpt = SelectCheckpoint(
                 itr=self.itr,
                 slurm_resources=self.resource_dict,
@@ -627,7 +626,7 @@ class Run:
             self.itr.logger.info(
                 f"[{self.itr._mode_string}] - [re_training_jobs] - [{self.logger_msg}]: next checkpoint will not be identified since there is no 'next_genome'"
             )
-        
+
         # Determine if a 'select-ckpt' job was submitted
         no_dependencies_required = helpers.h.check_if_all_same(
             self.itr.next_genome_dependencies, None
@@ -646,16 +645,19 @@ class Run:
         """
         # create the default regions_file for testing, if necessary
         self.itr.logger.info(
-            f"[{self.itr._mode_string}] - [test_model_jobs]: if missing, making the default region file now... ")
-        
+            f"[{self.itr._mode_string}] - [test_model_jobs]: if missing, making the default region file now... "
+        )
+
         regions = prep.MakeRegions(
             self.itr,
             [self.max_examples],
             [self.est_examples],
-            )
-        
-        regions.write_autosomes_withX_regions(output_file_name= f"{self.itr.args.species.lower()}_autosomes_withX.bed")
-        
+        )
+
+        regions.write_autosomes_withX_regions(
+            output_file_name=f"{self.itr.args.species.lower()}_autosomes_withX.bed"
+        )
+
         phase_skipped_counter = 0
         if useDT:
             call_vars_job_nums = None
@@ -685,19 +687,21 @@ class Run:
                     return
 
             call_vars_job_nums = test_model.run()
-            
+
         # Determine if any 'call_variants' jobs were submitted
         if call_vars_job_nums is None:
             no_dependencies_required = True
         else:
-            no_dependencies_required = helpers.h.check_if_all_same(call_vars_job_nums, None)
-            
+            no_dependencies_required = helpers.h.check_if_all_same(
+                call_vars_job_nums, None
+            )
+
         if no_dependencies_required:
             phase_skipped_counter += 1
 
         ##--- MAKE + SUBMIT COMPARE_HAPPY JOBS ---##
         self.process_re_runs("compare_happy", total_jobs_in_phase=self.num_tests)
-        
+
         if no_dependencies_required:
             compare_tests = CompareHappy(
                 itr=self.itr,
@@ -719,21 +723,23 @@ class Run:
                 compare_happy_job_nums=self._jobIDs,
                 overwrite=self.overwrite,
             )
-        
+
         compare_job_nums = compare_tests.run()
-        
+
         # Determine if any 'compare_happy' jobs were submitted
         if compare_job_nums is None:
             no_dependencies_required = True
         else:
-            no_dependencies_required = helpers.h.check_if_all_same(compare_job_nums, None)
-        
+            no_dependencies_required = helpers.h.check_if_all_same(
+                compare_job_nums, None
+            )
+
         if no_dependencies_required:
             phase_skipped_counter += 1
-        
+
         ##--- MAKE + SUBMIT CONVERT_HAPPY JOBS ---##
         self.process_re_runs("convert_happy", total_jobs_in_phase=self.num_tests)
-        
+
         if no_dependencies_required:
             convert_results = ConvertHappy(
                 itr=self.itr,
@@ -755,7 +761,7 @@ class Run:
                 convert_happy_job_nums=self._jobIDs,
                 overwrite=self.overwrite,
             )
-        
+
         convert_job_nums = convert_results.run()
 
         # Determine if any 'convert_happy' jobs were submitted
@@ -786,7 +792,7 @@ class Run:
             self.test_model_jobs()
         elif self.itr.current_trio_num is None:
             self.test_model_jobs()
-            
+
         elif self.itr.current_genome_num == 0:
             self.test_model_jobs()
         elif self.itr.current_genome_num != 0:

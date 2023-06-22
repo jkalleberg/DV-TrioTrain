@@ -256,8 +256,6 @@ class Environment:
         self._version = environ.get("BIN_VERSION_DV")
         self._phase: str = "create_environment"
 
-        
-
         if self.first_genome is None:
             self.train_order = [None]
             self.output_dir_name = "VARIANT_CALLING_OUTPUTS"
@@ -457,7 +455,10 @@ class Environment:
             msg = "creating"
 
         if self.demo_mode:
-            self.logger.info(f"{self.logging_msg}: {msg} demo env file | '{env_path}'")
+            if self.dryrun_mode:
+                self.logger.info(f"{self.logging_msg}: pretending to create demo env file | '{env_path}'")
+            else:
+                self.logger.info(f"{self.logging_msg}: {msg} demo env file | '{env_path}'")
         elif self.debug_mode and self.dryrun_mode:
             self.logger.debug(
                 f"[DRY_RUN] - {self.logging_msg}: --debug set; env file would be created | '{env_path}'"
@@ -480,9 +481,16 @@ class Environment:
         else:
             self.index = self.trio_num - 1
 
-        self.logger.info(
-            f"{self.logging_msg}: {msg} environment file {self.trio_num + 1}-of-{self.num_of_iterations}"
-        )
+        if not self.demo_mode:
+            if self.dryrun_mode:
+                self.logger.info(
+                    f"[DRY_RUN] - {self.logging_msg}: {msg} environment file {self.trio_num + 1}-of-{self.num_of_iterations}"
+                )
+            else:
+
+                self.logger.info(
+                    f"{self.logging_msg}: {msg} environment file {self.trio_num + 1}-of-{self.num_of_iterations}"
+                )
 
         if self.debug_mode:
             self.logger.debug(f"{self.logging_msg}: current trio | {self.trio_num}")
@@ -915,7 +923,7 @@ class Environment:
             for var in vars_list:
                 if not Path(str(self.env.contents[var])).is_dir():
                     self.logger.info(
-                        f"[DRY_RUN] - {self.logging_msg}: directory [{var}] would be created"
+                        f"[DRY_RUN] - {self.logging_msg}: directory would be created | '{var}'"
                     )
             return
         else:
