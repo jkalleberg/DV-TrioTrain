@@ -330,6 +330,7 @@ class SelectCheckpoint:
             logger_msg,
             self.itr.logger,
             debug_mode=self.itr.debug_mode,
+            dryrun_mode=self.itr.dryrun_mode,
         )
 
     def submit_job(self) -> None:

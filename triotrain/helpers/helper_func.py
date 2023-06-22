@@ -476,6 +476,7 @@ def check_if_output_exists(
     label: str,
     logger: Logger,
     debug_mode: bool = False,
+    dryrun_mode: bool = False,
 ):
     """
     Using a regex string/Pattern, confirms if file(s) exist and counts the number of files matching the regex.
@@ -504,9 +505,12 @@ def check_if_output_exists(
             num_unique_files = 0
             unique_files_list = []
     else:
-        logger.warning(
-            f"{label}: unable to search a non-existant path '{str(search_path)}'"
-        )
+        if dryrun_mode:
+            logger.info(f"[DRY RUN] - {label}: search path does not exist, as expected | '{str(search_path)}'")
+        else:
+            logger.warning(
+                f"{label}: unable to search a non-existant path | '{str(search_path)}'"
+            )
         num_unique_files = 0
         unique_files_list = []
 

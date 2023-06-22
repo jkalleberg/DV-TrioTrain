@@ -404,6 +404,7 @@ class ShowExamples:
             self.logger_msg,
             self.itr.logger,
             debug_mode=self.itr.debug_mode,
+            dryrun_mode=self.itr.dryrun_mode,
         )
 
         if self._existing_pngs and self.overwrite is False:

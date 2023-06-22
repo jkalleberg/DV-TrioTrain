@@ -334,6 +334,7 @@ class BeamShuffleExamples:
             logger_msg,
             self.itr.logger,
             debug_mode=self.itr.debug_mode,
+            dryrun_mode=self.itr.dryrun_mode,
         )
 
     def find_beam_shuffled_pbtxt(self, phase: str, find_all: bool = False) -> None:
@@ -371,6 +372,7 @@ class BeamShuffleExamples:
             logger_msg,
             self.itr.logger,
             debug_mode=self.itr.debug_mode,
+            dryrun_mode=self.itr.dryrun_mode,
         )
 
     def submit_job(

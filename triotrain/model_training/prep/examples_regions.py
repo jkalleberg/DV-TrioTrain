@@ -504,6 +504,7 @@ class MakeRegions:
             self._logger_msg,
             self.itr.logger,
             debug_mode=self.itr.debug_mode,
+            dryrun_mode=self.itr.dryrun_mode,
         )
 
         if self.itr.demo_mode:

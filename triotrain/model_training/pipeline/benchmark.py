@@ -259,6 +259,7 @@ class Benchmark:
                 label="benchmarking",
                 logger=self.logger,
                 debug_mode=self.args.debug,
+                dryrun_mode=self.args.dry_run,
             )
             if logs_exist:
                 if phase_name in self.list_of_phases:

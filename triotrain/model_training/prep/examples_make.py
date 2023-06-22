@@ -328,6 +328,7 @@ class MakeExamples:
             logger_msg,
             self.itr.logger,
             debug_mode=self.itr.debug_mode,
+            dryrun_mode=self.itr.dryrun_mode,
         )
 
         if self._existing_tfrecords and self._num_tfrecords_found is not None:

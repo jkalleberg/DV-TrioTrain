@@ -312,6 +312,7 @@ class ReShuffleExamples:
             msg,
             logger=self.itr.logger,
             debug_mode=self.itr.debug_mode,
+            dryrun_mode=self.itr.dryrun_mode,
         )
 
         missing_files = helpers.h.check_expected_outputs(

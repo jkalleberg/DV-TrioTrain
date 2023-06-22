@@ -334,6 +334,7 @@ class ConvertHappy:
             logging_msg,
             self.itr.logger,
             debug_mode=self.itr.debug_mode,
+            dryrun_mode=self.itr.dryrun_mode,
         )
         
         if existing_results_files:
