@@ -6,14 +6,15 @@ usage:
     from sbatch import SBATCH, SubmitSBATCH
 """
 import random
+import sys
 import time
 from dataclasses import dataclass, field
 from logging import Logger
 from pathlib import Path
 from subprocess import run
 from typing import Union
+
 from regex import compile
-import sys
 
 # get the relative path to the triotrain/ dir
 h_path = str(Path(__file__).parent.parent.parent)
@@ -26,10 +27,11 @@ class SBATCH:
     """
     Create a custom SBATCH class object, which results in an sbatch file.
     """
+
     itr: helpers.Iteration
     job_name: str
     error_file_label: Union[str, None]
-    handler_status_label: Union[str,None]
+    handler_status_label: Union[str, None]
     logger_msg: str
     _command_list: list = field(init=False, repr=False, default_factory=list)
     _header_lines: list = field(init=False, repr=False, default_factory=list)
@@ -41,7 +43,9 @@ class SBATCH:
         self._jobfile_str = str(self._jobfile)
 
         if self.error_file_label is not None:
-            self._tracking_file = self.itr.log_dir / f"tracking-{self.error_file_label}.log"
+            self._tracking_file = (
+                self.itr.log_dir / f"tracking-{self.error_file_label}.log"
+            )
 
         self._header_lines = ["#!/bin/bash"]
 
@@ -49,14 +53,16 @@ class SBATCH:
             "source ${CONDA_BASE}/etc/profile.d/conda.sh",
             "conda deactivate",
         ]
-        
+
         test_modules = helpers.h.TestFile(self.itr.args.modules, logger=self.itr.logger)
         test_modules.check_existing()
-        
+
         if not test_modules.file_exists:
-            self.itr.logger.error(f"{self.logger_msg}: module file provide does not exist | '{self.itr.args.modules}'\nExiting...")
+            self.itr.logger.error(
+                f"{self.logger_msg}: module file provide does not exist | '{self.itr.args.modules}'\nExiting..."
+            )
             sys.exit(1)
-        
+
         print("MODULE FILE:", self.itr.args.modules)
         breakpoint()
 
@@ -152,14 +158,16 @@ class SBATCH:
         Confirms the job file does NOT exist already.
         """
         if self.itr.debug_mode:
-            self.itr.logger.debug(f"{self.logger_msg}: checking for prior SBATCH file... ")
+            self.itr.logger.debug(
+                f"{self.logger_msg}: checking for prior SBATCH file... "
+            )
         result = helpers.h.TestFile(self._jobfile_str, self.itr.logger)
         result.check_missing()
         return result.file_exists
 
     def create_slurm_job(
         self,
-        handler_status_label: Union[str,None],
+        handler_status_label: Union[str, None],
         command_list: list,
         error_index: int = -1,
         overwrite: bool = False,
@@ -201,7 +209,7 @@ class SBATCH:
         """
         if self._num_lines is not None:
             self.itr.logger.info(
-                f"[DRY RUN] - {self.logger_msg}: file contents for '{self._jobfile.name}'\n-------------------------------------"
+                f"[DRY_RUN] - {self.logger_msg}: file contents for '{self._jobfile.name}'\n-------------------------------------"
             )
             print(*self.all_lines, sep="\n")
             print("------------------------------------")
@@ -217,7 +225,10 @@ class SBATCH:
                 )
             with open(self._jobfile_str, mode="w") as file:
                 file.writelines(f"{line}\n" for line in self.all_lines)
-            self.itr.logger.info(f"{self.logger_msg}: new job file created |  '{self._jobfile.name}'")
+            self.itr.logger.info(
+                f"{self.logger_msg}: new job file created |  '{self._jobfile.name}'"
+            )
+
 
 class SubmitSBATCH:
     """
@@ -233,7 +244,14 @@ class SubmitSBATCH:
         slurm_job.displayjob(**kwargs)
     """
 
-    def __init__(self, sbatch_dir: Path, job_file: str, label: str, logger: Logger, logger_msg: str):
+    def __init__(
+        self,
+        sbatch_dir: Path,
+        job_file: str,
+        label: str,
+        logger: Logger,
+        logger_msg: str,
+    ):
         self.job_file = sbatch_dir / job_file
         self.job_label = label
         self.jobnum_pattern = compile(r"\d+")
@@ -281,16 +299,28 @@ class SubmitSBATCH:
                         ["sbatch"] + self.slurm_dependency + [f"{str(self.job_file)}"]
                     )
 
-    def display_command(self, current_job: int = 1, total_jobs: int = 1, display_mode=False, debug_mode=False):
+    def display_command(
+        self,
+        current_job: int = 1,
+        total_jobs: int = 1,
+        display_mode=False,
+        debug_mode=False,
+    ):
         """
         Prints the sbatch command used to submit a job.
         """
         if display_mode:
-            self.logger.info(f"[DRY RUN] - {self.logger_msg}: command used | {' '.join(self.cmd)}")
-            self.logger.info(f"[DRY RUN] - {self.logger_msg}: pretending to submit SLURM job {current_job}-of-{total_jobs}") 
+            self.logger.info(
+                f"[DRY_RUN] - {self.logger_msg}: command used | {' '.join(self.cmd)}"
+            )
+            self.logger.info(
+                f"[DRY_RUN] - {self.logger_msg}: pretending to submit SLURM job {current_job}-of-{total_jobs}"
+            )
         elif debug_mode:
-            self.logger.debug(f"{self.logger_msg}: submitting SLURM job with command: {' '.join(self.cmd)}")
-    
+            self.logger.debug(
+                f"{self.logger_msg}: submitting SLURM job with command: {' '.join(self.cmd)}"
+            )
+
     def get_status(self, current_job: int = 1, total_jobs: int = 1, debug_mode=False):
         """
         Determines if a SLURM job was submitted correctly.
@@ -305,18 +335,26 @@ class SubmitSBATCH:
         result = run(self.cmd, capture_output=True, text=True, check=True)
         self.status = result.returncode
         if self.status == 0:
-            self.logger.info(f"{self.logger_msg}: submitted SLURM job {current_job}-of-{total_jobs}")
+            self.logger.info(
+                f"{self.logger_msg}: submitted SLURM job {current_job}-of-{total_jobs}"
+            )
             match = self.jobnum_pattern.search(result.stdout)
             if match:
                 self.job_number = str(match.group())
                 if debug_mode:
-                    self.logger.debug(f"{self.logger_msg}: SLURM Job Number |  {self.job_number}")
+                    self.logger.debug(
+                        f"{self.logger_msg}: SLURM Job Number |  {self.job_number}"
+                    )
             else:
                 self.logger.warning(
                     f"{self.logger_msg}: unable to detect SLURM Job Number during submission of: [{self.job_label}]",
                 )
-                self.logger.info(f"{self.logger_msg}: skipping SLURM job [{self.job_file}]")
+                self.logger.info(
+                    f"{self.logger_msg}: skipping SLURM job [{self.job_file}]"
+                )
         else:
-            self.logger.error(f"{self.logger_msg}: unable to submit SLURM Job [{self.job_label}]")
+            self.logger.error(
+                f"{self.logger_msg}: unable to submit SLURM Job [{self.job_label}]"
+            )
             self.logger.error(f"{self.logger_msg}: process stdout:\n{result}")
             self.logger.info(f"{self.logger_msg}: skipping job [{self.job_file}]")

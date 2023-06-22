@@ -14,7 +14,8 @@ from dataclasses import dataclass, field
 from logging import Logger
 from pathlib import Path
 from random import randint
-from typing import Dict, List, Text, Union, Match
+from typing import Dict, List, Match, Text, Union
+
 import dotenv
 import regex
 from natsort import natsorted
@@ -81,7 +82,9 @@ class TestFile:
         self.file_exists: bool
         self.logger = logger
 
-    def check_missing(self, logger_msg: Union[str, None] = None, debug_mode: bool = False):
+    def check_missing(
+        self, logger_msg: Union[str, None] = None, debug_mode: bool = False
+    ):
         """
         Confirms if a file is non-existant.
         """
@@ -100,7 +103,9 @@ class TestFile:
                 self.logger.debug(f"{msg}file is missing, as expected | '{self.file}'")
             self.file_exists = False
 
-    def check_existing(self, logger_msg: Union[str, None] = None, debug_mode: bool = False):
+    def check_existing(
+        self, logger_msg: Union[str, None] = None, debug_mode: bool = False
+    ):
         """
         Confirms if a file exists already.
         """
@@ -132,12 +137,19 @@ class Env:
         contents -- a dictionary of existing variables
     """
 
-    def __init__(self, env_file: str, logger: Logger, debug_mode: bool = False):
+    def __init__(
+        self,
+        env_file: str,
+        logger: Logger,
+        debug_mode: bool = False,
+        dryrun_mode: bool = False,
+    ):
         self.env_file = env_file
         self.env_path = Path(self.env_file)
         self.logger = logger
         self.contents: Dict[str, Union[str, None]] = dotenv.dotenv_values(self.env_path)
         self.debug_mode = debug_mode
+        self.dryrun_mode = dryrun_mode
         self.updated_keys: Dict[str, Union[str, None]] = dict()
 
     def check_out(self) -> None:
@@ -147,7 +159,7 @@ class Env:
         if len(self.contents) != 0:
             if self.debug_mode:
                 self.logger.debug(
-                    f"[{self.env_path.name}] contains {len(self.contents)} variables"
+                    f"{self.env_path.name} contains {len(self.contents)} variables"
                 )
         else:
             raise ValueError(f"unable to load variables, {self.env_path} is empty")
@@ -163,23 +175,25 @@ class Env:
         for var in variables:
             if var in self.contents:
                 if self.debug_mode:
-                    self.logger.debug(f"[{self.env_path.name}] contains [{var}]")
+                    self.logger.debug(f"{self.env_path.name} contains '{var}'")
                 self.var_count += 1
             else:
+                if self.dryrun_mode:
+                    self.logger.info(f"[DRY_RUN] - {self.env_path.name} does not have a variable | '{var}' ")
                 self.logger.warning(
-                    f"[{self.env_path.name}] does not have a variable called [{var}]"
+                    f"{self.env_path.name} does not have a variable  | '{var}'"
                 )
 
         if self.var_count == len(variables):
             if self.debug_mode:
                 self.logger.debug(
-                    f"[{self.env_path.name}] contains [{self.var_count}-of-{len(variables)}] variables"
+                    f"{self.env_path.name} contains [{self.var_count}-of-{len(variables)}] variables"
                 )
             return True
         else:
             if self.debug_mode:
                 self.logger.debug(
-                    f"[{self.env_path.name}] contains [{self.var_count}-of-{len(variables)}] variables"
+                    f"{self.env_path.name} contains [{self.var_count}-of-{len(variables)}] variables"
                 )
             return False
 
@@ -228,7 +242,7 @@ class Env:
         # Either save the variable within the Env object,
         # Or write it to the .env file
         if dryrun_mode:
-            self.logger.info(f"[DRY RUN] - {logger_msg}{description}")
+            self.logger.info(f"[DRY_RUN] - {logger_msg}{description}")
             self.contents[key] = value
         else:
             self.logger.info(f"{logger_msg}{description}")
@@ -325,11 +339,11 @@ class WriteFiles:
         if self.dryrun_mode:
             if self.logger_msg is None:
                 self.logger.info(
-                    f"[DRY RUN]: pretending to write a list of lines | '{str(self.file_path)}'"
+                    f"[DRY_RUN]: pretending to write a list of lines | '{str(self.file_path)}'"
                 )
             else:
                 self.logger.info(
-                    f"[DRY RUN] - {self.logger_msg}: pretending to write a list of lines | '{str(self.file_path)}'"
+                    f"[DRY_RUN] - {self.logger_msg}: pretending to write a list of lines | '{str(self.file_path)}'"
                 )
 
             print("---------------------------------------------")
@@ -392,18 +406,18 @@ class WriteFiles:
         if self.dryrun_mode:
             if self.logger_msg is None:
                 self.logger.info(
-                    f"[DRY RUN]: pretending to write CSV file | '{str(self.file_path)}'"
+                    f"[DRY_RUN]: pretending to write CSV file | '{str(self.file_path)}'"
                 )
             else:
                 self.logger.info(
-                    f"[DRY RUN] - {self.logger_msg}: pretending to write CSV file | '{str(self.file_path)}'"
+                    f"[DRY_RUN] - {self.logger_msg}: pretending to write CSV file | '{str(self.file_path)}'"
                 )
 
             print("---------------------------------------------")
             for key, value in write_dict.items():
                 if type(value) is list:
                     v = ",".join(value)
-                else: 
+                else:
                     v = value
                 print(f"{key},{v}")
             print("---------------------------------------------")
@@ -506,7 +520,9 @@ def check_if_output_exists(
             unique_files_list = []
     else:
         if dryrun_mode:
-            logger.info(f"[DRY RUN] - {label}: search path does not exist, as expected | '{str(search_path)}'")
+            logger.info(
+                f"[DRY_RUN] - {label}: search path does not exist, as expected | '{str(search_path)}'"
+            )
         else:
             logger.warning(
                 f"{label}: unable to search a non-existant path | '{str(search_path)}'"

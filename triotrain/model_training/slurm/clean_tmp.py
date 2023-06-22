@@ -75,7 +75,7 @@ def check_args(args: argparse.Namespace, logger: Logger):
         logger.debug(f"using DeepVariant version | {os.environ.get('BIN_VERSION_DV')}")
 
     if args.dry_run:
-        logger.info("[DRY RUN] - output will display to screen only")
+        logger.info("[DRY_RUN] - output will display to screen only")
 
     assert (
         args.env_file
@@ -219,7 +219,7 @@ class ClearTmp:
         if keep.file_exists and not new.file_exists:
             if self.dryrun_mode:
                 self.logger.info(
-                    f"[DRY RUN] - {logging_msg}: pretending to copy '{keep_file.name}'..."
+                    f"[DRY_RUN] - {logging_msg}: pretending to copy '{keep_file.name}'..."
                 )
             else:
                 self.logger.info(
@@ -311,10 +311,10 @@ class ClearTmp:
                 if self.num_files % 100 == 0:
                     if self.dryrun_mode:
                         self.logger.info(
-                            f"[DRY RUN] - {self.logger_msg}: running total of files for removal | {int(self.num_files):,}-of-{int(self._total_files):,}"
+                            f"[DRY_RUN] - {self.logger_msg}: running total of files for removal | {int(self.num_files):,}-of-{int(self._total_files):,}"
                         )
                         self.logger.info(
-                            f"[DRY RUN] - {self.logger_msg}: pretending to remove the following tmp file | '{file_found}'"
+                            f"[DRY_RUN] - {self.logger_msg}: pretending to remove the following tmp file | '{file_found}'"
                         )
 
                     elif not self.dryrun_mode and self.debug_mode:
@@ -341,7 +341,7 @@ class ClearTmp:
             self.num_sub_dirs += 1
             if self.dryrun_mode:
                 self.logger.info(
-                    f"[DRY RUN] - {self.logger_msg}: pretending to remove the following tmp directory + contents | '{str(dir_path)}'"
+                    f"[DRY_RUN] - {self.logger_msg}: pretending to remove the following tmp directory + contents | '{str(dir_path)}'"
                 )
             else:
                 rmtree(dir_path)
@@ -352,7 +352,7 @@ class ClearTmp:
             self.num_sub_dirs += 1
             if self.dryrun_mode:
                 self.logger.info(
-                    f"[DRY RUN] - {self.logger_msg}: pretending to remove the following empty tmp directory | '{str(dir_path)}'"
+                    f"[DRY_RUN] - {self.logger_msg}: pretending to remove the following empty tmp directory | '{str(dir_path)}'"
                 )
             else:
                 dir_path.rmdir()
@@ -403,7 +403,6 @@ class ClearTmp:
 
                         # handle directories second
                         elif item.exists() and item.is_dir():
-
                             if "regions" in item.name:
                                 short_path = "/".join(item.parts[-2:])
                                 file_list = natsorted(item.iterdir(), key=str)
@@ -420,10 +419,13 @@ class ClearTmp:
                     f"{self.logger_msg}: TMP directory [{str(dir)}] removed previously... SKIPPING AHEAD"
                 )
                 continue
-        
-        percent_removed = round(int(self.num_files)/ int(self._total_files), ndigits=4) * 100
+
+        percent_removed = (
+            round(int(self.num_files) / int(self._total_files), ndigits=4) * 100
+        )
         self.logger.info(
-            f"{self.logger_msg}: removed {int(self.num_files):,}-of-{int(self._total_files):,} ({percent_removed}%) of total files")
+            f"{self.logger_msg}: removed {int(self.num_files):,}-of-{int(self._total_files):,} ({percent_removed}%) of total files"
+        )
 
 
 def __init__():

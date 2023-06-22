@@ -94,7 +94,7 @@ def check_args(args: argparse.Namespace, logger: Logger) -> None:
         logger.debug(f"using DeepVariant version | {_version}")
 
     if args.dry_run:
-        logger.info("[DRY RUN]: output will display to screen and not write to a file")
+        logger.info("[DRY_RUN]: output will display to screen and not write to a file")
 
     if args.get_help is False:
         assert (
@@ -377,7 +377,7 @@ class VariantCaller:
                 env=None,
                 logger=self.logger,
                 args=self.args,
-                default_region_file=None
+                default_region_file=None,
             )
 
     def find_output(self, index: int = 0) -> None:

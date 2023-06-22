@@ -10,12 +10,12 @@ import argparse
 import csv
 import operator
 import os
+import subprocess
 import sys
 from collections import OrderedDict, defaultdict
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import DefaultDict, Union
-import subprocess
 
 import args_process_hap
 import helpers as h
@@ -120,7 +120,7 @@ class Process:
                     if new_combo not in self._counts_default_dict.keys():
                         # assigning to a variable prints fewer confusing msgs
                         quiet = self._counts_default_dict[new_combo]
-    
+
     def get_sampleID(self) -> None:
         """
         Add the SampleID from the VCF to processed metadata
@@ -132,8 +132,9 @@ class Process:
         if awk_command is not None:
             zcat = subprocess.Popen(
                 [
-                "zcat",
-                str(self.convert_happy._test_vcf_file_path),],
+                    "zcat",
+                    str(self.convert_happy._test_vcf_file_path),
+                ],
                 stdout=subprocess.PIPE,
             )
             awk = subprocess.run(
@@ -195,7 +196,7 @@ class Process:
             and "baseline" not in self.convert_happy._input_pattern.lower()
         ):
             self._conditions_used.append("RegionsShuffling")
-        
+
         if self.convert_happy._custom_model:
             self._conditions_used.append("RegionsShuffling")
 
@@ -246,7 +247,7 @@ class Process:
         KeepRecords = ["SNP", "INDEL"]
         truth = filtered_values["truth_variant_type"]
         test = filtered_values["test_variant_type"]
-        
+
         # Calculate the 'TRUTH' SNPS & INDELS
         if truth in KeepRecords:
             # Count the sum
@@ -257,7 +258,7 @@ class Process:
             # Count INDELs only
             elif truth == "INDEL":
                 self.record_counts("TotalTruth_INDEL", self._metadata)
-        
+
         # Calculate the 'QUERY' SNPS & INDELS
         if test in KeepRecords:
             # Count the sum
@@ -268,7 +269,7 @@ class Process:
             # Count INDELs only
             elif test == "INDEL":
                 self.record_counts("TotalTest_INDEL", self._metadata)
-        
+
         # Count based on filters
         # Get values from a subset of self._columns
         reordered_values = {k: filtered_values[k] for k in self._columns}
@@ -278,7 +279,9 @@ class Process:
 
         if show_weirdos and self._weirdos is not None:
             if hash_key in self._weirdos:
-                print("MISSING PATTERN CONTENTS EXAMPLE: ------------------------------")
+                print(
+                    "MISSING PATTERN CONTENTS EXAMPLE: ------------------------------"
+                )
                 print("PATTERN:", hash_key)
                 print("\t".join(line.values()))
                 self.logger.error(
@@ -426,11 +429,10 @@ class Process:
             else:
                 label = f"{type}s_"
             if self.args.debug:
-                self.logger.debug(f"{self._logger_msg}: counting {type} now..."
-            )
+                self.logger.debug(f"{self._logger_msg}: counting {type} now...")
         else:
             label = ""
-        
+
         for metric, combo_list in patterns_dict.items():
             if self.args.debug:
                 self.logger.debug(f"{self._logger_msg}: METRIC = {metric}")
@@ -440,14 +442,16 @@ class Process:
                 if key in self._counts_dict.keys():
                     running_total += int(self._counts_dict[key])
                     if self.args.debug:
-                        self.logger.debug(f"{self._logger_msg}: RUNNING TOTAL = {running_total}")
+                        self.logger.debug(
+                            f"{self._logger_msg}: RUNNING TOTAL = {running_total}"
+                        )
                 else:
                     running_total += 0
-            
+
             _sum += running_total
             if metric in ["IGNORED", "MISSING"]:
                 metric_label = f"{label}{metric}"
-            else: 
+            else:
                 metric_label = f"{label}{metric}s"
             h.add_to_dict(
                 update_dict=self._internal_dict1,
@@ -455,7 +459,7 @@ class Process:
                 new_val=running_total,
                 logger=self.logger,
                 logger_msg=self._logger_msg,
-                )
+            )
 
         sum_label = f"{label}Total"
         if self.args.debug:
@@ -466,7 +470,7 @@ class Process:
             new_val=_sum,
             logger=self.logger,
             logger_msg=self._logger_msg,
-            )
+        )
         self._output_dict.update(self._internal_dict1)
 
     def make_proportional(self, label: Union[str, None] = None) -> None:
@@ -486,28 +490,30 @@ class Process:
                 total = int(self._internal_dict1[key])
                 if "_Total" not in k and label in k:
                     metric = k.split("_")[1]
-                    
+
                     if metric == match_string:
                         metric = k.split("_")[0]
 
                     if total == 0:
                         proportion = total
-                    else: 
+                    else:
                         proportion = round(((v / total) * 100), ndigits=2)
                     new_key = f"{match_string}_%{metric}"
 
                     if self.args.debug:
                         self.logger.debug(f"{self._logger_msg}: KEY = {k}")
                         self.logger.debug(f"{self._logger_msg}: METRIC = {metric}")
-                        self.logger.debug(f"{self._logger_msg}: {new_key} = {proportion}%")
-            
+                        self.logger.debug(
+                            f"{self._logger_msg}: {new_key} = {proportion}%"
+                        )
+
                     h.add_to_dict(
                         update_dict=self._internal_dict2,
                         new_key=new_key,
                         new_val=f"{proportion}%",
                         logger=self.logger,
                         logger_msg=self._logger_msg,
-                    )                
+                    )
 
     def indel_totals(self) -> None:
         """
@@ -522,21 +528,21 @@ class Process:
                 "FN_FP_INDEL_INDEL",
                 "TP_FP_INDEL_INDEL",
                 "TP_FP_SNP_INDEL",
-                ],
+            ],
             "TP": [
                 "TP_._INDEL_NOCALL",
                 "TP_FP_INDEL_INDEL",
                 "TP_FP_INDEL_SNP",
                 "TP_TP_INDEL_INDEL",
                 "TP_TP_INDEL_SNP",
-                ],
+            ],
             "FN": [
                 "FN_._INDEL_NOCALL",
                 "FN_FP_INDEL_INDEL",
                 "FN_FP_INDEL_SNP",
                 "FN_TP_INDEL_INDEL",
                 "FN_TP_INDEL_SNP",
-                ],
+            ],
             "IGNORED": [
                 "UNK_UNK_NOCALL_INDEL",
                 "UNK_UNK_INDEL_INDEL",
@@ -548,7 +554,7 @@ class Process:
                 "N_._INDEL_NOCALL",
                 "N_N_INDEL_SNP",
                 "N_N_INDEL_INDEL",
-            ]
+            ],
         }
         self.count(type="INDEL", patterns_dict=indels)
         self._output_dict.update(self._internal_dict1)
@@ -569,8 +575,8 @@ class Process:
                 "._FP_NOCALL_SNP",
                 "FN_FP_SNP_SNP",
                 "TP_FP_INDEL_SNP",
-                "TP_FP_SNP_SNP"
-                ],
+                "TP_FP_SNP_SNP",
+            ],
             "TP": [
                 "TP_._SNP_NOCALL",
                 "TP_TP_SNP_INDEL",
@@ -583,7 +589,7 @@ class Process:
                 "FN_FP_SNP_SNP",
                 "FN_TP_SNP_INDEL",
                 "FN_TP_SNP_SNP",
-                ],
+            ],
             "IGNORED": [
                 "UNK_UNK_NOCALL_SNP",
                 "UNK_UNK_SNP_SNP",
@@ -594,15 +600,17 @@ class Process:
                 "UNK_UNK_SNP_NOCALL",
                 "N_N_SNP_SNP",
                 "N_._SNP_NOCALL",
-            ]
+            ],
         }
         self.count(type="SNP", patterns_dict=snps)
         self._output_dict.update(self._internal_dict1)
         self.make_proportional(label="SNP")
         self.performance(label="SNPs")
         self._output_dict.update(self._internal_dict2)
-    
-    def metric_totals(self,): 
+
+    def metric_totals(
+        self,
+    ):
         """
         Calculate the sum of metrics
         """
@@ -621,10 +629,10 @@ class Process:
                 logger=self.logger,
                 logger_msg=self._logger_msg,
             )
-        
+
             self.make_proportional(label=metric)
         self.performance(label="Total")
-    
+
     def precision(self, n_TP: int, n_FP: int) -> float:
         """
         Calculates precision -
@@ -641,38 +649,40 @@ class Process:
         """
         Calculates the F1-Score - the harmonic mean between precision and recall.
         """
-        return round(2*((precision*recall)/(precision+recall)), ndigits=6)
-    
+        return round(2 * ((precision * recall) / (precision + recall)), ndigits=6)
+
     def performance(
-            self,
-            warning_threshold: float = 0.96,
-            label: Union[str, None] = None) -> None:
+        self, warning_threshold: float = 0.96, label: Union[str, None] = None
+    ) -> None:
         """
         Calculate overall performance metrics including Precision, Recall and the F1-Score (harmonic mean between Precision & Recall).
         """
 
         if label == "Total":
-            TPs=self._internal_dict1[f"TPs_{label}"]
-            FPs=self._internal_dict1[f"FPs_{label}"]
-            FNs=self._internal_dict1[f"FNs_{label}"]
+            TPs = self._internal_dict1[f"TPs_{label}"]
+            FPs = self._internal_dict1[f"FPs_{label}"]
+            FNs = self._internal_dict1[f"FNs_{label}"]
         else:
-            TPs=self._internal_dict1[f"{label}_TPs"]
-            FPs=self._internal_dict1[f"{label}_FPs"]
-            FNs=self._internal_dict1[f"{label}_FNs"]
-        
+            TPs = self._internal_dict1[f"{label}_TPs"]
+            FPs = self._internal_dict1[f"{label}_FPs"]
+            FNs = self._internal_dict1[f"{label}_FNs"]
+
         p = self.precision(n_TP=TPs, n_FP=FPs)
         r = self.recall(n_TP=TPs, n_FN=FNs)
         f1 = self.f1_score(precision=p, recall=r)
-            
+
         self._performance = {
             f"{label}_Precision": p,
             f"{label}_Recall": r,
-            f"{label}_F1-Score": f1} 
-            
+            f"{label}_F1-Score": f1,
+        }
+
         for k, m in self._performance.items():
             if m < warning_threshold:
                 difference = m - warning_threshold
-                self.logger.warning(f"{self._logger_msg}: {k} is below threshold ({warning_threshold}) | {k}='{m:.5f}' | delta='{round(difference, ndigits=6)}'")
+                self.logger.warning(
+                    f"{self._logger_msg}: {k} is below threshold ({warning_threshold}) | {k}='{m:.5f}' | delta='{round(difference, ndigits=6)}'"
+                )
             else:
                 if self.args.debug:
                     self.logger.debug(f"{self._logger_msg}: '{k}={m:.6f}'")
@@ -716,7 +726,7 @@ class Process:
         """
         if self.args.dry_run:
             self.logger.info(
-                f"[DRY RUN] - {self._logger_msg}: metrics by type contents:"
+                f"[DRY_RUN] - {self._logger_msg}: metrics by type contents:"
             )
 
         file = h.WriteFiles(
@@ -735,7 +745,10 @@ class Process:
         """
         self.load_counts_data()
 
-        if self.convert_happy.final_output_file_csv.exists() is False or self.args.dry_run:
+        if (
+            self.convert_happy.final_output_file_csv.exists() is False
+            or self.args.dry_run
+        ):
             self._output_dict.update(self._metadata)
             self.indel_totals()
             self.snp_totals()
@@ -751,6 +764,7 @@ class Process:
             self.logger.info(
                 f"{self._logger_msg}: existing output CSV file already exists | '{self.convert_happy.final_output_file_csv.name}'... SKIPPING AHEAD"
             )
+
 
 def __init__():
     """
@@ -787,6 +801,7 @@ def __init__():
         sys.exit(1)
 
     h.Wrapper(__file__, "end").wrap_script(h.timestamp())
+
 
 # Execute functions created
 if __name__ == "__main__":

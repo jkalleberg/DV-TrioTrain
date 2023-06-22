@@ -63,7 +63,7 @@ def collect_args():
         help="string\nif None, activate 'demo' mode\nif not None, activate 'region-beam shuffling' mode\n\tNOTE: values range from 1 to the total number of region BED files created\n(default: %(default)s)",
         type=str,
         default=None,
-        metavar="<int>"
+        metavar="<int>",
     )
     parser.add_argument(
         "-d",
@@ -108,7 +108,7 @@ def check_args(args: argparse.Namespace, logger: Logger):
         logger.debug(f"using DeepVariant version | {_version}")
 
     if args.dry_run:
-        logger.info("[DRY RUN]: output will display to screen and not write to a file")
+        logger.info("[DRY_RUN]: output will display to screen and not write to a file")
     if args.get_help is False:
         assert (
             args.env_file
@@ -213,7 +213,9 @@ class Examples:
         if self.args.region is None or self.args.region.lower() == "demo":
             self._output_prefix = f"{self.args.genome}.chr{self.demo_chromosome}"
             self._mode = "demo"
-            self._logger_msg = f"{self.args.genome}{self._trio_num}] - [CHR{self.demo_chromosome}"
+            self._logger_msg = (
+                f"{self.args.genome}{self._trio_num}] - [CHR{self.demo_chromosome}"
+            )
             self.logger.info(
                 f"[{self._mode}] - [{self._logger_msg}]: examples include Chromosome '{self.demo_chromosome}' only"
             )
@@ -259,7 +261,9 @@ class Examples:
             self._exclude_flags = ["--exclude_regions", f"{self.exclude_chroms}"]
             self._output_prefix = f"{self.args.genome}.region{self.args.region}"
             self._mode = "regions_shuffling"
-            self._logger_msg = f"{self.args.genome}{self._trio_num}] - [region{self.args.region}"
+            self._logger_msg = (
+                f"{self.args.genome}{self._trio_num}] - [region{self.args.region}"
+            )
             self.logger.info(
                 f"[{self._mode}] - [{self._logger_msg}]: examples include the regions from the Beam-Shuffling BED File(s)"
             )
@@ -365,7 +369,6 @@ class Examples:
                     )
                     exit(1)
                 else:
-
                     self.logger.info(
                         f"[{self._mode}] - [{self._logger_msg}]: adding the allele frequency channel to examples tensor vectors"
                     )
@@ -381,12 +384,15 @@ class Examples:
         else:
             self._mode = "noPopVCF"
             if "PopVCF" not in self.env.contents:
-                if "PopVCF_Path" not in self.env.contents or "PopVCF_File" not in self.env.contents:
+                if (
+                    "PopVCF_Path" not in self.env.contents
+                    or "PopVCF_File" not in self.env.contents
+                ):
                     self.logger.warning(
-                    f"[{self._mode}] - [{self._logger_msg}]: env file is missing 'PopVCF' or 'PopVCF_Path' & 'PopVCF_File'"
+                        f"[{self._mode}] - [{self._logger_msg}]: env file is missing 'PopVCF' or 'PopVCF_Path' & 'PopVCF_File'"
                     )
                     self.logger.warning(
-                    f"[{self._mode}] - [{self._logger_msg}]: env file was not made correctly. Exiting... "
+                        f"[{self._mode}] - [{self._logger_msg}]: env file was not made correctly. Exiting... "
                     )
                     exit(1)
             else:
@@ -499,10 +505,12 @@ class Examples:
             status = run_make_examples["return_code"]
             print(msg)
             self.logger.info(
-                f"[{self._mode}] - [{self._logger_msg}] - [{self._phase}]: Apptainer Command Return Code | {status}")
+                f"[{self._mode}] - [{self._logger_msg}] - [{self._phase}]: Apptainer Command Return Code | {status}"
+            )
             if status != 0:
                 self.logger.info(
-                    f"[{self._mode}] - [{self._logger_msg}] - [{self._phase}]: Apptainer Command Failed.\nExiting...")
+                    f"[{self._mode}] - [{self._logger_msg}] - [{self._phase}]: Apptainer Command Failed.\nExiting..."
+                )
                 exit(1)
         else:
             print(run_make_examples)
@@ -538,9 +546,9 @@ def __init__():
 
     # Create error log
     current_file = path.basename(__file__)
-    module_name = path.splitext(current_file)[0]  
+    module_name = path.splitext(current_file)[0]
     logger = helpers_logger.get_logger(module_name)
-    
+
     # Check command line args
     check_args(args, logger)
     Examples(args, logger).run()

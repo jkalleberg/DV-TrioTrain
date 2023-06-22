@@ -11,6 +11,7 @@ from dataclasses import dataclass, field
 from math import floor
 from pathlib import Path
 from typing import List, Union
+
 from regex import compile
 
 # get the relative path to the triotrain/ dir
@@ -235,11 +236,10 @@ class TrainEval:
                 self.itr.logger.debug(
                     f"{self.logger_msg}: writing SLURM job numbers to [{self.benchmarking_file.file}]",
                 )
-            self.benchmarking_file.add_rows(
-                headers, data_dict=data)
+            self.benchmarking_file.add_rows(headers, data_dict=data)
         else:
             self.itr.logger.info(
-                f"[DRY RUN] - {self.logger_msg}: benchmarking is active"
+                f"[DRY_RUN] - {self.logger_msg}: benchmarking is active"
             )
 
     def process_mem(self) -> None:
@@ -322,7 +322,11 @@ class TrainEval:
         )
 
         if slurm_job.check_sbatch_file():
-            if self.train_job_num and self.train_job_num[0] is not None and self.overwrite:
+            if (
+                self.train_job_num
+                and self.train_job_num[0] is not None
+                and self.overwrite
+            ):
                 self.itr.logger.info(
                     f"{self.logger_msg}: --overwrite=True, re-writing the existing SLURM job now..."
                 )
@@ -534,11 +538,13 @@ class TrainEval:
         Check if the SLURM job file was submitted to the SLURM queue successfully
         """
         # look at job number list to see if all items are 'None'
-        train_eval_results = helpers.h.check_if_all_same(self._select_ckpt_dependency, None)
+        train_eval_results = helpers.h.check_if_all_same(
+            self._select_ckpt_dependency, None
+        )
         if train_eval_results is False:
             if self.itr.dryrun_mode:
                 print(
-                    f"============ [DRY RUN] - {self.logger_msg} Job Number - {self._select_ckpt_dependency} ============"
+                    f"============ [DRY_RUN] - {self.logger_msg} Job Number - {self._select_ckpt_dependency} ============"
                 )
             else:
                 print(

@@ -20,10 +20,9 @@ from logging import Logger
 from pathlib import Path
 from typing import Union
 
-from regex import compile, search
-
 import helpers as h
 import helpers_logger
+from regex import compile, search
 
 
 # Parsing command line inputs function
@@ -114,7 +113,7 @@ def check_args(args: argparse.Namespace, logger: Logger):
         logger.debug(f"using DeepVariant version | {os.environ.get('BIN_VERSION_DV')}")
 
     if args.dry_run:
-        logger.info("[DRY RUN]: output will display to screen and not write to a file")
+        logger.info("[DRY_RUN]: output will display to screen and not write to a file")
 
     assert (
         args.current_ckpt
@@ -135,6 +134,7 @@ class MergeSelect:
     """
     Define what data to store for the select_ckpt phase of the TrioTrain Pipeline.
     """
+
     ckpt_file: Path
     logger: Logger
     env: h.Env
@@ -310,7 +310,8 @@ class MergeSelect:
         if f"{self.current_genome}_N_Steps" not in self.env.contents:
             self.env.add_to(
                 f"{self.current_genome}_N_Steps",
-                str(self.num_training_steps), self.dryrun_mode
+                str(self.num_training_steps),
+                self.dryrun_mode,
             )
 
         # Add the new checkpoint to current Env File
@@ -319,8 +320,7 @@ class MergeSelect:
             and self.checkpoint is not None
         ):
             self.env.add_to(
-                f"{self.current_genome}TestCkptName",
-                self.checkpoint, self.dryrun_mode
+                f"{self.current_genome}TestCkptName", self.checkpoint, self.dryrun_mode
             )
 
         # Add the new checkpoint to next Env File
@@ -332,7 +332,8 @@ class MergeSelect:
                 ):
                     self.env.add_to(
                         f"{self.next_genome}StartCkptName",
-                        self.checkpoint, self.dryrun_mode
+                        self.checkpoint,
+                        self.dryrun_mode,
                     )
             else:
                 analysis_name = self.env.env_path.name.split("-")[0]
@@ -345,7 +346,8 @@ class MergeSelect:
                 ):
                     next_env.add_to(
                         f"{self.next_genome}StartCkptName",
-                        self.checkpoint, self.dryrun_mode
+                        self.checkpoint,
+                        self.dryrun_mode,
                     )
 
     def run(self) -> None:
@@ -370,9 +372,9 @@ def __init__():
 
     # Create error log
     current_file = os.path.basename(__file__)
-    module_name = os.path.splitext(current_file)[0]  
+    module_name = os.path.splitext(current_file)[0]
     logger = helpers_logger.get_logger(module_name)
-    
+
     # Check command line args
     check_args(args, logger)
 
@@ -390,7 +392,13 @@ def __init__():
     ckpt_file = Path(args.current_ckpt)
 
     MergeSelect(
-        ckpt_file, logger, env, next_genome, next_run, debug_mode=args.debug, dryrun_mode=args.dry_run
+        ckpt_file,
+        logger,
+        env,
+        next_genome,
+        next_run,
+        debug_mode=args.debug,
+        dryrun_mode=args.dry_run,
     ).run()
 
     h.Wrapper(__file__, "end").wrap_script(h.timestamp())

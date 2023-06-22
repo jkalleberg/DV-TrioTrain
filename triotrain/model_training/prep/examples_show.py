@@ -21,14 +21,15 @@ from logging import Logger
 from os import environ, getcwd, path
 from pathlib import Path
 from typing import List, Union
+
 from regex import Pattern, findall
 
 # get the relative path to the triotrain/ dir
 h_path = str(Path(__file__).parent.parent.parent)
 sys.path.append(h_path)
 import helpers
-import model_training.slurm as s
 import model_training.prep as prep
+import model_training.slurm as s
 
 
 def collect_args():
@@ -130,7 +131,7 @@ def check_args(args: argparse.Namespace, logger: Logger):
     With "--debug", display command line args provided.
 
     With "--dry-run", display a msg.
-    
+
     Then, check to make sure all required flags are provided.
     """
     if args.debug:
@@ -142,7 +143,7 @@ def check_args(args: argparse.Namespace, logger: Logger):
         logger.debug(f"using DeepVariant version | {environ.get('BIN_VERSION_DV')}")
 
     if args.dry_run:
-        logger.info("[DRY RUN]: output will display to screen and not write to a file")
+        logger.info("[DRY_RUN]: output will display to screen and not write to a file")
 
     assert (
         args.env_file
@@ -160,6 +161,7 @@ class ShowExamples:
     """
     Define what data to store for the 'show_examples' phase of the TrioTrain Pipeline.
     """
+
     # required values
     itr: helpers.Iteration
     slurm_resources: dict
@@ -207,7 +209,7 @@ class ShowExamples:
         if self.itr.demo_mode:
             self.logger_msg = f"[{self.itr._mode_string}] - [{self._phase}] - [{self.genome}] - [CHR{self.itr.demo_chromosome}]"
             self.prefix = f"{self.genome}.chr{self.itr.demo_chromosome}"
-            self.job_label = f"{self.genome}{self.itr.current_trio_num}.chr{self.itr.demo_chromosome}" 
+            self.job_label = f"{self.genome}{self.itr.current_trio_num}.chr{self.itr.demo_chromosome}"
             self.error_label = f"demo-{self.prefix}"
         else:
             self.logger_msg = (
@@ -233,7 +235,7 @@ class ShowExamples:
             self.regions_dir = getcwd()
         else:
             self.regions_dir = str(Path(self.show_regions_file).parent)
-        
+
         self.region_file = self.regions_path.name
 
     def set_output(self) -> None:
@@ -294,9 +296,7 @@ class ShowExamples:
                 )
             else:
                 n_shards = self.slurm_resources["make_examples"]["ntasks"]
-                self.tfrecord_pattern = (
-                    f"{self.prefix}.labeled.tfrecords@{n_shards}.gz"
-                )
+                self.tfrecord_pattern = f"{self.prefix}.labeled.tfrecords@{n_shards}.gz"
                 self.example_info_pattern = f"{self.prefix}.labeled.tfrecords-00001-of-000{n_shards}.gz.example_info.json"
 
         if self.itr.debug_mode:
@@ -318,7 +318,11 @@ class ShowExamples:
         self.handler_label = f"{self._phase}: {self.prefix}"
 
         self.slurm_job = s.SBATCH(
-            self.itr, self.job_name, self.model_label, self.handler_label, self.logger_msg
+            self.itr,
+            self.job_name,
+            self.model_label,
+            self.handler_label,
+            self.logger_msg,
         )
 
         if self.slurm_job.check_sbatch_file() is not False:
@@ -397,7 +401,11 @@ class ShowExamples:
         self.png_regex = rf"{self.regions_path.stem}\w+:\w+->\w+.\w+.png"
 
         # See if PNGs made using the region file already exist
-        (self._existing_pngs, pngs_found, png_files,) = helpers.h.check_if_output_exists(
+        (
+            self._existing_pngs,
+            pngs_found,
+            png_files,
+        ) = helpers.h.check_if_output_exists(
             self.png_regex,
             "image PNGs",
             self.pileup_path,
@@ -433,7 +441,7 @@ class ShowExamples:
             f"{self.job_name}.sh",
             self.handler_label,
             self.itr.logger,
-            self.logger_msg
+            self.logger_msg,
         )
         if self.make_examples_jobs is not None:
             slurm_job.build_command(prior_job_number=self.make_examples_jobs)
@@ -464,7 +472,7 @@ class ShowExamples:
             if len(self._output_jobnum) == 1:
                 if self.itr.dryrun_mode:
                     print(
-                        f"============ [DRY RUN] - {self.logger_msg} -  Job Number - {self._output_jobnum} ============"
+                        f"============ [DRY_RUN] - {self.logger_msg} -  Job Number - {self._output_jobnum} ============"
                     )
                 else:
                     print(
@@ -474,7 +482,7 @@ class ShowExamples:
                 if self.itr.dryrun_mode:
                     if self.itr.dryrun_mode:
                         print(
-                            f"============ [DRY RUN] - {self.logger_msg} - Job Numbers ============\n{self._output_jobnum}\n============================================================"
+                            f"============ [DRY_RUN] - {self.logger_msg} - Job Numbers ============\n{self._output_jobnum}\n============================================================"
                         )
                 else:
                     print(
@@ -526,9 +534,9 @@ def __init__():
 
     # Create error log
     current_file = path.basename(__file__)
-    module_name = path.splitext(current_file)[0]  
+    module_name = path.splitext(current_file)[0]
     logger = helpers.log.get_logger(module_name)
-    
+
     # Check command line args
     try:
         check_args(args, logger)
@@ -612,7 +620,7 @@ def __init__():
             model_label=model_label,
             show_regions_file=Path(args.show_regions_file),
             make_examples_jobs=dependency_list,
-            overwrite=args.overwrite
+            overwrite=args.overwrite,
         )
         slurm.run()
     elif len(region_files_list) == 1:
@@ -623,7 +631,7 @@ def __init__():
                 slurm_resources=resource_dict,
                 model_label=model_label,
                 show_regions_file=Path(file_path),
-                overwrite=args.overwrite
+                overwrite=args.overwrite,
             )
             slurm.run()
         else:

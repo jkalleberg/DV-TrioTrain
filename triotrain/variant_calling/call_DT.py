@@ -94,7 +94,7 @@ def check_args(args: argparse.Namespace, logger: Logger) -> None:
         logger.debug(f"using DeepVariant version | {_version}")
 
     if args.dry_run:
-        logger.info("[DRY RUN]: output will display to screen and not write to a file")
+        logger.info("[DRY_RUN]: output will display to screen and not write to a file")
 
     if not args.get_help:
         assert (
@@ -684,7 +684,7 @@ class DTVariantCaller:
             if self._job_nums and len(self._job_nums) == 1:
                 if self.args.dry_run:
                     print(
-                        f"============ [DRY RUN] - {self._logger_msg} Job Number - {self._job_nums} ============"
+                        f"============ [DRY_RUN] - {self._logger_msg} Job Number - {self._job_nums} ============"
                     )
                 else:
                     print(
@@ -693,7 +693,7 @@ class DTVariantCaller:
             else:
                 if self.args.dry_run:
                     print(
-                        f"============ [DRY RUN] - {self._logger_msg} Job Numbers ============\n{self._job_nums}\n============================================================"
+                        f"============ [DRY_RUN] - {self._logger_msg} Job Numbers ============\n{self._job_nums}\n============================================================"
                     )
 
                 else:

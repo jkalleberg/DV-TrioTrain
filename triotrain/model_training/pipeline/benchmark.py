@@ -109,7 +109,7 @@ def check_args(args: argparse.Namespace, logger: Logger) -> None:
         logger.debug(f"using DeepVariant version | {os.environ.get('BIN_VERSION_DV')}")
 
     if args.dry_run:
-        logger.info("[DRY RUN]: output will display to screen and not write to a file")
+        logger.info("[DRY_RUN]: output will display to screen and not write to a file")
 
     assert (
         args.env_file

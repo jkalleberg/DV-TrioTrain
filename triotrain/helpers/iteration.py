@@ -5,14 +5,16 @@ description: collects all the data used for an Iteration of the TrioTrain pipeli
 usage:
     from iteration import Iteration
 """
-from argparse import Namespace
 import sys
+from argparse import Namespace
 from dataclasses import dataclass, field
 from logging import Logger
 from os import environ, getcwd
 from pathlib import Path
 from typing import Union
+
 import helpers.helper_func as h
+
 
 @dataclass
 class Iteration:
@@ -27,7 +29,7 @@ class Iteration:
     total_num_genomes: Union[int, None]
     train_genome: Union[str, None]
     eval_genome: Union[str, None]
-    env: Union[h.Env,None]
+    env: Union[h.Env, None]
     logger: Logger
     args: Namespace
 
@@ -49,7 +51,6 @@ class Iteration:
     )
 
     def __post_init__(self) -> None:
-            
         if self.env is not None and self.train_genome is not None:
             self.demo_mode: bool = self.args.demo_mode
             self.demo_chromosome: Union[str, int, None] = self.args.demo_chr
@@ -57,11 +58,11 @@ class Iteration:
             self.demo_mode = False
             self.demo_chromosome = None
         self.debug_mode: bool = self.args.debug
-        self.dryrun_mode: bool =self.args.dry_run
-        
+        self.dryrun_mode: bool = self.args.dry_run
+
         if self.demo_mode or self.debug_mode or self.total_num_tests is None:
-            self.total_num_tests = 1            
-        
+            self.total_num_tests = 1
+
         if self._version is None:
             raise ValueError(
                 "Unable to proceed, setup() function failed to determine which version of DeepVariant is being used"
@@ -89,9 +90,9 @@ class Iteration:
                 self.log_dir = Path(self.args.outpath)
                 self.test_dir = Path(self.args.outpath)
                 self.compare_dir = Path(self.args.outpath)
-                self.results_dir = Path(self.args.outpath) 
+                self.results_dir = Path(self.args.outpath)
             return
-        
+
         if "ConditionsUsed" in self.env.contents:
             self._conditions = self.env.contents["ConditionsUsed"]
         else:
@@ -132,7 +133,7 @@ class Iteration:
         if self.dryrun_mode:
             if not self.env.env_path.exists():
                 self.logger.info(
-                    f"[DRY RUN] - [{self._mode_string}] - [setup]: env file [{self.env.env_file}] does not exist"
+                    f"[DRY_RUN] - [{self._mode_string}] - [setup]: env file [{self.env.env_file}] does not exist"
                 )
 
         if self.demo_mode and self.current_trio_num is not None:
@@ -156,7 +157,11 @@ class Iteration:
             self.results_dir = Path(str(self.env.contents["BaselineModelResultsDir"]))
             self.model_label = f"{self.run_name}-{self._version}"
 
-        elif self.train_genome is not None and self.current_genome_num != 0 and self.current_trio_num is not None:
+        elif (
+            self.train_genome is not None
+            and self.current_genome_num != 0
+            and self.current_trio_num is not None
+        ):
             self.run_name = self.env.contents["RunName"]
             self.code_path = self.env.contents["CodePath"]
             self.examples_dir = Path(str(self.env.contents["ExamplesDir"]))
@@ -179,7 +184,7 @@ class Iteration:
             self.code_path = self.env.contents["CodePath"]
             self.job_dir = Path(str(self.env.contents["JobDir"]))
             self.log_dir = Path(str(self.env.contents["LogDir"]))
-            self.model_label = self.run_name           
+            self.model_label = self.run_name
 
     def check_working_dir(self) -> None:
         """
@@ -188,7 +193,7 @@ class Iteration:
         """
         if self.env is None:
             return
-        
+
         if self.dryrun_mode:
             result = self.env.contents["CodePath"]
             working_dir = str(result)
@@ -202,4 +207,3 @@ class Iteration:
         except AssertionError as error_msg:
             self.logger.error(f"{error_msg}.\nExiting... ")
             sys.exit(1)
-

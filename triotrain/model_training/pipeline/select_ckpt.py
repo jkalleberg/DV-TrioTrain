@@ -7,9 +7,10 @@ usage:
 """
 import sys
 from dataclasses import dataclass, field
-from typing import List, Union
-from regex import compile
 from pathlib import Path
+from typing import List, Union
+
+from regex import compile
 
 # get the relative path to the triotrain/ dir
 h_path = str(Path(__file__).parent.parent.parent)
@@ -59,7 +60,9 @@ class SelectCheckpoint:
         Collect any SLURM job ids for running tests to avoid
         submitting a job while it's already running
         """
-        self._ignoring_training = helpers.h.check_if_all_same(self.train_eval_job_num, None)
+        self._ignoring_training = helpers.h.check_if_all_same(
+            self.train_eval_job_num, None
+        )
 
         if not self._ignoring_training:
             self.itr.logger.info(f"{self.logger_msg}: training was submitted...")
@@ -174,11 +177,10 @@ class SelectCheckpoint:
                 self.itr.logger.debug(
                     f"{self.logger_msg}: writing SLURM job numbers to [{self.benchmarking_file.file}]",
                 )
-                self.benchmarking_file.add_rows(
-                    headers, data_dict=data)
+                self.benchmarking_file.add_rows(headers, data_dict=data)
             else:
                 self.itr.logger.info(
-                    f"[DRY RUN] - {self.logger_msg} - [{self.itr.train_genome}]: benchmarking is active"
+                    f"[DRY_RUN] - {self.logger_msg} - [{self.itr.train_genome}]: benchmarking is active"
                 )
 
     def make_job(self) -> Union[s.SBATCH, None]:
@@ -260,7 +262,10 @@ class SelectCheckpoint:
             logger_msg = f"[{self.itr._mode_string}] - [{phase}]"
 
         # confirm if select-ckpt job has already finished correctly
-        if self.itr.env is not None and f"{self.itr.train_genome}TestCkptName" in self.itr.env.contents:
+        if (
+            self.itr.env is not None
+            and f"{self.itr.train_genome}TestCkptName" in self.itr.env.contents
+        ):
             self.itr.logger.info(
                 f"{logger_msg}: {self.itr.train_genome}{self.itr.current_trio_num} testing checkpoint exits... SKIPPING AHEAD"
             )
@@ -269,7 +274,6 @@ class SelectCheckpoint:
             ]
             # confirm if new ckpt was saved for next training round correctly
             if self.itr.next_genome is not None and self.itr.next_trio_num is not None:
-
                 if self.itr.next_trio_num == self.itr.current_trio_num:
                     if f"{self.itr.next_genome}StartCkptName" in self.itr.env.contents:
                         self.ckpt_selected = True
@@ -338,7 +342,6 @@ class SelectCheckpoint:
         Submit SLURM jobs to queue.
         """
         if self.itr.current_genome_dependencies[3] is None:
-
             slurm_job = self.make_job()
             if slurm_job is not None:
                 if self.itr.dryrun_mode:
@@ -385,11 +388,13 @@ class SelectCheckpoint:
         """
         Check if the SLURM job file was submitted to the SLURM queue successfully
         """
-        select_ckpt_results = helpers.h.check_if_all_same(self._model_testing_dependency, None)
+        select_ckpt_results = helpers.h.check_if_all_same(
+            self._model_testing_dependency, None
+        )
         if select_ckpt_results is False:
             if self.itr.dryrun_mode:
                 print(
-                    f"============ [DRY RUN] - {self.logger_msg} Job Number - {self._model_testing_dependency} ============"
+                    f"============ [DRY_RUN] - {self.logger_msg} Job Number - {self._model_testing_dependency} ============"
                 )
             else:
                 print(

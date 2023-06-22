@@ -7,8 +7,8 @@ usage:
 """
 import sys
 from dataclasses import dataclass, field
-from typing import List, Union
 from pathlib import Path
+from typing import List, Union
 
 # get the relative path to the triotrain/ dir
 h_path = str(Path(__file__).parent.parent.parent)
@@ -145,10 +145,16 @@ class BeamShuffleExamples:
 
             num_job_ids = len(self.shuffle_examples_job_nums)
             if num_job_ids == self._total_regions:
-                self.jobs_to_run = helpers.h.find_not_NaN(self.shuffle_examples_job_nums)
+                self.jobs_to_run = helpers.h.find_not_NaN(
+                    self.shuffle_examples_job_nums
+                )
                 self._num_to_run = len(self.jobs_to_run)
-                self._num_to_ignore = len(helpers.h.find_NaN(self.shuffle_examples_job_nums))
-                self._re_shuffle_dependencies = helpers.h.create_deps(self._total_regions)
+                self._num_to_ignore = len(
+                    helpers.h.find_NaN(self.shuffle_examples_job_nums)
+                )
+                self._re_shuffle_dependencies = helpers.h.create_deps(
+                    self._total_regions
+                )
 
                 if self.jobs_to_run:
                     self._run_jobs = True
@@ -241,7 +247,7 @@ class BeamShuffleExamples:
                     )
                 else:
                     self.itr.logger.info(
-                        f"[DRY RUN] - {self.logger_msg}: benchmarking is active"
+                        f"[DRY_RUN] - {self.logger_msg}: benchmarking is active"
                     )
 
     def make_job(self, index: int = 0) -> Union[s.SBATCH, None]:
@@ -414,7 +420,9 @@ class BeamShuffleExamples:
                 display_mode=self.itr.dryrun_mode,
             )
             if self._re_shuffle_dependencies:
-                self._re_shuffle_dependencies[dependency_index] = helpers.h.generate_job_id()
+                self._re_shuffle_dependencies[
+                    dependency_index
+                ] = helpers.h.generate_job_id()
         else:
             slurm_job.display_command(debug_mode=self.itr.debug_mode)
             slurm_job.get_status(
@@ -450,7 +458,7 @@ class BeamShuffleExamples:
         if no_beam_jobs_submitted is False:
             if self.itr.dryrun_mode:
                 print(
-                    f"============ [DRY RUN] - {self.logger_msg} Job Numbers ============\n{self._re_shuffle_dependencies}\n============================================================"
+                    f"============ [DRY_RUN] - {self.logger_msg} Job Numbers ============\n{self._re_shuffle_dependencies}\n============================================================"
                 )
             else:
                 print(

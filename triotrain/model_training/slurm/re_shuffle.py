@@ -108,7 +108,7 @@ def check_args(args: argparse.Namespace, logger: Logger):
         logger.debug(f"using DeepVariant version | {os.environ.get('BIN_VERSION_DV')}")
 
     if args.dry_run:
-        logger.info("[DRY RUN]: output will display to screen and not write to a file")
+        logger.info("[DRY_RUN]: output will display to screen and not write to a file")
 
     assert (
         args.env_file
@@ -119,6 +119,7 @@ def check_args(args: argparse.Namespace, logger: Logger):
     assert (
         args.restart
     ), "Missing --start-itr; Please designate the iteration number you'd like to re-shuffle"
+
 
 @dataclass
 class ReShuffle:
@@ -296,9 +297,9 @@ def __init__():
 
     # Create error log
     current_file = os.path.basename(__file__)
-    module_name = os.path.splitext(current_file)[0]  
+    module_name = os.path.splitext(current_file)[0]
     logger = helpers_logger.get_logger(module_name)
-    
+
     # Check command line args
     check_args(args, logger)
     env = h.Env(args.env_file, logger)

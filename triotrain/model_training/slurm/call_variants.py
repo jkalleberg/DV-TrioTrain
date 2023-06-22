@@ -14,10 +14,9 @@ from os import environ, path, sched_getaffinity
 from pathlib import Path
 from typing import Union
 
-from spython.main import Client
-
 import helpers as h
 import helpers_logger
+from spython.main import Client
 
 
 def collect_args():
@@ -81,9 +80,7 @@ def collect_args():
         action="store_true",
     )
 
-    customize = parser.add_argument_group(
-        "call variants with custom model weights"
-    )
+    customize = parser.add_argument_group("call variants with custom model weights")
     customize.add_argument(
         "--use-custom-model",
         dest="use_custom_model",
@@ -94,7 +91,7 @@ def collect_args():
     customize.add_argument(
         "--custom-checkpoint",
         dest="custom_ckpt",
-        help="input file (model.ckpt)\n[REQUIRED] with '--use-custom-model'\nprovides model weights to use when calling variants"
+        help="input file (model.ckpt)\n[REQUIRED] with '--use-custom-model'\nprovides model weights to use when calling variants",
     )
 
     return parser.parse_args()
@@ -117,7 +114,7 @@ def check_args(args: argparse.Namespace, logger: Logger):
         logger.debug(f"using DeepVariant version | {_version}")
 
     if args.dry_run:
-        logger.info("[DRY RUN]: output will display to screen and not write to a file")
+        logger.info("[DRY_RUN]: output will display to screen and not write to a file")
 
     if args.get_help is False:
         assert (
@@ -243,7 +240,6 @@ class TestModel:
         define which model weights to use
         """
         if self.args.use_custom_model:
-
             self._checkpoint = Path(self.args.custom_ckpt)
             assert (
                 self._checkpoint.exists()
@@ -329,7 +325,6 @@ class TestModel:
                     )
                     exit(1)
                 else:
-
                     self.logger.info(
                         f"[{self._mode}] - [{self._logger_msg}]: adding the allele frequency channel to examples tensor vectors"
                     )
@@ -493,9 +488,9 @@ def __init__():
 
     # Create error log
     current_file = path.basename(__file__)
-    module_name = path.splitext(current_file)[0]  
+    module_name = path.splitext(current_file)[0]
     logger = helpers_logger.get_logger(module_name)
-    
+
     # Check command line args
     check_args(args, logger)
     TestModel(args, logger).run()

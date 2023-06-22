@@ -5,10 +5,10 @@ description:
 usage:
     from run import Run
 """
-import sys
 import argparse
+import sys
 from logging import Logger
-from os import path, environ
+from os import environ, path
 
 # Custom helper modules
 sys.path.append(
@@ -18,6 +18,7 @@ import helpers as h
 import helpers_logger
 from iteration import Iteration
 from pipeline_run import Run
+
 
 def collect_args():
     """
@@ -69,7 +70,7 @@ def collect_args():
         dest="use_DT",
         help="if True, display, variant calling is assumed to be completed already and will be skipped",
         action="store_true",
-        default=False
+        default=False,
     )
     return parser.parse_args()
 
@@ -90,10 +91,11 @@ def check_args(args: argparse.Namespace, logger: Logger) -> None:
         logger.debug(f"using DeepVariant version | {_version}")
 
     if args.dry_run:
-        logger.info("[DRY RUN]: output will display to screen and not write to a file")
+        logger.info("[DRY_RUN]: output will display to screen and not write to a file")
     assert (
         args.resource_config
     ), "Missing --resources; Please designate a path to pipeline compute resources in JSON format"
+
 
 def __init__():
     # Collect command line arguments
@@ -118,9 +120,11 @@ def __init__():
         eval_genome=None,
         env=h.Env(args.env_file, logger),
         logger=logger,
-        args=args)
-    
-    pipeline = Run(itr=current_itr,
+        args=args,
+    )
+
+    pipeline = Run(
+        itr=current_itr,
         resource_file=args.resource_config,
         num_tests=1,
         train_mode=True,
@@ -130,7 +134,7 @@ def __init__():
 
     h.Wrapper(__file__, "end").wrap_script(h.timestamp())
 
+
 # Execute functions created
 if __name__ == "__main__":
     __init__()
-

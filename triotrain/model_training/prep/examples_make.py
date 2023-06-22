@@ -7,8 +7,8 @@ usage:
 """
 import sys
 from dataclasses import dataclass, field
-from typing import List, Union
 from pathlib import Path
+from typing import List, Union
 
 # get the relative path to the triotrain/ dir
 h_path = str(Path(__file__).parent.parent.parent)
@@ -55,9 +55,13 @@ class MakeExamples:
         self.n_parts = self.slurm_resources[self._phase]["ntasks"]
         self.total_shards = self.n_parts - 1
         if "N_Parts" not in self.itr.env.contents:
-            self.itr.env.add_to("N_Parts", str(self.n_parts), dryrun_mode=self.itr.dryrun_mode)
+            self.itr.env.add_to(
+                "N_Parts", str(self.n_parts), dryrun_mode=self.itr.dryrun_mode
+            )
         if "TotalShards" not in self.itr.env.contents:
-            self.itr.env.add_to("TotalShards", str(self.total_shards), dryrun_mode=self.itr.dryrun_mode)
+            self.itr.env.add_to(
+                "TotalShards", str(self.total_shards), dryrun_mode=self.itr.dryrun_mode
+            )
         if self.track_resources:
             assert (
                 self.benchmarking_file is not None
@@ -121,7 +125,9 @@ class MakeExamples:
                 self.jobs_to_ignore = helpers.h.find_NaN(self.make_examples_job_nums)
                 self._num_to_run = len(self.jobs_to_run)
                 self._num_to_ignore = len(self.jobs_to_ignore)
-                self._beam_shuffle_dependencies = helpers.h.create_deps(self._total_regions)
+                self._beam_shuffle_dependencies = helpers.h.create_deps(
+                    self._total_regions
+                )
 
                 if self.jobs_to_run:
                     updated_jobs_list = []
@@ -215,11 +221,12 @@ class MakeExamples:
                             f"{self.logger_msg}: writing SLURM job numbers to [{self.benchmarking_file.file}]",
                         )
                     self.benchmarking_file.add_rows(
-                        headers, data_dict=data,
+                        headers,
+                        data_dict=data,
                     )
                 else:
                     self.itr.logger.info(
-                        f"[DRY RUN] - {self.logger_msg}: benchmarking is active"
+                        f"[DRY_RUN] - {self.logger_msg}: benchmarking is active"
                     )
 
     def make_job(self, index: int = 0) -> Union[s.SBATCH, None]:
@@ -228,7 +235,7 @@ class MakeExamples:
         """
         if self.itr.env is None:
             return
-            
+
         # initialize a SBATCH Object
         self.job_name = f"examples-parallel-{self.job_label}"
         self.handler_label = f"{self._phase}: {self.prefix}-shard$t"
@@ -249,7 +256,7 @@ class MakeExamples:
             else:
                 self.itr.logger.info(
                     f"{self.logger_msg}{self.region_logger_msg}: SLURM job file already exists... SKIPPING AHEAD"
-                    )
+                )
                 return
         else:
             if self.itr.debug_mode:
@@ -315,7 +322,7 @@ class MakeExamples:
         else:
             expected_outputs = int(self.n_parts)
             logger_msg = f"{logger_msg}{self.region_logger_msg}"
-        
+
         # Confirm examples do not already exist
         (
             self._existing_tfrecords,
@@ -332,7 +339,12 @@ class MakeExamples:
         )
 
         if self._existing_tfrecords and self._num_tfrecords_found is not None:
-            if self.overwrite and self.make_examples_job_nums and helpers.h.check_if_all_same(self.make_examples_job_nums, None) is False:
+            if (
+                self.overwrite
+                and self.make_examples_job_nums
+                and helpers.h.check_if_all_same(self.make_examples_job_nums, None)
+                is False
+            ):
                 self._outputs_exist = False
                 self._num_tfrecords_found = 0
             else:
@@ -436,7 +448,7 @@ class MakeExamples:
             if len(self._beam_shuffle_dependencies) == 1:
                 if self.itr.dryrun_mode:
                     print(
-                        f"============ [DRY RUN] - {self.logger_msg} Job Number - {self._beam_shuffle_dependencies} ============"
+                        f"============ [DRY_RUN] - {self.logger_msg} Job Number - {self._beam_shuffle_dependencies} ============"
                     )
                 else:
                     print(
@@ -445,7 +457,7 @@ class MakeExamples:
             else:
                 if self.itr.dryrun_mode:
                     print(
-                        f"============ [DRY RUN] - {self.logger_msg} Job Numbers ============\n{self._beam_shuffle_dependencies}\n============================================================"
+                        f"============ [DRY_RUN] - {self.logger_msg} Job Numbers ============\n{self._beam_shuffle_dependencies}\n============================================================"
                     )
                 else:
                     print(
@@ -489,7 +501,6 @@ class MakeExamples:
         re_shuffle.find_outputs(phase=phase, find_all=True)
 
         if re_shuffle._outputs_exist and find_beam_tfrecords:
-
             beam = prep.BeamShuffleExamples(
                 itr=self.itr,
                 slurm_resources=self.slurm_resources,
@@ -550,7 +561,9 @@ class MakeExamples:
                 sys.exit(1)
 
             if not self._beam_shuffle_dependencies:
-                self._beam_shuffle_dependencies = helpers.h.create_deps(self._total_regions)
+                self._beam_shuffle_dependencies = helpers.h.create_deps(
+                    self._total_regions
+                )
 
             for r in self.jobs_to_run:
                 region_index = self.make_examples_job_nums[r]
@@ -581,11 +594,11 @@ class MakeExamples:
         # run all regions for the first time
         else:
             if self._skip_phase:
-                return         
+                return
             self.find_outputs(find_all=True)
             if self._outputs_exist:
                 return
-            
+
             for r in range(0, int(self._total_regions)):
                 self.job_num = (
                     r + 1

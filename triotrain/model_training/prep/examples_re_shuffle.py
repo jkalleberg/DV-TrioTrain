@@ -192,7 +192,7 @@ class ReShuffleExamples:
                     )
                 else:
                     self.itr.logger.info(
-                        f"[DRY RUN] - {self.logger_msg}: benchmarking is active"
+                        f"[DRY_RUN] - {self.logger_msg}: benchmarking is active"
                     )
 
     def make_job(self) -> Union[s.SBATCH, None]:
@@ -384,7 +384,7 @@ class ReShuffleExamples:
         if self._train_dependency is not None:
             if self.itr.dryrun_mode:
                 print(
-                    f"============================================================\n[DRY RUN] - {self.logger_msg} Job Number: ['{self._train_dependency}']\n============================================================"
+                    f"============================================================\n[DRY_RUN] - {self.logger_msg} Job Number: ['{self._train_dependency}']\n============================================================"
                 )
             else:
                 print(

@@ -121,7 +121,7 @@ def check_args(args: argparse.Namespace, logger: Logger):
         logger.debug(f"using DeepVariant version | {os.environ.get('BIN_VERSION_DV')}")
 
     if args.dry_run:
-        logger.info("[DRY RUN]: output will display to screen and not write to a file")
+        logger.info("[DRY_RUN]: output will display to screen and not write to a file")
 
     assert (
         args.env_file
@@ -806,7 +806,7 @@ class MakeRegions:
 
         if self.itr.dryrun_mode:
             self.itr.logger.info(
-                f"[DRY RUN] - {self._logger_msg}: region file contents:"
+                f"[DRY_RUN] - {self._logger_msg}: region file contents:"
             )
             print(f"------------- start of [{self._bed_filename}] -------------")
             print(*self._line_list, sep="\n")

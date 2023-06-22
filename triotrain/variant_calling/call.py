@@ -10,6 +10,7 @@ import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import List, Union
+
 from regex import compile
 
 # get the relative path to the triotrain/ dir
@@ -94,7 +95,9 @@ class CallVariants:
         """
         Collect any SLURM job ids for running tests to avoid submitting a job while it's already running.
         """
-        self._ignoring_select_ckpt = helpers.h.check_if_all_same(self._select_ckpt_job, None)
+        self._ignoring_select_ckpt = helpers.h.check_if_all_same(
+            self._select_ckpt_job, None
+        )
 
         if not self._ignoring_select_ckpt:
             self._num_to_ignore = len(helpers.h.find_NaN(self._select_ckpt_job))
@@ -180,7 +183,8 @@ class CallVariants:
                     key="N_Parts",
                     value=str(self.n_parts),
                     dryrun_mode=self.itr.dryrun_mode,
-                    msg=f"{self.logger_msg}")
+                    msg=f"{self.logger_msg}",
+                )
             else:
                 self.n_parts = self.itr.env.contents["N_Parts"]
 
@@ -190,7 +194,7 @@ class CallVariants:
                 "RefFASTA_Path",
                 "RefFASTA_File",
             ]
-            
+
             if self.genome is None or self.itr.current_genome_num == 0:
                 if "BaselineTestCkptName" in self.itr.env.contents:
                     extra_vars = ["BaselineModelResultsDir"]
@@ -209,12 +213,8 @@ class CallVariants:
                     ), f"Non-existant test checkpoint provided [{str(ckpt_used)}]"
                 elif "TestCkptName" in self.itr.env.contents:
                     extra_vars = ["RunDir"]
-                    self.test_ckpt_path = str(
-                        self.itr.env.contents["TestCkptPath"]
-                    )
-                    self.test_ckpt_name = str(
-                        self.itr.env.contents["TestCkptName"]
-                    )
+                    self.test_ckpt_path = str(self.itr.env.contents["TestCkptPath"])
+                    self.test_ckpt_name = str(self.itr.env.contents["TestCkptName"])
                     ckpt_used = (
                         Path(self.test_ckpt_path)
                         / f"{self.test_ckpt_name}.data-00000-of-00001"
@@ -328,17 +328,17 @@ class CallVariants:
             elif self.itr.current_trio_num is None:
                 self.prefix = f"test{self.test_num}"
                 self.job_name = f"test{self.test_num}"
-                self.test_logger_msg = f"{self.logger_msg} - [test{self.test_num}]" 
+                self.test_logger_msg = f"{self.logger_msg} - [test{self.test_num}]"
             else:
                 self.prefix = f"test{self.test_num}-{self.genome}"
                 self.job_name = (
                     f"test{self.test_num}-{self.genome}{self.itr.current_trio_num}"
                 )
                 self.test_logger_msg = f"{self.logger_msg} - [test{self.test_num}]"
-            
+
             if f"Test{self.test_num}ReadsBAM" in self.itr.env.contents:
                 self.test_genome = None
-            else: 
+            else:
                 self._bam_dir = str(
                     self.itr.env.contents[f"Test{self.test_num}ReadsBAM_Path"]
                 )
@@ -383,7 +383,7 @@ class CallVariants:
             self.benchmarking_file.add_rows(headers, data_dict=data)
         else:
             self.itr.logger.info(
-                f"[DRY RUN] - {self.logger_msg}: benchmarking is active"
+                f"[DRY_RUN] - {self.logger_msg}: benchmarking is active"
             )
 
     def build_apptainer_command(self, normalize_reads: bool = False) -> None:
@@ -560,7 +560,11 @@ class CallVariants:
             vcf_pattern = compile(vcf_output_regex)
 
         # Confirm Genome's output VCF does not already exist
-        self.existing_output_vcf, self.num_vcfs_found, files = helpers.h.check_if_output_exists(
+        (
+            self.existing_output_vcf,
+            self.num_vcfs_found,
+            files,
+        ) = helpers.h.check_if_output_exists(
             vcf_pattern,
             "DeepVariant VCF outputs",
             Path(self.outdir),
@@ -672,7 +676,9 @@ class CallVariants:
                     display_mode=self.itr.dryrun_mode,
                 )
                 if self._compare_dependencies:
-                    self._compare_dependencies[dependency_index] = helpers.h.generate_job_id()
+                    self._compare_dependencies[
+                        dependency_index
+                    ] = helpers.h.generate_job_id()
             else:
                 submit_slurm_job.display_command(
                     current_job=self.job_num,
@@ -703,13 +709,15 @@ class CallVariants:
         if self.itr.debug_mode:
             self.itr.total_num_tests = 2
 
-        call_vars_results = helpers.h.check_if_all_same(self._compare_dependencies, None)
+        call_vars_results = helpers.h.check_if_all_same(
+            self._compare_dependencies, None
+        )
 
         if call_vars_results is False:
             if self._compare_dependencies and len(self._compare_dependencies) == 1:
                 if self.itr.dryrun_mode:
                     print(
-                        f"============ [DRY RUN] - {self.logger_msg} Job Number - {self._compare_dependencies} ============"
+                        f"============ [DRY_RUN] - {self.logger_msg} Job Number - {self._compare_dependencies} ============"
                     )
                 else:
                     print(
@@ -718,7 +726,7 @@ class CallVariants:
             else:
                 if self.itr.dryrun_mode:
                     print(
-                        f"============ [DRY RUN] - {self.logger_msg} Job Numbers ============\n{self._compare_dependencies}\n============================================================"
+                        f"============ [DRY_RUN] - {self.logger_msg} Job Numbers ============\n{self._compare_dependencies}\n============================================================"
                     )
 
                 else:
@@ -782,7 +790,8 @@ class CallVariants:
                 self._skipped_counter = self._num_to_ignore
                 if (
                     self._compare_dependencies
-                    and helpers.h.check_if_all_same(self._compare_dependencies, None) is False
+                    and helpers.h.check_if_all_same(self._compare_dependencies, None)
+                    is False
                 ):
                     self.itr.logger.info(
                         f"{self.logger_msg}: compare_happy dependencies updated to {self._compare_dependencies}"

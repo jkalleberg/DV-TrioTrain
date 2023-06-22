@@ -180,7 +180,7 @@ def check_args(args: argparse.Namespace, logger: Logger):
         logger.debug(f"using DeepVariant version | {environ.get('BIN_VERSION_DV')}")
 
     if args.dry_run:
-        logger.info(f"[{_phase}] - [DRY RUN] - display environment file contents only")
+        logger.info(f"[{_phase}] - [DRY_RUN] - display environment file contents only")
 
     try:
         assert (
@@ -432,13 +432,13 @@ class Environment:
             self.logger.info(f"{self.logging_msg}: {msg} demo env file | '{env_path}'")
         elif self.debug_mode and self.dryrun_mode:
             self.logger.debug(
-                f"[DRY RUN] - {self.logging_msg}: --debug set; env file would be created | '{env_path}'"
+                f"[DRY_RUN] - {self.logging_msg}: --debug set; env file would be created | '{env_path}'"
             )
         elif self.debug_mode:
             self.logger.debug(f"{self.logging_msg}: --debug set")
         elif self.dryrun_mode:
             self.logger.info(
-                f"[DRY RUN] - {self.logging_msg}: env file would be created | '{env_path}'"
+                f"[DRY_RUN] - {self.logging_msg}: env file would be created | '{env_path}'"
             )
         else:
             self.logger.info(f"{self.logging_msg}: {msg} env file | '{env_path}'")
@@ -668,7 +668,7 @@ class Environment:
 
         if self.dryrun_mode:
             print(
-                f"-----------------------------  [DRY RUN] Start of Environment File [{self.env.env_file}] -----------------------------"
+                f"-----------------------------  [DRY_RUN] Start of Environment File [{self.env.env_file}] -----------------------------"
             )
 
         col_num = 0
@@ -854,7 +854,7 @@ class Environment:
 
         if self.dryrun_mode:
             print(
-                f"----------------------------- [DRY RUN] End of Environment File [{self.env.env_file}]----------------------------- "
+                f"----------------------------- [DRY_RUN] End of Environment File [{self.env.env_file}]----------------------------- "
             )
 
     def create_dirs(self) -> None:
@@ -887,7 +887,7 @@ class Environment:
             for var in vars_list:
                 if not Path(str(self.env.contents[var])).is_dir():
                     self.logger.info(
-                        f"[DRY RUN] - {self.logging_msg}: directory [{var}] would be created"
+                        f"[DRY_RUN] - {self.logging_msg}: directory [{var}] would be created"
                     )
             return
         else:
@@ -951,11 +951,11 @@ class Environment:
         if self.dryrun_mode and self.update is False:
             if self.env.env_path.exists() is False:
                 self.logger.info(
-                    f"[DRY RUN] - {self.logging_msg}: no file(s) created, as expected"
+                    f"[DRY_RUN] - {self.logging_msg}: no file(s) created, as expected"
                 )
             else:
                 self.logger.warning(
-                    f"[DRY RUN] - {self.logging_msg}: a file exists, but none were expected"
+                    f"[DRY_RUN] - {self.logging_msg}: a file exists, but none were expected"
                 )
         else:
             assert (

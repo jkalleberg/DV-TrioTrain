@@ -44,7 +44,6 @@ def collect_args():
     )
     # ENSURE THAT METRICS DO NOT INCLUDE THE Y CHROM
     parser.add_argument(
-        
         "--regions-file",
         dest="regions_file",
         help="[REQUIRED]\ninput file (.BED)\ndefines the genomic regions to use for comparision between TRUTH & QUERY\n(default: %(default)s)",
@@ -136,7 +135,7 @@ def check_args(args: argparse.Namespace, logger: Logger):
         logger.debug(f"using DeepVariant version | {_version}")
 
     if args.dry_run:
-        logger.info("[DRY RUN]: output will display to screen and not write to a file")
+        logger.info("[DRY_RUN]: output will display to screen and not write to a file")
 
     if args.happy_help is False:
         assert (

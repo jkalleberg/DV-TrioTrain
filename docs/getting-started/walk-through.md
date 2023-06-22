@@ -73,7 +73,7 @@ We are downloading two model checkpoints:
 * the default human model
 * the WGS.AF human model
 
-All the steps to download these intermediate data are contained in a single script, which [you can view on Github.](https://github.com/jkalleberg/DV-TrioTrain/blob/bac33c732065fa7fa1e92097e8f31da383261f4f/scripts/setup/download_models.sh)
+All the steps to download these data are contained in a single script, which [you can view on Github.](https://github.com/jkalleberg/DV-TrioTrain/blob/bac33c732065fa7fa1e92097e8f31da383261f4f/scripts/setup/download_models.sh)
 
 Run the following at the command line:
 
@@ -123,7 +123,7 @@ We will be downloading (5) types of raw data:
 4. a benchmarking regions file (`.bed`) for each sample
 5. the GRCh38 reference genome (`.fasta`), with corresponding index file (`.fai`)
 
-All the steps to download these intermediate data are contained in a single script, which [you can view on Github.](https://github.com/jkalleberg/DV-TrioTrain/blob/bac33c732065fa7fa1e92097e8f31da383261f4f/scripts/setup/download_GIAB.sh)
+All the steps to download these data are contained in a single script, which [you can view on Github.](https://github.com/jkalleberg/DV-TrioTrain/blob/bac33c732065fa7fa1e92097e8f31da383261f4f/scripts/setup/download_GIAB.sh)
 
 Run the following at the command line:
 
@@ -265,7 +265,7 @@ Run the following at the command line:
 bash triotrain/variant_calling/data/GIAB/bam/AJtrio.download
 ```
 
-??? success "Expected Intermediate Data | HG002:"
+??? success "Expected Raw Data | HG002:"
     ```bash title="Run at the command line"
     ls triotrain/variant_calling/data/GIAB/bam/ | grep HG002
     ```
@@ -278,7 +278,7 @@ bash triotrain/variant_calling/data/GIAB/bam/AJtrio.download
     HG002.GRCh38.2x250.bam.md5
     ```
 
-??? success "Expected Intermediate Data | HG003:"
+??? success "Expected Raw Data | HG003:"
     ```bash title="Run at the command line"
     ls triotrain/variant_calling/data/GIAB/bam/ | grep HG003
     ```
@@ -290,7 +290,7 @@ bash triotrain/variant_calling/data/GIAB/bam/AJtrio.download
     HG003.GRCh38.2x250.bam.md5
     ```
 
-??? success "Expected Intermediate Data | HG004:"
+??? success "Expected Raw Data | HG004:"
     ```bash title="Run at the command line"
     ls triotrain/variant_calling/data/GIAB/bam/ | grep HG004
     ```
@@ -308,7 +308,7 @@ And, run the following at the command line:
 bash triotrain/variant_calling/data/GIAB/bam/HCtrio.download
 ```
 
-??? success "Expected Intermediate Data | HG005:"
+??? success "Expected Raw Data | HG005:"
     ```bash title="Run at the command line"
     ls triotrain/variant_calling/data/GIAB/bam/ | grep HG005
     ```
@@ -319,7 +319,7 @@ bash triotrain/variant_calling/data/GIAB/bam/HCtrio.download
     HG005.GRCh38_full_plus_hs38d1_analysis_set_minus_alts.300x.bam.bai.md5
     HG005.GRCh38_full_plus_hs38d1_analysis_set_minus_alts.300x.bam.md5
     ```
-??? success "Expected Intermediate Data | HG006:"
+??? success "Expected Raw Data | HG006:"
     ```bash title="Run at the command line"
     ls triotrain/variant_calling/data/GIAB/bam/ | grep HG006
     ```
@@ -331,7 +331,7 @@ bash triotrain/variant_calling/data/GIAB/bam/HCtrio.download
     HG006.GRCh38_full_plus_hs38d1_analysis_set_minus_alts.100x.bam.md5
     ```
 
-??? success "Expected Intermediate Data | HG007:"
+??? success "Expected Raw Data | HG007:"
     ```bash title="Run at the command line"
     ls triotrain/variant_calling/data/GIAB/bam/ | grep HG007
     ```

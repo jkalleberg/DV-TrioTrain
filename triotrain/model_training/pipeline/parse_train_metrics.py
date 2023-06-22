@@ -26,10 +26,9 @@ from dataclasses import dataclass, field
 from logging import Logger
 from pathlib import Path
 
-import pandas as pd
-
 import helpers as h
 import helpers_logger
+import pandas as pd
 
 
 def collect_args():
@@ -105,7 +104,7 @@ def check_args(args: argparse.Namespace, logger: Logger):
         logger.debug(f"using DeepVariant version | {os.environ.get('BIN_VERSION_DV')}")
 
     if args.dry_run:
-        logger.info("[DRY RUN]: output will display to screen and not write to a file")
+        logger.info("[DRY_RUN]: output will display to screen and not write to a file")
 
     assert (
         args.env_file
@@ -120,6 +119,7 @@ class ParseMetrics:
     """
     define what data to keep when parsing tensorflow .metrics files
     """
+
     genome: str
     env: h.Env
     logger: Logger
@@ -398,10 +398,10 @@ def __init__():
 
     # Create error log
     current_file = os.path.basename(__file__)
-    module_name = os.path.splitext(current_file)[0]  
+    module_name = os.path.splitext(current_file)[0]
     logger = helpers_logger.get_logger(module_name)
-    
-    # Check command line args    
+
+    # Check command line args
     _version = os.environ.get("BIN_VERSION_DV")
 
     if args.debug:

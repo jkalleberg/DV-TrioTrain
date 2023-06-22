@@ -17,6 +17,7 @@ import helpers
 import model_training.slurm as s
 from variant_calling.convert import ConvertHappy
 
+
 @dataclass
 class CompareHappy:
     """
@@ -52,23 +53,34 @@ class CompareHappy:
         self.n_parts = self.slurm_resources[self._phase]["ntasks"]
 
         if "N_Parts" not in self.itr.env.contents:
-            self.itr.env.add_to("N_Parts", str(self.n_parts), self.itr.dryrun_mode, msg=self.logger_msg)
+            self.itr.env.add_to(
+                "N_Parts", str(self.n_parts), self.itr.dryrun_mode, msg=self.logger_msg
+            )
 
         if self.track_resources:
             assert (
                 self.benchmarking_file is not None
-            ), "missing a h.WriteFiles object to save SLURM job IDs"        
+            ), "missing a h.WriteFiles object to save SLURM job IDs"
 
-        self._convert_happy_dependencies = helpers.h.create_deps(self.itr.total_num_tests) 
+        self._convert_happy_dependencies = helpers.h.create_deps(
+            self.itr.total_num_tests
+        )
 
-        self.converting = ConvertHappy(itr=self.itr, slurm_resources=self.slurm_resources, model_label=self.model_label)      
+        self.converting = ConvertHappy(
+            itr=self.itr,
+            slurm_resources=self.slurm_resources,
+            model_label=self.model_label,
+        )
 
     def set_genome(self) -> None:
         """
         Assign a genome label.
         """
         if self.itr.env is not None:
-            if "baseline" in self.model_label.lower() or self.itr.current_genome_num == 0:
+            if (
+                "baseline" in self.model_label.lower()
+                or self.itr.current_genome_num == 0
+            ):
                 self.genome = None
                 self.outdir = str(self.itr.env.contents["BaselineModelResultsDir"])
             elif self.itr.train_genome is not None:
@@ -104,7 +116,9 @@ class CompareHappy:
             if num_job_ids == self.itr.total_num_tests:
                 self.jobs_to_run = helpers.h.find_not_NaN(self.compare_happy_job_nums)
                 self._num_to_run = len(self.jobs_to_run)
-                self._num_to_ignore = len(helpers.h.find_NaN(self.compare_happy_job_nums))
+                self._num_to_ignore = len(
+                    helpers.h.find_NaN(self.compare_happy_job_nums)
+                )
 
                 if self.jobs_to_run:
                     self._run_jobs = True
@@ -180,9 +194,7 @@ class CompareHappy:
         # NOTE: happy only needs the prefix, so
         # do NOT include .vcf.gz extension in output_name!!
         if self.itr.demo_mode:
-            self.prefix = (
-                f"happy{self.test_num}-no-flags-chr{self.itr.demo_chromosome}"
-            )
+            self.prefix = f"happy{self.test_num}-no-flags-chr{self.itr.demo_chromosome}"
         else:
             self.prefix = f"happy{self.test_num}-no-flags"
 
@@ -192,8 +204,6 @@ class CompareHappy:
             self.job_name = (
                 f"{self.prefix}-{self.itr.train_genome}{self.itr.current_trio_num}"
             )
-        
-        
 
     def benchmark(self) -> None:
         """
@@ -220,7 +230,7 @@ class CompareHappy:
             self.benchmarking_file.add_rows(headers, data_dict=data)
         else:
             self.itr.logger.info(
-                f"[DRY RUN] - {self.logger_msg}: benchmarking is active"
+                f"[DRY_RUN] - {self.logger_msg}: benchmarking is active"
             )
 
     def make_job(self, index: int = 0) -> Union[s.SBATCH, None]:
@@ -275,11 +285,11 @@ class CompareHappy:
                 f"python3 -u scripts/model_training/slurm_compare_hap.py --env-file {self.itr.env.env_file} --train-genome {self.genome} --test-num {self.test_num} --demo --location {self.itr.demo_chromosome}",
             ]
 
-        # and when testing a new model, limit the regions evaluated with hap.py        
+        # and when testing a new model, limit the regions evaluated with hap.py
         elif (
             self.itr.default_region_file is not None
             and self.itr.default_region_file.exists()
-        ):  
+        ):
             # NOTE: this should be the autosomes + X chromosome only!
             #       in the default regions file created by the pipeline
             self.command_list = slurm_job._start_conda + [
@@ -288,22 +298,31 @@ class CompareHappy:
             ]
         else:
             # if missing a default region, look only at the CallableBED file
-            vars = [f"Test{self.test_num}CallableBED_Path", f"Test{self.test_num}CallableBED_File"]
+            vars = [
+                f"Test{self.test_num}CallableBED_Path",
+                f"Test{self.test_num}CallableBED_File",
+            ]
             try:
                 regions_file_path, regions_file_name = self.itr.env.load(*vars)
             except KeyError:
-                self.itr.logger.info(f"{self.logger_msg}: env is missing variables for Test{self.test_num}... SKIPPING AHEAD")
+                self.itr.logger.info(
+                    f"{self.logger_msg}: env is missing variables for Test{self.test_num}... SKIPPING AHEAD"
+                )
                 return
-            
-            regions = helpers.h.TestFile(Path(regions_file_path) / regions_file_name, logger=self.itr.logger)
+
+            regions = helpers.h.TestFile(
+                Path(regions_file_path) / regions_file_name, logger=self.itr.logger
+            )
             regions.check_existing()
             if not regions.file_exists:
-                self.itr.logger.error(f"{self.test_logger_msg}: a Callable Regions file is required to run Hap.py\nExiting...")
+                self.itr.logger.error(
+                    f"{self.test_logger_msg}: a Callable Regions file is required to run Hap.py\nExiting..."
+                )
                 sys.exit(1)
-            
+
             self.command_list = slurm_job._start_conda + [
                 "conda activate miniconda_envs/beam_v2.30",
-                f"python3 -u scripts/model_training/slurm_compare_hap.py --env-file {self.itr.env.env_file} --train-genome {self.genome} --test-num {self.test_num} --regions-file {regions.file}{additional_flag}"
+                f"python3 -u scripts/model_training/slurm_compare_hap.py --env-file {self.itr.env.env_file} --train-genome {self.genome} --test-num {self.test_num} --regions-file {regions.file}{additional_flag}",
             ]
 
         slurm_job.create_slurm_job(
@@ -345,9 +364,11 @@ class CompareHappy:
             expected_outputs = outputs_per_test
             compare_happy_regex = rf"^({self.prefix}).+\.(?!out$|\.sh$).+$"
             logging_msg = f"{logging_msg} - [{self.test_logger_msg}]"
-        
+
         if self.itr.args.debug:
-            self.itr.logger.debug(f"{logging_msg}: regular expression used | {compare_happy_regex}")
+            self.itr.logger.debug(
+                f"{logging_msg}: regular expression used | {compare_happy_regex}"
+            )
 
         # Confirm happy outputs do not already exist
         self._outputs_found = None
@@ -466,7 +487,9 @@ class CompareHappy:
                 f"{self.logger_msg}: only {len(self._convert_happy_dependencies)}-of-{self.itr.total_num_tests} were submitted correctly. Exiting... "
             )
             sys.exit(1)
-        compare_results = helpers.h.check_if_all_same(self._convert_happy_dependencies, None)
+        compare_results = helpers.h.check_if_all_same(
+            self._convert_happy_dependencies, None
+        )
 
         if compare_results is False:
             if (
@@ -475,7 +498,7 @@ class CompareHappy:
             ):
                 if self.itr.dryrun_mode:
                     print(
-                        f"============ [DRY RUN] - {self.logger_msg} Job Number - {self._convert_happy_dependencies} ============"
+                        f"============ [DRY_RUN] - {self.logger_msg} Job Number - {self._convert_happy_dependencies} ============"
                     )
                 else:
                     print(
@@ -484,7 +507,7 @@ class CompareHappy:
             else:
                 if self.itr.dryrun_mode:
                     print(
-                        f"============ [DRY RUN] - {self.logger_msg} Job Numbers ============\n{self._convert_happy_dependencies}\n============================================================"
+                        f"============ [DRY_RUN] - {self.logger_msg} Job Numbers ============\n{self._convert_happy_dependencies}\n============================================================"
                     )
                 else:
                     print(
@@ -523,7 +546,9 @@ class CompareHappy:
                 self._skipped_counter = self._num_to_ignore
                 if (
                     self._convert_happy_dependencies
-                    and helpers.h.check_if_all_same(self._convert_happy_dependencies, None)
+                    and helpers.h.check_if_all_same(
+                        self._convert_happy_dependencies, None
+                    )
                     is False
                 ):
                     self.itr.logger.info(
@@ -542,7 +567,7 @@ class CompareHappy:
                     self._outputs_exist = self.converting._outputs_exist
                     self._outputs_found = self.converting._outputs_found
                     self.converting.double_check(phase_to_check=self._phase)
-                    
+
                     if self.overwrite:
                         self.itr.logger.info(
                             f"{self.logger_msg}: re-submitting {self._num_to_run}-of-{self.itr.total_num_tests} SLURM jobs",
@@ -592,7 +617,7 @@ class CompareHappy:
         else:
             if self._skip_phase:
                 return
-            
+
             # determine if jobs need to be submitted
             self.find_outputs(find_all=True)
 
@@ -608,7 +633,9 @@ class CompareHappy:
                     self.find_outputs(find_all=False)
 
                     # re-submit 'compare_happy' if 'call_variants' was re-submitted
-                    self.submit_job(dependency_index=t, total_jobs=int(self.itr.total_num_tests))
+                    self.submit_job(
+                        dependency_index=t, total_jobs=int(self.itr.total_num_tests)
+                    )
 
         self.check_submissions()
         return self._convert_happy_dependencies
