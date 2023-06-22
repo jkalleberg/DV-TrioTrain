@@ -98,8 +98,7 @@ class MakeExamples:
             self.job_label = f"{self.genome}{self.itr.current_trio_num}-chr{self.itr.demo_chromosome}"
             self.region_logger_msg = f" - [CHR{self.itr.demo_chromosome}]"
             self._print_msg = f"    echo SUCCESS: make_examples for demo-{self.genome}, part $t of {self.total_shards} &"
-
-        if current_region is None:
+        elif current_region is None:
             self.current_region = current_region
             self.prefix = f"{self.genome}"
             self.job_label = f"{self.genome}{self.itr.current_trio_num}"
@@ -249,15 +248,16 @@ class MakeExamples:
         )
 
         if slurm_job.check_sbatch_file():
-            if self.make_examples_job_nums[index] is not None and self.overwrite:
-                self.itr.logger.info(
-                    f"{self.logger_msg}: --overwrite=True, re-writing the existing SLURM job now..."
-                )
-            else:
-                self.itr.logger.info(
-                    f"{self.logger_msg}{self.region_logger_msg}: SLURM job file already exists... SKIPPING AHEAD"
-                )
-                return
+            if len(self.make_examples_job_nums) > 0:
+                if self.make_examples_job_nums[index] is not None and self.overwrite:
+                    self.itr.logger.info(
+                        f"{self.logger_msg}: --overwrite=True, re-writing the existing SLURM job now..."
+                    )
+                else:
+                    self.itr.logger.info(
+                        f"{self.logger_msg}{self.region_logger_msg}: SLURM job file already exists... SKIPPING AHEAD"
+                    )
+                    return
         else:
             if self.itr.debug_mode:
                 self.itr.logger.debug(
@@ -411,25 +411,25 @@ class MakeExamples:
             slurm_job.display_command(
                 display_mode=self.itr.dryrun_mode,
             )
-
+        else:
+            slurm_job.display_command(debug_mode=self.itr.debug_mode)
 
         if self.itr.dryrun_mode:
-            # slurm_job.display_command(
-            #     current_job=self.job_num,
-            #     total_jobs=total_jobs,
-            #     display_mode=self.itr.dryrun_mode,
-            # )
             self._beam_shuffle_dependencies.insert(
                 dependency_index, helpers.h.generate_job_id()
             )
-
         else:
-            slurm_job.display_command(debug_mode=self.itr.debug_mode)
-            slurm_job.get_status(
-                current_job=self.job_num,
-                total_jobs=total_jobs,
-                debug_mode=self.itr.debug_mode,
-            )
+            if self.itr.demo_mode:
+                slurm_job.get_status(
+                    total_jobs=total_jobs,
+                    debug_mode=self.itr.debug_mode
+                )
+            else:
+                slurm_job.get_status(
+                    current_job=self.job_num,
+                    total_jobs=total_jobs,
+                    debug_mode=self.itr.debug_mode,
+                )
 
             if slurm_job.status == 0:
                 self._beam_shuffle_dependencies.insert(
