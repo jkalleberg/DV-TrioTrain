@@ -259,7 +259,7 @@ class Environment:
 
         # Define the regrex pattern of expected output
         if self.demo_mode:
-            self.mode = f"Demo] - [Trio{self.trio_num}] - [CHR{self.demo_chr}"
+            self.mode = f"DEMO_MODE] - TRIO{self.trio_num}] - [CHR{self.demo_chr}"
         elif self.trio_num is None:
             self.mode = "Pipeline Setup"
         elif self.trio_num == 0:
@@ -267,7 +267,7 @@ class Environment:
         elif None in self.train_order:
             self.mode = "Benchmark"
         else:
-            self.mode = f"Trio{self.trio_num}"
+            self.mode = f"TRIO{self.trio_num}"
 
         self.logging_msg = f"[{self.mode}] - [{self._phase}]"
 
