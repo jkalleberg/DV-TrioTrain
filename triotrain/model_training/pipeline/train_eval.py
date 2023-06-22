@@ -506,27 +506,27 @@ class TrainEval:
         # again, if that value is None
         if self.itr.current_genome_dependencies[3] is None:
             # submit the training eval job to queue
-            submit_slurm_job = s.SubmitSBATCH(
+            slurm_job = s.SubmitSBATCH(
                 self.itr.job_dir,
                 f"{self.job_name}.sh",
                 self.handler_label,
                 self.itr.logger,
                 self.logger_msg,
             )
-            submit_slurm_job.build_command(
+            slurm_job.build_command(
                 prior_job_number=self.itr.current_genome_dependencies
             )
 
             if self.itr.dryrun_mode:
-                submit_slurm_job.display_command(display_mode=self.itr.dryrun_mode)
+                slurm_job.display_command(display_mode=self.itr.dryrun_mode)
                 self._select_ckpt_dependency = [helpers.h.generate_job_id()]
 
             else:
-                submit_slurm_job.display_command(debug_mode=self.itr.debug_mode)
-                submit_slurm_job.get_status(debug_mode=self.itr.debug_mode)
+                slurm_job.display_command(debug_mode=self.itr.debug_mode)
+                slurm_job.get_status(debug_mode=self.itr.debug_mode)
 
-                if submit_slurm_job.status == 0:
-                    self._select_ckpt_dependency = [submit_slurm_job.job_number]
+                if slurm_job.status == 0:
+                    self._select_ckpt_dependency = [slurm_job.job_number]
                 else:
                     self.itr.logger.error(
                         f"{self.logger_msg}: unable to submit SLURM job",
