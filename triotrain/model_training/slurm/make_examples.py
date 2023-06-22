@@ -15,12 +15,15 @@ from dataclasses import dataclass, field
 from logging import Logger
 from os import environ, path
 from pathlib import Path
-from sys import exit
+from sys import exit, path
 from typing import Union
-
-import helpers as h
-import helpers_logger
 from spython.main import Client
+
+# h_path = str(Path(__file__).parent.parent.parent)
+# print(h_path)
+# breakpoint()
+# path.append(h_path)
+import triotrain.helpers as h
 
 
 def collect_args():
@@ -122,7 +125,7 @@ class Examples:
     """
 
     args: argparse.Namespace
-    logger: h.Logger
+    logger: h.log.Logger
     cow: bool = True
     demo_chromosome: Union[str, int, None] = "29"
     _base_binding: str = field(
@@ -147,7 +150,7 @@ class Examples:
         """
         Load in variables from the env file, and define python variables.
         """
-        self.env = h.Env(self.args.env_file, self.logger, dryrun_mode=self.args.dry_run)
+        self.env = helpers.h.Env(self.args.env_file, self.logger, dryrun_mode=self.args.dry_run)
         env_vars = [
             "RunOrder",
             "N_Parts",
@@ -542,19 +545,19 @@ def __init__():
     args = collect_args()
 
     # Collect start time
-    h.Wrapper(__file__, "start").wrap_script(h.timestamp())
+    h.h.Wrapper(__file__, "start").wrap_script(h.timestamp())
 
     # Create error log
     current_file = path.basename(__file__)
     module_name = path.splitext(current_file)[0]
-    logger = helpers_logger.get_logger(module_name)
+    logger = h.log.get_logger(module_name)
 
     # Check command line args
     check_args(args, logger)
     Examples(args, logger).run()
 
     # Collect start time
-    h.Wrapper(__file__, "end").wrap_script(h.timestamp())
+    h.h.Wrapper(__file__, "end").wrap_script(h.timestamp())
 
 
 # Execute functions created
