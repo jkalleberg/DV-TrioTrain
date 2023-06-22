@@ -5,12 +5,8 @@ description: creates a Logger for the TrioTrain pipeline.
 usage:
     import helpers_logger
 """
-import datetime as dt
 import logging
 import sys
-from pathlib import Path
-from typing import TextIO
-
 
 class LogFormatter(logging.Formatter):
     """
@@ -41,16 +37,6 @@ class LogFormatter(logging.Formatter):
 
         return result
 
-
-def file_timestamp() -> str:
-    """
-    Create a timestamp for naming files.
-    """
-    current_datetime = dt.datetime.now()
-    formatted_time = current_datetime.strftime("%Y-%m-%d")
-    return str(formatted_time)
-
-
 def get_file_handler(log_file: str) -> logging.FileHandler:
     """
     Writes any log messages from code warnings or
@@ -63,7 +49,6 @@ def get_file_handler(log_file: str) -> logging.FileHandler:
     file_handler.setFormatter(LogFormatter())
     return file_handler
 
-
 def get_stream_handler() -> logging.StreamHandler:
     """
     Writes any log messages from general status updates, plus warnings and errors to the screen
@@ -74,18 +59,4 @@ def get_stream_handler() -> logging.StreamHandler:
     return stream_handler
 
 
-def get_logger(name: str):
-    """
-    Inializes a logging object to handle any print messages
-    """
-    logger = logging.getLogger(name)
-    logger.setLevel(logging.DEBUG)
-    error_dir = Path(f"errors/tmp_{file_timestamp()}/")
-    error_log = f"{name}.err"
-    if not error_dir.is_dir():
-        logger.error("Creating a new directory to store error logs...")
-        error_dir.mkdir(parents=True)
-    logging_file = f"{str(error_dir)}/{error_log}"
-    logger.addHandler(get_file_handler(logging_file))
-    logger.addHandler(get_stream_handler())
-    return logger
+
