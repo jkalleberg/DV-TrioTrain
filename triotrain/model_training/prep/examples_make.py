@@ -272,7 +272,7 @@ class MakeExamples:
         command_list = slurm_job._start_conda + [
             f"for t in $(seq 0 {self.total_shards} ); do",
             self._print_msg,
-            f"    conda run --no-capture-output -p miniconda_envs/beam_v2.30 python3 scripts/model_training/slurm_make_examples.py --env-file {self.itr.env.env_file} {command_args} --task-id $t >& {self.itr.log_dir}/examples.{self.prefix}-part$t-of-{self.n_parts}.log",
+            f"    conda run --no-capture-output -p miniconda_envs/beam_v2.30 python3 triotrain/model_training/slurm/make_examples.py --env-file {self.itr.env.env_file} {command_args} --task-id $t >& {self.itr.log_dir}/examples.{self.prefix}-part$t-of-{self.n_parts}.log",
             "done",
             "wait",
         ]

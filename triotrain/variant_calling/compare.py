@@ -282,7 +282,7 @@ class CompareHappy:
         if self.itr.demo_mode:
             self.command_list = slurm_job._start_conda + [
                 "conda activate miniconda_envs/beam_v2.30",
-                f"python3 -u scripts/model_training/slurm_compare_hap.py --env-file {self.itr.env.env_file} --train-genome {self.genome} --test-num {self.test_num} --demo --location {self.itr.demo_chromosome}",
+                f"python3 -u triotrain/model_training/slurm/compare_hap.py --env-file {self.itr.env.env_file} --train-genome {self.genome} --test-num {self.test_num} --demo --location {self.itr.demo_chromosome}",
             ]
 
         # and when testing a new model, limit the regions evaluated with hap.py
@@ -294,7 +294,7 @@ class CompareHappy:
             #       in the default regions file created by the pipeline
             self.command_list = slurm_job._start_conda + [
                 "conda activate miniconda_envs/beam_v2.30",
-                f"python3 -u scripts/model_training/slurm_compare_hap.py --env-file {self.itr.env.env_file} --train-genome {self.genome} --test-num {self.test_num} --regions-file {str(self.itr.default_region_file)}{additional_flag}",
+                f"python3 -u triotrain/model_training/slurm/compare_hap.py --env-file {self.itr.env.env_file} --train-genome {self.genome} --test-num {self.test_num} --regions-file {str(self.itr.default_region_file)}{additional_flag}",
             ]
         else:
             # if missing a default region, look only at the CallableBED file
@@ -322,7 +322,7 @@ class CompareHappy:
 
             self.command_list = slurm_job._start_conda + [
                 "conda activate miniconda_envs/beam_v2.30",
-                f"python3 -u scripts/model_training/slurm_compare_hap.py --env-file {self.itr.env.env_file} --train-genome {self.genome} --test-num {self.test_num} --regions-file {regions.file}{additional_flag}",
+                f"python3 -u triotrain/model_training/slurm/compare_hap.py --env-file {self.itr.env.env_file} --train-genome {self.genome} --test-num {self.test_num} --regions-file {regions.file}{additional_flag}",
             ]
 
         slurm_job.create_slurm_job(

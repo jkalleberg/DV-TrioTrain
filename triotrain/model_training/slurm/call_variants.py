@@ -3,7 +3,7 @@
 description: tests a selected model checkpoint by calling variants with independent genomes.
 
 example:
-    python3 scripts/model_training/call_variants.py           \\
+    python3 triotrain/model_training/slurm/call_variants.py           \\
         --env-file envs/demo.env                              \\
         --dry-run
 """

@@ -258,20 +258,20 @@ class ConvertHappy:
         if len(self.test_genome_metadata) > 0:
             if self.itr.demo_mode:
                 self.command_list = slurm_job._start_conda + [
-                    f"conda run --no-capture-output -p miniconda_envs/beam_v2.30 python3 scripts/model_training/slurm_process_hap.py --env-file {self.itr.env.env_file} --vcf-file {self.outdir}/{self.prefix}-no-flags-chr{self.itr.demo_chromosome}.vcf.gz --metadata '{self.test_genome_metadata}' --species {self.itr.args.species}",
+                    f"conda run --no-capture-output -p miniconda_envs/beam_v2.30 python3 triotrain/model_training/slurm/process_hap.py --env-file {self.itr.env.env_file} --vcf-file {self.outdir}/{self.prefix}-no-flags-chr{self.itr.demo_chromosome}.vcf.gz --metadata '{self.test_genome_metadata}' --species {self.itr.args.species}",
                 ]
             else:
                 self.command_list = slurm_job._start_conda + [
-                    f"conda run --no-capture-output -p miniconda_envs/beam_v2.30 python3 scripts/model_training/slurm_process_hap.py --env-file {self.itr.env.env_file} --vcf-file {self.outdir}/{self.prefix}-no-flags.vcf.gz --metadata '{self.test_genome_metadata}' --species {self.itr.args.species}",
+                    f"conda run --no-capture-output -p miniconda_envs/beam_v2.30 python3 triotrain/model_training/slurm/process_hap.py --env-file {self.itr.env.env_file} --vcf-file {self.outdir}/{self.prefix}-no-flags.vcf.gz --metadata '{self.test_genome_metadata}' --species {self.itr.args.species}",
                 ]
         else:
             if self.itr.demo_mode:
                 self.command_list = slurm_job._start_conda + [
-                    f"conda run --no-capture-output -p miniconda_envs/beam_v2.30 python3 scripts/model_training/slurm_process_hap.py --env-file {self.itr.env.env_file} --vcf-file {self.outdir}/{self.prefix}-no-flags-chr{self.itr.demo_chromosome}.vcf.gz --species {self.itr.args.species}",
+                    f"conda run --no-capture-output -p miniconda_envs/beam_v2.30 python3 triotrain/model_training/slurm/process_hap.py --env-file {self.itr.env.env_file} --vcf-file {self.outdir}/{self.prefix}-no-flags-chr{self.itr.demo_chromosome}.vcf.gz --species {self.itr.args.species}",
                 ]
             else:
                 self.command_list = slurm_job._start_conda + [
-                    f"conda run --no-capture-output -p miniconda_envs/beam_v2.30 python3 scripts/model_training/slurm_process_hap.py --env-file {self.itr.env.env_file} --vcf-file {self.outdir}/{self.prefix}-no-flags.vcf.gz --species {self.itr.args.species}",
+                    f"conda run --no-capture-output -p miniconda_envs/beam_v2.30 python3 triotrain/model_training/slurm/process_hap.py --env-file {self.itr.env.env_file} --vcf-file {self.outdir}/{self.prefix}-no-flags.vcf.gz --species {self.itr.args.species}",
                 ]
 
         slurm_job.create_slurm_job(

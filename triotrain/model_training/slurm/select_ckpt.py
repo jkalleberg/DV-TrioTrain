@@ -3,7 +3,7 @@
 description: confirms log files from both training and evaluation contain successful completion lines, then adds the selected best checkpoint to the environment file (.env) as CurrentGenome_TestCkpt - used to call variants, and NextGenome_StartCkpt - used as the warm-starting model weights for the next iteration.
 
 example:
-    python3 scripts/model_training/select_ckpt.py         \\
+    python3 triotrain/model_training/slurm/select_ckpt.py         \\
         --env-file envs/demo.env                          \\ 
         --current-ckpt /path/to/best_ckpt.txt             \\
         --next-genome Mother                              \\

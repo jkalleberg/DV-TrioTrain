@@ -3,7 +3,7 @@
 description: removes all temporary files made for the entire trio.
 
 example:
-    python3 scripts/model_training/clean_tmp.py              \\
+    python3 triotrain/model_training/slurm/clean_tmp.py              \\
         --env-file envs/demo.env                             \\
         --dry-run
 """

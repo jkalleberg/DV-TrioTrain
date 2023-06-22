@@ -3,7 +3,7 @@
 Description goes here.
 
 Usage:
-    python scripts/model_training/define-resources.py <args>
+    python triotrain/model_training/pipeline/define_resources.py <args>
 
 """
 

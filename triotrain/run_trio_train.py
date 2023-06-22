@@ -419,7 +419,7 @@ def run_trio_train(eval_genome="Child"):
             logger.info(
                 f"{logging_msg}: model includes the {pipeline.meta.additional_channels} channel(s)"
             )
-
+        
         # If tracking resources used from SLURM jobs,
         # inialize a file to store metrics
         if pipeline.args.benchmark:

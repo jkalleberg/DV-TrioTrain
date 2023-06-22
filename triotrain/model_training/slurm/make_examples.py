@@ -1,9 +1,9 @@
 #!/bin/python3
 """
-description: creates examples for re-training the DeepVariant model with non-human genomes.
+description: creates examples for re-training the DeepVariant model.
 
 example:
-    python3 scripts/model_training/make_examples.py           \\
+    python3 triotrain/model_training/slurm/make_examples.py           \\
         --env-file envs/demo.env                              \\
         --task-id 0                                           \\
         --genome Mother                                       \\

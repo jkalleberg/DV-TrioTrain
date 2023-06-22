@@ -66,7 +66,7 @@ class SBATCH:
         if self.itr.env is not None:
             self._start_sbatch = [
                 ". scripts/setup/modules.sh",
-                f". scripts/model_training/slurm_environment.sh {self.itr.env.env_file}",
+                f". scripts/run/environment.sh {self.itr.env.env_file}",
                 "echo '=== Science Starts Now: '$(date '+%Y-%m-%d %H:%M:%S')",
             ]
         else:

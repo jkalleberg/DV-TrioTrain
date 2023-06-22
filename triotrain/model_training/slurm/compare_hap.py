@@ -3,7 +3,7 @@
 description: compares a VCF produced by DeepVariant against a Truth VCF produced by GATK v4. Uses the spython package to execute commmands within the hap.py container.
 
 example:
-    python3 scripts/model_training/compare_hap.py           \\
+    python3 triotrain/model_training/slurm/compare_hap.py           \\
         --env-file envs/demo.env                            \\
         --dry-run
 """

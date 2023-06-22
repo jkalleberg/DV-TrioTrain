@@ -371,14 +371,14 @@ class TrainEval:
         if self._per_gpu_mem is None and self._per_cpu_mem is None:
             training_command_list.extend(
                 [
-                    f"srun -l --gres=gpu:1 --ntasks={self._ntasks_per_gpu} scripts/model_training/slurm_train_model.sh {self.itr.train_genome} >& \"{self.itr.log_dir}/train-{self.itr.train_genome}-{'${NUM_STEPS}'}steps.log\"",
+                    f"srun -l --gres=gpu:1 --ntasks={self._ntasks_per_gpu} scripts/run/train_model.sh {self.itr.train_genome} >& \"{self.itr.log_dir}/train-{self.itr.train_genome}-{'${NUM_STEPS}'}steps.log\"",
                 ]
             )
 
         else:
             training_command_list.extend(
                 [
-                    f"srun -l --gres=gpu:1 --ntasks={self._ntasks_per_gpu} {self._srun_mem} scripts/model_training/slurm_train_model.sh {self.itr.train_genome} >& \"{self.itr.log_dir}/train-{self.itr.train_genome}-{'${NUM_STEPS}'}steps.log\"",
+                    f"srun -l --gres=gpu:1 --ntasks={self._ntasks_per_gpu} {self._srun_mem} scripts/run/train_model.sh {self.itr.train_genome} >& \"{self.itr.log_dir}/train-{self.itr.train_genome}-{'${NUM_STEPS}'}steps.log\"",
                 ]
             )
         #     self._starting_path = self.itr.env.contents[
@@ -418,11 +418,11 @@ class TrainEval:
         # link training with evaluation
         if self._per_gpu_mem is None and self._per_cpu_mem is None:
             evaluation_command_list = [
-                f"srun -l --gres=gpu:1 --ntasks={self._ntasks_per_gpu} scripts/model_training/slurm_eval_model.sh {self.itr.eval_genome} >& \"{self.itr.log_dir}/train-{self.itr.train_genome}-eval-{self.itr.eval_genome}-{'${NUM_STEPS}'}steps.log\""
+                f"srun -l --gres=gpu:1 --ntasks={self._ntasks_per_gpu} scripts/run/eval_model.sh {self.itr.eval_genome} >& \"{self.itr.log_dir}/train-{self.itr.train_genome}-eval-{self.itr.eval_genome}-{'${NUM_STEPS}'}steps.log\""
             ]
         else:
             evaluation_command_list = [
-                f"srun -l --gres=gpu:1 --ntasks={self._ntasks_per_gpu} {self._srun_mem} scripts/model_training/slurm_eval_model.sh {self.itr.eval_genome} >& \"{self.itr.log_dir}/train-{self.itr.train_genome}-eval-{self.itr.eval_genome}-{'${NUM_STEPS}'}steps.log\""
+                f"srun -l --gres=gpu:1 --ntasks={self._ntasks_per_gpu} {self._srun_mem} scripts/run/eval_model.sh {self.itr.eval_genome} >& \"{self.itr.log_dir}/train-{self.itr.train_genome}-eval-{self.itr.eval_genome}-{'${NUM_STEPS}'}steps.log\""
             ]
 
         # evaluation_command_list = [

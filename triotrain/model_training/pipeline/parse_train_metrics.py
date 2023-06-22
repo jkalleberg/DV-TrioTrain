@@ -12,7 +12,7 @@ The required arguments include:
 
 Usage:
 
-    python3 scripts/model_training/parse-eval-metrics.py \
+    python3 triotrain/model_training/pipeline/parse_eval_metrics.py \
         --env-file </path/to/ENV_file> \
         --genome <genome_label>
 

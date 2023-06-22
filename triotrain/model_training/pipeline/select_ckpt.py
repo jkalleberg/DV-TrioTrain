@@ -227,7 +227,7 @@ class SelectCheckpoint:
             f"numEvals=$(ls {self.itr.train_dir}/eval_Child| grep 'model\.ckpt\-[0-9]\+\.metrics' | wc -l)",
             'echo "SUCCESS: Performed ${numEvals} evaluations"',
             'echo "INFO: Parsing evaluation metrics:"',
-            f"conda run --no-capture-output -p miniconda_envs/beam_v2.30 python3 scripts/model_training/parse_tfmetrics.py --env-file {self.itr.env.env_file} --genome {self.itr.train_genome}",
+            f"conda run --no-capture-output -p miniconda_envs/beam_v2.30 python3 triotrain/model_training/pipeline/parse_train_metrics.py --env-file {self.itr.env.env_file} --genome {self.itr.train_genome}",
         ]
 
         # Selecting the next checkpoint
@@ -237,11 +237,11 @@ class SelectCheckpoint:
             and self.itr.next_trio_num is not None
         ):
             command_list = parse_metrics_command_list + [
-                f"conda run --no-capture-output -p miniconda_envs/beam_v2.30 python3 scripts/model_training/slurm_select_ckpt.py --next-genome {self.itr.next_genome} --next-run {self.itr.next_trio_num} --current-ckpt {self.itr.train_dir}/eval_Child/best_checkpoint.txt --env-file {self.itr.env.env_file}",
+                f"conda run --no-capture-output -p miniconda_envs/beam_v2.30 python3 triotrain/model_training/slurm/select_ckpt.py --next-genome {self.itr.next_genome} --next-run {self.itr.next_trio_num} --current-ckpt {self.itr.train_dir}/eval_Child/best_checkpoint.txt --env-file {self.itr.env.env_file}",
             ]
         else:
             command_list = parse_metrics_command_list + [
-                f"conda run --no-capture-output -p miniconda_envs/beam_v2.30 python3 scripts/model_training/slurm_select_ckpt.py --next-genome None --next-run None --current-ckpt {self.itr.train_dir}/eval_Child/best_checkpoint.txt --env-file {self.itr.env.env_file}",
+                f"conda run --no-capture-output -p miniconda_envs/beam_v2.30 python3 triotrain/model_training/slurm/select_ckpt.py --next-genome None --next-run None --current-ckpt {self.itr.train_dir}/eval_Child/best_checkpoint.txt --env-file {self.itr.env.env_file}",
             ]
 
         slurm_job.create_slurm_job(

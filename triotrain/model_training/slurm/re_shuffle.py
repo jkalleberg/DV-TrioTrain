@@ -3,7 +3,7 @@
 description: merges a region's shuffled examples shards into (1) tfrecord file, then, creates a re-shuffled config file (.dataset_config.pbtxt containing a randomized list of Apptainer binding paths for all regions' tfrecord files, then counts the total number of examples created across all regions, and finally, adds a new environment variable to the environment file (.env).
 
 example:
-    python3 scripts/model_training/re_shuffle.py           \\
+    python3 triotrain/model_training/slurm/re_shuffle.py           \\
         --env-file envs/demo.env                           \\
         --genome Mother                                    \\
         --start-itr

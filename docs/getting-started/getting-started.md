@@ -77,7 +77,7 @@ There are various other commands and options available. For a complete list of
 commands, use the `--help` flag:
 
 ```bash
-python3 scripts/model_training/run_trio_train.py --help
+python3 triotrain/run_trio_train.py --help
 ```
 
 To view a list of options available on a given command, use the `--help` flag with that command. For example, to get a list of all options available for the `build` command run the following:

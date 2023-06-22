@@ -3,7 +3,7 @@
 description: parse the SLURM resources used to complete a set of jobs, summarize per phase, and write to a new CSV file.
 
 example:
-    python3 scripts/model_training/benchmark.py             \\
+    python3 triotrain/model_training/pipeline/benchmark.py             \\
         --env-file envs/demo.env                            \\
         --csv-file /path/to/SLURM_jobs.csv                  \\
         --dry-run

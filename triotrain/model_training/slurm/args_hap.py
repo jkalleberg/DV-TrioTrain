@@ -3,7 +3,7 @@
 description: combines TRUTH and QUERY column values [FP/FP/FN/N/.] into unique 'TRUTH_QUERY' combinations (e.g. 'TP_TP'), count observations, and write values to comma-separated values output file.
 
 example:
-    python3 scripts/model_training/slurm/process_hap.py     \\
+    python3 triotrain/model_training/slurm/process_hap.py   \\
         --env-file envs/demo.env                            \\
         --vcf-file /path/to/file.vcf.gz                     \\
         --dry-run
