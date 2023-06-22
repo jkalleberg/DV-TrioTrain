@@ -147,7 +147,7 @@ class Examples:
         """
         Load in variables from the env file, and define python variables.
         """
-        self.env = h.Env(self.args.env_file, self.logger)
+        self.env = h.Env(self.args.env_file, self.logger, dryrun_mode=self.args.dry_run)
         env_vars = [
             "RunOrder",
             "N_Parts",

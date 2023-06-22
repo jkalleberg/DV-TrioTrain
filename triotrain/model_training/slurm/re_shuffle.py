@@ -302,7 +302,7 @@ def __init__():
 
     # Check command line args
     check_args(args, logger)
-    env = h.Env(args.env_file, logger)
+    env = h.Env(args.env_file, logger, dryrun_mode=args.dry_run)
     trio_num = str(env.contents["RunOrder"])
 
     if args.demo_mode:

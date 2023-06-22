@@ -444,7 +444,7 @@ class Environment:
             self.logger.info(f"{self.logging_msg}: {msg} env file | '{env_path}'")
 
         # Load in the env file to write any missing variables to
-        self.env = helpers.h.Env(env_path, self.logger, debug_mode=self.debug_mode)
+        self.env = helpers.h.Env(env_path, self.logger, debug_mode=self.debug_mode, dryrun_mode=self.dryrun_mode)
 
         # Define the row index to use
         if self.trio_num == 0:
@@ -967,7 +967,7 @@ class Environment:
                 return
             else:
                 self.env = helpers.h.Env(
-                    self.env.env_file, self.logger, debug_mode=self.debug_mode
+                    self.env.env_file, self.logger, debug_mode=self.debug_mode, dryrun_mode=self.dryrun_mode
                 )
                 self.logger.info(
                     f"{self.logging_msg}: loaded environment variables from | '{self.env.env_file}'"

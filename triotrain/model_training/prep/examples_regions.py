@@ -945,7 +945,7 @@ def __init__():
     # Check command line args
     check_args(args, logger)
 
-    env = helpers.h.Env(args.env_file, logger)
+    env = helpers.h.Env(args.env_file, logger, args.dry_run)
     trio_num = str(env.contents["RunOrder"])
 
     if args.genome != "Child":

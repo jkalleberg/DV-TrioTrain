@@ -546,7 +546,7 @@ def __init__():
 
     # Load in environment vars into Python
     env_path = Path(args.env_file)
-    env = helpers.h.Env(str(env_path), logger)
+    env = helpers.h.Env(str(env_path), logger, dryrun_mode=args.dry_run)
 
     # Parse out current run name & num
     itr_name = env_path.stem.split("-")[1]
@@ -586,7 +586,7 @@ def __init__():
                 total_num_tests=total_tests,
                 train_genome=args.genome,
                 eval_genome="Child",
-                env=helpers.h.Env(args.env_file, logger),
+                env=helpers.h.Env(args.env_file, logger, dryrun_mode=args.dry_run),
                 logger=logger,
                 args=args,
             )
@@ -599,7 +599,7 @@ def __init__():
                 total_num_tests=total_tests,
                 train_genome=args.genome,
                 eval_genome="Child",
-                env=helpers.h.Env(args.env_file, logger),
+                env=helpers.h.Env(args.env_file, logger, dryrun_mode=args.dry_run),
                 logger=logger,
                 args=args,
             )

@@ -291,7 +291,7 @@ class SelectCheckpoint:
                     next_env_file = (
                         f"envs/{analysis_name}-run{self.itr.next_trio_num}.env"
                     )
-                    next_env = helpers.h.Env(next_env_file, self.itr.logger)
+                    next_env = helpers.h.Env(next_env_file, self.itr.logger, dryrun_mode=self.itr.args.dry_run)
 
                     if f"{self.itr.next_genome}StartCkptName" in next_env.contents:
                         self.ckpt_selected = True

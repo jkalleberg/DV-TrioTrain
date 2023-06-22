@@ -179,10 +179,11 @@ class Env:
                 self.var_count += 1
             else:
                 if self.dryrun_mode:
-                    self.logger.info(f"[DRY_RUN] - {self.env_path.name} does not have a variable | '{var}' ")
-                self.logger.warning(
+                    self.logger.info(f"[DRY_RUN] - {self.env_path.name} does not have a variable, as expected | '{var}' ")
+                else:
+                    self.logger.warning(
                     f"{self.env_path.name} does not have a variable  | '{var}'"
-                )
+                    )
 
         if self.var_count == len(variables):
             if self.debug_mode:

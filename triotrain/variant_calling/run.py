@@ -118,7 +118,7 @@ def __init__():
         total_num_tests=16,
         train_genome=None,
         eval_genome=None,
-        env=h.Env(args.env_file, logger),
+        env=h.Env(args.env_file, logger, dryrun_mode=args.dry_run),
         logger=logger,
         args=args,
     )

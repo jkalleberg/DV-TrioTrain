@@ -99,7 +99,7 @@ class ClearTmp:
         # Confirm that the env file exists before setting variables
         self.dryrun_mode: bool = self.args.dry_run
         self.debug_mode: bool = self.args.debug
-        self.env = h.Env(self.args.env_file, self.logger)
+        self.env = h.Env(self.args.env_file, self.logger, dryrun_mode=self.args.dry_run)
         self.parents = ["Mother", "Father"]
         self.trio = self.parents + ["Child"]
         self._phase = "clean_tmp"

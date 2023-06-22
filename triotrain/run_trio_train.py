@@ -73,7 +73,7 @@ def initalize_weights(setup: pipe.Setup, itr: helpers.Iteration):
                     / "envs"
                     / f"{setup.args.name}-run{setup.prior_trio_num}.env"
                 )
-                prior_env = helpers.h.Env(str(prior_env_path), itr.logger)
+                prior_env = helpers.h.Env(str(prior_env_path), itr.logger, dryrun_mode=itr.dryrun_mode)
                 try:
                     prior_env.check_out()
                     check_this_env = prior_env
@@ -148,6 +148,7 @@ def initalize_weights(setup: pipe.Setup, itr: helpers.Iteration):
                             str(next_env_path),
                             itr.logger,
                             debug_mode=setup.args.debug,
+                            dryrun_mode=setup.args.dry_run
                         )
                         try:
                             next_env.check_out()

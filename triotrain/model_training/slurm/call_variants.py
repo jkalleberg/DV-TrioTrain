@@ -163,7 +163,7 @@ class TestModel:
         """
         load in variables from the env file, and define python variables
         """
-        self.env = h.Env(self.args.env_file, self.logger)
+        self.env = h.Env(self.args.env_file, self.logger, dryrun_mode=self.args.dry_run)
 
         if "N_Parts" not in self.env.contents:
             self._n_shards = self._nproc

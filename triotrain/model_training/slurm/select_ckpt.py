@@ -338,7 +338,7 @@ class MergeSelect:
             else:
                 analysis_name = self.env.env_path.name.split("-")[0]
                 next_env_file = f"envs/{analysis_name}-run{self.next_run}.env"
-                next_env = h.Env(next_env_file, self.logger)
+                next_env = h.Env(next_env_file, self.logger, dryrun_mode=self.dryrun_mode)
 
                 if (
                     f"{self.next_genome}StartCkptName" not in next_env.contents
@@ -388,7 +388,7 @@ def __init__():
     else:
         next_run = int(args.next_run)
 
-    env = h.Env(args.env_file, logger)
+    env = h.Env(args.env_file, logger, dryrun_mode=args.dry_run)
     ckpt_file = Path(args.current_ckpt)
 
     MergeSelect(
