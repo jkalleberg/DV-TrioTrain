@@ -23,12 +23,14 @@ from math import ceil, isnan
 from os import environ, getcwd, path
 from pathlib import Path
 from typing import List, Union
-
-import helpers
 import numpy as np
 import regex
 from pandas import DataFrame, read_csv
 
+from helpers.files import TestFile
+from helpers.environment import Env
+from helpers.wrapper import timestamp, Wrapper
+from helpers.utils import get_logger
 
 def collect_args() -> argparse.Namespace:
     """
@@ -306,7 +308,7 @@ class Environment:
 
         """
         # Confirm data input is an existing file
-        metadata = helpers.h.TestFile(self.input_csv, self.logger)
+        metadata = TestFile(self.input_csv, self.logger)
         metadata.check_existing()
         if metadata.file_exists:
             # Read in file
@@ -440,7 +442,7 @@ class Environment:
         env_path = env_dir / f"run{self.trio_num}.env"
 
         # Test for existing ENV file name
-        env_file = helpers.h.TestFile(env_path, self.logger)
+        env_file = TestFile(env_path, self.logger)
         env_file.check_missing()
 
         # Only create a new ENV object if non-existant, or if --update=True
@@ -473,7 +475,7 @@ class Environment:
             self.logger.info(f"{self.logging_msg}: {msg} env file | '{env_path}'")
 
         # Load in the env file to write any missing variables to
-        self.env = helpers.h.Env(env_path, self.logger, debug_mode=self.debug_mode, dryrun_mode=self.dryrun_mode)
+        self.env = Env(env_path, self.logger, debug_mode=self.debug_mode, dryrun_mode=self.dryrun_mode)
 
         # Define the row index to use
         if self.trio_num == 0:
@@ -716,7 +718,7 @@ class Environment:
 
             if col_num >= 10:
                 # Columns 10+ are paths. Confirm that the paths given exist
-                absolute_path = helpers.h.TestFile(str(value), self.logger)
+                absolute_path = TestFile(str(value), self.logger)
 
                 try:
                     if absolute_path.file in missing_values:
@@ -878,7 +880,7 @@ class Environment:
         # Keep a record if any keys are changed
         if self.env.updated_keys.keys():
             keys_str = ",".join(self.env.updated_keys.keys())
-            time_updated = helpers.h.timestamp()
+            time_updated = timestamp()
             comment = f"# {time_updated}: updated the following keys | '{keys_str}'"
             self.env.add_to(
                 key=comment,
@@ -1002,7 +1004,7 @@ class Environment:
             if self.update:
                 return
             else:
-                self.env = helpers.h.Env(
+                self.env = Env(
                     self.env.env_file, self.logger, debug_mode=self.debug_mode, dryrun_mode=self.dryrun_mode
                 )
                 self.logger.info(
@@ -1081,12 +1083,12 @@ def __init__():
     args = collect_args()
 
     # Collect start time
-    helpers.h.Wrapper(__file__, "start").wrap_script(h.timestamp())
+    Wrapper(__file__, "start").wrap_script(timestamp())
 
     # Create error log
     current_file = path.basename(__file__)
     module_name = path.splitext(current_file)[0]
-    logger = helpers.log.get_logger(module_name)
+    logger = get_logger(module_name)
 
     # Check command line args
     check_args(args, logger)
@@ -1116,7 +1118,7 @@ def __init__():
         batch_size=args.batch_size,
     )
 
-    helpers.h.Wrapper(__file__, "end").wrap_script(h.timestamp())
+    Wrapper(__file__, "end").wrap_script(timestamp())
 
 
 # Execute functions created

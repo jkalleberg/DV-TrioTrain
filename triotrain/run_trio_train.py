@@ -21,7 +21,11 @@ import sys
 from pathlib import Path
 
 import helpers
-import model_training as pipe
+from model_training.pipeline.setup import Setup
+
+# from model_training.pipeline import
+# import model_training.pipeline as p
+breakpoint()
 
 
 def initalize_weights(setup: pipe.Setup, itr: helpers.Iteration):
@@ -73,7 +77,9 @@ def initalize_weights(setup: pipe.Setup, itr: helpers.Iteration):
                     / "envs"
                     / f"{setup.args.name}-run{setup.prior_trio_num}.env"
                 )
-                prior_env = helpers.h.Env(str(prior_env_path), itr.logger, dryrun_mode=itr.dryrun_mode)
+                prior_env = helpers.h.Env(
+                    str(prior_env_path), itr.logger, dryrun_mode=itr.dryrun_mode
+                )
                 try:
                     prior_env.check_out()
                     check_this_env = prior_env
@@ -148,7 +154,7 @@ def initalize_weights(setup: pipe.Setup, itr: helpers.Iteration):
                             str(next_env_path),
                             itr.logger,
                             debug_mode=setup.args.debug,
-                            dryrun_mode=setup.args.dry_run
+                            dryrun_mode=setup.args.dry_run,
                         )
                         try:
                             next_env.check_out()
@@ -419,7 +425,7 @@ def run_trio_train(eval_genome="Child"):
             logger.info(
                 f"{logging_msg}: model includes the {pipeline.meta.additional_channels} channel(s)"
             )
-        
+
         # If tracking resources used from SLURM jobs,
         # inialize a file to store metrics
         if pipeline.args.benchmark:

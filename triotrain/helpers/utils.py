@@ -8,9 +8,11 @@ usage:
 import logging
 from pathlib import Path
 from random import randint
-from typing import  List,Union
-from helpers.wrapper import timestamp
+from typing import List, Union
+
 from helpers.logger import get_file_handler, get_stream_handler
+from helpers.wrapper import timestamp
+
 
 def get_logger(name: str):
     """
@@ -28,6 +30,7 @@ def get_logger(name: str):
     logger.addHandler(get_stream_handler())
     return logger
 
+
 def random_with_N_digits(n: int) -> int:
     """
     Create a number of an arbitrary length (n)
@@ -36,11 +39,13 @@ def random_with_N_digits(n: int) -> int:
     range_end = (10**n) - 1
     return randint(range_start, range_end)
 
+
 def generate_job_id() -> str:
     """
     Create a dummy slurm job id
     """
     return f"{random_with_N_digits(8)}"
+
 
 def check_if_all_same(list_of_elem: List[Union[str, int]], item: Union[str, int]):
     """
@@ -56,12 +61,14 @@ def find_NaN(list_of_elem: List[Union[str, int, None]]) -> List[int]:
     list = [i for i, v in enumerate(list_of_elem) if v == None]
     return list
 
+
 def find_not_NaN(list_of_elem: List[Union[str, int, None]]) -> List[int]:
     """
     Returns a list of indexs within a list which are not 'None'
     """
     list = [i for i, v in enumerate(list_of_elem) if v != None]
     return list
+
 
 def create_deps(num: int = 4) -> List[None]:
     """
