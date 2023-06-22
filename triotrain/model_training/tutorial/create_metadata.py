@@ -25,7 +25,7 @@ logger = helpers.log.get_logger(module_name)
 
 defaults = {
     "RunOrder": 1,
-    "RunName": "tutorial",
+    "RunName": "Human_tutorial",
     "ChildSampleID": "NA24385",
     "ChildLabID": "HG002",
     "FatherSampleID": "NA24149",
