@@ -69,7 +69,7 @@ class Iteration:
             )
 
         if self.demo_mode and self.current_trio_num is not None:
-            self._mode_string = f"Demo-{self.train_genome}{self.current_trio_num}"
+            self._mode_string = f"Demo] - [Trio{self.current_trio_num}"
         elif self.current_genome_num == 0 and self.train_genome is None:
             self._mode_string = f"Baseline-DV] - [v{self._version}"
         elif (
