@@ -67,6 +67,7 @@ class Setup:
             debug_mode=self.args.debug,
             demo_mode=self.args.demo_mode,
             demo_chr=self.args.demo_chr,
+            output_dir=self.args.output,
             checkpoint_name=self.args.custom_ckpt,
             channel_info=self.args.channel_info,
             update=self.args.update,

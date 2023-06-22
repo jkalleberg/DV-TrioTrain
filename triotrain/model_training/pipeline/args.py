@@ -76,11 +76,19 @@ def collect_args():
     parser.add_argument(
         "--modules",
         dest="modules",
-        help="[REQUIRED]\ninput file (.sh)\nhelper script which loads the local software packages",
+        help="[REQUIRED]\ninput file (.sh)\nhelper script which loads the local software packages\n(default: %(default)s)",
         default="./scripts/setup/modules.sh",
         type=str,
         metavar="</path/file>"
     )
+    parser.add_argument(
+        "--output",
+        dest="output",
+        help="directory path \nre-direct where to save TrioTrain results\n(default: %(default)s)",
+        default="../TRIO_TRAINING_OUTPUTS",
+        type=str,
+        metavar="</path/dir>"
+    ) 
     parser.add_argument(
         "--benchmark",
         dest="benchmark",

@@ -64,6 +64,14 @@ def collect_args() -> argparse.Namespace:
         metavar="</path/file>",
     )
     parser.add_argument(
+        "--output",
+        dest="output",
+        help="directory path \nre-direct where to save TrioTrain results\n(default: %(default)s)",
+        default="../TRIO_TRAINING_OUTPUTS",
+        type=str,
+        metavar="</path/dir>"
+    ) 
+    parser.add_argument(
         "-B",
         "--batch-size",
         dest="batch_size",
@@ -223,7 +231,7 @@ class Environment:
     demo_mode: bool = False
     demo_chr: str = "29"
     dryrun_mode: bool = False
-    output_dir_name: str = "TRIO_TRAINING_OUTPUTS"
+    output_dir: Union[str, Path] = "../TRIO_TRAINING_OUTPUTS"
     working_dir: Path = Path(getcwd())
     update: bool = False
 
@@ -248,18 +256,30 @@ class Environment:
         self._version = environ.get("BIN_VERSION_DV")
         self._phase: str = "create_environment"
 
+        
+
         if self.first_genome is None:
             self.train_order = [None]
             self.output_dir_name = "VARIANT_CALLING_OUTPUTS"
             self.trio_num = self.itr_num
         elif self.first_genome.lower() == "father":
+            self.output_dir_name: str = "TRIO_TRAINING_OUTPUTS"
             self.train_order = ["Father", "Mother"]
         else:
+            self.output_dir_name: str = "TRIO_TRAINING_OUTPUTS"
             self.train_order = ["Mother", "Father"]
+
+        output_path_entered = Path(self.output_dir).resolve()
+        output_path_default = Path(path.dirname(self.working_dir)) / self.output_dir_name
+        
+        if output_path_entered == output_path_default:
+            self.output_dir = output_path_default
+        else:
+            self.output_dir = output_path_entered
 
         # Define the regrex pattern of expected output
         if self.demo_mode:
-            self.mode = f"DEMO_MODE] - TRIO{self.trio_num}] - [CHR{self.demo_chr}"
+            self.mode = f"DEMO_MODE] - [TRIO{self.trio_num}] - [CHR{self.demo_chr}"
         elif self.trio_num is None:
             self.mode = "Pipeline Setup"
         elif self.trio_num == 0:
@@ -411,7 +431,15 @@ class Environment:
             )
 
         # Set the naming convention
-        env_path = f"envs/{self.analysis_name}-run{self.trio_num}.env"
+        env_dir = self.output_dir / self.analysis_name / "envs" 
+        if not env_dir.exists():
+            if self.dryrun_mode:
+                self.logger.info(f"[DRY_RUN] - {self.logging_msg}: ENV directory would be created | '{env_dir}'")
+            else:
+                self.logger.info(f"{self.logging_msg}: creating ENV directory | '{env_dir}'") 
+                env_dir.mkdir(parents=True)
+        
+        env_path = env_dir / f"run{self.trio_num}.env"
 
         # Test for existing ENV file name
         env_file = helpers.h.TestFile(env_path, self.logger)
@@ -999,7 +1027,6 @@ class Environment:
         #   with it because it works!
         # -------------------------#
         self.analysis_name = analysis_name
-        self.output_dir = Path(path.dirname(self.working_dir)) / self.output_dir_name
 
         self._stable_vars = {
             "CodePath": f"{str(self.working_dir)}",
@@ -1070,6 +1097,7 @@ def __init__():
         dryrun_mode=args.dry_run,
         debug_mode=args.debug,
         demo_mode=args.demo_mode,
+        output_dir=args.output,
         update=args.update,
         checkpoint_name=args.custom_ckpt,
     )
