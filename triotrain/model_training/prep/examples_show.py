@@ -530,7 +530,7 @@ def __init__():
     args = collect_args()
 
     # Collect start time
-    helpers.h.Wrapper(__file__, "start").wrap_script(helpers.h.timestamp())
+    helpers.Wrapper(__file__, "start").wrap_script(helpers.h.timestamp())
 
     # Create error log
     current_file = path.basename(__file__)
@@ -555,7 +555,9 @@ def __init__():
 
     if args.demo_mode:
         model_label = f"Demo.{args.genome}.CHR{args.demo_chr}"
-        prefix = f"[DEMO_MODE] - [TRIO{itr_num}] - [CHR{args.demo_chr}] - [show_examples]"
+        prefix = (
+            f"[DEMO_MODE] - [TRIO{itr_num}] - [CHR{args.demo_chr}] - [show_examples]"
+        )
     else:
         model_label = f"{args.genome}"
         prefix = f"[{args.genome}] - [show_examples]"
@@ -647,7 +649,7 @@ def __init__():
         )
         slurm.run()
 
-    helpers.h.Wrapper(__file__, "end").wrap_script(helpers.h.timestamp())
+    helpers.Wrapper(__file__, "end").wrap_script(helpers.h.timestamp())
 
 
 # Execute functions created when run from command line

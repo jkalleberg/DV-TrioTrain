@@ -338,7 +338,9 @@ class MergeSelect:
             else:
                 analysis_name = self.env.env_path.name.split("-")[0]
                 next_env_file = f"envs/{analysis_name}-run{self.next_run}.env"
-                next_env = h.Env(next_env_file, self.logger, dryrun_mode=self.dryrun_mode)
+                next_env = h.Env(
+                    next_env_file, self.logger, dryrun_mode=self.dryrun_mode
+                )
 
                 if (
                     f"{self.next_genome}StartCkptName" not in next_env.contents
@@ -368,7 +370,7 @@ def __init__():
     args = collect_args()
 
     # Collect start time
-    h.Wrapper(__file__, "start").wrap_script(h.timestamp())
+    Wrapper(__file__, "start").wrap_script(h.timestamp())
 
     # Create error log
     current_file = os.path.basename(__file__)
@@ -401,7 +403,7 @@ def __init__():
         dryrun_mode=args.dry_run,
     ).run()
 
-    h.Wrapper(__file__, "end").wrap_script(h.timestamp())
+    Wrapper(__file__, "end").wrap_script(h.timestamp())
 
 
 # Execute functions created

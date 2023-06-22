@@ -778,7 +778,7 @@ def __init__():
     args = args_process_hap.collect_args()
 
     # Collect start time
-    h.Wrapper(__file__, "start").wrap_script(h.timestamp())
+    Wrapper(__file__, "start").wrap_script(h.timestamp())
 
     # Create error log
     current_file = os.path.basename(__file__)
@@ -800,7 +800,7 @@ def __init__():
         print(f"{error}\nExiting...")
         sys.exit(1)
 
-    h.Wrapper(__file__, "end").wrap_script(h.timestamp())
+    Wrapper(__file__, "end").wrap_script(h.timestamp())
 
 
 # Execute functions created

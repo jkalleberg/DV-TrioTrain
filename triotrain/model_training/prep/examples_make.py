@@ -7,16 +7,14 @@ usage:
 """
 import sys
 from dataclasses import dataclass, field
-from pathlib import Path
 from typing import List, Union
-
-# get the relative path to the triotrain/ dir
-h_path = str(Path(__file__).parent.parent.parent)
-sys.path.append(h_path)
-import helpers
-import model_training.prep as prep
-import model_training.slurm as s
-
+from helpers.iteration import Iteration
+from helpers.files import WriteFiles
+from helpers.utils import create_deps, find_NaN, find_not_NaN, check_if_all_same, generate_job_id
+from helpers.outputs import check_if_output_exists, check_expected_outputs
+from model_training.prep.examples_shuffle import BeamShuffleExamples
+from model_training.prep.examples_re_shuffle import ReShuffleExamples
+from model_training.slurm.sbatch import SBATCH, SubmitSBATCH
 
 @dataclass
 class MakeExamples:
@@ -25,12 +23,12 @@ class MakeExamples:
     """
 
     # required values
-    itr: helpers.Iteration
+    itr: Iteration
     slurm_resources: dict
     model_label: str
 
     # optional values
-    benchmarking_file: Union[helpers.h.WriteFiles, None] = None
+    benchmarking_file: Union[WriteFiles, None] = None
     make_examples_job_nums: List = field(default_factory=list)
     overwrite: bool = False
     total_shards: int = 1
@@ -120,11 +118,11 @@ class MakeExamples:
         if self.make_examples_job_nums:
             num_job_ids = len(self.make_examples_job_nums)
             if num_job_ids == self._total_regions:
-                self.jobs_to_run = helpers.h.find_not_NaN(self.make_examples_job_nums)
-                self.jobs_to_ignore = helpers.h.find_NaN(self.make_examples_job_nums)
+                self.jobs_to_run = find_not_NaN(self.make_examples_job_nums)
+                self.jobs_to_ignore = find_NaN(self.make_examples_job_nums)
                 self._num_to_run = len(self.jobs_to_run)
                 self._num_to_ignore = len(self.jobs_to_ignore)
-                self._beam_shuffle_dependencies = helpers.h.create_deps(
+                self._beam_shuffle_dependencies = create_deps(
                     self._total_regions
                 )
 
@@ -228,7 +226,7 @@ class MakeExamples:
                         f"[DRY_RUN] - {self.logger_msg}: benchmarking is active"
                     )
 
-    def make_job(self, index: int = 0) -> Union[s.SBATCH, None]:
+    def make_job(self, index: int = 0) -> Union[SBATCH, None]:
         """
         Define the contents of the SLURM job for the 'make_examples' phase for TrioTrain Pipeline.
         """
@@ -239,7 +237,7 @@ class MakeExamples:
         self.job_name = f"examples-parallel-{self.job_label}"
         self.handler_label = f"{self._phase}: {self.prefix}-shard$t"
 
-        slurm_job = s.SBATCH(
+        slurm_job = SBATCH(
             self.itr,
             self.job_name,
             self.model_label,
@@ -328,7 +326,7 @@ class MakeExamples:
             self._existing_tfrecords,
             self._num_tfrecords_found,
             self._tfrecord_files_list,
-        ) = helpers.h.check_if_output_exists(
+        ) = check_if_output_exists(
             examples_pattern,
             "labeled tfrecord shards",
             self.itr.examples_dir,
@@ -342,13 +340,13 @@ class MakeExamples:
             if (
                 self.overwrite
                 and self.make_examples_job_nums
-                and helpers.h.check_if_all_same(self.make_examples_job_nums, None)
+                and check_if_all_same(self.make_examples_job_nums, None)
                 is False
             ):
                 self._outputs_exist = False
                 self._num_tfrecords_found = 0
             else:
-                missing_files = helpers.h.check_expected_outputs(
+                missing_files = check_expected_outputs(
                     self._num_tfrecords_found,
                     expected_outputs,
                     logger_msg,
@@ -397,7 +395,7 @@ class MakeExamples:
             self.itr.logger.info(
                 f"{self.logger_msg}{self.region_logger_msg}: re-submitting job to overwrite any existing tfrecords files"
             )
-        slurm_job = s.SubmitSBATCH(
+        slurm_job = SubmitSBATCH(
             self.itr.job_dir,
             f"{self.job_name}.sh",
             self.handler_label,
@@ -416,7 +414,7 @@ class MakeExamples:
 
         if self.itr.dryrun_mode:
             self._beam_shuffle_dependencies.insert(
-                dependency_index, helpers.h.generate_job_id()
+                dependency_index, generate_job_id()
             )
         else:
             if self.itr.demo_mode:
@@ -447,7 +445,7 @@ class MakeExamples:
         """
         if self.itr.debug_mode:
             self._total_regions = 5
-        make_examples_results = helpers.h.check_if_all_same(
+        make_examples_results = check_if_all_same(
             self._beam_shuffle_dependencies, None
         )
         if make_examples_results is False:
@@ -495,7 +493,7 @@ class MakeExamples:
         """
         Determine if final data_prep outputs already exist.
         """
-        re_shuffle = prep.ReShuffleExamples(
+        re_shuffle = ReShuffleExamples(
             itr=self.itr,
             slurm_resources=self.slurm_resources,
             model_label=self.model_label,
@@ -507,7 +505,7 @@ class MakeExamples:
         re_shuffle.find_outputs(phase=phase, find_all=True)
 
         if re_shuffle._outputs_exist and find_beam_tfrecords:
-            beam = prep.BeamShuffleExamples(
+            beam = BeamShuffleExamples(
                 itr=self.itr,
                 slurm_resources=self.slurm_resources,
                 model_label=self.model_label,
@@ -564,10 +562,10 @@ class MakeExamples:
                 self.itr.logger.error(
                     f"{self.logger_msg}: max number of re-submission SLURM jobs is {self._total_regions} but {self._num_to_run} were provided.\nExiting... ",
                 )
-                sys.exit(1)
+                exit(1)
 
             if not self._beam_shuffle_dependencies:
-                self._beam_shuffle_dependencies = helpers.h.create_deps(
+                self._beam_shuffle_dependencies = create_deps(
                     self._total_regions
                 )
 

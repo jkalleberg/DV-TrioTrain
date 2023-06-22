@@ -758,7 +758,7 @@ def __init__():
     args = collect_args()
 
     # Collect start time
-    h.Wrapper(__file__, "start").wrap_script(h.timestamp())
+    Wrapper(__file__, "start").wrap_script(h.timestamp())
 
     # Create error log
     current_file = path.basename(__file__)
@@ -769,7 +769,7 @@ def __init__():
 
     DTVariantCaller(args=args, logger=logger).run()
 
-    h.Wrapper(__file__, "end").wrap_script(h.timestamp())
+    Wrapper(__file__, "end").wrap_script(h.timestamp())
 
 
 # Execute functions created

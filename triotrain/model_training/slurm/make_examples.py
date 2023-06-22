@@ -17,6 +17,7 @@ from os import environ, path
 from pathlib import Path
 from sys import exit, path
 from typing import Union
+
 from spython.main import Client
 
 # h_path = str(Path(__file__).parent.parent.parent)
@@ -150,7 +151,9 @@ class Examples:
         """
         Load in variables from the env file, and define python variables.
         """
-        self.env = helpers.h.Env(self.args.env_file, self.logger, dryrun_mode=self.args.dry_run)
+        self.env = helpers.h.Env(
+            self.args.env_file, self.logger, dryrun_mode=self.args.dry_run
+        )
         env_vars = [
             "RunOrder",
             "N_Parts",
@@ -545,7 +548,7 @@ def __init__():
     args = collect_args()
 
     # Collect start time
-    h.h.Wrapper(__file__, "start").wrap_script(h.timestamp())
+    Wrapper(__file__, "start").wrap_script(h.timestamp())
 
     # Create error log
     current_file = path.basename(__file__)
@@ -557,7 +560,7 @@ def __init__():
     Examples(args, logger).run()
 
     # Collect start time
-    h.h.Wrapper(__file__, "end").wrap_script(h.timestamp())
+    h.Wrapper(__file__, "end").wrap_script(h.timestamp())
 
 
 # Execute functions created

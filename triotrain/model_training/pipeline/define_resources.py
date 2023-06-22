@@ -199,8 +199,7 @@ class UseJSON(Dict[str, str]):
 
 
 class Pipeline:
-    """Create a pipeline-specific set of SLURM resources
-    """
+    """Create a pipeline-specific set of SLURM resources"""
 
     def __init__(self, defaults: Dict[str, Dict[str, str]], logger: logging.Logger):
         self.valid_phases = [
@@ -223,28 +222,26 @@ class Pipeline:
         self.num_resources = 0
         self.resource_name: str = ""
         self.new_value: Union[str, int] = ""
-        self.default_dict: Dict[str, Dict[str, str]]= defaults
-        self.number_entered: bool = False 
-    
+        self.default_dict: Dict[str, Dict[str, str]] = defaults
+        self.number_entered: bool = False
+
     def enter_a_number(self, resources: bool = True) -> None:
-        self.number_entered = False 
+        self.number_entered = False
         if resources:
             type = "RESOURCES"
-            total:int = len(self.phase_resource_defaults)
+            total: int = len(self.phase_resource_defaults)
         else:
             type = "PHASES"
             total: int = len(self.default_dict.keys())
 
-        n_input = input(
-                f"Enter # of {type} to edit (max={total}): "
-            )
+        n_input = input(f"Enter # of {type} to edit (max={total}): ")
         try:
             int_n_input = int(n_input)
 
             if resources:
                 self.num_resources = int_n_input
                 self.number_entered = True
-            else: 
+            else:
                 if int_n_input > self.max_num_phases:
                     self.num_phases = 0
                     self.number_entered = False
@@ -258,7 +255,9 @@ class Pipeline:
         except ValueError:
             self.number_entered = False
             self.num_phases = 0
-            self.logger.warning(f"You entered '{n_input}', which is not a valid integer... TRY AGAIN")
+            self.logger.warning(
+                f"You entered '{n_input}', which is not a valid integer... TRY AGAIN"
+            )
             raise ValueError
 
     def edit_resources(self, current_phase: str):
@@ -338,7 +337,7 @@ class Pipeline:
                             self.new_value = int(self.new_value)
                             self.logger.info(
                                 f"[{self.resource_name}] is represented with bytes, and does not contains units (M or G)"
-                                )
+                            )
                     elif self.resource_name == "time":
                         try:
                             check_time(self.new_value)
@@ -384,7 +383,9 @@ class Pipeline:
                                 self.logger.info(
                                     f"\t(P)rior Value: [{self.prior_resources[self.resource_name]}]"
                                 )
-                                self.logger.info(f"\tor (N)ew Value: [{self.new_value}]?")
+                                self.logger.info(
+                                    f"\tor (N)ew Value: [{self.new_value}]?"
+                                )
                                 self.logger.info("---------------")
                                 response = str(
                                     input(
@@ -418,7 +419,7 @@ class Pipeline:
         else:
             self.logger.warning(f"[{current_phase}] will have resource defaults only")
 
-    def edit_phase(self, index:int, num_phases_to_edit:int):
+    def edit_phase(self, index: int, num_phases_to_edit: int):
         """
         change resources in PHASE from user input, and
         handle weird inputs from the user.
@@ -440,7 +441,9 @@ class Pipeline:
                 self.phase_label = f"{phase_counter} @ [{self.phase_input}]"
                 self.phase_list.insert(index, self.phase_input)
                 self.edit_resources(self.phase_input)
-                self.final_resources: Dict[str, str] = self.default_dict[self.phase_input]
+                self.final_resources: Dict[str, str] = self.default_dict[
+                    self.phase_input
+                ]
                 if len(self.updated_resources.keys()) > 0:
                     for key, value in self.updated_resources.items():
                         self.final_resources[key] = str(value)
@@ -479,7 +482,7 @@ def edit_pipeline(default_dict: Dict[str, Dict[str, str]], logger: logging.Logge
             trio_train.enter_a_number(resources=False)
         except ValueError:
             continue
-    
+
     if trio_train.num_phases != 0:
         output = default_dict
         for index in range(0, trio_train.num_phases):
@@ -513,13 +516,13 @@ def __init__():
     args = collect_args()
 
     # Collect start time
-    helpers.h.Wrapper(__file__, "start").wrap_script(helpers.h.timestamp())
+    helpers.Wrapper(__file__, "start").wrap_script(helpers.h.timestamp())
 
     # Create error log
     current_file = os.path.basename(__file__)
-    module_name = os.path.splitext(current_file)[0]  
+    module_name = os.path.splitext(current_file)[0]
     logger: logging.Logger = helpers.log.get_logger(module_name)
-    
+
     # Check command line args
     _version = os.environ.get("BIN_VERSION_DV")
     if args.debug:
@@ -620,7 +623,8 @@ def __init__():
             "mem": args.mem_broad,
             "time": "0-02:00:00",
             "account": args.account,
-            "email": args.email}
+            "email": args.email,
+        },
     }
 
     logger.info(f"Pipeline Resource Defaults are currently:")
@@ -641,7 +645,7 @@ def __init__():
         for key, value in output.items():
             logger.info(f"[{key}] = {value}")
 
-    helpers.h.Wrapper(current_file, "end").wrap_script(helpers.h.timestamp())
+    helpers.Wrapper(current_file, "end").wrap_script(helpers.h.timestamp())
 
 
 # Execute functions created

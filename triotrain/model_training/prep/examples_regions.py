@@ -16,12 +16,11 @@ from pathlib import Path
 from typing import Dict, List, Union
 
 import pandas as pd
+from helpers.files import TestFile, WriteFiles
+from helpers.iteration import Iteration
+from helpers.outputs import check_expected_outputs, check_if_output_exists
 from natsort import natsorted
-
-# get the relative path to the triotrain/ dir
-h_path = str(Path(__file__).parent.parent.parent)
-sys.path.append(h_path)
-import helpers
+from model_training.prep.count import count_variants
 
 
 def collect_args():
@@ -134,7 +133,7 @@ def check_args(args: argparse.Namespace, logger: Logger):
 @dataclass
 class MakeRegions:
     # required values
-    itr: helpers.Iteration
+    itr: Iteration
 
     # optional values
     ex_per_file: List[int] = field(default_factory=list)
@@ -149,7 +148,7 @@ class MakeRegions:
     _chrs_skipped: dict = field(default_factory=dict, init=False, repr=False)
     _debug_max_files: int = field(default=5, init=False, repr=False)
     _input: Union[Path, None] = field(default=None, init=False, repr=False)
-    _input_exists: Union[helpers.h.TestFile, bool, None] = field(
+    _input_exists: Union[TestFile, bool, None] = field(
         default=None, init=False, repr=False
     )
     _line_list: List = field(default_factory=list, init=False, repr=False)
@@ -212,12 +211,12 @@ class MakeRegions:
             self._truth_vcf_path = None
 
         # Confirm Input Files Exist
-        ref_genome_exists = helpers.h.TestFile(reference, self.itr.logger)
+        ref_genome_exists = TestFile(reference, self.itr.logger)
         ref_genome_exists.check_existing()
-        ref_dict_exists = helpers.h.TestFile(input_file, self.itr.logger)
+        ref_dict_exists = TestFile(input_file, self.itr.logger)
         ref_dict_exists.check_existing()
         if self._truth_vcf_path is not None:
-            truth_exists = helpers.h.TestFile(self._truth_vcf_path, self.itr.logger)
+            truth_exists = TestFile(self._truth_vcf_path, self.itr.logger)
             truth_exists.check_existing()
 
         if ref_genome_exists:
@@ -296,7 +295,7 @@ class MakeRegions:
         Transform the reference genome's .dict file
         into a pandas dataframe for easier manipulations.
         """
-        if isinstance(self._input_exists, helpers.h.TestFile):
+        if isinstance(self._input_exists, TestFile):
             input_data = pd.read_csv(
                 self._input_exists.file,
                 sep="\t",
@@ -368,7 +367,7 @@ class MakeRegions:
             output_file_path = str(self.itr.default_region_file.parent)
             output_file_name = str(self.itr.default_region_file.name)
 
-        output_file = helpers.h.WriteFiles(
+        output_file = WriteFiles(
             output_file_path,
             output_file_name,
             self.itr.logger,
@@ -497,7 +496,7 @@ class MakeRegions:
             self._existing_regions,
             regions_found,
             region_files,
-        ) = helpers.h.check_if_output_exists(
+        ) = check_if_output_exists(
             region_file_pattern,
             "region shuffling BED files",
             self.itr.examples_dir / "regions",
@@ -517,7 +516,7 @@ class MakeRegions:
             expected_num_outputs = self._num_outputs
 
         if self._existing_regions:
-            self.missing_regions_files = helpers.h.check_expected_outputs(
+            self.missing_regions_files = check_expected_outputs(
                 regions_found,
                 expected_num_outputs,
                 self._logger_msg,
@@ -549,7 +548,7 @@ class MakeRegions:
         )
 
         if self._truth_vcf_path is not None:
-            variants_found = helpers.h.count_variants(
+            variants_found = count_variants(
                 self._truth_vcf_path,
                 logger_msg=self._logger_msg,
                 logger=self.itr.logger,
@@ -878,7 +877,7 @@ class MakeRegions:
                 self.itr.logger.error(f"{error_msg}\nExiting... ")
                 sys.exit(1)
 
-    def run(self) -> Union[helpers.Iteration, None]:
+    def run(self) -> Union[Iteration, None]:
         """
         Combine all the steps for making region files into one step
         """
@@ -928,6 +927,9 @@ class MakeRegions:
 
 # Create regions files function
 def __init__():
+    from helpers.wrapper import Wrapper, timestamp
+    from helpers.utils import get_logger
+    from helpers.environment import Env
     """
     An example of how to use the module
     """
@@ -935,21 +937,21 @@ def __init__():
     args = collect_args()
 
     # Collect start time
-    helpers.h.Wrapper(__file__, "start").wrap_script(helpers.h.timestamp())
+    Wrapper(__file__, "start").wrap_script(timestamp())
 
     # Create error log
     current_file = os.path.basename(__file__)
     module_name = os.path.splitext(current_file)[0]
-    logger = helpers.log.get_logger(module_name)
+    logger = get_logger(module_name)
 
     # Check command line args
     check_args(args, logger)
 
-    env = helpers.h.Env(args.env_file, logger, args.dry_run)
+    env = Env(args.env_file, logger, args.dry_run)
     trio_num = str(env.contents["RunOrder"])
 
     if args.genome != "Child":
-        current_itr = helpers.Iteration(
+        current_itr = Iteration(
             current_trio_num=trio_num,
             next_trio_num="None",
             current_genome_num=args.restart,
@@ -967,7 +969,7 @@ def __init__():
             args.est_examples,
         ).run()
     else:
-        current_itr = helpers.Iteration(
+        current_itr = Iteration(
             current_trio_num=trio_num,
             next_trio_num="None",
             current_genome_num=args.restart,
@@ -985,7 +987,7 @@ def __init__():
 
     print(updated_itr)
 
-    helpers.h.Wrapper(__file__, "end").wrap_script(helpers.h.timestamp())
+    Wrapper(__file__, "end").wrap_script(timestamp())
 
 
 # Execute all functions created

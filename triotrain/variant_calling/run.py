@@ -6,18 +6,12 @@ usage:
     from run import Run
 """
 import argparse
-import sys
 from logging import Logger
 from os import environ, path
 
 # Custom helper modules
-sys.path.append(
-    "/storage/hpc/group/UMAG_test/WORKING/jakth2/deep-variant/scripts/model_training"
-)
-import helpers as h
-import helpers_logger
-from iteration import Iteration
-from pipeline_run import Run
+from helpers.wrapper import timestamp, Wrapper
+from helpers.environment import Env
 
 
 def collect_args():
@@ -102,7 +96,7 @@ def __init__():
     args = collect_args()
 
     # Collect start time
-    h.Wrapper(__file__, "start").wrap_script(h.timestamp())
+    Wrapper(__file__, "start").wrap_script(timestamp())
 
     # Create error log
     current_file = path.basename(__file__)
@@ -118,7 +112,7 @@ def __init__():
         total_num_tests=16,
         train_genome=None,
         eval_genome=None,
-        env=h.Env(args.env_file, logger, dryrun_mode=args.dry_run),
+        env=Env(args.env_file, logger, dryrun_mode=args.dry_run),
         logger=logger,
         args=args,
     )
@@ -132,7 +126,7 @@ def __init__():
 
     pipeline.test_model_jobs(useDT=args.use_DT)
 
-    h.Wrapper(__file__, "end").wrap_script(h.timestamp())
+    Wrapper(__file__, "end").wrap_script(timestamp())
 
 
 # Execute functions created

@@ -12,9 +12,8 @@ from logging import Logger
 from os import environ, getcwd
 from pathlib import Path
 from typing import Union
-
-# import helpers.helper_func as h
-
+from helpers.environment import Env
+from helpers.utils import create_deps
 
 @dataclass
 class Iteration:
@@ -29,20 +28,19 @@ class Iteration:
     total_num_genomes: Union[int, None]
     train_genome: Union[str, None]
     eval_genome: Union[str, None]
-    env: Union[h.Env, None]
+    env: Union[Env, None]
     logger: Logger
     args: Namespace
 
     # optional values
     prior_genome: Union[str, None] = None
-    current_genome_dependencies: list = field(default_factory=h.create_deps)
+    current_genome_dependencies: list = field(default_factory=create_deps)
     next_genome: Union[str, None] = None
-    next_genome_dependencies: list = field(default_factory=h.create_deps)
+    next_genome_dependencies: list = field(default_factory=create_deps)
     total_num_tests: int = 1
     train_num_regions: Union[int, None] = None
     eval_num_regions: Union[int, None] = None
     default_region_file: Union[Path, None] = None
-    # cow: bool = True
 
     # internal, imutable values
     _mode_string: str = field(init=False, repr=False)

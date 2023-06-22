@@ -8,6 +8,7 @@ example:
 import os
 import sys
 from pathlib import Path
+
 import regex
 
 # get the relative path to the triotrain/ dir
@@ -16,7 +17,7 @@ sys.path.append(h_path)
 import helpers
 
 # Collect start time
-helpers.h.Wrapper(__file__, "start").wrap_script(helpers.h.timestamp())
+helpers.Wrapper(__file__, "start").wrap_script(helpers.h.timestamp())
 
 # Create error log
 current_file = os.path.basename(__file__)
@@ -67,7 +68,7 @@ for k, v in defaults.items():
             new_key=k,
             new_val=f"{cwd}{v}",
             logger=logger,
-            logger_msg="[tutorial]"
+            logger_msg="[tutorial]",
         )
     else:
         helpers.h.add_to_dict(
@@ -97,4 +98,4 @@ else:
         logger.info("[tutorial]: successfully created the tutorial metadata file")
 
 # Collect end time
-helpers.h.Wrapper(__file__, "start").wrap_script(helpers.h.timestamp())
+helpers.Wrapper(__file__, "start").wrap_script(helpers.h.timestamp())
