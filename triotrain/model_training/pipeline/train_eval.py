@@ -6,20 +6,25 @@ the re-training and evaluating new models of TrioTrain.
 usage: 
     from model_train_eval import TrainEval
 """
-import sys
 from dataclasses import dataclass, field
 from math import floor
 from pathlib import Path
+from sys import exit
 from typing import List, Union
 
-from regex import compile
-
-# get the relative path to the triotrain/ dir
-h_path = str(Path(__file__).parent.parent.parent)
-sys.path.append(h_path)
-import helpers
-import model_training.slurm as s
+from helpers.files import TestFile, WriteFiles
+from helpers.iteration import Iteration
+from helpers.outputs import check_expected_outputs, check_if_output_exists
+from helpers.utils import (
+    check_if_all_same,
+    create_deps,
+    find_NaN,
+    find_not_NaN,
+    generate_job_id,
+)
 from model_training.pipeline.select_ckpt import SelectCheckpoint
+from model_training.slurm.sbatch import SBATCH, SubmitSBATCH
+from regex import compile
 
 
 @dataclass
@@ -30,12 +35,12 @@ class TrainEval:
     """
 
     # required values
-    itr: helpers.Iteration
+    itr: Iteration
     slurm_resources: dict
     model_label: str
 
     # optional values
-    benchmarking_file: Union[helpers.h.WriteFiles, None] = None
+    benchmarking_file: Union[WriteFiles, None] = None
     constrain_training_regions: bool = False
     overwrite: bool = False
     track_resources: bool = False
@@ -89,14 +94,14 @@ class TrainEval:
                 self.benchmarking_file is not None
             ), "unable to proceed, missing a h.WriteFiles object to save SLURM job IDs"
 
-        self._select_ckpt_dependency = helpers.h.create_deps(1)
+        self._select_ckpt_dependency = create_deps(1)
 
     def find_restart_jobs(self) -> None:
         """
         collect any SLURM job ids for running tests to avoid
         submitting a job while it's already running
         """
-        self._ignoring_re_shuffle = helpers.h.check_if_all_same(
+        self._ignoring_re_shuffle = check_if_all_same(
             self.itr.current_genome_dependencies[0:2], None
         )
         if not self._ignoring_re_shuffle:
@@ -112,10 +117,10 @@ class TrainEval:
                 )
             num_job_ids = len(self.train_job_num)
             if num_job_ids == 1:
-                jobs_to_run = helpers.h.find_not_NaN(self.train_job_num)
+                jobs_to_run = find_not_NaN(self.train_job_num)
                 self._num_to_run = len(jobs_to_run)
-                self._num_to_ignore = len(helpers.h.find_NaN(self.train_job_num))
-                self._select_ckpt_dependency = helpers.h.create_deps(1)
+                self._num_to_ignore = len(find_NaN(self.train_job_num))
+                self._select_ckpt_dependency = create_deps(1)
 
                 if jobs_to_run:
                     self._run_jobs = True
@@ -133,7 +138,7 @@ class TrainEval:
                                     self.itr.logger.error(
                                         f"{self.logger_msg}: an 8-digit value must be provided for any number greater than one.\nExiting..."
                                     )
-                                    sys.exit(1)
+                                    exit(1)
                                 self._num_to_run -= 1
                                 self._num_to_ignore += 1
                                 self._select_ckpt_dependency = [
@@ -183,7 +188,7 @@ class TrainEval:
             if self.overwrite and (self.train_job_num or not self._ignoring_re_shuffle):
                 self._outputs_exist = False
             else:
-                missing_files = helpers.h.check_expected_outputs(
+                missing_files = check_expected_outputs(
                     self.best_ckpt_files_found,
                     number_outputs_expected,
                     logging_msg,
@@ -305,7 +310,7 @@ class TrainEval:
                 f"{self.logger_msg}: using [{self._per_gpu_mem}] memory for each GPU srun task"
             )
 
-    def make_job(self) -> Union[s.SBATCH, None]:
+    def make_job(self) -> Union[SBATCH, None]:
         """
         Define the contents of the SLURM job for the train + eval phases for TrioTrain Pipeline.
         """
@@ -313,7 +318,7 @@ class TrainEval:
         self.job_name = f"train-{self.itr.train_genome}{self.itr.current_trio_num}-eval-{self.itr.eval_genome}"
         self.handler_label = f"{self._phase}: {self.itr.train_genome}"
 
-        slurm_job = s.SBATCH(
+        slurm_job = SBATCH(
             self.itr,
             self.job_name,
             self.model_label,
@@ -472,7 +477,7 @@ class TrainEval:
                 self.existing_best_ckpt,
                 self.best_ckpt_files_found,
                 best_ckpt_files,
-            ) = helpers.h.check_if_output_exists(
+            ) = check_if_output_exists(
                 best_ckpt_pattern,
                 "best_checkpoint files",
                 self.itr.train_dir / f"eval_{self.itr.eval_genome}",
@@ -506,7 +511,7 @@ class TrainEval:
         # again, if that value is None
         if self.itr.current_genome_dependencies[3] is None:
             # submit the training eval job to queue
-            slurm_job = s.SubmitSBATCH(
+            slurm_job = SubmitSBATCH(
                 self.itr.job_dir,
                 f"{self.job_name}.sh",
                 self.handler_label,
@@ -519,7 +524,7 @@ class TrainEval:
 
             if self.itr.dryrun_mode:
                 slurm_job.display_command(display_mode=self.itr.dryrun_mode)
-                self._select_ckpt_dependency = [helpers.h.generate_job_id()]
+                self._select_ckpt_dependency = [generate_job_id()]
 
             else:
                 slurm_job.display_command(debug_mode=self.itr.debug_mode)
@@ -538,9 +543,7 @@ class TrainEval:
         Check if the SLURM job file was submitted to the SLURM queue successfully
         """
         # look at job number list to see if all items are 'None'
-        train_eval_results = helpers.h.check_if_all_same(
-            self._select_ckpt_dependency, None
-        )
+        train_eval_results = check_if_all_same(self._select_ckpt_dependency, None)
         if train_eval_results is False:
             if self.itr.dryrun_mode:
                 print(
@@ -566,7 +569,7 @@ class TrainEval:
             self.itr.logger.warning(
                 f"{self.logger_msg}: fatal error encountered, unable to proceed further with pipeline.\nExiting... ",
             )
-            sys.exit(1)
+            exit(1)
 
         if self.track_resources and self.track_resources is not None:
             self.benchmark()
@@ -607,7 +610,7 @@ class TrainEval:
                 self.itr.logger.error(
                     f"{self.logger_msg}: there should only be one train_eval_job, but {self._num_to_run} were provided.\nExiting... ",
                 )
-                sys.exit(1)
+                exit(1)
             self.submit_job()
 
         # # or running it for the first time

@@ -7,24 +7,36 @@ usage:
 """
 import sys
 from dataclasses import dataclass, field
-from typing import List, Union
-from helpers.iteration import Iteration
+from typing import Dict, List, Union
+
 from helpers.files import WriteFiles
-from helpers.utils import create_deps, find_NaN, find_not_NaN, check_if_all_same, generate_job_id
-from helpers.outputs import check_if_output_exists, check_expected_outputs
-from model_training.prep.examples_shuffle import BeamShuffleExamples
+from helpers.iteration import Iteration
+from helpers.outputs import check_expected_outputs, check_if_output_exists
+from helpers.utils import (
+    check_if_all_same,
+    create_deps,
+    find_NaN,
+    find_not_NaN,
+    generate_job_id,
+)
 from model_training.prep.examples_re_shuffle import ReShuffleExamples
+from model_training.prep.examples_shuffle import BeamShuffleExamples
 from model_training.slurm.sbatch import SBATCH, SubmitSBATCH
+
 
 @dataclass
 class MakeExamples:
-    """
-    Define what data to store for the make_examples phase of the TrioTrain Pipeline.
+    """Build SLURM jobs to make labeled training examples.
+
+    Returns
+    -------
+    List[Union[str, None]] or None
+        if None, no SLURM jobs were submitted; or collect a list of submitted SLURM job IDs
     """
 
     # required values
     itr: Iteration
-    slurm_resources: dict
+    slurm_resources: Dict[str, str]
     model_label: str
 
     # optional values
@@ -66,8 +78,12 @@ class MakeExamples:
             ), "unable to proceed, missing a h.WriteFiles object to save SLURM job IDs"
 
     def set_genome(self, current_region: Union[int, None] = None) -> None:
-        """
-        Assign a genome + region label
+        """Assign a genome + region label
+
+        Parameters
+        ----------
+        current_region : Union[int, None], optional
+            determines if constrained to a specific region number (i.e. region shuffling), by default None
         """
         if self.itr.demo_mode:
             self._total_regions = 1
@@ -84,8 +100,6 @@ class MakeExamples:
             self._total_regions = self.itr.eval_num_regions
             self.genome = self.itr.eval_genome
             self.trio_dependency = self.itr.current_genome_dependencies[1]
-
-        # self.total_outputs_expected = int(self._total_regions * self.n_parts)
 
         self.logger_msg = (
             f"[{self.itr._mode_string}] - [{self._phase}] - [{self.genome}]"
@@ -112,9 +126,7 @@ class MakeExamples:
             self._print_msg = f"    echo SUCCESS: make_examples for {self.genome}-region{self.current_region}, part $t of {self.total_shards} &"
 
     def find_restart_jobs(self) -> None:
-        """
-        Collect any SLURM job ids for running tests to avoid submitting a job while it's already running.
-        """
+        """Collect any SLURM job ids for running tests to avoid submitting duplicate jobs simultaneously"""
         if self.make_examples_job_nums:
             num_job_ids = len(self.make_examples_job_nums)
             if num_job_ids == self._total_regions:
@@ -122,9 +134,7 @@ class MakeExamples:
                 self.jobs_to_ignore = find_NaN(self.make_examples_job_nums)
                 self._num_to_run = len(self.jobs_to_run)
                 self._num_to_ignore = len(self.jobs_to_ignore)
-                self._beam_shuffle_dependencies = create_deps(
-                    self._total_regions
-                )
+                self._beam_shuffle_dependencies = create_deps(self._total_regions)
 
                 if self.jobs_to_run:
                     updated_jobs_list = []
@@ -190,9 +200,7 @@ class MakeExamples:
                 )
 
     def benchmark(self) -> None:
-        """
-        Save the SLURM job IDs to a file for future resource usage metrics.
-        """
+        """Save the SLURM job IDs to a file for future resource usage metrics"""
         headers = ["AnalysisName", "RunName", "Parent", "Phase", "JobList"]
 
         if self.track_resources:
@@ -227,8 +235,17 @@ class MakeExamples:
                     )
 
     def make_job(self, index: int = 0) -> Union[SBATCH, None]:
-        """
-        Define the contents of the SLURM job for the 'make_examples' phase for TrioTrain Pipeline.
+        """Defines the SLURM job contents
+
+        Parameters
+        ----------
+        index : int, optional
+            defines where a SLURM job ID is stored in a list; by default 0
+
+        Returns
+        -------
+        Union[SBATCH, None]
+            if None, no SLURM job is required; otherwise, produce the SLURM job file template
         """
         if self.itr.env is None:
             return
@@ -340,8 +357,7 @@ class MakeExamples:
             if (
                 self.overwrite
                 and self.make_examples_job_nums
-                and check_if_all_same(self.make_examples_job_nums, None)
-                is False
+                and check_if_all_same(self.make_examples_job_nums, None) is False
             ):
                 self._outputs_exist = False
                 self._num_tfrecords_found = 0
@@ -413,14 +429,11 @@ class MakeExamples:
             slurm_job.display_command(debug_mode=self.itr.debug_mode)
 
         if self.itr.dryrun_mode:
-            self._beam_shuffle_dependencies.insert(
-                dependency_index, generate_job_id()
-            )
+            self._beam_shuffle_dependencies.insert(dependency_index, generate_job_id())
         else:
             if self.itr.demo_mode:
                 slurm_job.get_status(
-                    total_jobs=total_jobs,
-                    debug_mode=self.itr.debug_mode
+                    total_jobs=total_jobs, debug_mode=self.itr.debug_mode
                 )
             else:
                 slurm_job.get_status(
@@ -445,9 +458,7 @@ class MakeExamples:
         """
         if self.itr.debug_mode:
             self._total_regions = 5
-        make_examples_results = check_if_all_same(
-            self._beam_shuffle_dependencies, None
-        )
+        make_examples_results = check_if_all_same(self._beam_shuffle_dependencies, None)
         if make_examples_results is False:
             if len(self._beam_shuffle_dependencies) == 1:
                 if self.itr.dryrun_mode:
@@ -565,9 +576,7 @@ class MakeExamples:
                 exit(1)
 
             if not self._beam_shuffle_dependencies:
-                self._beam_shuffle_dependencies = create_deps(
-                    self._total_regions
-                )
+                self._beam_shuffle_dependencies = create_deps(self._total_regions)
 
             for r in self.jobs_to_run:
                 region_index = self.make_examples_job_nums[r]

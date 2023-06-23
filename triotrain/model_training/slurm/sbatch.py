@@ -5,21 +5,20 @@ description: contains dataclasses for working with SLURM
 usage:
     from sbatch import SBATCH, SubmitSBATCH
 """
-import random
-import sys
-import time
 from dataclasses import dataclass, field
 from logging import Logger
 from pathlib import Path
+from random import random
 from subprocess import run
+from sys import exit
+from time import sleep
 from typing import Union
 
+from helpers.files import TestFile
+from helpers.iteration import Iteration
+from helpers.utils import check_if_all_same
+from model_training.slurm.job_nums import collect_job_nums
 from regex import compile
-
-# get the relative path to the triotrain/ dir
-h_path = str(Path(__file__).parent.parent.parent)
-sys.path.append(h_path)
-import helpers
 
 
 @dataclass
@@ -28,7 +27,7 @@ class SBATCH:
     Create a custom SBATCH class object, which results in an sbatch file.
     """
 
-    itr: helpers.Iteration
+    itr: Iteration
     job_name: str
     error_file_label: Union[str, None]
     handler_status_label: Union[str, None]
@@ -54,14 +53,14 @@ class SBATCH:
             "conda deactivate",
         ]
 
-        test_modules = helpers.h.TestFile(self.itr.args.modules, logger=self.itr.logger)
+        test_modules = TestFile(self.itr.args.modules, logger=self.itr.logger)
         test_modules.check_existing()
 
         if not test_modules.file_exists:
             self.itr.logger.error(
                 f"{self.logger_msg}: module file provide does not exist | '{self.itr.args.modules}'\nExiting..."
             )
-            sys.exit(1)
+            exit(1)
 
         if self.itr.env is not None:
             self._start_sbatch = [
@@ -158,7 +157,7 @@ class SBATCH:
             self.itr.logger.debug(
                 f"{self.logger_msg}: checking for prior SBATCH file... "
             )
-        result = helpers.h.TestFile(self._jobfile_str, self.itr.logger)
+        result = TestFile(self._jobfile_str, self.itr.logger)
         result.check_missing()
         return result.file_exists
 
@@ -285,11 +284,11 @@ class SubmitSBATCH:
                     ["sbatch"] + self.slurm_dependency + [f"{str(self.job_file)}"]
                 )
             elif isinstance(self.prior_job, list):
-                no_priors = helpers.h.check_if_all_same(self.prior_job, None)
+                no_priors = check_if_all_same(self.prior_job, None)
                 if no_priors:
                     self.cmd = ["sbatch", str(self.job_file)]
                 else:
-                    self.slurm_dependency = helpers.h.collect_job_nums(
+                    self.slurm_dependency = collect_job_nums(
                         self.prior_job, allow_dep_failure=allow_dep_failure
                     )
                     self.cmd = (
@@ -324,7 +323,7 @@ class SubmitSBATCH:
         """
         # Sleep a bit, for <1 second before
         # submission to SLURM queue
-        time.sleep(random.random())
+        sleep(random.random())
         # wait for previous process to close
         # before opening another
         if debug_mode:

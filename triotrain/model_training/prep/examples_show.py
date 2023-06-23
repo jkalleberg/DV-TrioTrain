@@ -15,7 +15,7 @@ example:
 # Load python libs
 import argparse
 import json
-import sys
+from sys import exit
 from dataclasses import dataclass, field
 from logging import Logger
 from os import environ, getcwd, path
@@ -23,16 +23,21 @@ from pathlib import Path
 from typing import List, Union
 
 from regex import Pattern, findall
+from helpers.files import WriteFiles
+from helpers.iteration import Iteration
+from helpers.outputs import check_expected_outputs, check_if_output_exists
+from helpers.utils import (
+    check_if_all_same,
+    create_deps,
+    find_NaN,
+    find_not_NaN,
+    generate_job_id,
+)
+from model_training.slurm.sbatch import SBATCH, SubmitSBATCH
+from model_training.prep.examples_make import MakeExamples
+from model_training.prep.examples_shuffle import BeamShuffleExamples
 
-# get the relative path to the triotrain/ dir
-h_path = str(Path(__file__).parent.parent.parent)
-sys.path.append(h_path)
-import helpers
-import model_training.prep as prep
-import model_training.slurm as s
-
-
-def collect_args():
+def collect_args()-> argparse.Namespace:
     """
     Process the command line arguments.
     """
@@ -163,7 +168,7 @@ class ShowExamples:
     """
 
     # required values
-    itr: helpers.Iteration
+    itr: Iteration
     slurm_resources: dict
     model_label: str
     show_regions_file: Union[str, Path]
@@ -258,7 +263,7 @@ class ShowExamples:
         """
         Set up the prefix patterns for both inputs and outputs
         """
-        make_examples = prep.MakeExamples(
+        make_examples = MakeExamples(
             self.itr, self.slurm_resources, self.model_label, train_mode=self.train_mode
         )
         make_examples.set_genome()
@@ -317,7 +322,7 @@ class ShowExamples:
         self.job_name = f"{self._phase}-{self.job_label}"
         self.handler_label = f"{self._phase}: {self.prefix}"
 
-        self.slurm_job = s.SBATCH(
+        self.slurm_job = SBATCH(
             self.itr,
             self.job_name,
             self.model_label,
@@ -405,7 +410,7 @@ class ShowExamples:
             self._existing_pngs,
             pngs_found,
             png_files,
-        ) = helpers.h.check_if_output_exists(
+        ) = check_if_output_exists(
             self.png_regex,
             "image PNGs",
             self.pileup_path,
@@ -436,7 +441,7 @@ class ShowExamples:
                 f"{self.logger_msg}: no PNGs with '{self.regions_path.stem}' pattern detected"
             )
 
-        slurm_job = s.SubmitSBATCH(
+        slurm_job = SubmitSBATCH(
             self.itr.job_dir,
             f"{self.job_name}.sh",
             self.handler_label,
@@ -450,7 +455,7 @@ class ShowExamples:
 
         if self.itr.dryrun_mode:
             slurm_job.display_command(display_mode=self.itr.dryrun_mode)
-            self._output_jobnum.append(helpers.h.generate_job_id())
+            self._output_jobnum.append(generate_job_id())
         else:
             slurm_job.display_command(debug_mode=self.itr.debug_mode)
             slurm_job.get_status(debug_mode=self.itr.debug_mode)
@@ -467,7 +472,7 @@ class ShowExamples:
         """
         Check if 1+ SLURM job files were submitted to the SLURM queue successfully
         """
-        show_examples_results = helpers.h.check_if_all_same(self._output_jobnum, None)
+        show_examples_results = check_if_all_same(self._output_jobnum, None)
         if show_examples_results is False:
             if len(self._output_jobnum) == 1:
                 if self.itr.dryrun_mode:
@@ -526,27 +531,32 @@ def __init__():
     """
     Command line execution of these functions
     """
+    from helpers.environment import Env
+    from helpers.wrapper import timestamp, Wrapper
+    from helpers.utils import get_logger
+    from helpers.files import TestFile
+
     # Collect command line arguments
     args = collect_args()
 
     # Collect start time
-    helpers.Wrapper(__file__, "start").wrap_script(helpers.h.timestamp())
+    Wrapper(__file__, "start").wrap_script(timestamp())
 
     # Create error log
     current_file = path.basename(__file__)
     module_name = path.splitext(current_file)[0]
-    logger = helpers.log.get_logger(module_name)
+    logger = get_logger(module_name)
 
     # Check command line args
     try:
         check_args(args, logger)
     except AssertionError as error:
         logger.error(f"{error}\nExiting... ")
-        sys.exit(1)
+        exit(1)
 
     # Load in environment vars into Python
     env_path = Path(args.env_file)
-    env = helpers.h.Env(str(env_path), logger, dryrun_mode=args.dry_run)
+    env = Env(str(env_path), logger, dryrun_mode=args.dry_run)
 
     # Parse out current run name & num
     itr_name = env_path.stem.split("-")[1]
@@ -567,7 +577,7 @@ def __init__():
         total_tests = int(num_tests)
 
         # Confirm SLURM resource config file provide is valid
-        resource_file = helpers.h.TestFile(args.resource_config, logger)
+        resource_file = TestFile(args.resource_config, logger)
         resource_file.check_existing(debug_mode=args.debug)
 
         if resource_file.file_exists:
@@ -580,7 +590,7 @@ def __init__():
             return
 
         if not args.demo_mode:
-            current_itr = helpers.Iteration(
+            current_itr = Iteration(
                 current_trio_num=itr_num,
                 next_trio_num="None",
                 current_genome_num=itr_num,
@@ -588,12 +598,12 @@ def __init__():
                 total_num_tests=total_tests,
                 train_genome=args.genome,
                 eval_genome="Child",
-                env=helpers.h.Env(args.env_file, logger, dryrun_mode=args.dry_run),
+                env=Env(args.env_file, logger, dryrun_mode=args.dry_run),
                 logger=logger,
                 args=args,
             )
         else:
-            current_itr = helpers.Iteration(
+            current_itr = Iteration(
                 current_trio_num=1,
                 next_trio_num="None",
                 current_genome_num=itr_num,
@@ -601,7 +611,7 @@ def __init__():
                 total_num_tests=total_tests,
                 train_genome=args.genome,
                 eval_genome="Child",
-                env=helpers.h.Env(args.env_file, logger, dryrun_mode=args.dry_run),
+                env=Env(args.env_file, logger, dryrun_mode=args.dry_run),
                 logger=logger,
                 args=args,
             )
@@ -609,7 +619,7 @@ def __init__():
         logger.error(
             f"{prefix}: unable to run ShowExamples, 'TotalTests' is missing from {args.env_file}"
         )
-        sys.exit(1)
+        exit(1)
 
     convert = lambda i: None if i == "None" else str(i)
     region_files_list = [convert(file) for file in args.show_regions_file.split(",")]
@@ -649,7 +659,7 @@ def __init__():
         )
         slurm.run()
 
-    helpers.Wrapper(__file__, "end").wrap_script(helpers.h.timestamp())
+    Wrapper(__file__, "end").wrap_script(timestamp())
 
 
 # Execute functions created when run from command line

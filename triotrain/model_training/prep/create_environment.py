@@ -29,8 +29,6 @@ from pandas import DataFrame, read_csv
 
 from helpers.files import TestFile
 from helpers.environment import Env
-from helpers.wrapper import timestamp, Wrapper
-from helpers.utils import get_logger
 
 def collect_args() -> argparse.Namespace:
     """
@@ -1079,6 +1077,9 @@ def __init__():
     """
     Example of creating environment variables files from metadata input on the command line.
     """
+    from helpers.wrapper import timestamp, Wrapper
+    from helpers.utils import get_logger
+    
     # Collect command line arguments
     args = collect_args()
 
