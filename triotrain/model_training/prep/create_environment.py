@@ -29,6 +29,7 @@ from pandas import DataFrame, read_csv
 
 from helpers.files import TestFile
 from helpers.environment import Env
+from helpers.wrapper import timestamp
 
 def collect_args() -> argparse.Namespace:
     """
@@ -977,7 +978,7 @@ class Environment:
                         Path(new_dir).mkdir()
                         if Path(new_dir).is_dir():
                             self.logger.info(
-                                f"{self.logging_msg}: created a new directory - [{new_dir}]"
+                                f"{self.logging_msg}: created a new directory | '{new_dir}'"
                             )
 
     def test_env(self) -> None:
@@ -1077,7 +1078,7 @@ def __init__():
     """
     Example of creating environment variables files from metadata input on the command line.
     """
-    from helpers.wrapper import timestamp, Wrapper
+    from helpers.wrapper import Wrapper
     from helpers.utils import get_logger
     
     # Collect command line arguments

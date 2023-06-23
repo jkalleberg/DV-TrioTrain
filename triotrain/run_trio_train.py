@@ -33,7 +33,7 @@ from model_training.pipeline.setup import Setup
 from model_training.pipeline.run import RunTrioTrain
 
 
-def run_trio_train(eval_genome="Child"):
+def run_trio_train(eval_genome="Child") -> None:
     """
     Complete an Iteration of the TrioTrain pipeline.
 

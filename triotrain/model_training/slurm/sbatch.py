@@ -323,7 +323,7 @@ class SubmitSBATCH:
         """
         # Sleep a bit, for <1 second before
         # submission to SLURM queue
-        sleep(random.random())
+        sleep(random())
         # wait for previous process to close
         # before opening another
         if debug_mode:
