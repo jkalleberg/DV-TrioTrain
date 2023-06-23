@@ -265,7 +265,8 @@ class BeamShuffleExamples:
             self.job_name,
             self.model_label,
             self.handler_label,
-            f"{self.logger_msg}{self.region_logger_msg}",
+            # f"{self.logger_msg}{self.region_logger_msg}",
+            self.logger_msg
         )
 
         if slurm_job.check_sbatch_file():
@@ -275,17 +276,17 @@ class BeamShuffleExamples:
                 and self.overwrite
             ):
                 self.itr.logger.info(
-                    f"{self.logger_msg}{self.region_logger_msg}: re-writing job file now... "
+                    f"{self.logger_msg}: re-writing job file now... "
                 )
             else:
                 self.itr.logger.info(
-                    f"{self.logger_msg}{self.region_logger_msg}: SLURM job file already exists... SKIPPING AHEAD"
+                    f"{self.logger_msg}: SLURM job file already exists... SKIPPING AHEAD"
                 )
                 return
         else:
             if self.itr.debug_mode:
                 self.itr.logger.debug(
-                    f"{self.logger_msg}{self.region_logger_msg}: creating job file now... "
+                    f"{self.logger_msg}: creating job file now... "
                 )
 
         command_list = slurm_job._start_conda + [
@@ -338,7 +339,7 @@ class BeamShuffleExamples:
             shuff_tfrecord_files,
         ) = check_if_output_exists(
             shuff_examples_pattern,
-            "shuffled tfrecord shards",
+            "the shuffled tfrecord shards",
             self.itr.examples_dir,
             logger_msg,
             self.itr.logger,
@@ -352,7 +353,10 @@ class BeamShuffleExamples:
         """
         # Define the regrex pattern of expected output
         if self.itr.demo_mode:
-            shuffled_config_regex = rf"{self.genome}.chr{self.itr.demo_chromosome}.labeled.shuffled.dataset_config.pbtxt"
+            if "chr" in self.itr.demo_chromosome.lower():
+                shuffled_config_regex = rf"{self.genome}.{self.itr.demo_chromosome}.labeled.shuffled.dataset_config.pbtxt"
+            else:
+                shuffled_config_regex = rf"{self.genome}.chr{self.itr.demo_chromosome}.labeled.shuffled.dataset_config.pbtxt"
         elif find_all:
             shuffled_config_regex = (
                 rf"{self.genome}.region\d+.labeled.shuffled.dataset_config.pbtxt"
@@ -364,10 +368,11 @@ class BeamShuffleExamples:
                 rf"{self.genome}.labeled.shuffled.dataset_config.pbtxt"
             )
 
-        if find_all:
-            logger_msg = f"[{self.itr._mode_string}] - [{phase}] - [{self.genome}]"
-        else:
-            logger_msg = f"[{self.itr._mode_string}] - [{phase}] - [{self.genome}]{self.region_logger_msg}"
+        logger_msg = f"[{self.itr._mode_string}] - [{phase}] - [{self.genome}]"
+        # if find_all:
+        #     logger_msg = f"[{self.itr._mode_string}] - [{phase}] - [{self.genome}]"
+        # else:
+        #     logger_msg = f"[{self.itr._mode_string}] - [{phase}] - [{self.genome}]{self.region_logger_msg}"
 
         # Confirm region#'s config does not already exist
         (
@@ -376,7 +381,7 @@ class BeamShuffleExamples:
             config_files,
         ) = check_if_output_exists(
             shuffled_config_regex,
-            "shuffled pbtxt files",
+            "the shuffled pbtxt files",
             self.itr.examples_dir,
             logger_msg,
             self.itr.logger,
@@ -390,21 +395,37 @@ class BeamShuffleExamples:
         """
         Submit SLURM jobs to queue.
         """
-        self.find_outputs()
-
+        # self.find_outputs()
         slurm_job = self.make_job(index=dependency_index)
+
         if slurm_job is not None:
             if self.itr.dryrun_mode:
                 slurm_job.display_job()
             else:
                 slurm_job.write_job()
 
+        num_missing_files = int(self.n_parts) - int(self._num_shuff_tfrecords_found)  # type: ignore
+        if not self.overwrite:
+            if resubmission:
+                self.itr.logger.info(
+                    f"{self.logger_msg}: re-submitting job because [{num_missing_files}] shards failed to create tfrecords files"
+                )
+            else:
+                self.itr.logger.info(
+                    f"{self.logger_msg}: submitting job to create [{num_missing_files}] labeled tfrecords shards"
+                )
+
+        else:
+            self.itr.logger.info(
+                f"{self.logger_msg}: re-submitting job to overwrite any existing tfrecords files"
+            )
+
         slurm_job = SubmitSBATCH(
             self.itr.job_dir,
             f"{self.job_name}.sh",
             self.handler_label,
             self.itr.logger,
-            f"{self.logger_msg}{self.region_logger_msg}",
+            f"{self.logger_msg}",
         )
 
         if self.make_examples_jobs is not None and len(self.make_examples_jobs) == int(
@@ -416,21 +437,26 @@ class BeamShuffleExamples:
         else:
             slurm_job.build_command(prior_job_number=None)
 
-        if self.itr.dryrun_mode:
+        if self.itr.demo_mode:
             slurm_job.display_command(
-                current_job=self.job_num,
-                total_jobs=total_jobs,
                 display_mode=self.itr.dryrun_mode,
             )
-            if self._re_shuffle_dependencies:
-                self._re_shuffle_dependencies[dependency_index] = generate_job_id()
         else:
             slurm_job.display_command(debug_mode=self.itr.debug_mode)
-            slurm_job.get_status(
-                current_job=self.job_num,
-                total_jobs=total_jobs,
-                debug_mode=self.itr.debug_mode,
-            )
+        
+        if self.itr.dryrun_mode:
+            self._re_shuffle_dependencies.insert(dependency_index, generate_job_id())
+        else:
+            if self.itr.demo_mode:
+                slurm_job.get_status(
+                    total_jobs=total_jobs, debug_mode=self.itr.debug_mode
+                )
+            else:
+                slurm_job.get_status(
+                    current_job=self.job_num,
+                    total_jobs=total_jobs,
+                    debug_mode=self.itr.debug_mode,
+                )
 
             if slurm_job.status == 0:
                 if self._re_shuffle_dependencies:
@@ -506,7 +532,7 @@ class BeamShuffleExamples:
             self.find_beam_shuffled_examples(phase=phase, find_all=find_all)
 
         if not find_all:
-            logger_msg = logger_msg + self.region_logger_msg
+            # logger_msg = logger_msg + self.region_logger_msg
             expected_shuffle_outputs = self.n_parts
             expected_config_outputs = 1
             file_type1 = "shuffled tfrecord shards"
@@ -555,7 +581,7 @@ class BeamShuffleExamples:
             missing_shuffled_files = False
         else:
             missing_shuffled_files = False
-
+        
         if phase is None:
             self.find_beam_shuffled_pbtxt(phase=self._phase, find_all=find_all)
         else:
@@ -610,8 +636,9 @@ class BeamShuffleExamples:
         if self.itr.demo_mode:
             self.set_genome()
             self.set_region(current_region=self._total_regions)
-            self.find_outputs()
+            self.find_outputs(find_all=True)
             self.submit_job()
+            return
 
         # Determine if we are re-running some of the regions for make_examples
         if (

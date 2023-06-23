@@ -310,7 +310,7 @@ class ReShuffleExamples:
             files_list,
         ) = check_if_output_exists(
             merged_shards_regex,
-            "merged tfrecords files",
+            "the merged tfrecords files",
             self.itr.examples_dir,
             msg,
             logger=self.itr.logger,
@@ -318,18 +318,19 @@ class ReShuffleExamples:
             dryrun_mode=self.itr.dryrun_mode,
         )
 
-        missing_files = check_expected_outputs(
-            num_merged_tfrecords,
-            expected_outputs,
-            msg,
-            "merged tfrecords files",
-            self.itr.logger,
-        )
+        if self._merged_config_exists:
+            missing_files = check_expected_outputs(
+                num_merged_tfrecords,
+                expected_outputs,
+                msg,
+                "merged tfrecords files",
+                self.itr.logger,
+            )
 
-        if missing_files is True:
-            self._merged_tfrecords_exist = False
-        else:
-            self._merged_tfrecords_exist = True
+            if missing_files is True:
+                self._merged_tfrecords_exist = False
+            else:
+                self._merged_tfrecords_exist = True
 
     def submit_job(self) -> Union[int, str, None]:
         """

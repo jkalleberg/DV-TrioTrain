@@ -23,7 +23,7 @@ from natsort import natsorted
 from model_training.prep.count import count_variants
 
 
-def collect_args():
+def collect_args() -> argparse.Namespace:
     """
     Process the command line arguments
     """
@@ -201,8 +201,8 @@ class MakeRegions:
             truth_file = None
 
         # Load Input Files
-        reference = Path(ref_fasta_path) / ref_fasta_file
-        input_filename = reference.stem + ".dict"
+        self._reference = Path(ref_fasta_path) / ref_fasta_file
+        input_filename = self._reference.stem + ".dict"
         input_file = Path(ref_fasta_path) / input_filename
 
         if truth_path is not None and truth_file is not None:
@@ -211,7 +211,7 @@ class MakeRegions:
             self._truth_vcf_path = None
 
         # Confirm Input Files Exist
-        ref_genome_exists = TestFile(reference, self.itr.logger)
+        ref_genome_exists = TestFile(self._reference, self.itr.logger)
         ref_genome_exists.check_existing()
         ref_dict_exists = TestFile(input_file, self.itr.logger)
         ref_dict_exists.check_existing()
@@ -353,8 +353,8 @@ class MakeRegions:
 
     def write_autosomes_withX_regions(
         self,
-        output_file_path: str = f"{os.getcwd()}/region_files/",
-        output_file_name: str = "cow_autosomes_withX.bed",
+        output_file_path: Union[str, None] = None,
+        output_file_name: Union[str, None] = None,
     ) -> None:
         """
         Produces the autosomes + X chr only regions file to be used with --regions flag for training and calling variants
@@ -363,9 +363,11 @@ class MakeRegions:
         self.check_output()
         self.transform_dictionary()
 
-        if self.itr.default_region_file is not None:
+        if self.itr.default_region_file is not None and output_file_path is None and output_file_name is None:
             output_file_path = str(self.itr.default_region_file.parent)
             output_file_name = str(self.itr.default_region_file.name)
+        elif output_file_path is None:
+            output_file_path = self._reference.parent
 
         output_file = WriteFiles(
             output_file_path,
@@ -373,6 +375,8 @@ class MakeRegions:
             self.itr.logger,
             logger_msg=f"[{self.itr._mode_string}] - [{self._phase}]: default call_variants",
         )
+        print("OUTPUT FILE:", output_file.file_path)
+        breakpoint()
         output_file.check_missing()
 
         if not output_file.file_exists:

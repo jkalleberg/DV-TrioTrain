@@ -441,6 +441,7 @@ Use the following template
 ```bash
 python3 triotrain/run_trio_train.py                                         \
     -g Father                                                               \
+    -s human                                                                \
     -m triotrain/model_training/tutorial/GIAB.Human_tutorial_metadata.csv   \
     -n demo                                                                 \
     -r triotrain/model_training/tutorial/resources_used.json                \
