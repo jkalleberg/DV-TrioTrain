@@ -6,27 +6,24 @@ usage:
     import helpers as h
 """
 import logging
-from pathlib import Path
 from random import randint
 from typing import List, Union
 
-from helpers.logger import get_file_handler, get_stream_handler
-from helpers.wrapper import timestamp
+from helpers.logger import get_stream_handler
 
-
-def get_logger(name: str):
+def get_logger(name: str) -> logging.Logger:
     """
     Inializes a logging object to handle any print messages
     """
     logger = logging.getLogger(name)
     logger.setLevel(logging.DEBUG)
-    error_dir = Path(f"errors/tmp_{timestamp()}/")
-    error_log = f"{name}.err"
-    if not error_dir.is_dir():
-        logger.error("Creating a new directory to store error logs...")
-        error_dir.mkdir(parents=True)
-    logging_file = f"{str(error_dir)}/{error_log}"
-    logger.addHandler(get_file_handler(logging_file))
+    # error_dir = Path(f"errors/tmp_{timestamp()}/")
+    # error_log = f"{name}.err"
+    # if not error_dir.is_dir():
+    #     logger.error("Creating a new directory to store error logs...")
+    #     error_dir.mkdir(parents=True)
+    # logging_file = f"{str(error_dir)}/{error_log}"
+    # logger.addHandler(get_file_handler(logging_file))
     logger.addHandler(get_stream_handler())
     return logger
 
@@ -47,7 +44,7 @@ def generate_job_id() -> str:
     return f"{random_with_N_digits(8)}"
 
 
-def check_if_all_same(list_of_elem: List[Union[str, int]], item: Union[str, int]):
+def check_if_all_same(list_of_elem: List[Union[str, int]], item: Union[str, int]) -> bool:
     """
     Using List comprehension, check if all elements in list are same and matches the given item.
     """
