@@ -230,7 +230,7 @@ class Examples:
                 self.logger.debug(f"A NUMERICAL VALUE FOR REGION WAS ENTERED | '{self.args.region_bed}'")
                 self._output_prefix = f"{self.args.genome}.{self.demo_chromosome}"
             elif ":" in self.args.region_bed or "chr" in self.args.region_bed.lower():
-                self._mode = "REGION_LITERALe
+                self._mode = "REGION_LITERAL"
                 self.logger.debug(f"A LITERAL VALUE FOR REGION WAS ENTERED | '{self.args.region_bed}'")
                 self._output_prefix = f"{self.args.genome}.{self.demo_chromosome}" 
             elif bed_file.exists():
