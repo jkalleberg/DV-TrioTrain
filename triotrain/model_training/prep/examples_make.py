@@ -77,8 +77,8 @@ class MakeExamples:
                 self.benchmarking_file is not None
             ), "unable to proceed, missing a h.WriteFiles object to save SLURM job IDs"
 
-    def set_genome(self, current_region: Union[int, None] = None) -> None:
-        """Assign a genome + region label
+    def set_genome(self) -> None:
+        """Assign a genome label
 
         Parameters
         ----------
@@ -86,44 +86,61 @@ class MakeExamples:
             determines if constrained to a specific region number (i.e. region shuffling), by default None
         """
         if self.itr.demo_mode:
-            self._total_regions = 1
             self.genome = self.itr.train_genome
+            
         elif self.itr.dryrun_mode:
-            self._total_regions = 5
             self.genome = self.itr.train_genome
 
         if self.train_mode and self.itr.train_num_regions is not None:
-            self._total_regions = self.itr.train_num_regions
             self.genome = self.itr.train_genome
             self.trio_dependency = self.itr.current_genome_dependencies[0]
         elif self.train_mode is False and self.itr.eval_num_regions is not None:
-            self._total_regions = self.itr.eval_num_regions
             self.genome = self.itr.eval_genome
             self.trio_dependency = self.itr.current_genome_dependencies[1]
 
         self.logger_msg = (
             f"[{self.itr._mode_string}] - [{self._phase}] - [{self.genome}]"
         )
+
+    def set_region(self, current_region: Union[int, str, None] = None) -> None:
+        """
+        Define the current region
+        """
         if self.itr.demo_mode:
-            self.current_region = self.itr.demo_chromosome
-            self.prefix = f"{self.genome}-chr{self.itr.demo_chromosome}"
-            self.job_label = f"{self.genome}{self.itr.current_trio_num}-chr{self.itr.demo_chromosome}"
-            self.region_logger_msg = f" - [CHR{self.itr.demo_chromosome}]"
+            self._total_regions = 1
+        elif self.itr.dryrun_mode:
+            self._total_regions = 5
+
+        if self.train_mode and self.itr.train_num_regions is not None:
+            self._total_regions = self.itr.train_num_regions
+        elif self.train_mode is False and self.itr.eval_num_regions is not None:
+            self._total_regions = self.itr.eval_num_regions
+
+        if self.itr.demo_mode:
             self._print_msg = f"    echo SUCCESS: make_examples for demo-{self.genome}, part $t of {self.total_shards} &"
-        elif current_region is None:
-            self.current_region = current_region
-            self.prefix = f"{self.genome}"
+            self.current_region = self.itr.demo_chromosome
+            if "chr" in self.itr.demo_chromosome.lower():
+                self.prefix = f"{self.genome}-{self.itr.demo_chromosome}"
+                self.job_label = f"{self.genome}{self.itr.current_trio_num}-{self.itr.demo_chromosome}"
+                self.region_logger_msg = f" - [{self.itr.demo_chromosome}]"
+            else:
+                self.prefix = f"{self.genome}-chr{self.itr.demo_chromosome}"
+                self.job_label = f"{self.genome}{self.itr.current_trio_num}-chr{self.itr.demo_chromosome}"
+                self.region_logger_msg = f" - [CHR{self.itr.demo_chromosome}]"
+        elif current_region == 0 or current_region is None:
+            self._print_msg = f"    echo SUCCESS: make_examples for {self.genome}, part $t of {self.total_shards} &"
+            self.current_region = None
+            self.prefix = self.genome
             self.job_label = f"{self.genome}{self.itr.current_trio_num}"
             self.region_logger_msg = ""
-            self._print_msg = f"    echo SUCCESS: make_examples for {self.genome}, part $t of {self.total_shards} &"
         else:
+            self._print_msg = f"    echo SUCCESS: make_examples for {self.genome}-region{self.current_region}, part $t of {self.total_shards} &"
             self.current_region = current_region
             self.prefix = f"{self.genome}-region{self.current_region}"
             self.job_label = (
                 f"{self.genome}{self.itr.current_trio_num}-region{self.current_region}"
             )
-            self.region_logger_msg = f" - [region{self.current_region}]"
-            self._print_msg = f"    echo SUCCESS: make_examples for {self.genome}-region{self.current_region}, part $t of {self.total_shards} &"
+            self.region_logger_msg = f" - [region{self.current_region}]"           
 
     def find_restart_jobs(self) -> None:
         """Collect any SLURM job ids for running tests to avoid submitting duplicate jobs simultaneously"""
@@ -280,9 +297,9 @@ class MakeExamples:
                 )
 
         if self.itr.demo_mode:
-            command_args = f"--genome {self.genome} --region demo"
+            command_args = f"--genome {self.genome} --region-bed {self.itr.demo_chromosome}"
         else:
-            command_args = f"--genome {self.genome} --region {self.current_region}"
+            command_args = f"--genome {self.genome} --region-num {self.current_region}"
 
         command_list = slurm_job._start_conda + [
             f"for t in $(seq 0 {self.total_shards} ); do",
@@ -554,7 +571,8 @@ class MakeExamples:
 
         # determine if we are demo region only
         if self.itr.demo_mode:
-            self.set_genome(current_region=self._total_regions)
+            # self.set_genome()
+            self.set_region(current_region=self._total_regions)
             self.submit_job()
 
         # determine if we are re-submitting some of the regions for make_examples:
@@ -587,7 +605,7 @@ class MakeExamples:
                 # remove the place holder job num
                 del self._beam_shuffle_dependencies[region_index]
 
-                self.set_genome(current_region=self.job_num)
+                self.set_region(current_region=self.job_num)
 
                 if not self.overwrite:
                     self.itr.logger.info(
@@ -616,7 +634,7 @@ class MakeExamples:
                 self.job_num = (
                     r + 1
                 )  # THIS HAS TO BE +1 to avoid starting with a region0
-                self.set_genome(current_region=self.job_num)
+                self.set_region(current_region=self.job_num)
 
                 self.submit_job(
                     dependency_index=r, total_jobs=int(self._total_regions)

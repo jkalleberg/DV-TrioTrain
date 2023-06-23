@@ -67,7 +67,10 @@ class Iteration:
             )
 
         if self.demo_mode and self.current_trio_num is not None:
-            self._mode_string = f"DEMO_MODE] - [TRIO{self.current_trio_num}] - [CHR{self.demo_chromosome}"
+            if "chr" in self.demo_chromosome.lower():
+                self._mode_string = f"DEMO] - [TRIO{self.current_trio_num}] - [{self.demo_chromosome}"
+            else:
+                self._mode_string = f"DEMO] - [TRIO{self.current_trio_num}] - [CHR{self.demo_chromosome}"
         elif self.current_genome_num == 0 and self.train_genome is None:
             self._mode_string = f"Baseline-DV] - [v{self._version}"
         elif (

@@ -13,21 +13,20 @@ example:
 import argparse
 from dataclasses import dataclass, field
 from logging import Logger
-from os import environ, path
+from os import environ, path as p
 from pathlib import Path
 from sys import exit, path
 from typing import Union
 
 from spython.main import Client
 
-# h_path = str(Path(__file__).parent.parent.parent)
-# print(h_path)
-# breakpoint()
-# path.append(h_path)
-import triotrain.helpers as h
+abs_path = Path(__file__).resolve()
+module_path = str(abs_path.parent.parent.parent)
+path.append(module_path)
+from helpers.environment import Env
 
 
-def collect_args():
+def collect_args() -> argparse.Namespace:
     """
     Process command line argument to execute script.
     """
@@ -60,15 +59,24 @@ def collect_args():
         help="[REQUIRED]\nstring\nsets the genome to use within a Trio\n(default: %(default)s)",
         default="Mother",
     )
-    parser.add_argument(
-        "-r",
-        "--region",
-        dest="region",
-        help="string\nif None, activate 'demo' mode\nif not None, activate 'region-beam shuffling' mode\n\tNOTE: values range from 1 to the total number of region BED files created\n(default: %(default)s)",
+
+    region_shuff = parser.add_mutually_exclusive_group()
+    region_shuff.add_argument(
+        "--region-num",
+        dest="region_num",
+        help="int\nproviding a value activates 'region_shuffling' mode\n\tNOTE: values range from 1 to the total number of region BED files created\n(default: %(default)s)",
         type=str,
         default=None,
         metavar="<int>",
     )
+    region_shuff.add_argument(
+        "--region-bed",
+        dest="region_bed",
+        help="string\nproviding a value activates 'region_shuffling' mode\n\tNOTE: either provide a region file in BED format, or provide a space-separated list of region literals in 'chr:start-stop' format\n(default: %(default)s)",
+        type=str,
+        default=None,
+        metavar="<int>",
+    ) 
     parser.add_argument(
         "-d",
         "--debug",
@@ -126,9 +134,8 @@ class Examples:
     """
 
     args: argparse.Namespace
-    logger: h.log.Logger
-    cow: bool = True
-    demo_chromosome: Union[str, int, None] = "29"
+    logger: Logger
+    demo_chromosome: Union[str, int, None] = None
     _base_binding: str = field(
         default="/usr/lib/locale/:/usr/lib/locale/", init=False, repr=False
     )
@@ -140,18 +147,18 @@ class Examples:
 
     def __post_init__(self) -> None:
         self._image = f"deepvariant_{self._version}.sif"
-        if self.cow:
-            self.CHR = list(map(str, range(1, 30))) + ["X", "Y"]
-            self.CHR_Order = {k: v for v, k in enumerate(self.CHR)}
-        else:
-            self.logger.error("ADD LOGIC FOR HANDELING DIFFERENT CHR NUMBERS")
-            exit(1)
+        # if self.cow:
+        #     self.CHR = list(map(str, range(1, 30))) + ["X", "Y"]
+        #     self.CHR_Order = {k: v for v, k in enumerate(self.CHR)}
+        # else:
+        #     self.logger.error("ADD LOGIC FOR HANDELING DIFFERENT CHR NUMBERS")
+        #     exit(1)
 
     def load_variables(self) -> None:
         """
         Load in variables from the env file, and define python variables.
         """
-        self.env = helpers.h.Env(
+        self.env = Env(
             self.args.env_file, self.logger, dryrun_mode=self.args.dry_run
         )
         env_vars = [
@@ -211,19 +218,32 @@ class Examples:
         self._regions_flags = None
         self._exclude_flags = None
         self.exclude_chroms = "Y"
-
-        if self.args.region.lower() == "none":
-            self.args.region = None
+        self._logger_msg = f"TRIO{self._trio_num}] - [{self.args.genome}"
 
         # run 'make_examples' for the demo chromosome only
-        if self.args.region is None or self.args.region.lower() == "demo":
-            self._output_prefix = f"{self.args.genome}.chr{self.demo_chromosome}"
-            self._mode = "demo"
-            self._logger_msg = (
-                f"{self.args.genome}{self._trio_num}] - [CHR{self.demo_chromosome}"
-            )
+        if self.args.region_bed is not None and self.args.region_num is None:
+            self.demo_chromosome = self.args.region_bed
+            bed_file = Path(self.args.region_bed).resolve()
+            
+            if self.args.region_bed.isdigit():
+                self._mode = "DEMO"
+                self.logger.debug(f"A NUMERICAL VALUE FOR REGION WAS ENTERED | '{self.args.region_bed}'")
+                self._output_prefix = f"{self.args.genome}.{self.demo_chromosome}"
+            elif ":" in self.args.region_bed or "chr" in self.args.region_bed.lower():
+                self._mode = "REGION_LITERAL"
+                self.logger.debug(f"A LITERAL VALUE FOR REGION WAS ENTERED | '{self.args.region_bed}'")
+                self._output_prefix = f"{self.args.genome}.{self.demo_chromosome}" 
+            elif bed_file.exists():
+                self._mode = "REGION_FILE"
+                self.logger.debug(f"AN EXISTING FILE FOR REGION WAS ENTERED | '{bed_file}'")
+                self._output_prefix = f"{self.args.genome}.{bed_file.name}"
+                # self._output_prefix = f"{self.args.genome}.region_file"
+            else:
+                self.logger.debug(f"AN UNKNOWN VALUE FOR REGION WAS ENTERED | '{self.args.region_bed}'")
+                breakpoint()
+            
             self.logger.info(
-                f"[{self._mode}] - [{self._logger_msg}]: examples include Chromosome '{self.demo_chromosome}' only"
+                f"[{self._mode}] - [{self._logger_msg}]: examples include '{self.demo_chromosome}' only"
             )
             self._regions_flags = ["--regions", self.demo_chromosome]
 
@@ -233,16 +253,15 @@ class Examples:
             and "RegionsFile_File" in self.env.contents
         ):
             self._exclude_flags = ["--exclude_regions", f"{self.exclude_chroms}"]
-            self._output_prefix = f"{self.args.genome}.region_file"
-            self._mode = "region_file"
-            self._logger_msg = f"{self.args.genome}{self._trio_num}"
+            # self._output_prefix = f"{self.args.genome}.region_file"
+            self._mode = "REGION_FILE"
             self._regions_dir = self.env.contents["RegionsFile_Path"]
             self._region_file = self.env.contents["RegionsFile_File"]
             if self._regions_dir is not None and self._region_file is not None:
                 self._region_file_path = Path(self._regions_dir) / self._region_file
                 if not self._region_file_path.exists():
                     self.logger.error(
-                        f"[{self._mode}] - [{self._logger_msg}]: beam-shuffling regions file '{self._region_file_path.name}' should already exist and it does not. Exiting... "
+                        f"[{self._mode}] - [{self._logger_msg}]: missing the regions shuffling file | '{self._region_file_path.name}'\nExiting... "
                     )
                     exit(1)
                 else:
@@ -260,16 +279,12 @@ class Examples:
 
         # run 'make_examples' using the regions-shuffling files created by the TrioTrain pipeline
         elif (
-            self.args.region is not None
-            or isinstance(self.args.region, int)
-            or self.args.region.lower() != "demo"
+            self.args.region_num is not None and self.args.region_num.isdigit()
         ):
             self._exclude_flags = ["--exclude_regions", f"{self.exclude_chroms}"]
-            self._output_prefix = f"{self.args.genome}.region{self.args.region}"
-            self._mode = "regions_shuffling"
-            self._logger_msg = (
-                f"{self.args.genome}{self._trio_num}] - [region{self.args.region}"
-            )
+            self._output_prefix = f"{self.args.genome}.region{self.args.region_num}"
+            self._mode = "REGION_SHUFFLE"
+            self._logger_msg = f"TRIO{self._trio_num}] - [{self.args.genome} - [region{self.args.region}"
             self.logger.info(
                 f"[{self._mode}] - [{self._logger_msg}]: examples include the regions from the Beam-Shuffling BED File(s)"
             )
@@ -279,7 +294,7 @@ class Examples:
             self._region_file_path = self._regions_dir / self._region_file
             if not self._region_file_path.exists():
                 self.logger.error(
-                    f"[{self._mode}] - [{self._logger_msg}]: Beam-Shuffling Regions File '{self._region_file_path.name}' should already exist and it does not. Exiting... "
+                    f"[{self._mode}] - [{self._logger_msg}]: missing the regions shuffling file |  '{self._region_file_path.name}'\nExiting... "
                 )
                 exit(1)
             else:
@@ -332,15 +347,16 @@ class Examples:
             else:
                 missing_var3 = False
 
-            if self.args.region not in self.CHR:
-                missing_var4 = True
-                self.logger.info(
-                    f"[{self._mode}] - [{self._logger_msg}]: a valid region was not provided via command line arguments"
-                )
-            else:
-                missing_var4 = False
+            # if self.args.region not in self.CHR:
+            #     missing_var4 = True
+            #     self.logger.info(
+            #         f"[{self._mode}] - [{self._logger_msg}]: a valid region was not provided via command line arguments"
+            #     )
+            # else:
+            #     missing_var4 = False
 
-            if missing_var1 and missing_var2 and missing_var3 and missing_var4:
+            # if missing_var1 and missing_var2 and missing_var3 and missing_var4:
+            if missing_var1 and missing_var2 and missing_var3:
                 self.logger.info(
                     f"[{self._mode}] - [{self._logger_msg}]: missing at least one of the required options. Exiting... "
                 )
@@ -540,27 +556,29 @@ class Examples:
             self.get_help()
 
 
-def __init__():
+def __init__() -> None:
     """
     Final function to make_examples within a SLURM job
     """
+    from helpers.wrapper import timestamp, Wrapper
+    from helpers.utils import get_logger
     # Collect command line arguments
     args = collect_args()
 
     # Collect start time
-    Wrapper(__file__, "start").wrap_script(h.timestamp())
+    Wrapper(__file__, "start").wrap_script(timestamp())
 
     # Create error log
-    current_file = path.basename(__file__)
-    module_name = path.splitext(current_file)[0]
-    logger = h.log.get_logger(module_name)
+    current_file = p.basename(__file__)
+    module_name = p.splitext(current_file)[0]
+    logger = get_logger(module_name)
 
     # Check command line args
     check_args(args, logger)
     Examples(args, logger).run()
 
     # Collect start time
-    h.Wrapper(__file__, "end").wrap_script(h.timestamp())
+    Wrapper(__file__, "end").wrap_script(timestamp())
 
 
 # Execute functions created

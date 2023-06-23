@@ -70,9 +70,10 @@ class RunTrioTrain:
             self.genome = self.itr.eval_genome
 
         if self.itr.demo_mode:
-            self.logger_msg = (
-                f"{self.itr.train_genome}] - [CHR{self.itr.demo_chromosome}"
-            )
+            if "chr" in self.demo_chromosome.lower():
+                self.logger_msg = f"DEMO] - [TRIO{self.current_trio_num}] - [{self.demo_chromosome}"
+            else:
+                self.logger_msg = f"DEMO] - [TRIO{self.current_trio_num}] - [CHR{self.demo_chromosome}"
             self._n_regions = 1
             self.model_label = f"Baseline-v{self.itr._version}"
             self.genome_specific_label = self.model_label

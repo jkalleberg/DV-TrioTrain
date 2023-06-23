@@ -212,7 +212,10 @@ class ShowExamples:
             self.index = 1
 
         if self.itr.demo_mode:
-            self.logger_msg = f"[{self.itr._mode_string}] - [{self._phase}] - [{self.genome}] - [CHR{self.itr.demo_chromosome}]"
+            if "chr" in self.demo_chromosome.lower():
+                self.logger_msg = f"[{self.itr._mode_string}] - [{self._phase}] - [{self.genome}] - [{self.itr.demo_chromosome}]"
+            else:
+                self.logger_msg = f"DEMO] - [TRIO{self.current_trio_num}] - [CHR{self.demo_chromosome}"
             self.prefix = f"{self.genome}.chr{self.itr.demo_chromosome}"
             self.job_label = f"{self.genome}{self.itr.current_trio_num}.chr{self.itr.demo_chromosome}"
             self.error_label = f"demo-{self.prefix}"
@@ -566,7 +569,7 @@ def __init__():
     if args.demo_mode:
         model_label = f"Demo.{args.genome}.CHR{args.demo_chr}"
         prefix = (
-            f"[DEMO_MODE] - [TRIO{itr_num}] - [CHR{args.demo_chr}] - [show_examples]"
+            f"[DEMO] - [TRIO{itr_num}] - [show_examples]"
         )
     else:
         model_label = f"{args.genome}"

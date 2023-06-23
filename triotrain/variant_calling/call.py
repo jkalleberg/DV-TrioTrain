@@ -321,9 +321,14 @@ class CallVariants:
             self.test_num = current_test_num
 
             if self.itr.demo_mode:
-                self.prefix = f"test{self.test_num}_chr{self.itr.demo_chromosome}"
-                self.job_name = f"test{self.test_num}_chr{self.itr.demo_chromosome}"
-                self.test_logger_msg = f"{self.logger_msg} - [test{self.test_num}] - [CHR{self.itr.demo_chromosome}]"
+                if "chr" in self.itr.demo_chromosome.lower():
+                    self.prefix = f"test{self.test_num}_{self.itr.demo_chromosome}"
+                    self.job_name = f"test{self.test_num}_{self.itr.demo_chromosome}"
+                    self.test_logger_msg = f"{self.logger_msg} - [test{self.test_num}] - [{self.itr.demo_chromosome}]"
+                else:
+                    self.prefix =  f"test{self.test_num}_chr{self.itr.demo_chromosome}"
+                    self.job_name = f"test{self.test_num}_chr{self.itr.demo_chromosome}"
+                    self.test_logger_msg = f"{self.logger_msg} - [test{self.test_num}] - [CHR{self.itr.demo_chromosome}]"                
             elif "baseline" in self.model_label or self.itr.current_genome_num == 0:
                 self.prefix = f"test{self.test_num}"
                 self.job_name = f"test{self.test_num}"

@@ -44,18 +44,24 @@ class CountExamples:
     def set_search_pattern(self, region: Union[int, None] = None):
         """
         Define the file labeling pattern for sharded examples log files
-        """
+        """        
         if self.itr.demo_mode:
             self.current_region = self.itr.demo_chromosome
             self.region_string = f"chr{self.itr.demo_chromosome}"
-            self.logger_msg = f"{self.genome}] - [CHR{self.current_region}"
+            if "chr" in self.demo_chromosome.lower():
+                self.logger_msg = f"DEMO] - [TRIO{self.current_trio_num}] - [{self.demo_chromosome}"
+            else:
+                self.logger_msg = f"DEMO] - [TRIO{self.current_trio_num}] - [CHR{self.demo_chromosome}"
             self.prefix = f"{self.genome}-{self.region_string}"
 
         elif region is not None:
             self.current_region = region
             self.region_string = f"region{self.current_region}"
-            self.logger_msg = f"{self.genome}] - [region {region}-of-{self._total_regions}"
+            self.logger_msg = f"{self.genome}] - [region{region}-of-{self._total_regions}"
             self.prefix = f"{self.genome}-{self.region_string}"
+        
+        self.itr.logger.info(
+            f"[{self.itr._mode_string}] - [{self._phase}] - [{self.logger_msg}]: counting examples made now... ")
 
     def search_log_files(self) -> None:
         """
@@ -128,9 +134,7 @@ class CountExamples:
                     self.set_search_pattern(region=region_num)
                     self.search_log_files()
             else:
-                self.itr.logger.info(
-                    f"[{self.itr._mode_string}] - [{self._phase}] - [{self.genome}] - [CHR{self.itr.demo_chromosome}]: counting examples made now... "
-                    )
+                
                 self.set_search_pattern()
                 self.search_log_files()
 

@@ -154,8 +154,12 @@ class ReShuffle:
         Define the current region
         """
         if self.itr.demo_mode:
-            self.region_string = f"chr{self.itr.demo_chromosome}"
-            self.logger_msg = f"[{self.itr._mode_string}] - [{self._phase}] - [{self.re_shuffling.genome}] - {self.re_shuffling.genome}] - [CHR{self.itr.demo_chromosome}"
+            if "chr" in self.itr.demo_chromosome.lower():
+                self.region_string = f"{self.itr.demo_chromosome}"
+                self.logger_msg = f"[{self.itr._mode_string}] - [{self._phase}] - [{self.re_shuffling.genome}] - {self.re_shuffling.genome}] - [{self.itr.demo_chromosome}"
+            else:
+                self.region_string = f"chr{self.itr.demo_chromosome}"
+                self.logger_msg = f"[{self.itr._mode_string}] - [{self._phase}] - [{self.re_shuffling.genome}] - {self.re_shuffling.genome}] - [CHR{self.itr.demo_chromosome}"
         else:
             if current_region is None:
                 self.region_string = None

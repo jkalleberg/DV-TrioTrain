@@ -278,7 +278,10 @@ class Environment:
 
         # Define the regrex pattern of expected output
         if self.demo_mode:
-            self.mode = f"DEMO_MODE] - [TRIO{self.trio_num}] - [CHR{self.demo_chr}"
+            if "chr" in self.demo_chromosome.lower():
+                self.mode = f"DEMO] - [TRIO{self.current_trio_num}] - [{self.demo_chr}"
+            else:
+                self.mode = f"DEMO] - [TRIO{self.current_trio_num}] - [CHR{self.demo_chr}"
         elif self.trio_num is None:
             self.mode = "Pipeline Setup"
         elif self.trio_num == 0:

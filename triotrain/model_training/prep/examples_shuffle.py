@@ -7,7 +7,6 @@ usage:
 """
 import sys
 from dataclasses import dataclass, field
-from pathlib import Path
 from typing import List, Union
 
 from helpers.files import WriteFiles
@@ -110,9 +109,14 @@ class BeamShuffleExamples:
         """
         if self.itr.demo_mode:
             self.current_region = self.itr.demo_chromosome
-            self.prefix = f"{self.genome}.chr{self.itr.demo_chromosome}"
-            self.job_label = f"{self.genome}{self.itr.current_trio_num}-chr{self.itr.demo_chromosome}"
-            self.region_logger_msg = f" - [CHR{self.itr.demo_chromosome}]"
+            if "chr" in self.itr.demo_chromosome.lower():
+                self.prefix = f"{self.genome}.{self.itr.demo_chromosome}"
+                self.job_label = f"{self.genome}{self.itr.current_trio_num}-{self.itr.demo_chromosome}"
+                self.region_logger_msg = f" - [{self.itr.demo_chromosome}]"
+            else:
+                self.prefix = f"{self.genome}.chr{self.itr.demo_chromosome}"
+                self.job_label = f"{self.genome}{self.itr.current_trio_num}-chr{self.itr.demo_chromosome}"
+                self.region_logger_msg = f" - [CHR{self.itr.demo_chromosome}]"
             self.msg = self.region_logger_msg
         elif current_region == 0:
             self.current_region = None
