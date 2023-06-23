@@ -149,7 +149,7 @@ mkdir -p benchmark
 # Define where to get the truth data
 TRUTHDIR=https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/release
 benchmark_version="_GRCh38_1_22_v4.2.1_benchmark"
-bench_ext=(".bed" ".vcf.gz" ".vcf.gz.tbi")
+bench_ext=("_noinconsistent.bed" ".vcf.gz" ".vcf.gz.tbi")
 
 #-------------------------------------------------------------------#
 #                            GIAB Trio1                             #
@@ -179,6 +179,7 @@ done
 #-------------------------------------------------------------------#
 #                            GIAB Trio2                             #
 #-------------------------------------------------------------------#
+bench_ext=(".bed" ".vcf.gz" ".vcf.gz.tbi")
 declare -A Trio2=(["HG005"]="HG005_NA24631_son" ["HG006"]="HG006_NA24694_father" ["HG007"]="HG007_NA24695_mother")
 
 for t in ${!Trio2[@]}; do
