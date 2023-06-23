@@ -325,10 +325,11 @@ class BeamShuffleExamples:
                 rf"{self.genome}\.labeled\.shuffled-\d+-of-\d+\.tfrecord\.gz"
             )
 
-        if find_all:
-            logger_msg = f"[{self.itr._mode_string}] - [{phase}] - [{self.genome}]"
-        else:
-            logger_msg = f"[{self.itr._mode_string}] - [{phase}] - [{self.genome}]{self.region_logger_msg}"
+        logger_msg = f"[{self.itr._mode_string}] - [{phase}] - [{self.genome}]"
+        # if find_all:
+        #     logger_msg = f"[{self.itr._mode_string}] - [{phase}] - [{self.genome}]"
+        # else:
+            # logger_msg = f"[{self.itr._mode_string}] - [{phase}] - [{self.genome}]{self.region_logger_msg}"
 
         # Confirm examples do not already exist
         (

@@ -70,10 +70,10 @@ class RunTrioTrain:
             self.genome = self.itr.eval_genome
 
         if self.itr.demo_mode:
-            if "chr" in self.demo_chromosome.lower():
-                self.logger_msg = f"DEMO] - [TRIO{self.current_trio_num}] - [{self.demo_chromosome}"
+            if "chr" in self.itr.demo_chromosome.lower():
+                self.logger_msg = f"DEMO] - [TRIO{self.itr.current_trio_num}] - [{self.itr.demo_chromosome}"
             else:
-                self.logger_msg = f"DEMO] - [TRIO{self.current_trio_num}] - [CHR{self.demo_chromosome}"
+                self.logger_msg = f"DEMO] - [TRIO{self.itr.current_trio_num}] - [CHR{self.itr.demo_chromosome}"
             self._n_regions = 1
             self.model_label = f"Baseline-v{self.itr._version}"
             self.genome_specific_label = self.model_label
@@ -95,7 +95,7 @@ class RunTrioTrain:
         if self.track_resources:
             assert (
                 self.benchmarking_file is not None
-            ), "unable to proceed, missing a h.WriteFiles object to save SLURM job IDs"
+            ), "unable to proceed, missing a WriteFiles object to save SLURM job IDs"
 
         with open(str(self.resource_file), mode="r") as file:
             self.resource_dict = load(file)

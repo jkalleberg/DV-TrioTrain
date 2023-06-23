@@ -5,8 +5,8 @@ description: contains all of the functions specific to the make_examples phase o
 usage:
     from examples_make import MakeExamples
 """
-import sys
 from dataclasses import dataclass, field
+from sys import exit
 from typing import Dict, List, Union
 
 from helpers.files import WriteFiles
@@ -87,7 +87,7 @@ class MakeExamples:
         """
         if self.itr.demo_mode:
             self.genome = self.itr.train_genome
-            
+
         elif self.itr.dryrun_mode:
             self.genome = self.itr.train_genome
 
@@ -122,17 +122,14 @@ class MakeExamples:
             if "chr" in self.itr.demo_chromosome.lower():
                 self.prefix = f"{self.genome}-{self.itr.demo_chromosome}"
                 self.job_label = f"{self.genome}{self.itr.current_trio_num}-{self.itr.demo_chromosome}"
-                self.region_logger_msg = f" - [{self.itr.demo_chromosome}]"
             else:
                 self.prefix = f"{self.genome}-chr{self.itr.demo_chromosome}"
                 self.job_label = f"{self.genome}{self.itr.current_trio_num}-chr{self.itr.demo_chromosome}"
-                self.region_logger_msg = f" - [CHR{self.itr.demo_chromosome}]"
         elif current_region == 0 or current_region is None:
             self._print_msg = f"    echo SUCCESS: make_examples for {self.genome}, part $t of {self.total_shards} &"
             self.current_region = None
             self.prefix = self.genome
             self.job_label = f"{self.genome}{self.itr.current_trio_num}"
-            self.region_logger_msg = ""
         else:
             self._print_msg = f"    echo SUCCESS: make_examples for {self.genome}-region{self.current_region}, part $t of {self.total_shards} &"
             self.current_region = current_region
@@ -140,7 +137,6 @@ class MakeExamples:
             self.job_label = (
                 f"{self.genome}{self.itr.current_trio_num}-region{self.current_region}"
             )
-            self.region_logger_msg = f" - [region{self.current_region}]"           
 
     def find_restart_jobs(self) -> None:
         """Collect any SLURM job ids for running tests to avoid submitting duplicate jobs simultaneously"""
@@ -171,7 +167,7 @@ class MakeExamples:
                                     self.itr.logger.error(
                                         f"{self.logger_msg}: an 8-digit value must be provided for any number greater than {self._total_regions}.\nExiting..."
                                     )
-                                    sys.exit(1)
+                                    exit(1)
                                 self._num_to_run -= 1
                                 self._num_to_ignore += 1
                                 self._skipped_counter += 1
@@ -276,7 +272,7 @@ class MakeExamples:
             self.job_name,
             self.model_label,
             self.handler_label,
-            f"{self.logger_msg}{self.region_logger_msg}",
+            f"{self.logger_msg}",
         )
 
         if slurm_job.check_sbatch_file():
@@ -287,17 +283,17 @@ class MakeExamples:
                     )
                 else:
                     self.itr.logger.info(
-                        f"{self.logger_msg}{self.region_logger_msg}: SLURM job file already exists... SKIPPING AHEAD"
+                        f"{self.logger_msg}: SLURM job file already exists... SKIPPING AHEAD"
                     )
                     return
         else:
             if self.itr.debug_mode:
-                self.itr.logger.debug(
-                    f"{self.logger_msg}{self.region_logger_msg}: creating job file now... "
-                )
+                self.itr.logger.debug(f"{self.logger_msg}: creating job file now... ")
 
         if self.itr.demo_mode:
-            command_args = f"--genome {self.genome} --region-bed {self.itr.demo_chromosome}"
+            command_args = (
+                f"--genome {self.genome} --region-bed {self.itr.demo_chromosome}"
+            )
         else:
             command_args = f"--genome {self.genome} --region-num {self.current_region}"
 
@@ -350,10 +346,8 @@ class MakeExamples:
 
         if find_all:
             expected_outputs = int(self.n_parts) * self._total_regions
-            logger_msg = logger_msg
         else:
             expected_outputs = int(self.n_parts)
-            logger_msg = f"{logger_msg}{self.region_logger_msg}"
 
         # Confirm examples do not already exist
         (
@@ -417,23 +411,23 @@ class MakeExamples:
         if not self.overwrite:
             if resubmission:
                 self.itr.logger.info(
-                    f"{self.logger_msg}{self.region_logger_msg}: re-submitting job because [{num_missing_files}] shards failed to create tfrecords files"
+                    f"{self.logger_msg}: re-submitting job because [{num_missing_files}] shards failed to create tfrecords files"
                 )
             else:
                 self.itr.logger.info(
-                    f"{self.logger_msg}{self.region_logger_msg}: submitting job to create [{num_missing_files}] labeled tfrecords shards"
+                    f"{self.logger_msg}: submitting job to create [{num_missing_files}] labeled tfrecords shards"
                 )
 
         else:
             self.itr.logger.info(
-                f"{self.logger_msg}{self.region_logger_msg}: re-submitting job to overwrite any existing tfrecords files"
+                f"{self.logger_msg}: re-submitting job to overwrite any existing tfrecords files"
             )
         slurm_job = SubmitSBATCH(
             self.itr.job_dir,
             f"{self.job_name}.sh",
             self.handler_label,
             self.itr.logger,
-            f"{self.logger_msg}{self.region_logger_msg}",
+            f"{self.logger_msg}",
         )
 
         slurm_job.build_command(prior_job_number=None)
@@ -465,7 +459,7 @@ class MakeExamples:
                 )
             else:
                 self.itr.logger.error(
-                    f"{self.logger_msg}{self.region_logger_msg}: unable to submit SLURM job",
+                    f"{self.logger_msg}: unable to submit SLURM job",
                 )
                 self._beam_shuffle_dependencies.insert(dependency_index, None)
 
@@ -513,7 +507,7 @@ class MakeExamples:
             self.itr.logger.warning(
                 f"{self.logger_msg}: fatal error encountered, unable to proceed further with pipeline.\nExiting... ",
             )
-            sys.exit(1)
+            exit(1)
 
     def find_all_outputs(
         self, phase: str = "find_outputs", find_beam_tfrecords: bool = False
