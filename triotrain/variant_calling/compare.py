@@ -5,16 +5,22 @@ description: contains all of the functions specific to comparing variants agains
 usage:
     from compare import CompareHappy
 """
-import sys
 from dataclasses import dataclass, field
 from pathlib import Path
+from sys import exit
 from typing import List, Union
 
-# get the relative path to the triotrain/ dir
-h_path = str(Path(__file__).parent.parent.parent)
-sys.path.append(h_path)
-import helpers
-import model_training.slurm as s
+from helpers.files import TestFile, WriteFiles
+from helpers.iteration import Iteration
+from helpers.outputs import check_expected_outputs, check_if_output_exists
+from helpers.utils import (
+    check_if_all_same,
+    create_deps,
+    find_NaN,
+    find_not_NaN,
+    generate_job_id,
+)
+from model_training.slurm.sbatch import SBATCH, SubmitSBATCH
 from variant_calling.convert import ConvertHappy
 
 
@@ -25,12 +31,12 @@ class CompareHappy:
     """
 
     # required values
-    itr: helpers.Iteration
+    itr: Iteration
     slurm_resources: dict
     model_label: str
 
     # optional values
-    benchmarking_file: Union[helpers.h.WriteFiles, None] = None
+    benchmarking_file: Union[WriteFiles, None] = None
     call_variants_jobs: Union[List[Union[str, None]], None] = field(
         default_factory=list
     )
@@ -62,9 +68,7 @@ class CompareHappy:
                 self.benchmarking_file is not None
             ), "missing a h.WriteFiles object to save SLURM job IDs"
 
-        self._convert_happy_dependencies = helpers.h.create_deps(
-            self.itr.total_num_tests
-        )
+        self._convert_happy_dependencies = create_deps(self.itr.total_num_tests)
 
         self.converting = ConvertHappy(
             itr=self.itr,
@@ -97,12 +101,10 @@ class CompareHappy:
         """
         Collect any SLURM job ids for running tests to avoid submitting a job while it's already running.
         """
-        self._ignoring_call_variants = helpers.h.check_if_all_same(
-            self.call_variants_jobs, None
-        )
+        self._ignoring_call_variants = check_if_all_same(self.call_variants_jobs, None)
         if not self._ignoring_call_variants:
-            self._num_to_ignore = len(helpers.h.find_NaN(self.call_variants_jobs))
-            select_ckpt_run = helpers.h.find_not_NaN(self.call_variants_jobs)
+            self._num_to_ignore = len(find_NaN(self.call_variants_jobs))
+            select_ckpt_run = find_not_NaN(self.call_variants_jobs)
             if select_ckpt_run:
                 self.jobs_to_run = select_ckpt_run
             else:
@@ -114,11 +116,9 @@ class CompareHappy:
         elif self.compare_happy_job_nums:
             num_job_ids = len(self.compare_happy_job_nums)
             if num_job_ids == self.itr.total_num_tests:
-                self.jobs_to_run = helpers.h.find_not_NaN(self.compare_happy_job_nums)
+                self.jobs_to_run = find_not_NaN(self.compare_happy_job_nums)
                 self._num_to_run = len(self.jobs_to_run)
-                self._num_to_ignore = len(
-                    helpers.h.find_NaN(self.compare_happy_job_nums)
-                )
+                self._num_to_ignore = len(find_NaN(self.compare_happy_job_nums))
 
                 if self.jobs_to_run:
                     self._run_jobs = True
@@ -137,7 +137,7 @@ class CompareHappy:
                                     self.itr.logger.error(
                                         f"{self.logger_msg}: an 8-digit value must be provided for any number greater than {self.itr.total_num_tests}.\nExiting..."
                                     )
-                                    sys.exit(1)
+                                    exit(1)
                                 self._num_to_run -= 1
                                 self._num_to_ignore += 1
                                 self._skipped_counter += 1
@@ -233,7 +233,7 @@ class CompareHappy:
                 f"[DRY_RUN] - {self.logger_msg}: benchmarking is active"
             )
 
-    def make_job(self, index: int = 0) -> Union[s.SBATCH, None]:
+    def make_job(self, index: int = 0) -> Union[SBATCH, None]:
         """
         Defines the contents of the SLURM job for the 'compare_happy' phase for TrioTrain Pipeline.
         """
@@ -242,7 +242,7 @@ class CompareHappy:
         # initialize a SBATCH Object
         self.handler_label = f"{self._phase}: {self.prefix}"
 
-        slurm_job = s.SBATCH(
+        slurm_job = SBATCH(
             self.itr,
             self.job_name,
             self.model_label,
@@ -310,7 +310,7 @@ class CompareHappy:
                 )
                 return
 
-            regions = helpers.h.TestFile(
+            regions = TestFile(
                 Path(regions_file_path) / regions_file_name, logger=self.itr.logger
             )
             regions.check_existing()
@@ -318,7 +318,7 @@ class CompareHappy:
                 self.itr.logger.error(
                     f"{self.test_logger_msg}: a Callable Regions file is required to run Hap.py\nExiting..."
                 )
-                sys.exit(1)
+                exit(1)
 
             self.command_list = slurm_job._start_conda + [
                 "conda activate miniconda_envs/beam_v2.30",
@@ -376,7 +376,7 @@ class CompareHappy:
             existing_results_files,
             self._outputs_found,
             files,
-        ) = helpers.h.check_if_output_exists(
+        ) = check_if_output_exists(
             compare_happy_regex,
             "hap.py output files",
             Path(self.outdir),
@@ -390,7 +390,7 @@ class CompareHappy:
             if self.overwrite:
                 self._outputs_exist = False
             else:
-                missing_files = helpers.h.check_expected_outputs(
+                missing_files = check_expected_outputs(
                     self._outputs_found,
                     expected_outputs,
                     logging_msg,
@@ -423,7 +423,7 @@ class CompareHappy:
                 else:
                     slurm_job.write_job()
 
-            submit_slurm_job = s.SubmitSBATCH(
+            submit_slurm_job = SubmitSBATCH(
                 self.itr.job_dir,
                 f"{self.job_name}.sh",
                 self.handler_label,
@@ -452,7 +452,7 @@ class CompareHappy:
                 if self._convert_happy_dependencies:
                     self._convert_happy_dependencies[
                         dependency_index
-                    ] = helpers.h.generate_job_id()
+                    ] = generate_job_id()
             else:
                 submit_slurm_job.display_command(debug_mode=self.itr.debug_mode)
                 submit_slurm_job.get_status(
@@ -486,10 +486,8 @@ class CompareHappy:
             self.itr.logger.error(
                 f"{self.logger_msg}: only {len(self._convert_happy_dependencies)}-of-{self.itr.total_num_tests} were submitted correctly. Exiting... "
             )
-            sys.exit(1)
-        compare_results = helpers.h.check_if_all_same(
-            self._convert_happy_dependencies, None
-        )
+            exit(1)
+        compare_results = check_if_all_same(self._convert_happy_dependencies, None)
 
         if compare_results is False:
             if (
@@ -521,7 +519,7 @@ class CompareHappy:
             self.itr.logger.warning(
                 f"{self.logger_msg}: fatal error encountered, unable to proceed further with pipeline.\nExiting... ",
             )
-            sys.exit(1)
+            exit(1)
 
         if self.track_resources and self.benchmarking_file is not None:
             self.benchmark()
@@ -546,9 +544,7 @@ class CompareHappy:
                 self._skipped_counter = self._num_to_ignore
                 if (
                     self._convert_happy_dependencies
-                    and helpers.h.check_if_all_same(
-                        self._convert_happy_dependencies, None
-                    )
+                    and check_if_all_same(self._convert_happy_dependencies, None)
                     is False
                 ):
                     self.itr.logger.info(
@@ -588,12 +584,10 @@ class CompareHappy:
                     self.itr.logger.error(
                         f"{self.logger_msg}: max number of re-submission SLURM jobs is {self.itr.total_num_tests} but {self._num_to_run} were provided.\nExiting... ",
                     )
-                    sys.exit(1)
+                    exit(1)
 
                 for t in self.jobs_to_run:
-                    skip_re_runs = helpers.h.check_if_all_same(
-                        self.compare_happy_job_nums, None
-                    )
+                    skip_re_runs = check_if_all_same(self.compare_happy_job_nums, None)
                     if skip_re_runs:
                         test_index = t
                     else:

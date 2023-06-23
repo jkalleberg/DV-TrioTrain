@@ -5,18 +5,23 @@ description: contains all of the functions specific to comparing variants agains
 usage:
     from convert import ConvertHappy
 """
-import sys
 from dataclasses import dataclass, field
 from pathlib import Path
+from sys import exit
 from typing import List, Union
 
+from helpers.files import WriteFiles
+from helpers.iteration import Iteration
+from helpers.outputs import check_expected_outputs, check_if_output_exists
+from helpers.utils import (
+    check_if_all_same,
+    create_deps,
+    find_NaN,
+    find_not_NaN,
+    generate_job_id,
+)
+from model_training.slurm.sbatch import SBATCH, SubmitSBATCH
 from regex import compile
-
-# get the relative path to the triotrain/ dir
-h_path = str(Path(__file__).parent.parent.parent)
-sys.path.append(h_path)
-import helpers
-import model_training.slurm as s
 
 
 @dataclass
@@ -26,12 +31,12 @@ class ConvertHappy:
     """
 
     # required values
-    itr: helpers.Iteration
+    itr: Iteration
     slurm_resources: dict
     model_label: str
 
     # optional values
-    benchmarking_file: Union[helpers.h.WriteFiles, None] = None
+    benchmarking_file: Union[WriteFiles, None] = None
     compare_happy_jobs: Union[List[Union[str, None]], None] = field(
         default_factory=list
     )
@@ -55,9 +60,9 @@ class ConvertHappy:
         if self.track_resources:
             assert (
                 self.benchmarking_file is not None
-            ), "missing a h.WriteFiles object to save SLURM job IDs"
+            ), "missing a WriteFiles object to save SLURM job IDs"
 
-        self._final_jobs = helpers.h.create_deps(self.itr.total_num_tests)
+        self._final_jobs = create_deps(self.itr.total_num_tests)
         self.logger_msg = f"[{self.itr._mode_string}] - [{self._phase}]"
 
     def set_genome(self) -> None:
@@ -85,13 +90,11 @@ class ConvertHappy:
         """
         Collect any SLURM job ids for running tests to avoid submitting a job while it's already running.
         """
-        self._ignoring_compare_happy = helpers.h.check_if_all_same(
-            self.compare_happy_jobs, None
-        )
+        self._ignoring_compare_happy = check_if_all_same(self.compare_happy_jobs, None)
 
         if not self._ignoring_compare_happy:
-            self._num_to_ignore = len(helpers.h.find_NaN(self.compare_happy_jobs))
-            compare_run = helpers.h.find_not_NaN(self.compare_happy_jobs)
+            self._num_to_ignore = len(find_NaN(self.compare_happy_jobs))
+            compare_run = find_not_NaN(self.compare_happy_jobs)
             if compare_run:
                 self._jobs_to_run = compare_run
             else:
@@ -102,11 +105,9 @@ class ConvertHappy:
         elif self.convert_happy_job_nums:
             num_job_ids = len(self.convert_happy_job_nums)
             if num_job_ids == self.itr.total_num_tests:
-                self._jobs_to_run = helpers.h.find_not_NaN(self.convert_happy_job_nums)
+                self._jobs_to_run = find_not_NaN(self.convert_happy_job_nums)
                 self._num_to_run = len(self._jobs_to_run)
-                self._num_to_ignore = len(
-                    helpers.h.find_NaN(self.convert_happy_job_nums)
-                )
+                self._num_to_ignore = len(find_NaN(self.convert_happy_job_nums))
 
                 if self._jobs_to_run:
                     self._run_jobs = True
@@ -125,7 +126,7 @@ class ConvertHappy:
                                     self.itr.logger.error(
                                         f"{self.logger_msg}: an 8-digit value must be provided for any number greater than {self.itr.total_num_tests}.\nExiting..."
                                     )
-                                    sys.exit(1)
+                                    exit(1)
                                 self._num_to_run -= 1
                                 self._num_to_ignore += 1
                                 self._skipped_counter += 1
@@ -213,7 +214,7 @@ class ConvertHappy:
                 f"[DRY_RUN] - {self.logger_msg}: benchmarking is active"
             )
 
-    def make_job(self, index: int = 0) -> Union[s.SBATCH, None]:
+    def make_job(self, index: int = 0) -> Union[SBATCH, None]:
         """
         Define the contents of the SLURM job for the 'convert_happy' phase for TrioTrain Pipeline.
         """
@@ -227,7 +228,7 @@ class ConvertHappy:
         else:
             self.job_name = f"convert-{self.prefix}-{self.itr.train_genome}{self.itr.current_trio_num}"
 
-        slurm_job = s.SBATCH(
+        slurm_job = SBATCH(
             self.itr,
             self.job_name,
             self.model_label,
@@ -342,7 +343,7 @@ class ConvertHappy:
             existing_results_files,
             self._outputs_found,
             files,
-        ) = helpers.h.check_if_output_exists(
+        ) = check_if_output_exists(
             _regex,
             msg,
             Path(self.outdir),
@@ -356,7 +357,7 @@ class ConvertHappy:
             if self.overwrite:
                 self._outputs_exist = False
             else:
-                missing_files = helpers.h.check_expected_outputs(
+                missing_files = check_expected_outputs(
                     self._outputs_found,
                     expected_outputs,
                     logging_msg,
@@ -391,7 +392,7 @@ class ConvertHappy:
                 else:
                     slurm_job.write_job()
 
-            submit_slurm_job = s.SubmitSBATCH(
+            submit_slurm_job = SubmitSBATCH(
                 self.itr.job_dir,
                 f"{self.job_name}.sh",
                 self.handler_label,
@@ -418,7 +419,7 @@ class ConvertHappy:
                     display_mode=self.itr.dryrun_mode,
                 )
                 if self._final_jobs:
-                    self._final_jobs[dependency_index] = helpers.h.generate_job_id()
+                    self._final_jobs[dependency_index] = generate_job_id()
             else:
                 submit_slurm_job.display_command(debug_mode=self.itr.debug_mode)
                 submit_slurm_job.get_status(
@@ -443,9 +444,9 @@ class ConvertHappy:
                 self.itr.logger.error(
                     f"{self.logger_msg}: only {len(self._final_jobs)}-of-{self.itr.total_num_tests} were submitted correctly. Exiting... "
                 )
-                sys.exit(1)
+                exit(1)
 
-            convert_results = helpers.h.check_if_all_same(self._final_jobs, None)
+            convert_results = check_if_all_same(self._final_jobs, None)
             if convert_results is False:
                 if len(self._final_jobs) == 1:
                     if self.itr.dryrun_mode:
@@ -473,7 +474,7 @@ class ConvertHappy:
                     self.itr.logger.warning(
                         f"{self.logger_msg}: fatal error encountered, unable to proceed further with pipeline.\nExiting... ",
                     )
-                    sys.exit(1)
+                    exit(1)
 
         if self.track_resources and self.benchmarking_file is not None:
             self.benchmark()
@@ -537,7 +538,7 @@ class ConvertHappy:
                 self._skipped_counter = self._num_to_ignore
                 if (
                     self._final_jobs
-                    and helpers.h.check_if_all_same(self._final_jobs, None) is False
+                    and check_if_all_same(self._final_jobs, None) is False
                 ):
                     self.itr.logger.info(
                         f"{self.logger_msg}: final SLURM jobs updated to {self._final_jobs}"
@@ -573,12 +574,10 @@ class ConvertHappy:
                     self.itr.logger.error(
                         f"{self.logger_msg}: max number of re-submission SLURM jobs is {self.itr.total_num_tests} but {self._num_to_run} were provided.\nExiting... ",
                     )
-                    sys.exit(1)
+                    exit(1)
 
                 for t in self._jobs_to_run:
-                    skip_re_runs = helpers.h.check_if_all_same(
-                        self.convert_happy_job_nums, None
-                    )
+                    skip_re_runs = check_if_all_same(self.convert_happy_job_nums, None)
                     if skip_re_runs:
                         test_index = t
                     else:
