@@ -786,10 +786,9 @@ class RunTrioTrain:
 
         if self.itr.demo_mode:
             self.data_prep_jobs()
-            self.test_model_jobs()
+            # self.test_model_jobs()
         elif self.itr.current_trio_num is None:
             self.test_model_jobs()
-
         elif self.itr.current_genome_num == 0:
             self.test_model_jobs()
         elif self.itr.current_genome_num != 0:
