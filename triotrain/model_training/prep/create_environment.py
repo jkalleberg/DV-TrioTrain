@@ -23,13 +23,14 @@ from math import ceil, isnan
 from os import environ, getcwd, path
 from pathlib import Path
 from typing import List, Union
+
 import numpy as np
 import regex
+from helpers.environment import Env
+from helpers.files import TestFile
+from helpers.wrapper import timestamp
 from pandas import DataFrame, read_csv
 
-from helpers.files import TestFile
-from helpers.environment import Env
-from helpers.wrapper import timestamp
 
 def collect_args() -> argparse.Namespace:
     """
@@ -460,7 +461,7 @@ class Environment:
 
         if self.demo_mode:
             if self.dryrun_mode:
-                self.logger.info(f"{self.logging_msg}: pretending to create demo env file | '{env_path}'")
+                self.logger.info(f"[DRY_RUN] - {self.logging_msg}: pretending to create demo env file | '{env_path}'")
             else:
                 self.logger.info(f"{self.logging_msg}: {msg} demo env file | '{env_path}'")
         elif self.debug_mode and self.dryrun_mode:
@@ -993,10 +994,6 @@ class Environment:
                 self.logger.info(
                     f"[DRY_RUN] - {self.logging_msg}: no file(s) created, as expected"
                 )
-            else:
-                self.logger.warning(
-                    f"[DRY_RUN] - {self.logging_msg}: a file exists, but none were expected"
-                )
         else:
             assert (
                 self.env.env_path.is_file()  # type: ignore
@@ -1029,7 +1026,7 @@ class Environment:
         num_epochs: int,
         learning_rate: float,
         batch_size: int,
-    ):
+    ) -> None:
         """
         Consolidating functions to be used with both command line args and as a module.
         """
@@ -1067,23 +1064,19 @@ class Environment:
             self.create_dirs()
         else:
             # Create all analyses env files, as many the number of rows in metadata
-            if self.demo_mode:
-                begining = 1
-            else:
-                begining = 0
-            for row in range(begining, self.num_envs):
+            for row in range(0, self.num_envs):
                 self.trio_num = row
                 self.make_a_file()
                 self.create_dirs()
 
 
-def __init__():
+def __init__() -> None:
     """
     Example of creating environment variables files from metadata input on the command line.
     """
-    from helpers.wrapper import Wrapper
     from helpers.utils import get_logger
-    
+    from helpers.wrapper import Wrapper
+
     # Collect command line arguments
     args = collect_args()
 

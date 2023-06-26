@@ -375,8 +375,6 @@ class MakeRegions:
             self.itr.logger,
             logger_msg=f"[{self.itr._mode_string}] - [{self._phase}]: default call_variants",
         )
-        print("OUTPUT FILE:", output_file.file_path)
-        breakpoint()
         output_file.check_missing()
 
         if not output_file.file_exists:

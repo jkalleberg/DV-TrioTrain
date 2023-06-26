@@ -314,7 +314,10 @@ class BeamShuffleExamples:
         """
         # Define the regrex pattern of expected output
         if self.itr.demo_mode:
-            shuff_examples_pattern = rf"{self.genome}\.chr{self.itr.demo_chromosome}\.labeled\.shuffled-\d+-of-\d+\.tfrecord\.gz"
+            if "chr" in self.itr.demo_chromosome:
+                shuff_examples_pattern = rf"{self.genome}\.{self.itr.demo_chromosome}\.labeled\.shuffled-\d+-of-\d+\.tfrecord\.gz"
+            else:
+                shuff_examples_pattern = rf"{self.genome}\.chr{self.itr.demo_chromosome}\.labeled\.shuffled-\d+-of-\d+\.tfrecord\.gz"
         elif find_all:
             shuff_examples_pattern = (
                 rf"{self.genome}\.region\d+\.labeled.shuffled-\d+-of-\d+\.tfrecord\.gz"
@@ -396,6 +399,8 @@ class BeamShuffleExamples:
         Submit SLURM jobs to queue.
         """
         # self.find_outputs()
+        num_missing_files = int(self.n_parts) - int(self._num_shuff_tfrecords_found)  # type: ignore
+
         slurm_job = self.make_job(index=dependency_index)
 
         if slurm_job is not None:
@@ -403,8 +408,7 @@ class BeamShuffleExamples:
                 slurm_job.display_job()
             else:
                 slurm_job.write_job()
-
-        num_missing_files = int(self.n_parts) - int(self._num_shuff_tfrecords_found)  # type: ignore
+        
         if not self.overwrite:
             if resubmission:
                 self.itr.logger.info(
@@ -445,7 +449,10 @@ class BeamShuffleExamples:
             slurm_job.display_command(debug_mode=self.itr.debug_mode)
         
         if self.itr.dryrun_mode:
-            self._re_shuffle_dependencies.insert(dependency_index, generate_job_id())
+            if self._re_shuffle_dependencies:
+                self._re_shuffle_dependencies[
+                    dependency_index
+                    ] = generate_job_id()
         else:
             if self.itr.demo_mode:
                 slurm_job.get_status(
@@ -483,14 +490,25 @@ class BeamShuffleExamples:
             )
 
         if no_beam_jobs_submitted is False:
-            if self.itr.dryrun_mode:
-                print(
-                    f"============ [DRY_RUN] - {self.logger_msg} Job Numbers ============\n{self._re_shuffle_dependencies}\n============================================================"
-                )
+            if len(self._re_shuffle_dependencies) == 1:
+                if self.itr.dryrun_mode:
+                    print(
+                        f"============ [DRY_RUN] - {self.logger_msg} Job Number - {self._re_shuffle_dependencies} ============"
+                    )
+                else:
+                    print(
+                        f"============ {self.logger_msg} Job Number - {self._re_shuffle_dependencies} ============"
+                    )
+
             else:
-                print(
-                    f"============ {self.logger_msg} Job Numbers ============\n{self._re_shuffle_dependencies}\n============================================================"
-                )
+                if self.itr.dryrun_mode:
+                    print(
+                        f"============ [DRY_RUN] - {self.logger_msg} Job Numbers ============\n{self._re_shuffle_dependencies}\n============================================================"
+                    )
+                else:
+                    print(
+                        f"============ {self.logger_msg} Job Numbers ============\n{self._re_shuffle_dependencies}\n============================================================"
+                    )
 
             if self.track_resources and self.benchmarking_file is not None:
                 self.benchmark()
@@ -637,7 +655,11 @@ class BeamShuffleExamples:
             self.set_genome()
             self.set_region(current_region=self._total_regions)
             self.find_outputs(find_all=True)
-            self.submit_job()
+            if self._outputs_exist:
+                self._skipped_counter += 1
+            else:
+                self.submit_job()
+            self.check_submissions()
             return
 
         # Determine if we are re-running some of the regions for make_examples

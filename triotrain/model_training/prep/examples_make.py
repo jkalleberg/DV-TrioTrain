@@ -330,7 +330,10 @@ class MakeExamples:
 
         # Define the regrex pattern of expected output
         if self.itr.demo_mode:
-            examples_pattern = rf"{self.genome}.chr{self.itr.demo_chromosome}.labeled.tfrecords-\d+-of-\d+.gz.example_info.json(*SKIP)(*FAIL)|{self.genome}.chr{self.itr.demo_chromosome}.labeled.tfrecords-\d+-of-\d+.gz"
+            if "chr" in self.itr.demo_chromosome.lower():
+                examples_pattern = rf"{self.genome}.{self.itr.demo_chromosome}.labeled.tfrecords-\d+-of-\d+.gz.example_info.json(*SKIP)(*FAIL)|{self.genome}.{self.itr.demo_chromosome}.labeled.tfrecords-\d+-of-\d+.gz"
+            else:
+                examples_pattern = rf"{self.genome}.chr{self.itr.demo_chromosome}.labeled.tfrecords-\d+-of-\d+.gz.example_info.json(*SKIP)(*FAIL)|{self.genome}.chr{self.itr.demo_chromosome}.labeled.tfrecords-\d+-of-\d+.gz"
         elif find_all:
             examples_pattern = rf"{self.genome}.region\d+.labeled.tfrecords-\d+-of-\d+.gz.example_info.json(*SKIP)(*FAIL)|{self.genome}.region\d+.labeled.tfrecords-\d+-of-\d+.gz"
 
@@ -398,7 +401,12 @@ class MakeExamples:
               the number created depends on
               the number of CPUs available from SLURM.
         """
+        
         self.find_outputs()
+        if self._outputs_exist:
+            self._skipped_counter += 1
+            return
+
         slurm_job = self.make_job(index=dependency_index)
 
         if slurm_job is not None:
@@ -408,6 +416,7 @@ class MakeExamples:
                 slurm_job.write_job()
 
         num_missing_files = int(self.n_parts) - int(self._num_tfrecords_found)  # type: ignore
+        
         if not self.overwrite:
             if resubmission:
                 self.itr.logger.info(
@@ -416,12 +425,13 @@ class MakeExamples:
             else:
                 self.itr.logger.info(
                     f"{self.logger_msg}: submitting job to create [{num_missing_files}] labeled tfrecords shards"
-                )
+                    )
 
         else:
             self.itr.logger.info(
                 f"{self.logger_msg}: re-submitting job to overwrite any existing tfrecords files"
             )
+        
         slurm_job = SubmitSBATCH(
             self.itr.job_dir,
             f"{self.job_name}.sh",
@@ -469,7 +479,9 @@ class MakeExamples:
         """
         if self.itr.debug_mode:
             self._total_regions = 5
+        
         make_examples_results = check_if_all_same(self._beam_shuffle_dependencies, None)
+        
         if make_examples_results is False:
             if len(self._beam_shuffle_dependencies) == 1:
                 if self.itr.dryrun_mode:
@@ -565,7 +577,6 @@ class MakeExamples:
 
         # determine if we are demo region only
         if self.itr.demo_mode:
-            # self.set_genome()
             self.set_region(current_region=self._total_regions)
             self.submit_job()
 
