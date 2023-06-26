@@ -3,7 +3,7 @@
 description: contains basic functions used throughout TrioTrain
 
 usage:
-    import helpers as h
+    from helpers.utils import check_if_all_same, create_deps, get_logger
 """
 import logging
 from random import randint

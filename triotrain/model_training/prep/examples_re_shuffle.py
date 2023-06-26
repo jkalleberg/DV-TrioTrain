@@ -78,7 +78,10 @@ class ReShuffleExamples:
         )
 
         if self.itr.demo_mode:
-            self.pattern = f"{self.genome}.chr{self.itr.demo_chromosome}"
+            if "chr" in self.itr.demo_chromosome:
+                self.pattern = f"{self.genome}.{self.itr.demo_chromosome}"
+            else:
+                self.pattern = f"{self.genome}.chr{self.itr.demo_chromosome}"
             self.all_merged_tfrecords_pattern = f"{self.pattern}"
         else:
             self.pattern = f"{self.genome}"
@@ -239,7 +242,7 @@ class ReShuffleExamples:
         if self.itr.demo_mode:
             command_list = slurm_job._start_conda + [
                 "conda activate ./miniconda_envs/beam_v2.30",
-                f"python3 triotrain/model_training/slurm/re_shuffle.py -e {self.itr.env.env_file} -g {self.genome} --demo-mode --start-itr {self.itr.current_genome_num}",
+                f"python3 triotrain/model_training/slurm/re_shuffle.py -e {self.itr.env.env_file} -g {self.genome} --demo-mode --demo-chr {self.itr.demo_chromosome} --start-itr {self.itr.current_genome_num}",
             ]
         else:
             command_list = slurm_job._start_conda + [

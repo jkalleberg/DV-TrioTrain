@@ -9,7 +9,7 @@ from dataclasses import dataclass, field
 from subprocess import getstatusoutput
 from typing import Union
 
-from iteration import Iteration
+from helpers.iteration import Iteration
 
 
 @dataclass
@@ -17,6 +17,7 @@ class CountExamples:
     """
     Define what data to store for the count_examples phase of the TrioTrain Pipeline
     """
+
     # required values
     itr: Iteration
 
@@ -41,27 +42,31 @@ class CountExamples:
 
         self.variable_name = f"{self.genome}_Examples"
 
-    def set_search_pattern(self, region: Union[int, None] = None):
+    def set_search_pattern(self, region: Union[int, None] = None) -> None:
         """
         Define the file labeling pattern for sharded examples log files
-        """        
+        """
         if self.itr.demo_mode:
             self.current_region = self.itr.demo_chromosome
-            self.region_string = f"chr{self.itr.demo_chromosome}"
-            if "chr" in self.demo_chromosome.lower():
-                self.logger_msg = f"DEMO] - [TRIO{self.current_trio_num}] - [{self.demo_chromosome}"
+            
+            if "chr" in self.itr.demo_chromosome.lower():
+                self.region_string = self.itr.demo_chromosome
+                self.logger_msg = self.genome
             else:
-                self.logger_msg = f"DEMO] - [TRIO{self.current_trio_num}] - [CHR{self.demo_chromosome}"
-            self.prefix = f"{self.genome}-{self.region_string}"
+                self.region_string = f"chr{self.itr.demo_chromosome}"
+                self.logger_msg = self.genome
 
         elif region is not None:
             self.current_region = region
             self.region_string = f"region{self.current_region}"
-            self.logger_msg = f"{self.genome}] - [region{region}-of-{self._total_regions}"
-            self.prefix = f"{self.genome}-{self.region_string}"
-        
+            self.logger_msg = (
+                f"{self.genome}] - [region{region}-of-{self._total_regions}"
+            )
+            
+        self.prefix = f"{self.genome}-{self.region_string}"
         self.itr.logger.info(
-            f"[{self.itr._mode_string}] - [{self._phase}] - [{self.logger_msg}]: counting examples made now... ")
+            f"[{self.itr._mode_string}] - [{self._phase}] - [{self.logger_msg}]: counting examples made now... "
+        )
 
     def search_log_files(self) -> None:
         """
@@ -77,14 +82,11 @@ class CountExamples:
         Finally, create a new env_file variable
         with the individual's number of examples
         """
-        if (
-            self.itr.env is not None
-            and self.variable_name not in self.itr.env.contents
-        ):
+        if self.itr.env is not None and self.variable_name not in self.itr.env.contents:
             # Count the number of examples made
             # For individual from log files
             cmd = f"find {self.itr.log_dir} -type f -iname \"examples.{self.prefix}-part*-of-*.log\" -exec grep 'Create' {'{}'} \+ | cut -d ' ' -f 8 | awk '{'{s+=$1}'} END {'{print s}'}'"
-            
+
             ##--- THE CMD ABOVE STATES: ----##
             # Grab lines from the Individual's
             # Examples .log files that match "Created"
@@ -96,21 +98,25 @@ class CountExamples:
             ##--------------------------------##
             status, examples_found = getstatusoutput(cmd)
             if status == 0:
-                if examples_found == '':
+                if examples_found == "":
                     examples_found = None
                     self._n_examples += 0
-                    self.itr.logger.error(f"[{self.itr._mode_string}] - [{self._phase}] - [{self.logger_msg}]: no examples were found")
+                    self.itr.logger.error(
+                        f"[{self.itr._mode_string}] - [{self._phase}] - [{self.logger_msg}]: no examples were found"
+                    )
                 else:
                     self._n_examples += int(examples_found)
                     self.itr.logger.info(
-                    f"[{self.itr._mode_string}] - [{self._phase}] - [{self.logger_msg}]: running total number of examples {int(self._n_examples):,}"
+                        f"[{self.itr._mode_string}] - [{self._phase}] - [{self.logger_msg}]: running total number of examples | '{int(self._n_examples):,}'"
                     )
             else:
-                if examples_found == '':
+                if examples_found == "":
                     examples_found = None
                     self._n_examples += 0
-                    self.itr.logger.error(f"[{self.itr._mode_string}] - [{self._phase}] - [{self.logger_msg}]: no examples were found")
-                
+                    self.itr.logger.error(
+                        f"[{self.itr._mode_string}] - [{self._phase}] - [{self.logger_msg}]: no examples were found"
+                    )
+
         else:
             if self.itr.env is not None and self.variable_name in self.itr.env.contents:
                 variable_value = str(self.itr.env.contents[self.variable_name])
@@ -119,7 +125,7 @@ class CountExamples:
     def run(self) -> Union[int, None]:
         """
         Combine all the steps required to count examples made into one step.
-        
+
         Then, add the sum total of examples made per region as a variable in the ENV file.
         """
         if self.itr.env is None:
@@ -134,11 +140,14 @@ class CountExamples:
                     self.set_search_pattern(region=region_num)
                     self.search_log_files()
             else:
-                
                 self.set_search_pattern()
                 self.search_log_files()
 
-            self.itr.env.add_to(self.variable_name, str(self._n_examples), dryrun_mode=self.itr.dryrun_mode)
+            self.itr.env.add_to(
+                self.variable_name,
+                str(self._n_examples),
+                dryrun_mode=self.itr.dryrun_mode,
+            )
 
         if self._n_examples is not None:
             if self.itr.demo_mode:

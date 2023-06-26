@@ -11,23 +11,27 @@ example:
 """
 # Load python libraries
 import argparse
-import os
-import random
 import subprocess
-import sys
 from dataclasses import dataclass, field
 from logging import Logger
+from os import environ
+from os import path as p
+from pathlib import Path
+from random import random
+from sys import exit, path
 from typing import List, Union
 
-import helpers as h
-import helpers_logger
-from examples_count import CountExamples
-from examples_re_shuffle import ReShuffleExamples
-from iteration import Iteration
+abs_path = Path(__file__).resolve()
+module_path = str(abs_path.parent.parent.parent)
+path.append(module_path)
+from helpers.iteration import Iteration
+from helpers.wrapper import timestamp
+from model_training.prep.examples_count import CountExamples
+from model_training.prep.examples_re_shuffle import ReShuffleExamples
 
 
 # Parsing command line inputs function
-def collect_args():
+def collect_args() -> argparse.Namespace:
     """
     Process the command line arguments to execute script.
     """
@@ -73,6 +77,12 @@ def collect_args():
         action="store_true",
     )
     parser.add_argument(
+        "--demo-chr",
+        dest="demo_chr",
+        help="sets which chromosome to use for demo mode\n(default: %(default)s)",
+        default="29",
+    )
+    parser.add_argument(
         "--dry-run",
         dest="dry_run",
         help="if True, display commands to be used to the screen",
@@ -91,7 +101,7 @@ def collect_args():
     # )
 
 
-def check_args(args: argparse.Namespace, logger: Logger):
+def check_args(args: argparse.Namespace, logger: Logger) -> None:
     """
     With "--debug", display command line args provided.
 
@@ -105,7 +115,7 @@ def check_args(args: argparse.Namespace, logger: Logger):
             str_args += f"{key}={val} | "
 
         logger.debug(str_args)
-        logger.debug(f"using DeepVariant version | {os.environ.get('BIN_VERSION_DV')}")
+        logger.debug(f"using DeepVariant version | {environ.get('BIN_VERSION_DV')}")
 
     if args.dry_run:
         logger.info("[DRY_RUN]: output will display to screen and not write to a file")
@@ -145,9 +155,13 @@ class ReShuffle:
         )
         self.re_shuffling.set_genome()
         self.re_shuffling.find_outputs(phase="find_outputs", find_all=True)
-        self._total_regions = str(
-            self.itr.env.contents[f"{self.re_shuffling.genome}_NumRegionFiles"]
-        )
+
+        if self.itr.demo_mode:
+            self._total_regions = 1
+        else:
+            self._total_regions = str(
+                self.itr.env.contents[f"{self.re_shuffling.genome}_NumRegionFiles"]
+            )
 
     def set_region(self, current_region: Union[int, str, None] = None) -> None:
         """
@@ -156,10 +170,10 @@ class ReShuffle:
         if self.itr.demo_mode:
             if "chr" in self.itr.demo_chromosome.lower():
                 self.region_string = f"{self.itr.demo_chromosome}"
-                self.logger_msg = f"[{self.itr._mode_string}] - [{self._phase}] - [{self.re_shuffling.genome}] - {self.re_shuffling.genome}] - [{self.itr.demo_chromosome}"
+                self.logger_msg = f"[{self.itr._mode_string}] - [{self._phase}] - [{self.re_shuffling.genome}]"
             else:
                 self.region_string = f"chr{self.itr.demo_chromosome}"
-                self.logger_msg = f"[{self.itr._mode_string}] - [{self._phase}] - [{self.re_shuffling.genome}] - {self.re_shuffling.genome}] - [CHR{self.itr.demo_chromosome}"
+                self.logger_msg = f"[{self.itr._mode_string}] - [{self._phase}] - [{self.re_shuffling.genome}]"
         else:
             if current_region is None:
                 self.region_string = None
@@ -168,9 +182,8 @@ class ReShuffle:
                 self.region_string = f"region{current_region}"
                 self.logger_msg = f"[{self.itr._mode_string}] - [{self._phase}] - [{self.re_shuffling.genome}] - [{self.region_string}]"
 
-            self.merged_msg = (
-                f"[{self.itr._mode_string}] - [merge] - [{self.re_shuffling.genome}]"
-            )
+        self.merged_msg = (
+            f"[{self.itr._mode_string}] - [merge] - [{self.re_shuffling.genome}]")
 
     def merge_shuffled_tfrecords_shards(self) -> None:
         """
@@ -197,7 +210,7 @@ class ReShuffle:
                 )
             except AssertionError as error_msg:
                 self.itr.logger.error(f"{error_msg}\nExiting... ")
-                sys.exit(1)
+                exit(1)
 
     def merge_regions(self) -> None:
         """
@@ -214,7 +227,7 @@ class ReShuffle:
         """
         if self.itr.demo_mode:
             self.itr.logger.info(
-                f"{self.logger_msg}: no need to re-shuffle for Demo... SKIPPING AHEAD",
+                f"{self.logger_msg}: no need to randomize regions for demo... SKIPPING AHEAD",
             )
             self._string_of_files = f"/examples_dir/{self.output.name}"
         else:
@@ -236,7 +249,7 @@ class ReShuffle:
                 self.itr.logger.error(
                     f"{self.logger_msg}: randomizing did not work\nExiting...",
                 )
-                sys.exit(1)
+                exit(1)
 
     def create_merged_pbtxt(self) -> None:
         """
@@ -247,7 +260,7 @@ class ReShuffle:
                 f"[DRY_RUN] - {self.logger_msg} | new config contents\n---------------------------------------"
             )
             print(
-                f"name: {self.re_shuffling.genome}\ntfrecord_path: {self._string_of_files}\nnum_examples: {self._n_examples}\n# Generated by re_shuffle.py on {h.timestamp()}\n---------------------------------------"
+                f"name: {self.re_shuffling.genome}\ntfrecord_path: {self._string_of_files}\nnum_examples: {self._n_examples}\n# Generated by re_shuffle.py on {timestamp()}\n---------------------------------------"
             )
         elif self.re_shuffling.merged_config.file_path.exists() is False:
             self.itr.logger.info(
@@ -263,7 +276,7 @@ class ReShuffle:
                 encoding="UTF-8",
             ) as text_file:
                 text_file.write(
-                    f'name: "{self.re_shuffling.genome}"\ntfrecord_path: "{self._string_of_files}"\nnum_examples: {self._n_examples}\n# Generated by re_shuffle.py on {h.timestamp()}'
+                    f'name: "{self.re_shuffling.genome}"\ntfrecord_path: "{self._string_of_files}"\nnum_examples: {self._n_examples}\n# Generated by re_shuffle.py on {timestamp()}'
                     ""
                 )
         else:
@@ -271,7 +284,7 @@ class ReShuffle:
                 f"{self.merged_msg}: the final, merged pbtxt does not need to be written... SKIPPING AHEAD"
             )
 
-    def run(self):
+    def run(self) -> None:
         """
         Combine all the steps required to merge and re_shuffle tfrecords into one step.
         """
@@ -289,24 +302,28 @@ class ReShuffle:
 
 
 # Create re-shuffled pbtxt file function
-def __init__():
+def __init__() -> None:
     """
     Final function to perform re_shuffling within a SLURM job.
     """
+    from helpers.environment import Env
+    from helpers.utils import get_logger
+    from helpers.wrapper import Wrapper
+
     # Collect command line arguments
     args = collect_args()
 
     # Collect start time
-    Wrapper(__file__, "start").wrap_script(h.timestamp())
+    Wrapper(__file__, "start").wrap_script(timestamp())
 
     # Create error log
-    current_file = os.path.basename(__file__)
-    module_name = os.path.splitext(current_file)[0]
-    logger = helpers_logger.get_logger(module_name)
+    current_file = p.basename(__file__)
+    module_name = p.splitext(current_file)[0]
+    logger = get_logger(module_name)
 
     # Check command line args
     check_args(args, logger)
-    env = h.Env(args.env_file, logger, dryrun_mode=args.dry_run)
+    env = Env(args.env_file, logger, dryrun_mode=args.dry_run)
     trio_num = str(env.contents["RunOrder"])
 
     if args.demo_mode:
@@ -353,7 +370,7 @@ def __init__():
 
     ReShuffle(current_itr, train_mode=train_mode).run()
 
-    Wrapper(__file__, "end").wrap_script(h.timestamp())
+    Wrapper(__file__, "end").wrap_script(timestamp())
 
 
 # Execute all functions created

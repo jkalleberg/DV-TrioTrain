@@ -111,25 +111,26 @@ class Iteration:
             self.default_region_file = Path(
                 str(self.env.contents["RegionsFile_Path"])
             ) / str(self.env.contents["RegionsFile_File"])
-        elif self.args.species.lower() == "cow":
-            CHR = list(map(str, range(1, 30))) + ["X"]
-            self.CHR_Order = {k: v for v, k in enumerate(CHR)}
-            self.default_region_file = (
-                Path(getcwd()) / "region_files" / "cow_autosomes_withX.bed"
-            )
-        elif self.args.species.lower() == "human":
-            CHR_num = list(map(str, range(1, 22))) + ["X"]
-            # human genome adds the "chr" prefix to chromosomes...
-            CHR = list()
-            for c in CHR_num:
-                CHR.append(f"chr{c}")
-            self.CHR_Order = {k: v for v, k in enumerate(CHR)}
-            self.default_region_file = (
-                Path(getcwd()) / "region_files" / "human_autosomes_withX.bed"
-            )
-        else:
-            self.logger.error("ADD LOGIC FOR ANY SPECIES BESIDES COW AND HUMANS!")
-            sys.exit(1)
+        elif "species" in self.args:
+            if self.args.species.lower() == "cow":
+                CHR = list(map(str, range(1, 30))) + ["X"]
+                self.CHR_Order = {k: v for v, k in enumerate(CHR)}
+                self.default_region_file = (
+                    Path(getcwd()) / "region_files" / "cow_autosomes_withX.bed"
+                )
+            elif self.args.species.lower() == "human":
+                CHR_num = list(map(str, range(1, 22))) + ["X"]
+                # human genome adds the "chr" prefix to chromosomes...
+                CHR = list()
+                for c in CHR_num:
+                    CHR.append(f"chr{c}")
+                self.CHR_Order = {k: v for v, k in enumerate(CHR)}
+                self.default_region_file = (
+                    Path(getcwd()) / "region_files" / "human_autosomes_withX.bed"
+                )
+            else:
+                self.logger.error("ADD LOGIC FOR ANY SPECIES BESIDES COW AND HUMANS!")
+                sys.exit(1)
 
         if self.dryrun_mode:
             if not self.env.env_path.exists():

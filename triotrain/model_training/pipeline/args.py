@@ -10,7 +10,6 @@ import json
 from logging import Logger
 from pathlib import Path
 from sys import exit
-import re
 import importlib
 
 # use the doc string from __main__
@@ -20,7 +19,7 @@ def get_docstring(script_name, script_path):
     spec.loader.exec_module(foo)
     return foo.__doc__
 
-def collect_args():
+def collect_args() -> argparse.ArgumentParser:
     """
     process the command line arguments to execute script.
     """
