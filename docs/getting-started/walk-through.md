@@ -467,15 +467,18 @@ Then remove the `--dry-run` flag if no errors are detected and run the command f
 The TrioTrain demo runs two steps &mdash; for both Father & Child:
     1. make_examples
     2. beam_shuffle
+    3. re_shuffle
 
-This will produce and submit (4) SLURM jobs. If these jobs successfully complete, you will have a conservative estimate of the number of DeepVariant examples you can easily shuffle within your available memory.
+This will produce and submit (6) SLURM jobs. If these jobs successfully complete, you will have a conservative estimate of the number of DeepVariant examples you can easily shuffle within your available memory.
 
-For each genome (i.e. Father and Child), you should see (4) types of output file:
+For each genome (i.e. Father and Child), you should see (6) types of output file:
 
 * N_CPUS x `labeled.tfrecords*.gz`
 * N_CPUS x `labeled.tfrecords*.gz.example_info.json`
 * N_CPUS x `labeled.shuffled*.tfrecord.gz`
 * 1 x `labeled.shuffled.dataset_config.pbtxt`
+* 1 x `labeled.shuffled.merged.dataset_config.pbtxt`
+* 1 x `labeled.shuffled.merged.tfrecord.gz`
 
 The number for each output type depends on the number of CPUs requested in your `resources_used.json` file; for our tutorial, we used 40 CPUs, so we have 40 files (known as shards) numbered 0-39.
 

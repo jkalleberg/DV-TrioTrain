@@ -222,7 +222,7 @@ class SBATCH:
             with open(self._jobfile_str, mode="w") as file:
                 file.writelines(f"{line}\n" for line in self.all_lines)
             self.itr.logger.info(
-                f"{self.logger_msg}: new job file created |  '{self._jobfile.name}'"
+                f"{self.logger_msg}: new job file created | '{self._jobfile.name}'"
             )
 
 

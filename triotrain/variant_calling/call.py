@@ -197,7 +197,7 @@ class CallVariants:
                 "RefFASTA_Path",
                 "RefFASTA_File",
             ]
-
+            
             if self.genome is None or self.itr.current_genome_num == 0:
                 if "BaselineTestCkptName" in self.itr.env.contents:
                     extra_vars = ["BaselineModelResultsDir"]
@@ -234,9 +234,13 @@ class CallVariants:
             else:
                 extra_vars = [f"{self.genome}TestDir"]
                 if self.itr.demo_mode:
-                    # default ckpt will be used
-                    self.test_ckpt_name = None
-                    self.test_ckpt_path = None
+                    # a default ckpt will be used
+                    self.test_ckpt_path = str(
+                        self.itr.env.contents[f"{self.itr.train_genome}StartCkptPath"]
+                    )
+                    self.test_ckpt_name = str(
+                        self.itr.env.contents[f"{self.itr.train_genome}StartCkptName"]
+                    )
                 else:
                     # define custom model ckpt
                     self.test_ckpt_path = str(
@@ -324,11 +328,11 @@ class CallVariants:
                 if "chr" in self.itr.demo_chromosome.lower():
                     self.prefix = f"test{self.test_num}_{self.itr.demo_chromosome}"
                     self.job_name = f"test{self.test_num}_{self.itr.demo_chromosome}"
-                    self.test_logger_msg = f"{self.logger_msg} - [test{self.test_num}] - [{self.itr.demo_chromosome}]"
+                    self.test_logger_msg = f"{self.logger_msg} - [test{self.test_num}]"
                 else:
-                    self.prefix =  f"test{self.test_num}_chr{self.itr.demo_chromosome}"
+                    self.prefix = f"test{self.test_num}_chr{self.itr.demo_chromosome}"
                     self.job_name = f"test{self.test_num}_chr{self.itr.demo_chromosome}"
-                    self.test_logger_msg = f"{self.logger_msg} - [test{self.test_num}] - [CHR{self.itr.demo_chromosome}]"                
+                    self.test_logger_msg = f"{self.logger_msg} - [test{self.test_num}]"
             elif "baseline" in self.model_label or self.itr.current_genome_num == 0:
                 self.prefix = f"test{self.test_num}"
                 self.job_name = f"test{self.test_num}"
@@ -645,13 +649,14 @@ class CallVariants:
                 self._compare_dependencies[dependency_index] = None
         else:
             slurm_job = self.make_job(index=dependency_index)
+
             if slurm_job is not None:
                 if self.itr.dryrun_mode:
                     slurm_job.display_job()
                 else:
                     slurm_job.write_job()
 
-            submit_slurm_job = SubmitSBATCH(
+            slurm_job = SubmitSBATCH(
                 self.itr.job_dir,
                 f"{self.job_name}.sh",
                 self.handler_label,
@@ -661,7 +666,7 @@ class CallVariants:
             # if there is a running select-ckpt job...
             if self.itr.current_genome_dependencies[3] is not None:
                 # include it as a dependency
-                submit_slurm_job.build_command(self.itr.current_genome_dependencies[3])
+                slurm_job.build_command(self.itr.current_genome_dependencies[3])
             else:
                 if self.itr.current_genome_num == 0:
                     self.itr.logger.warning(
@@ -675,31 +680,37 @@ class CallVariants:
                     self.itr.logger.debug(
                         f"{self.test_logger_msg}: select_ckpt completed, submitting without a SLURM dependency"
                     )
-                submit_slurm_job.build_command(None)
+                slurm_job.build_command(None)
 
-            if self.itr.dryrun_mode:
-                submit_slurm_job.display_command(
-                    current_job=self.job_num,
-                    total_jobs=total_jobs,
+            if self.itr.demo_mode:
+                slurm_job.display_command(
                     display_mode=self.itr.dryrun_mode,
                 )
-                if self._compare_dependencies:
-                    self._compare_dependencies[dependency_index] = generate_job_id()
             else:
-                submit_slurm_job.display_command(
+                slurm_job.display_command(
                     current_job=self.job_num,
                     total_jobs=total_jobs,
                     debug_mode=self.itr.debug_mode,
                 )
-                submit_slurm_job.get_status(
-                    current_job=self.job_num,
-                    total_jobs=total_jobs,
-                    debug_mode=self.itr.debug_mode,
-                )
-                if submit_slurm_job.status == 0:
+
+            if self.itr.dryrun_mode:
+                self._compare_dependencies[dependency_index] = generate_job_id()
+            else:
+                if self.itr.demo_mode:
+                    slurm_job.get_status(
+                        total_jobs=total_jobs, debug_mode=self.itr.debug_mode
+                    )
+                else:
+                    slurm_job.get_status(
+                        current_job=self.job_num,
+                        total_jobs=total_jobs,
+                        debug_mode=self.itr.debug_mode,
+                    )
+
+                if slurm_job.status == 0:
                     if self._compare_dependencies:
                         self._compare_dependencies[dependency_index] = str(
-                            submit_slurm_job.job_number
+                            slurm_job.job_number
                         )
                 else:
                     self.itr.logger.warning(

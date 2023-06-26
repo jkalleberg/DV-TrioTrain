@@ -11,13 +11,13 @@ example:
 """
 # Load python libraries
 import argparse
-import subprocess
 from dataclasses import dataclass, field
 from logging import Logger
 from os import environ
 from os import path as p
 from pathlib import Path
 from random import random
+from subprocess import getstatusoutput
 from sys import exit, path
 from typing import List, Union
 
@@ -183,7 +183,8 @@ class ReShuffle:
                 self.logger_msg = f"[{self.itr._mode_string}] - [{self._phase}] - [{self.re_shuffling.genome}] - [{self.region_string}]"
 
         self.merged_msg = (
-            f"[{self.itr._mode_string}] - [merge] - [{self.re_shuffling.genome}]")
+            f"[{self.itr._mode_string}] - [merge] - [{self.re_shuffling.genome}]"
+        )
 
     def merge_shuffled_tfrecords_shards(self) -> None:
         """
@@ -199,7 +200,7 @@ class ReShuffle:
         else:
             # use bash 'concat' to join tfrecords together
             cmd = f"time cat {self.itr.examples_dir}/{self.re_shuffling.genome}.{self.region_string}.labeled.shuffled-*.gz > {str(self.output)}"
-            status, result = subprocess.getstatusoutput(cmd)
+            status, result = getstatusoutput(cmd)
             try:
                 assert (
                     status == 0

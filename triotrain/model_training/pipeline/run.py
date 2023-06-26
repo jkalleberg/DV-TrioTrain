@@ -699,6 +699,9 @@ class RunTrioTrain:
         if no_dependencies_required:
             phase_skipped_counter += 1
 
+        if self.itr.demo_mode:
+            return
+
         ##--- MAKE + SUBMIT COMPARE_HAPPY JOBS ---##
         self.process_re_runs("compare_happy", total_jobs_in_phase=self.num_tests)
 
@@ -787,7 +790,7 @@ class RunTrioTrain:
 
         if self.itr.demo_mode:
             self.data_prep_jobs()
-            # self.test_model_jobs()
+            self.test_model_jobs()
         elif self.itr.current_trio_num is None:
             self.test_model_jobs()
         elif self.itr.current_genome_num == 0:
