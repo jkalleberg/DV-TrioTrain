@@ -146,6 +146,7 @@ class Iteration:
             self.job_dir = Path(str(self.env.contents["JobDir"]))
             self.log_dir = Path(str(self.env.contents["LogDir"]))
             self.model_label = f"{self.run_name}"
+            self.results_dir = Path(str(self.env.contents["ResultsDir"]))
 
         elif self.current_genome_num == 0 and self.train_genome is None:
             self.run_name = "baseline-DV"

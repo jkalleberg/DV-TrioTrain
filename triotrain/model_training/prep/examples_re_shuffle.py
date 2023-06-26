@@ -50,6 +50,7 @@ class ReShuffleExamples:
     _phase: str = field(default="re_shuffle", init=False, repr=False)
     _run_jobs: Union[bool, None] = field(default=None, init=False, repr=False)
     _skipped_counter: int = field(default=0, init=False, repr=False)
+    _skip_phase: bool = field(default=False, init=False, repr=False) 
     _train_dependency: Union[str, None] = field(default=None, init=False, repr=False)
     _variable_found: bool = field(default=False, init=False, repr=False)
 

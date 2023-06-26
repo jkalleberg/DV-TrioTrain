@@ -487,7 +487,8 @@ class RunTrioTrain:
                         total_jobs_in_phase=1,
                         genome=genome,
                     )
-                    if self.use_regions_shuffle:
+
+                    if self.use_regions_shuffle or self.itr.demo_mode:
                         # submit with no dependencies
                         if no_dependencies_required:
                             re_shuffle = ReShuffleExamples(

@@ -427,7 +427,7 @@ source ./scripts/start_conda.sh     # Ensure the previously built conda env is a
 bash scripts/setup/setup_rtg_tools.sh
 ```
 
-Use the following template 
+Use the following template:
 
 ??? example "Example | Creating the SDF"
     ```bash title="./scripts/setup/setup_rtg_tools.sh"
@@ -437,6 +437,14 @@ Use the following template
 ---
 
 ## 8. Run Shuffling Demo
+
+Shuffling the labeled examples is a critical step to re-training DeepVariant because the model assumes successive training images are independent of one another. DeepVariant includes an Apache Beam pipeline that puts training examples in random genomic order. However, in our research, getting the Python SDK for Beam, Apache Spark and SLURM to cooperate is a dependency nightmare.
+
+Our alternative approach splits the complete genome into subset regions before making the labeled examples. Each region is defined in non-overlapping, 0-based BED file. Within a shuffling region, all chromosomes are sampled to ensure they remain proportionally consistent with the complete genome. Thus, each region will produce a subset of examples across the genome, which are shuffled within memory of a single compute node. Examples from each shuffling region are created in parallel jobs are handled by SLURM, rather than a Beam pipeline runner. Our region shuffling approach allows us to avoid the dependency issues.
+
+The following shuffling demo will help confirm that our region-shuffling approach will work for your mamalian genome. We recommend using a small chromosome as the demo region.
+
+For the human GIAB tutorial, run the following at the command line:
 
 ```bash
 python3 triotrain/run_trio_train.py                                         \
@@ -450,6 +458,312 @@ python3 triotrain/run_trio_train.py                                         \
     --num-tests 3                                                           \
     --custom-checkpoint triotrain/model_training/pretrained_models/v1.4.0_withIS_withAF/wgs_af.model.ckpt \
     --output ../TUTORIAL                                                    \
+    --benchmark                                                             \
     --dry-run                                                               
 ```
 
+Then remove the `--dry-run` flag if no errors are detected and run the command for real.
+
+The TrioTrain demo runs two steps &mdash; for both Father & Child:
+    1. make_examples
+    2. beam_shuffle
+
+This will produce and submit (4) SLURM jobs. If these jobs successfully complete, you will have a conservative estimate of the number of DeepVariant examples you can easily shuffle within your available memory.
+
+For each genome (i.e. Father and Child), you should see (4) types of output file:
+
+* N_CPUS x `labeled.tfrecords*.gz`
+* N_CPUS x `labeled.tfrecords*.gz.example_info.json`
+* N_CPUS x `labeled.shuffled*.tfrecord.gz`
+* 1 x `labeled.shuffled.dataset_config.pbtxt`
+
+The number for each output type depends on the number of CPUs requested in your `resources_used.json` file; for our tutorial, we used 40 CPUs, so we have 40 files (known as shards) numbered 0-39.
+
+??? success "Expected Output | Father:"
+    ```bash title="Run at the command line"
+    ls ../TUTORIAL/demo/Human_tutorial/examples/ | grep Father
+    ```
+
+    ```bash title="Check output"
+    Father.chr21.labeled.shuffled-00000-of-00040.tfrecord.gz
+    Father.chr21.labeled.shuffled-00001-of-00040.tfrecord.gz
+    Father.chr21.labeled.shuffled-00002-of-00040.tfrecord.gz
+    Father.chr21.labeled.shuffled-00003-of-00040.tfrecord.gz
+    Father.chr21.labeled.shuffled-00004-of-00040.tfrecord.gz
+    Father.chr21.labeled.shuffled-00005-of-00040.tfrecord.gz
+    Father.chr21.labeled.shuffled-00006-of-00040.tfrecord.gz
+    Father.chr21.labeled.shuffled-00007-of-00040.tfrecord.gz
+    Father.chr21.labeled.shuffled-00008-of-00040.tfrecord.gz
+    Father.chr21.labeled.shuffled-00009-of-00040.tfrecord.gz
+    Father.chr21.labeled.shuffled-00010-of-00040.tfrecord.gz
+    Father.chr21.labeled.shuffled-00011-of-00040.tfrecord.gz
+    Father.chr21.labeled.shuffled-00012-of-00040.tfrecord.gz
+    Father.chr21.labeled.shuffled-00013-of-00040.tfrecord.gz
+    Father.chr21.labeled.shuffled-00014-of-00040.tfrecord.gz
+    Father.chr21.labeled.shuffled-00015-of-00040.tfrecord.gz
+    Father.chr21.labeled.shuffled-00016-of-00040.tfrecord.gz
+    Father.chr21.labeled.shuffled-00017-of-00040.tfrecord.gz
+    Father.chr21.labeled.shuffled-00018-of-00040.tfrecord.gz
+    Father.chr21.labeled.shuffled-00019-of-00040.tfrecord.gz
+    Father.chr21.labeled.shuffled-00020-of-00040.tfrecord.gz
+    Father.chr21.labeled.shuffled-00021-of-00040.tfrecord.gz
+    Father.chr21.labeled.shuffled-00022-of-00040.tfrecord.gz
+    Father.chr21.labeled.shuffled-00023-of-00040.tfrecord.gz
+    Father.chr21.labeled.shuffled-00024-of-00040.tfrecord.gz
+    Father.chr21.labeled.shuffled-00025-of-00040.tfrecord.gz
+    Father.chr21.labeled.shuffled-00026-of-00040.tfrecord.gz
+    Father.chr21.labeled.shuffled-00027-of-00040.tfrecord.gz
+    Father.chr21.labeled.shuffled-00028-of-00040.tfrecord.gz
+    Father.chr21.labeled.shuffled-00029-of-00040.tfrecord.gz
+    Father.chr21.labeled.shuffled-00030-of-00040.tfrecord.gz
+    Father.chr21.labeled.shuffled-00031-of-00040.tfrecord.gz
+    Father.chr21.labeled.shuffled-00032-of-00040.tfrecord.gz
+    Father.chr21.labeled.shuffled-00033-of-00040.tfrecord.gz
+    Father.chr21.labeled.shuffled-00034-of-00040.tfrecord.gz
+    Father.chr21.labeled.shuffled-00035-of-00040.tfrecord.gz
+    Father.chr21.labeled.shuffled-00036-of-00040.tfrecord.gz
+    Father.chr21.labeled.shuffled-00037-of-00040.tfrecord.gz
+    Father.chr21.labeled.shuffled-00038-of-00040.tfrecord.gz
+    Father.chr21.labeled.shuffled-00039-of-00040.tfrecord.gz
+    Father.chr21.labeled.shuffled.dataset_config.pbtxt
+    Father.chr21.labeled.tfrecords-00000-of-00040.gz
+    Father.chr21.labeled.tfrecords-00000-of-00040.gz.example_info.json
+    Father.chr21.labeled.tfrecords-00001-of-00040.gz
+    Father.chr21.labeled.tfrecords-00001-of-00040.gz.example_info.json
+    Father.chr21.labeled.tfrecords-00002-of-00040.gz
+    Father.chr21.labeled.tfrecords-00002-of-00040.gz.example_info.json
+    Father.chr21.labeled.tfrecords-00003-of-00040.gz
+    Father.chr21.labeled.tfrecords-00003-of-00040.gz.example_info.json
+    Father.chr21.labeled.tfrecords-00004-of-00040.gz
+    Father.chr21.labeled.tfrecords-00004-of-00040.gz.example_info.json
+    Father.chr21.labeled.tfrecords-00005-of-00040.gz
+    Father.chr21.labeled.tfrecords-00005-of-00040.gz.example_info.json
+    Father.chr21.labeled.tfrecords-00006-of-00040.gz
+    Father.chr21.labeled.tfrecords-00006-of-00040.gz.example_info.json
+    Father.chr21.labeled.tfrecords-00007-of-00040.gz
+    Father.chr21.labeled.tfrecords-00007-of-00040.gz.example_info.json
+    Father.chr21.labeled.tfrecords-00008-of-00040.gz
+    Father.chr21.labeled.tfrecords-00008-of-00040.gz.example_info.json
+    Father.chr21.labeled.tfrecords-00009-of-00040.gz
+    Father.chr21.labeled.tfrecords-00009-of-00040.gz.example_info.json
+    Father.chr21.labeled.tfrecords-00010-of-00040.gz
+    Father.chr21.labeled.tfrecords-00010-of-00040.gz.example_info.json
+    Father.chr21.labeled.tfrecords-00011-of-00040.gz
+    Father.chr21.labeled.tfrecords-00011-of-00040.gz.example_info.json
+    Father.chr21.labeled.tfrecords-00012-of-00040.gz
+    Father.chr21.labeled.tfrecords-00012-of-00040.gz.example_info.json
+    Father.chr21.labeled.tfrecords-00013-of-00040.gz
+    Father.chr21.labeled.tfrecords-00013-of-00040.gz.example_info.json
+    Father.chr21.labeled.tfrecords-00014-of-00040.gz
+    Father.chr21.labeled.tfrecords-00014-of-00040.gz.example_info.json
+    Father.chr21.labeled.tfrecords-00015-of-00040.gz
+    Father.chr21.labeled.tfrecords-00015-of-00040.gz.example_info.json
+    Father.chr21.labeled.tfrecords-00016-of-00040.gz
+    Father.chr21.labeled.tfrecords-00016-of-00040.gz.example_info.json
+    Father.chr21.labeled.tfrecords-00017-of-00040.gz
+    Father.chr21.labeled.tfrecords-00017-of-00040.gz.example_info.json
+    Father.chr21.labeled.tfrecords-00018-of-00040.gz
+    Father.chr21.labeled.tfrecords-00018-of-00040.gz.example_info.json
+    Father.chr21.labeled.tfrecords-00019-of-00040.gz
+    Father.chr21.labeled.tfrecords-00019-of-00040.gz.example_info.json
+    Father.chr21.labeled.tfrecords-00020-of-00040.gz
+    Father.chr21.labeled.tfrecords-00020-of-00040.gz.example_info.json
+    Father.chr21.labeled.tfrecords-00021-of-00040.gz
+    Father.chr21.labeled.tfrecords-00021-of-00040.gz.example_info.json
+    Father.chr21.labeled.tfrecords-00022-of-00040.gz
+    Father.chr21.labeled.tfrecords-00022-of-00040.gz.example_info.json
+    Father.chr21.labeled.tfrecords-00023-of-00040.gz
+    Father.chr21.labeled.tfrecords-00023-of-00040.gz.example_info.json
+    Father.chr21.labeled.tfrecords-00024-of-00040.gz
+    Father.chr21.labeled.tfrecords-00024-of-00040.gz.example_info.json
+    Father.chr21.labeled.tfrecords-00025-of-00040.gz
+    Father.chr21.labeled.tfrecords-00025-of-00040.gz.example_info.json
+    Father.chr21.labeled.tfrecords-00026-of-00040.gz
+    Father.chr21.labeled.tfrecords-00026-of-00040.gz.example_info.json
+    Father.chr21.labeled.tfrecords-00027-of-00040.gz
+    Father.chr21.labeled.tfrecords-00027-of-00040.gz.example_info.json
+    Father.chr21.labeled.tfrecords-00028-of-00040.gz
+    Father.chr21.labeled.tfrecords-00028-of-00040.gz.example_info.json
+    Father.chr21.labeled.tfrecords-00029-of-00040.gz
+    Father.chr21.labeled.tfrecords-00029-of-00040.gz.example_info.json
+    Father.chr21.labeled.tfrecords-00030-of-00040.gz
+    Father.chr21.labeled.tfrecords-00030-of-00040.gz.example_info.json
+    Father.chr21.labeled.tfrecords-00031-of-00040.gz
+    Father.chr21.labeled.tfrecords-00031-of-00040.gz.example_info.json
+    Father.chr21.labeled.tfrecords-00032-of-00040.gz
+    Father.chr21.labeled.tfrecords-00032-of-00040.gz.example_info.json
+    Father.chr21.labeled.tfrecords-00033-of-00040.gz
+    Father.chr21.labeled.tfrecords-00033-of-00040.gz.example_info.json
+    Father.chr21.labeled.tfrecords-00034-of-00040.gz
+    Father.chr21.labeled.tfrecords-00034-of-00040.gz.example_info.json
+    Father.chr21.labeled.tfrecords-00035-of-00040.gz
+    Father.chr21.labeled.tfrecords-00036-of-00040.gz.example_info.json
+    Father.chr21.labeled.tfrecords-00037-of-00040.gz
+    Father.chr21.labeled.tfrecords-00037-of-00040.gz.example_info.json
+    Father.chr21.labeled.tfrecords-00038-of-00040.gz
+    Father.chr21.labeled.tfrecords-00038-of-00040.gz.example_info.json
+    Father.chr21.labeled.tfrecords-00039-of-00040.gz
+    Father.chr21.labeled.tfrecords-00039-of-00040.gz.example_info.json
+    ```
+
+    **Confirm that SLURM jobs completed successfully**
+    ```bash title="Run at the command line"
+    cat ../TUTORIAL/demo/Human_tutorial/logs/tracking-Baseline-v1.4.0.log | grep SUCCESS | grep Father | wc -l
+    ```
+
+    ```bash title="Check output"
+    41
+    ```
+
+??? success "Expected Output | Child:"
+    ```bash title="Run at the command line"
+    ls ../TUTORIAL/demo/Human_tutorial/examples/ | grep Child
+    ```
+
+    ```bash title="Check output"
+    Child.chr21.labeled.shuffled-00000-of-00040.tfrecord.gz
+    Child.chr21.labeled.shuffled-00001-of-00040.tfrecord.gz
+    Child.chr21.labeled.shuffled-00002-of-00040.tfrecord.gz
+    Child.chr21.labeled.shuffled-00003-of-00040.tfrecord.gz
+    Child.chr21.labeled.shuffled-00004-of-00040.tfrecord.gz
+    Child.chr21.labeled.shuffled-00005-of-00040.tfrecord.gz
+    Child.chr21.labeled.shuffled-00006-of-00040.tfrecord.gz
+    Child.chr21.labeled.shuffled-00007-of-00040.tfrecord.gz
+    Child.chr21.labeled.shuffled-00008-of-00040.tfrecord.gz
+    Child.chr21.labeled.shuffled-00009-of-00040.tfrecord.gz
+    Child.chr21.labeled.shuffled-00010-of-00040.tfrecord.gz
+    Child.chr21.labeled.shuffled-00011-of-00040.tfrecord.gz
+    Child.chr21.labeled.shuffled-00012-of-00040.tfrecord.gz
+    Child.chr21.labeled.shuffled-00013-of-00040.tfrecord.gz
+    Child.chr21.labeled.shuffled-00014-of-00040.tfrecord.gz
+    Child.chr21.labeled.shuffled-00015-of-00040.tfrecord.gz
+    Child.chr21.labeled.shuffled-00016-of-00040.tfrecord.gz
+    Child.chr21.labeled.shuffled-00017-of-00040.tfrecord.gz
+    Child.chr21.labeled.shuffled-00018-of-00040.tfrecord.gz
+    Child.chr21.labeled.shuffled-00019-of-00040.tfrecord.gz
+    Child.chr21.labeled.shuffled-00020-of-00040.tfrecord.gz
+    Child.chr21.labeled.shuffled-00021-of-00040.tfrecord.gz
+    Child.chr21.labeled.shuffled-00022-of-00040.tfrecord.gz
+    Child.chr21.labeled.shuffled-00023-of-00040.tfrecord.gz
+    Child.chr21.labeled.shuffled-00024-of-00040.tfrecord.gz
+    Child.chr21.labeled.shuffled-00025-of-00040.tfrecord.gz
+    Child.chr21.labeled.shuffled-00026-of-00040.tfrecord.gz
+    Child.chr21.labeled.shuffled-00027-of-00040.tfrecord.gz
+    Child.chr21.labeled.shuffled-00028-of-00040.tfrecord.gz
+    Child.chr21.labeled.shuffled-00029-of-00040.tfrecord.gz
+    Child.chr21.labeled.shuffled-00030-of-00040.tfrecord.gz
+    Child.chr21.labeled.shuffled-00031-of-00040.tfrecord.gz
+    Child.chr21.labeled.shuffled-00032-of-00040.tfrecord.gz
+    Child.chr21.labeled.shuffled-00033-of-00040.tfrecord.gz
+    Child.chr21.labeled.shuffled-00034-of-00040.tfrecord.gz
+    Child.chr21.labeled.shuffled-00035-of-00040.tfrecord.gz
+    Child.chr21.labeled.shuffled-00036-of-00040.tfrecord.gz
+    Child.chr21.labeled.shuffled-00037-of-00040.tfrecord.gz
+    Child.chr21.labeled.shuffled-00038-of-00040.tfrecord.gz
+    Child.chr21.labeled.shuffled-00039-of-00040.tfrecord.gz
+    Child.chr21.labeled.shuffled.dataset_config.pbtxt
+    Child.chr21.labeled.tfrecords-00000-of-00040.gz
+    Child.chr21.labeled.tfrecords-00000-of-00040.gz.example_info.json
+    Child.chr21.labeled.tfrecords-00001-of-00040.gz
+    Child.chr21.labeled.tfrecords-00001-of-00040.gz.example_info.json
+    Child.chr21.labeled.tfrecords-00002-of-00040.gz
+    Child.chr21.labeled.tfrecords-00002-of-00040.gz.example_info.json
+    Child.chr21.labeled.tfrecords-00003-of-00040.gz
+    Child.chr21.labeled.tfrecords-00003-of-00040.gz.example_info.json
+    Child.chr21.labeled.tfrecords-00004-of-00040.gz
+    Child.chr21.labeled.tfrecords-00004-of-00040.gz.example_info.json
+    Child.chr21.labeled.tfrecords-00005-of-00040.gz
+    Child.chr21.labeled.tfrecords-00005-of-00040.gz.example_info.json
+    Child.chr21.labeled.tfrecords-00006-of-00040.gz
+    Child.chr21.labeled.tfrecords-00006-of-00040.gz.example_info.json
+    Child.chr21.labeled.tfrecords-00007-of-00040.gz
+    Child.chr21.labeled.tfrecords-00007-of-00040.gz.example_info.json
+    Child.chr21.labeled.tfrecords-00008-of-00040.gz
+    Child.chr21.labeled.tfrecords-00008-of-00040.gz.example_info.json
+    Child.chr21.labeled.tfrecords-00009-of-00040.gz
+    Child.chr21.labeled.tfrecords-00009-of-00040.gz.example_info.json
+    Child.chr21.labeled.tfrecords-00010-of-00040.gz
+    Child.chr21.labeled.tfrecords-00010-of-00040.gz.example_info.json
+    Child.chr21.labeled.tfrecords-00011-of-00040.gz
+    Child.chr21.labeled.tfrecords-00011-of-00040.gz.example_info.json
+    Child.chr21.labeled.tfrecords-00012-of-00040.gz
+    Child.chr21.labeled.tfrecords-00012-of-00040.gz.example_info.json
+    Child.chr21.labeled.tfrecords-00013-of-00040.gz
+    Child.chr21.labeled.tfrecords-00013-of-00040.gz.example_info.json
+    Child.chr21.labeled.tfrecords-00014-of-00040.gz
+    Child.chr21.labeled.tfrecords-00014-of-00040.gz.example_info.json
+    Child.chr21.labeled.tfrecords-00015-of-00040.gz
+    Child.chr21.labeled.tfrecords-00015-of-00040.gz.example_info.json
+    Child.chr21.labeled.tfrecords-00016-of-00040.gz
+    Child.chr21.labeled.tfrecords-00016-of-00040.gz.example_info.json
+    Child.chr21.labeled.tfrecords-00017-of-00040.gz
+    Child.chr21.labeled.tfrecords-00017-of-00040.gz.example_info.json
+    Child.chr21.labeled.tfrecords-00018-of-00040.gz
+    Child.chr21.labeled.tfrecords-00018-of-00040.gz.example_info.json
+    Child.chr21.labeled.tfrecords-00019-of-00040.gz
+    Child.chr21.labeled.tfrecords-00019-of-00040.gz.example_info.json
+    Child.chr21.labeled.tfrecords-00020-of-00040.gz
+    Child.chr21.labeled.tfrecords-00020-of-00040.gz.example_info.json
+    Child.chr21.labeled.tfrecords-00021-of-00040.gz
+    Child.chr21.labeled.tfrecords-00021-of-00040.gz.example_info.json
+    Child.chr21.labeled.tfrecords-00022-of-00040.gz
+    Child.chr21.labeled.tfrecords-00022-of-00040.gz.example_info.json
+    Child.chr21.labeled.tfrecords-00023-of-00040.gz
+    Child.chr21.labeled.tfrecords-00023-of-00040.gz.example_info.json
+    Child.chr21.labeled.tfrecords-00024-of-00040.gz
+    Child.chr21.labeled.tfrecords-00024-of-00040.gz.example_info.json
+    Child.chr21.labeled.tfrecords-00025-of-00040.gz
+    Child.chr21.labeled.tfrecords-00025-of-00040.gz.example_info.json
+    Child.chr21.labeled.tfrecords-00026-of-00040.gz
+    Child.chr21.labeled.tfrecords-00026-of-00040.gz.example_info.json
+    Child.chr21.labeled.tfrecords-00027-of-00040.gz
+    Child.chr21.labeled.tfrecords-00027-of-00040.gz.example_info.json
+    Child.chr21.labeled.tfrecords-00028-of-00040.gz
+    Child.chr21.labeled.tfrecords-00028-of-00040.gz.example_info.json
+    Child.chr21.labeled.tfrecords-00029-of-00040.gz
+    Child.chr21.labeled.tfrecords-00029-of-00040.gz.example_info.json
+    Child.chr21.labeled.tfrecords-00030-of-00040.gz
+    Child.chr21.labeled.tfrecords-00030-of-00040.gz.example_info.json
+    Child.chr21.labeled.tfrecords-00031-of-00040.gz
+    Child.chr21.labeled.tfrecords-00031-of-00040.gz.example_info.json
+    Child.chr21.labeled.tfrecords-00032-of-00040.gz
+    Child.chr21.labeled.tfrecords-00032-of-00040.gz.example_info.json
+    Child.chr21.labeled.tfrecords-00033-of-00040.gz
+    Child.chr21.labeled.tfrecords-00033-of-00040.gz.example_info.json
+    Child.chr21.labeled.tfrecords-00034-of-00040.gz
+    Child.chr21.labeled.tfrecords-00034-of-00040.gz.example_info.json
+    Child.chr21.labeled.tfrecords-00035-of-00040.gz
+    Child.chr21.labeled.tfrecords-00035-of-00040.gz.example_info.json
+    Child.chr21.labeled.tfrecords-00036-of-00040.gz
+    Child.chr21.labeled.tfrecords-00036-of-00040.gz.example_info.json
+    Child.chr21.labeled.tfrecords-00037-of-00040.gz
+    Child.chr21.labeled.tfrecords-00037-of-00040.gz.example_info.json
+    Child.chr21.labeled.tfrecords-00038-of-00040.gz
+    Child.chr21.labeled.tfrecords-00038-of-00040.gz.example_info.json
+    Child.chr21.labeled.tfrecords-00039-of-00040.gz
+    Child.chr21.labeled.tfrecords-00039-of-00040.gz.example_info.json
+    ```
+
+    **Confirm that SLURM jobs completed successfully**
+    ```bash title="Run at the command line"
+    cat ../TUTORIAL/demo/Human_tutorial/logs/tracking-Baseline-v1.4.0.log | grep SUCCESS | grep Child | wc -l
+    ```
+
+    ```bash title="Check output"
+    41
+    ```
+
+??? success "Expected Output | Benchmarking:"
+    ```bash title="Run at the command line"
+    less ../TUTORIAL/demo/summary/Human_tutorial.SLURM.job_numbers.csv
+    ```
+
+    **The `JobList` column will contain the running SLURM job IDs:**
+
+    ```bash title="Check output"
+    AnalysisName,RunName,Parent,Phase,JobList
+    Baseline-v1.4.0,Human_tutorial,Father,make_examples,27669522
+    Baseline-v1.4.0,Human_tutorial,Father,beam_shuffle,27669523
+    Baseline-v1.4.0,Human_tutorial,Father,make_examples,27669524
+    Baseline-v1.4.0,Human_tutorial,Father,beam_shuffle,27669525
+    ```
