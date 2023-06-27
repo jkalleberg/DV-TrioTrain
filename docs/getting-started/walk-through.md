@@ -806,7 +806,7 @@ python3 triotrain/model_training/tutorial/estimate.py                           
     --env-file ../TUTORIAL/demo/envs/run1.env
 ```
 
-??? success "Expected Output | Estimating Parameters:"
+??? success "Expected Output | Estimating TrioTrain Parameters:"
     ```bash
     ===== start of triotrain/model_training/tutorial/estimate.py @ 2023-06-27  10:54:59 =====
     2023-06-27 10:54:59 AM - [INFO] - [DEMO] - [TRIO1] - [count_variants] - [Father]: number of REF/REF variants found | 44,452
@@ -824,6 +824,10 @@ python3 triotrain/model_training/tutorial/estimate.py                           
     ```
 
 ## 9. Run TrioTrain with a Human Trio
+
+Now that we know how to tailor TrioTrain for our non-bovine species (human), we can move forward with starting the pipeline.
+
+Run the following at the command line:
 
 ```bash
 # You can add the --dry-run flag to this command to confirm the TrioTrain pipeline runs smoothly
