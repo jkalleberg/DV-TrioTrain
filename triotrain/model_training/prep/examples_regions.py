@@ -19,8 +19,8 @@ import pandas as pd
 from helpers.files import TestFile, WriteFiles
 from helpers.iteration import Iteration
 from helpers.outputs import check_expected_outputs, check_if_output_exists
-from natsort import natsorted
 from model_training.prep.count import count_variants
+from natsort import natsorted
 
 
 def collect_args() -> argparse.Namespace:
@@ -103,7 +103,7 @@ def collect_args() -> argparse.Namespace:
     # )
 
 
-def check_args(args: argparse.Namespace, logger: Logger):
+def check_args(args: argparse.Namespace, logger: Logger) -> None:
     """
     With "--debug", display command line args provided.
 
@@ -363,7 +363,11 @@ class MakeRegions:
         self.check_output()
         self.transform_dictionary()
 
-        if self.itr.default_region_file is not None and output_file_path is None and output_file_name is None:
+        if (
+            self.itr.default_region_file is not None
+            and output_file_path is None
+            and output_file_name is None
+        ):
             output_file_path = str(self.itr.default_region_file.parent)
             output_file_name = str(self.itr.default_region_file.name)
         elif output_file_path is None:
@@ -536,7 +540,7 @@ class MakeRegions:
         """
         if self.itr.env is None:
             return
-        if (
+        elif (
             self.itr.env is not None
             and f"{self._genome}_TotalTruth" in self.itr.env.contents
         ):
@@ -593,7 +597,7 @@ class MakeRegions:
             )
         else:
             self.itr.logger.error(
-                f"{self._logger_msg}: helpers.h.count_variants() failed.\nExiting..."
+                f"{self._logger_msg}: count_variants() failed.\nExiting..."
             )
             sys.exit(1)
 
@@ -928,10 +932,11 @@ class MakeRegions:
 
 
 # Create regions files function
-def __init__():
-    from helpers.wrapper import Wrapper, timestamp
-    from helpers.utils import get_logger
+def __init__() -> None:
     from helpers.environment import Env
+    from helpers.utils import get_logger
+    from helpers.wrapper import Wrapper, timestamp
+
     """
     An example of how to use the module
     """

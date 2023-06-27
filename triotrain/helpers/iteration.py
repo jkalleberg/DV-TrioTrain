@@ -78,11 +78,11 @@ class Iteration:
             and self.current_trio_num is not None
             and self.train_genome is not None
         ):
-            self._mode_string = f"Trio-{self.train_genome}{self.current_trio_num}"
+            self._mode_string = f"TRIO{self.current_trio_num}"
         elif self.train_genome is None:
             self._mode_string = f"Benchmark"
         else:
-            self._mode_string = f"Trio{self.current_trio_num}"
+            self._mode_string = f"TRIO{self.current_trio_num}"
 
         # Do not load any variables from a file
         if self.env is None:

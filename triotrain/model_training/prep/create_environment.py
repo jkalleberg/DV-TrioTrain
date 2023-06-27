@@ -437,9 +437,9 @@ class Environment:
         env_dir = self.output_dir / self.analysis_name / "envs" 
         if not env_dir.exists():
             if self.dryrun_mode:
-                self.logger.info(f"[DRY_RUN] - {self.logging_msg}: ENV directory would be created | '{env_dir}'")
+                self.logger.info(f"[DRY_RUN] - {self.logging_msg}: env directory would be created | '{env_dir}'")
             else:
-                self.logger.info(f"{self.logging_msg}: creating ENV directory | '{env_dir}'") 
+                self.logger.info(f"{self.logging_msg}: creating env directory | '{env_dir}'") 
                 env_dir.mkdir(parents=True)
         
         env_path = env_dir / f"run{self.trio_num}.env"
@@ -707,7 +707,7 @@ class Environment:
                 "BaselineModelResultsDir"
             ] = f"{str(self.output_dir)}/baseline_v{self._version}"
 
-        if self.dryrun_mode:
+        if not self.env.env_path.exists and self.dryrun_mode:
             print(
                 f"-----------------------------  [DRY_RUN] Start of Environment File [{self.env.env_file}] -----------------------------"
             )
@@ -893,7 +893,7 @@ class Environment:
             )
             # ^ No need to include the update variable as the 'key' is really a text string
 
-        if self.dryrun_mode:
+        if not self.env.env_path.exists and self.dryrun_mode:
             print(
                 f"----------------------------- [DRY_RUN] End of Environment File [{self.env.env_file}]----------------------------- "
             )
