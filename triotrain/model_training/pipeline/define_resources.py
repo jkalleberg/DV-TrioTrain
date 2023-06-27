@@ -457,7 +457,7 @@ class Pipeline:
                 return
 
 
-def edit_pipeline(default_dict: Dict[str, Dict[str, str]], logger: logging.Logger):
+def edit_pipeline(default_dict: Dict[str, Dict[str, str]], logger: logging.Logger) -> Dict[str, Dict[str, str]]:
     """_summary_
 
     Parameters
