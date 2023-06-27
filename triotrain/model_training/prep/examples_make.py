@@ -57,6 +57,7 @@ class MakeExamples:
     _print_msg: Union[str, None] = field(default=None, init=False, repr=False)
     _run_jobs: Union[bool, None] = field(default=None, init=False, repr=False)
     _skipped_counter: int = field(default=0, init=False, repr=False)
+    _skip_phase: bool = field(default=False, init=False, repr=False)
     _total_regions: int = field(default=0, init=False, repr=False)
 
     def __post_init__(self) -> None:
@@ -401,7 +402,7 @@ class MakeExamples:
               the number created depends on
               the number of CPUs available from SLURM.
         """
-        
+
         self.find_outputs()
         if self._outputs_exist:
             self._skipped_counter += 1
@@ -416,7 +417,7 @@ class MakeExamples:
                 slurm_job.write_job()
 
         num_missing_files = int(self.n_parts) - int(self._num_tfrecords_found)  # type: ignore
-        
+
         if not self.overwrite:
             if resubmission:
                 self.itr.logger.info(
@@ -425,13 +426,13 @@ class MakeExamples:
             else:
                 self.itr.logger.info(
                     f"{self.logger_msg}: submitting job to create [{num_missing_files}] labeled tfrecords shards"
-                    )
+                )
 
         else:
             self.itr.logger.info(
                 f"{self.logger_msg}: re-submitting job to overwrite any existing tfrecords files"
             )
-        
+
         slurm_job = SubmitSBATCH(
             self.itr.job_dir,
             f"{self.job_name}.sh",
@@ -479,9 +480,9 @@ class MakeExamples:
         """
         if self.itr.debug_mode:
             self._total_regions = 5
-        
+
         make_examples_results = check_if_all_same(self._beam_shuffle_dependencies, None)
-        
+
         if make_examples_results is False:
             if len(self._beam_shuffle_dependencies) == 1:
                 if self.itr.dryrun_mode:
@@ -563,6 +564,7 @@ class MakeExamples:
         Combine all the steps for making examples for all regions into one step
         """
         self.set_genome()
+        self.set_region()
         self.find_restart_jobs()
 
         if self.itr.debug_mode:
@@ -631,6 +633,7 @@ class MakeExamples:
         else:
             if self._skip_phase:
                 return
+
             self.find_outputs(find_all=True)
             if self._outputs_exist:
                 return
