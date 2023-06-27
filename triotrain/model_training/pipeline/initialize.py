@@ -151,6 +151,7 @@ def initalize_weights(setup: Setup, itr: Iteration):
         itr.args.first_genome is not None
         and itr.current_genome_num > 0
         and itr.env is not None
+        and not itr.demo_mode
     ):
         # Update the CURRENT ENV to include the testing ckpt PATH
         itr.env.add_to(

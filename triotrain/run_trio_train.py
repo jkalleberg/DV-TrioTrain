@@ -135,7 +135,7 @@ def run_trio_train(eval_genome="Child") -> None:
             current_deps=pipeline.current_genome_deps,
             next_deps=pipeline.next_genome_deps,
         )
-        breakpoint()
+        
         number_completed_itrs += 1
         new_env = pipeline.meta.env
 
