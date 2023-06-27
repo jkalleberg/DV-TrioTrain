@@ -398,7 +398,6 @@ class BeamShuffleExamples:
         """
         Submit SLURM jobs to queue.
         """
-        # self.find_outputs()
         num_missing_files = int(self.n_parts) - int(self._num_shuff_tfrecords_found)  # type: ignore
 
         slurm_job = self.make_job(index=dependency_index)
@@ -718,6 +717,7 @@ class BeamShuffleExamples:
                     )  # THIS HAS TO BE +1 to avoid starting with a region0
                     self.set_genome()
                     self.set_region(current_region=self.job_num)
+                    self.find_outputs()
                     self.submit_job(
                         dependency_index=region_index,
                         resubmission=True,
@@ -740,6 +740,7 @@ class BeamShuffleExamples:
                 )  # THIS HAS TO BE +1 to avoid starting with a region0
                 self.set_genome()
                 self.set_region(current_region=self.job_num)
+                self.find_outputs()
                 self.submit_job(
                     dependency_index=r, total_jobs=int(self._total_regions)
                 )  # THIS HAS TO BE r because indexing of the list of job ids starts with 0
