@@ -67,11 +67,13 @@ class MakeExamples:
         self.total_shards = self.n_parts - 1
         if "N_Parts" not in self.itr.env.contents:
             self.itr.env.add_to(
-                "N_Parts", str(self.n_parts), dryrun_mode=self.itr.dryrun_mode
+                "N_Parts", str(self.n_parts), dryrun_mode=self.itr.dryrun_mode,
+                msg=f"[{self.itr._mode_string}] - [{self._phase}]"
             )
         if "TotalShards" not in self.itr.env.contents:
             self.itr.env.add_to(
-                "TotalShards", str(self.total_shards), dryrun_mode=self.itr.dryrun_mode
+                "TotalShards", str(self.total_shards), dryrun_mode=self.itr.dryrun_mode,
+                msg=f"[{self.itr._mode_string}] - [{self._phase}]"
             )
         if self.track_resources:
             assert (
