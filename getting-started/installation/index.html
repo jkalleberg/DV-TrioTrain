@@ -427,7 +427,7 @@
   
     <li class="md-nav__item">
       <a href="../walk-through/" class="md-nav__link">
-        Human GIAB Demo
+        Human GIAB Tutorial
       </a>
     </li>
   
@@ -613,7 +613,7 @@
 
 
 <h1 id="software-assumptions">Software Assumptions</h1>
-<p>If you're unfamiliar with SLURM, navigating your computing cluster, or what shared-software is available to you, reach out to your HPC system's Cluster Administrator.</p>
+<p>If you're unfamiliar with SLURM, navigating your computing cluster, or what shared software is available to you, reach out to your HPC system's Cluster Administrator.</p>
 <h2 id="prerequisites">Prerequisites</h2>
 <ul>
 <li>Unix-like operating system (cannot run on Windows)</li>
@@ -670,18 +670,18 @@
 </tr>
 </tbody>
 </table>
-<p>TrioTrain expects these software packages (modules), to be pre-built, and available locally on your SLURM-based HPC cluster. For example, on the MU Lewis Computing cluster, we can:</p>
-<pre><code class="language-bash"># Search for modules with:
-module avail &lt;tool_search_string&gt;
-
-# or
-module spider &lt;tool_search_string&gt;
-
-# After confirming a tool is pre-build,
-# these modules are loaded in with:
-module load &lt;module_name&gt;
-</code></pre>
-<p>These locally-available software are loaded via an executable bash helper script (<code>modules.sh</code>).</p>
+<p>TrioTrain expects the software listed above (referred to as modules) to be pre-built, and available locally on your SLURM-based HPC cluster. For example, on the MU Lewis Computing cluster, we can:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># Search for modules with:</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>module<span class="w"> </span>avail<span class="w"> </span>&lt;tool_search_string&gt;
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="c1"># or</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>module<span class="w"> </span>spider<span class="w"> </span>&lt;tool_search_string&gt;
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="c1"># After confirming a tool is pre-built,</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="c1"># these modules are loaded in with:</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>module<span class="w"> </span>load<span class="w"> </span>&lt;module_name&gt;
+</code></pre></div>
+<p>These locally-available software are loaded by TrioTrain via an executable bash helper script (<code>modules.sh</code>).</p>
 <hr />
 <h2 id="install-triotrain">Install TrioTrain</h2>
 <div class="admonition note">
@@ -700,7 +700,7 @@ module load &lt;module_name&gt;
 </li>
 </ol>
 <hr />
-<p><font size= "4"> <strong><a href="../configuration/">Next: Configure TrioTrain &gt;&gt;&gt;</a></strong> </font></p>
+<p><a class="md-button" href="../configuration/">Configure TrioTrain <span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M5 21a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5m1-8h8.5L11 16.5l1.42 1.42L18.34 12l-5.92-5.92L11 7.5l3.5 3.5H6v2Z"/></svg></span></a></p>
 
 
 
@@ -743,7 +743,7 @@ module load &lt;module_name&gt;
       <div class="md-dialog__inner md-typeset"></div>
     </div>
     
-    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.top", "toc.integrate"], "search": "../../assets/javascripts/workers/search.208ed371.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.top", "toc.integrate", "content.code.copy"], "search": "../../assets/javascripts/workers/search.208ed371.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
       <script src="../../assets/javascripts/bundle.b4d07000.min.js"></script>

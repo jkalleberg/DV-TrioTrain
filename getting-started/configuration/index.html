@@ -441,7 +441,7 @@
   
     <li class="md-nav__item">
       <a href="../walk-through/" class="md-nav__link">
-        Human GIAB Demo
+        Human GIAB Tutorial
       </a>
     </li>
   
@@ -629,57 +629,71 @@
 <h1 id="configuration">Configuration</h1>
 <p>To ensure reproducibility, all configuration steps described below are included in a helper script, <code>build.sh</code>. However, these configuration steps require some system-specific customization for your HPC cluster.</p>
 <p>You can view a <a href="https://github.com/jkalleberg/DV-TrioTrain/scripts/setup/build.sh">template script for automatically building TrioTrain on Github.</a></p>
-<p>Each configuration step during build uses separate helper scripts. Examples these can also found on <a href="https://github.com/jkalleberg/DV-TrioTrain/scripts/setup/">Github, under the scripts/ directory</a>. <strong>Those which require system-specific alterations are bolded.</strong></p>
-<h2 id="1-begin-an-interactive-session-first"><strong>1. Begin an interactive session first</strong></h2>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>You will need to change this bash script to match your own system modules available. Reach out to your cluster's sys admin with any questions.</p>
+<p>Each configuration step during the build process uses a separate helper script. Examples these can also found on <a href="https://github.com/jkalleberg/DV-TrioTrain/scripts/setup/">Github, under the scripts/ directory</a>.</p>
+<h2 id="1-begin-an-interactive-session-first">1. Begin an interactive session first</h2>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>You will need to tailor this step to match your HPC cluster. Reach out to your system admin with any questions.</p>
 </div>
-<p>This will allow you to run command line code from your terminal/screen.</p>
-<pre><code class="language-bash">source scripts/start_interactive.sh
-</code></pre>
-<h2 id="2-load-cluster-specific-modules"><strong>2. Load cluster-specific modules</strong></h2>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>You will need to change this bash script to match your own system modules available. Reach out to your cluster's sys admin with any questions.</p>
+<p>We request resource in a SLURM "interactive session" to allow us to run code at the command line and avoid running resource-intensive code on the login node, which could negatively impact other users.</p>
+<p>There are two options:</p>
+<details class="example">
+<summary>Option 1: Manual</summary>
+<p>Edit the following SLURM command to match your system's resources (i.e. add a valid partition and fair-share account), and run at the command line.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>srun<span class="w"> </span>--pty<span class="w"> </span>-p<span class="w"> </span>&lt;partition_name&gt;<span class="w"> </span>--time<span class="o">=</span><span class="m">0</span>-06:00:00<span class="w"> </span>--exclusive<span class="w"> </span>--mem<span class="o">=</span><span class="m">0</span><span class="w"> </span>-A<span class="w"> </span>&lt;account_name&gt;<span class="w"> </span>/bin/bash
+</code></pre></div>
+</details>
+<details class="example">
+<summary>Option 2: Automated</summary>
+<p>Using the same syntax as in Option 1 above, edit the <a href="https://github.com/jkalleberg/DV-TrioTrain/blob/bac33c732065fa7fa1e92097e8f31da383261f4f/scripts/start_interactive.sh">template script</a> to match your system's resources.</p>
+<p>Then, run the following at the command line:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nb">source</span><span class="w"> </span>scripts/start_interactive.sh
+</code></pre></div>
+</details>
+<h2 id="2-load-cluster-specific-modules">2. Load cluster-specific modules</h2>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>You will need to tailor this step to match your HPC cluster. Reach out to your system admin with any questions.</p>
 </div>
-<p>This is how TrioTrain finds the system requirements.</p>
-<pre><code class="language-bash">source scripts/setup/modules.sh
-</code></pre>
+<p>This executable is how TrioTrain finds the <a href="../installation/#system-requirements">required software</a> on your local HPC. TrioTrain will repeatedly use this script to load all modules and the required bash helper functions. <a href="https://github.com/jkalleberg/DV-TrioTrain/blob/bac33c732065fa7fa1e92097e8f31da383261f4f/scripts/setup/modules.sh">You can view the template script on GitHub.</a></p>
+<p>Within the template, edit the lines with <code>module load &lt;module_name/version&gt;</code> to match your system (i.e. add a valid module name).</p>
+<p>Then, run the following at the command line:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nb">source</span><span class="w"> </span>scripts/setup/modules.sh<span class="w"> </span>
+</code></pre></div>
 <h2 id="3-install-apptainersingularity-containers">3. Install Apptainer/Singularity containers</h2>
-<p>Two (2) versions of DeepVariant containers that are used by TrioTrain:</p>
-<ol>
-<li>GPU-specific container used for training.</li>
-<li>CPU-specific container used for all other steps.</li>
-</ol>
-<pre><code class="language-bash"># Install GPU-specific apptainer container
-bash scripts/setup/build_containers.sh DeepVariant-GPU
-
-# Install CPU-specific apptainer container
-bash scripts/setup/build_containers.sh DeepVariant-CPU
-</code></pre>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>Both the GPU and CPU containers are required, since you can't run the GPU version used for training on a non-GPU hardware.</p>
 </div>
-<p>A third container is used by TrioTrain, specifically for <code>hap.py</code> which currently still uses the depreciated Python v2.7 that makes it incompatible with DeepVariant.</p>
-<pre><code class="language-bash"># Install the happ.py apptainer container
-bash scripts/setup/build_happy.sh
-</code></pre>
+<p>TrioTrain uses two (2) versions of DeepVariant containers:</p>
+<ol>
+<li>GPU-specific container used for training.</li>
+<li>CPU-specific container used for all other steps.</li>
+</ol>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># Install GPU-specific apptainer container</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>bash<span class="w"> </span>scripts/setup/build_containers.sh<span class="w"> </span>DeepVariant-GPU
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="c1"># Install CPU-specific apptainer container</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>bash<span class="w"> </span>scripts/setup/build_containers.sh<span class="w"> </span>DeepVariant-CPU
+</code></pre></div>
+<p>TrioTrain also uses a third container to run <code>hap.py</code>, as it requires the depreciated Python v2.7 making it incompatible with either DeepVariant container and the TrioTrain conda environment.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1"># Install the happ.py apptainer container</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>bash<span class="w"> </span>scripts/setup/build_happy.sh
+</code></pre></div>
 <h2 id="4-install-the-conda-environment">4. Install the Conda environment</h2>
-<p>This conda environment includes the DeepVariant requirements, such as Apache Beam, Tensorflow, etc.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
+<p>This conda environment includes the DeepVariant requirements, such as Apache Beam, Tensorflow, etc. The conda environment can take awhile to build. We recommend requesting ample memory during your interactive session before proceeding.</p>
+<details class="note">
+<summary>Note</summary>
 <p><code>source</code> is used instead of <code>bash</code> to by-pass system issues with <code>conda activate</code> specific to MU Lewis, which may not be required for your system.</p>
-</div>
-<pre><code class="language-bash">source scripts/setup/build_beam.sh
-</code></pre>
+</details>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="nb">source</span><span class="w"> </span>scripts/setup/build_beam.sh
+</code></pre></div>
 <h2 id="5-download-the-beam-shuffling-script">5. Download the Beam shuffling script</h2>
 <p>Create a local copy of the appropriate shuffling script from Google Genomoics Health Group.</p>
-<pre><code class="language-bash">bash scripts/setup/download_shuffle.sh
-</code></pre>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>bash<span class="w"> </span>scripts/setup/download_shuffle.sh
+</code></pre></div>
 <hr />
-<p><font size= "4"> <strong><a href="../walk-through/">Next: Complete the Human GIAB Demo &gt;&gt;&gt;</a></strong> </font></p>
+<p><a class="md-button" href="../installation/"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-1 8H9.5L13 7.5l-1.42-1.42L5.66 12l5.92 5.92L13 16.5 9.5 13H18v-2Z"/></svg></span> Install TrioTrain</a> <a class="md-button" href="../walk-through/">Complete the Human GIAB Tutorial <span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M5 21a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5m1-8h8.5L11 16.5l1.42 1.42L18.34 12l-5.92-5.92L11 7.5l3.5 3.5H6v2Z"/></svg></span></a></p>
 
 
 
@@ -722,7 +736,7 @@ bash scripts/setup/build_happy.sh
       <div class="md-dialog__inner md-typeset"></div>
     </div>
     
-    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.top", "toc.integrate"], "search": "../../assets/javascripts/workers/search.208ed371.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.top", "toc.integrate", "content.code.copy"], "search": "../../assets/javascripts/workers/search.208ed371.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
       <script src="../../assets/javascripts/bundle.b4d07000.min.js"></script>

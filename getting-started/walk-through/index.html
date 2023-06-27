@@ -23,7 +23,7 @@
     
     
       
-        <title>Human GIAB Demo - DeepVariant-TrioTrain</title>
+        <title>Human GIAB Tutorial - DeepVariant-TrioTrain</title>
       
     
     
@@ -65,7 +65,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#human-giab-demo" class="md-skip">
+        <a href="#human-giab-tutorial" class="md-skip">
           Skip to content
         </a>
       
@@ -100,7 +100,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Human GIAB Demo
+              Human GIAB Tutorial
             
           </span>
         </div>
@@ -381,12 +381,12 @@
       
       
         <label class="md-nav__link md-nav__link--active" for="__toc">
-          Human GIAB Demo
+          Human GIAB Tutorial
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <a href="./" class="md-nav__link md-nav__link--active">
-        Human GIAB Demo
+        Human GIAB Tutorial
       </a>
       
         
@@ -405,37 +405,58 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1-begin-an-interactive-session-first" class="md-nav__link">
-    1. Begin an interactive session first
+  <a href="#1-confirm-setup-worked" class="md-nav__link">
+    1. Confirm setup worked
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#2-load-cluster-specific-modules" class="md-nav__link">
-    2. Load cluster-specific modules
+  <a href="#2-begin-an-interactive-session" class="md-nav__link">
+    2. Begin an interactive session
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#3-download-pre-trained-models" class="md-nav__link">
-    3. Download pre-trained models
+  <a href="#3-load-cluster-specific-modules" class="md-nav__link">
+    3. Load cluster-specific modules
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#4-download-intermediate-giab-data" class="md-nav__link">
-    4. Download Intermediate GIAB data
+  <a href="#4-download-pre-trained-models" class="md-nav__link">
+    4. Download pre-trained models
   </a>
   
-    <nav class="md-nav" aria-label="4. Download Intermediate GIAB data">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-download-raw-data" class="md-nav__link">
+    5. Download Raw Data
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-process-raw-data" class="md-nav__link">
+    6. Process Raw Data
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Process Raw Data">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#expected-intermediate-data-outputs" class="md-nav__link">
-    Expected Intermediate Data Outputs
+  <a href="#a-merge-the-popvcf" class="md-nav__link">
+    a. Merge the PopVCF
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#b-download-giab-sequence-data" class="md-nav__link">
+    b. Download GIAB Sequence Data
   </a>
   
 </li>
@@ -446,16 +467,37 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#5-download-raw-giab-data" class="md-nav__link">
-    5. Download Raw GIAB data
+  <a href="#7-create-triotrain-inputs" class="md-nav__link">
+    7. Create TrioTrain Inputs
   </a>
   
-    <nav class="md-nav" aria-label="5. Download Raw GIAB data">
+    <nav class="md-nav" aria-label="7. Create TrioTrain Inputs">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#expected-raw-data-outputs" class="md-nav__link">
-    Expected Raw Data Outputs
+  <a href="#a-reference-dictionary-file-dict" class="md-nav__link">
+    a. Reference Dictionary File (.dict)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#b-metadata-file-csv" class="md-nav__link">
+    b. Metadata file (.csv)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#c-slurm-resource-config-file-json" class="md-nav__link">
+    c. SLURM Resource Config File (.json)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#d-optional-reference-sequence-data-file" class="md-nav__link">
+    d. (OPTIONAL) Reference Sequence Data File
   </a>
   
 </li>
@@ -466,42 +508,15 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#6-submit-slurm-job-to-calculate-coverage-as-a-sanity-check" class="md-nav__link">
-    6. Submit SLURM job to calculate coverage as a sanity check
+  <a href="#8-run-shuffling-demo" class="md-nav__link">
+    8. Run Shuffling Demo
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#6-create-supplmentary-reference-files" class="md-nav__link">
-    6. Create supplmentary reference files
-  </a>
-  
-    <nav class="md-nav" aria-label="6. Create supplmentary reference files">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#reference-dictionary-file-with-picard" class="md-nav__link">
-    Reference dictionary file with picard
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#files-for-rtg-tools" class="md-nav__link">
-    Files for rtg-tools
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#7-create-the-demo-metadata-file" class="md-nav__link">
-    7. Create the demo metadata file
+  <a href="#9-run-triotrain-with-a-human-trio" class="md-nav__link">
+    9. Run TrioTrain with a Human Trio
   </a>
   
 </li>
@@ -693,174 +708,912 @@
   
 
 
-<h1 id="human-giab-demo">Human GIAB Demo</h1>
-<p>This demo will enable you to confirm setup worked correctly, and provide you with an example of how to run DV-TrioTrain.</p>
-<p>After correctly installing DV-TrioTrain, run the following command at the command line:</p>
-<pre><code class="language-bash">cd DV-TrioTrain
-ls
-</code></pre>
-<p>You should see the following in this directory:</p>
-<pre><code class="language-bash">APPTAINER_CACHE   deepvariant_1.4.0-gpu.sif  docs    hap.py_v0.3.12.sif  miniconda_envs  README.md  triotrain
-APPTAINER_TMPDIR  deepvariant_1.4.0.sif      errors  LICENSE             mkdocs.yml      scripts
-</code></pre>
-<h2 id="1-begin-an-interactive-session-first"><strong>1. Begin an interactive session first</strong></h2>
+<h1 id="human-giab-tutorial">Human GIAB Tutorial</h1>
+<p>Completing this walk-through successfully confirms that DV-TrioTrain has been setup correctly on your HPC cluster. Additionally, the tutorial completes one round of re-training with a Human trio as an example of how to run DV-TrioTrain. If you haven't already, go back and complete the previous two guides:  </p>
+<p><a class="md-button" href="../installation/"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14 17h-2V9h-2V7h4m5-4H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2Z"/></svg></span> Installation Guide</a>
+<a class="md-button" href="../configuration/"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M15 11a2 2 0 0 1-2 2h-2v2h4v2H9v-4a2 2 0 0 1 2-2h2V9H9V7h4a2 2 0 0 1 2 2m4-6H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2Z"/></svg></span> Configuration Guide</a></p>
+<h2 id="1-confirm-setup-worked">1. Confirm setup worked</h2>
+<p>Run the following at the command line:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nb">cd</span><span class="w"> </span>DV-TrioTrain
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>ls
+</code></pre></div>
+<details class="success">
+<summary>Expected Output</summary>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>APPTAINER_CACHE<span class="w">   </span>deepvariant_1.4.0-gpu.sif<span class="w">  </span>docs<span class="w">    </span>hap.py_v0.3.12.sif<span class="w">  </span>miniconda_envs<span class="w">  </span>README.md<span class="w">  </span>triotrain
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>APPTAINER_TMPDIR<span class="w">  </span>deepvariant_1.4.0.sif<span class="w">      </span>errors<span class="w">  </span>LICENSE<span class="w">             </span>mkdocs.yml<span class="w">      </span>scripts
+</code></pre></div>
+<ul>
+<li>
+<p><code>triotrain/</code> directory contains Python modules for the DV-TrioTrain package</p>
+</li>
+<li>
+<p><code>scripts/</code> directory contains Bash helper scripts and functions that can be used as templates</p>
+</li>
+</ul>
+</details>
+<h2 id="2-begin-an-interactive-session">2. Begin an interactive session</h2>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>You will need to tailor this step to match your HPC cluster. Reach out to your system admin with any questions.</p>
+</div>
+<p>The GIAB raw data we will be using for this tutorial is relatively large, and thus needs ample memory. We request resources in a SLURM "interactive session" to allow us to run code at the command line and avoid running resource-intensive code on the login node, which could negatively impact other users. Details about the memory/CPUs requested for this tutorial when run on the MU Lewis Computing Cluster can be found in the <a href="../../user-guide/compute/">User Guide</a>.</p>
+<p>There are two options:</p>
+<details class="example">
+<summary>Option 1: Manual</summary>
+<p>Edit the following SLURM command to match your system's resources (i.e. add a valid partition and fair-share account), and run at the command line.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>srun<span class="w"> </span>--pty<span class="w"> </span>-p<span class="w"> </span>&lt;partition_name&gt;<span class="w"> </span>--time<span class="o">=</span><span class="m">0</span>-06:00:00<span class="w"> </span>--exclusive<span class="w"> </span>--mem<span class="o">=</span><span class="m">0</span><span class="w"> </span>-A<span class="w"> </span>&lt;account_name&gt;<span class="w"> </span>/bin/bash
+</code></pre></div>
+</details>
+<details class="example">
+<summary>Option 2: Automated</summary>
+<p>Using the same syntax as in Option 1 above, edit the <a href="https://github.com/jkalleberg/DV-TrioTrain/blob/bac33c732065fa7fa1e92097e8f31da383261f4f/scripts/start_interactive.sh">template script</a> to match your system's resources.</p>
+<p>Then, run the following at the command line:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nb">source</span><span class="w"> </span>scripts/start_interactive.sh
+</code></pre></div>
+</details>
+<h2 id="3-load-cluster-specific-modules">3. Load cluster-specific modules</h2>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>You will need to tailor this step to match your HPC cluster. Reach out to your system admin with any questions.</p>
+</div>
+<p>This executable is how TrioTrain finds the <a href="../installation/#system-requirements">required software</a> on your local HPC. TrioTrain will repeatedly use this script to load all modules and the required bash helper functions. <a href="https://github.com/jkalleberg/DV-TrioTrain/blob/bac33c732065fa7fa1e92097e8f31da383261f4f/scripts/setup/modules.sh">You can view the template script on GitHub.</a></p>
+<p>Within the template, edit the lines with <code>module load &lt;module_name/version&gt;</code> to match your system (i.e. add a valid module name).</p>
+<p>Then, run the following at the command line:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nb">source</span><span class="w"> </span>scripts/setup/modules.sh<span class="w"> </span>
+</code></pre></div>
+<h2 id="4-download-pre-trained-models">4. Download pre-trained models</h2>
+<p>Running a local copy of a container requires us to create a local copy of the <code>model.ckpt</code> files from v1.4 of DeepVariant. These checkpoints are the human-trained models produced by Google Genomics Health Group. An index with source links for the published models compatible with TrioTrain can be found <a href="../../user-guide/existing_models/">here</a>.</p>
+<p>We are downloading two model checkpoints:</p>
+<ul>
+<li>the default human model</li>
+<li>the WGS.AF human model</li>
+</ul>
+<p>All the steps to download these data are contained in a single script, which <a href="https://github.com/jkalleberg/DV-TrioTrain/blob/bac33c732065fa7fa1e92097e8f31da383261f4f/scripts/setup/download_models.sh">you can view on Github.</a></p>
+<p>Run the following at the command line:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>bash<span class="w"> </span>scripts/setup/download_models.sh
+</code></pre></div>
+<details class="success">
+<summary>Expected Output: Default human model</summary>
+<div class="highlight"><span class="filename">Run at the command line</span><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>ls<span class="w"> </span>triotrain/model_training/pretrained_models/v1.4.0_withIS_noAF/
+</code></pre></div>
+<div class="highlight"><span class="filename">Check outputs</span><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>model.ckpt.data-00000-of-00001<span class="w">  </span>model.ckpt.example_info.json<span class="w">  </span>model.ckpt.index<span class="w">  </span>model.ckpt.meta
+</code></pre></div>
+</details>
+<details class="success">
+<summary>Expected Output: WGS.AF human model</summary>
+<div class="highlight"><span class="filename">Run at the command line</span><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>ls<span class="w"> </span>triotrain/model_training/pretrained_models/v1.4.0_withIS_withAF/
+</code></pre></div>
+<div class="highlight"><span class="filename">Check outputs</span><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>wgs_af.model.ckpt.data-00000-of-00001<span class="w">  </span>wgs_af.model.ckpt.index
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>wgs_af.model.ckpt.example_info.json<span class="w">    </span>wgs_af.model.ckpt.meta
+</code></pre></div>
+</details>
+<h2 id="5-download-raw-data">5. Download Raw Data</h2>
+<p>We will be using two Human trios from the v4.2.1 GIAB benchmarking data.</p>
+<table>
+<thead>
+<tr>
+<th>TrioNumber</th>
+<th>TrioName</th>
+<th>CommonID</th>
+<th>SampleID</th>
+<th>Relationship</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>AshkenaziJew</td>
+<td>HG002</td>
+<td>NA24385</td>
+<td>Son</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>HG003</td>
+<td>NA24149</td>
+<td>Father</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>HG004</td>
+<td>NA24143</td>
+<td>Mother</td>
+</tr>
+<tr>
+<td>2</td>
+<td>HanChinese</td>
+<td>HG005</td>
+<td>NA24631</td>
+<td>Son</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>HG006</td>
+<td>NA24694</td>
+<td>Father</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>HG007</td>
+<td>NA24695</td>
+<td>Mother</td>
+</tr>
+</tbody>
+</table>
+<p>We will be downloading (5) types of raw data:</p>
+<ol>
+<li>the per-chromosome 1kGP Population Allele Frequency (<code>.vcf.gz</code>) with corresponding index file (<code>.tbi</code>)</li>
+<li>sequence data &mdash; checksums (<code>.md5</code>) and index files (<code>.txt</code>) containing the download paths for:<ol>
+<li>the aligned reads files (<code>.bam</code>)</li>
+<li>the corresponding index file (<code>.bai</code>)</li>
+</ol>
+</li>
+<li>a benchmarking callset (<code>.vcf.gz</code>) with corresponding index file (<code>.tbi</code>) for each sample</li>
+<li>a benchmarking regions file (<code>.bed</code>) for each sample</li>
+<li>the GRCh38 reference genome (<code>.fasta</code>) with corresponding index file (<code>.fai</code>)</li>
+</ol>
+<p>All the steps to download these data are contained in a single script, which <a href="https://github.com/jkalleberg/DV-TrioTrain/blob/bac33c732065fa7fa1e92097e8f31da383261f4f/scripts/setup/download_GIAB.sh">you can view on Github.</a></p>
+<p>Run the following at the command line:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>bash<span class="w"> </span>scripts/setup/download_GIAB.sh
+</code></pre></div>
+<details class="success">
+<summary>Expected Output: GIAB Directories</summary>
+<div class="highlight"><span class="filename">Run at the command line</span><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>ls<span class="w"> </span>triotrain/variant_calling/data/GIAB
+</code></pre></div>
+<div class="highlight"><span class="filename">Check output directories</span><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>allele_freq<span class="w">  </span>bam<span class="w">  </span>benchmark<span class="w">  </span>reference
+</code></pre></div>
+</details>
+<details class="success">
+<summary>Expected Raw Data: <code>allele_freq/</code></summary>
+<div class="highlight"><span class="filename">Run at the command line</span><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>ls<span class="w"> </span>triotrain/variant_calling/data/GIAB/allele_freq/
+</code></pre></div>
+<div class="highlight"><span class="filename">Check outputs</span><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>cohort-chr10.release_missing2ref.no_calls.vcf.gz<span class="w">      </span>cohort-chr21.release_missing2ref.no_calls.vcf.gz.tbi
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>cohort-chr10.release_missing2ref.no_calls.vcf.gz.tbi<span class="w">  </span>cohort-chr22.release_missing2ref.no_calls.vcf.gz
+<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>cohort-chr11.release_missing2ref.no_calls.vcf.gz<span class="w">      </span>cohort-chr22.release_missing2ref.no_calls.vcf.gz.tbi
+<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a>cohort-chr11.release_missing2ref.no_calls.vcf.gz.tbi<span class="w">  </span>cohort-chr2.release_missing2ref.no_calls.vcf.gz
+<a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a>cohort-chr12.release_missing2ref.no_calls.vcf.gz<span class="w">      </span>cohort-chr2.release_missing2ref.no_calls.vcf.gz.tbi
+<a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a>cohort-chr12.release_missing2ref.no_calls.vcf.gz.tbi<span class="w">  </span>cohort-chr3.release_missing2ref.no_calls.vcf.gz
+<a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a>cohort-chr13.release_missing2ref.no_calls.vcf.gz<span class="w">      </span>cohort-chr3.release_missing2ref.no_calls.vcf.gz.tbi
+<a id="__codelineno-14-8" name="__codelineno-14-8" href="#__codelineno-14-8"></a>cohort-chr13.release_missing2ref.no_calls.vcf.gz.tbi<span class="w">  </span>cohort-chr4.release_missing2ref.no_calls.vcf.gz
+<a id="__codelineno-14-9" name="__codelineno-14-9" href="#__codelineno-14-9"></a>cohort-chr14.release_missing2ref.no_calls.vcf.gz<span class="w">      </span>cohort-chr4.release_missing2ref.no_calls.vcf.gz.tbi
+<a id="__codelineno-14-10" name="__codelineno-14-10" href="#__codelineno-14-10"></a>cohort-chr14.release_missing2ref.no_calls.vcf.gz.tbi<span class="w">  </span>cohort-chr5.release_missing2ref.no_calls.vcf.gz
+<a id="__codelineno-14-11" name="__codelineno-14-11" href="#__codelineno-14-11"></a>cohort-chr15.release_missing2ref.no_calls.vcf.gz<span class="w">      </span>cohort-chr5.release_missing2ref.no_calls.vcf.gz.tbi
+<a id="__codelineno-14-12" name="__codelineno-14-12" href="#__codelineno-14-12"></a>cohort-chr15.release_missing2ref.no_calls.vcf.gz.tbi<span class="w">  </span>cohort-chr6.release_missing2ref.no_calls.vcf.gz
+<a id="__codelineno-14-13" name="__codelineno-14-13" href="#__codelineno-14-13"></a>cohort-chr16.release_missing2ref.no_calls.vcf.gz<span class="w">      </span>cohort-chr6.release_missing2ref.no_calls.vcf.gz.tbi
+<a id="__codelineno-14-14" name="__codelineno-14-14" href="#__codelineno-14-14"></a>cohort-chr16.release_missing2ref.no_calls.vcf.gz.tbi<span class="w">  </span>cohort-chr7.release_missing2ref.no_calls.vcf.gz
+<a id="__codelineno-14-15" name="__codelineno-14-15" href="#__codelineno-14-15"></a>cohort-chr17.release_missing2ref.no_calls.vcf.gz<span class="w">      </span>cohort-chr7.release_missing2ref.no_calls.vcf.gz.tbi
+<a id="__codelineno-14-16" name="__codelineno-14-16" href="#__codelineno-14-16"></a>cohort-chr17.release_missing2ref.no_calls.vcf.gz.tbi<span class="w">  </span>cohort-chr8.release_missing2ref.no_calls.vcf.gz
+<a id="__codelineno-14-17" name="__codelineno-14-17" href="#__codelineno-14-17"></a>cohort-chr18.release_missing2ref.no_calls.vcf.gz<span class="w">      </span>cohort-chr8.release_missing2ref.no_calls.vcf.gz.tbi
+<a id="__codelineno-14-18" name="__codelineno-14-18" href="#__codelineno-14-18"></a>cohort-chr18.release_missing2ref.no_calls.vcf.gz.tbi<span class="w">  </span>cohort-chr9.release_missing2ref.no_calls.vcf.gz
+<a id="__codelineno-14-19" name="__codelineno-14-19" href="#__codelineno-14-19"></a>cohort-chr19.release_missing2ref.no_calls.vcf.gz<span class="w">      </span>cohort-chr9.release_missing2ref.no_calls.vcf.gz.tbi
+<a id="__codelineno-14-20" name="__codelineno-14-20" href="#__codelineno-14-20"></a>cohort-chr19.release_missing2ref.no_calls.vcf.gz.tbi<span class="w">  </span>cohort-chrX.release_missing2ref.no_calls.vcf.gz
+<a id="__codelineno-14-21" name="__codelineno-14-21" href="#__codelineno-14-21"></a>cohort-chr1.release_missing2ref.no_calls.vcf.gz<span class="w">       </span>cohort-chrX.release_missing2ref.no_calls.vcf.gz.tbi
+<a id="__codelineno-14-22" name="__codelineno-14-22" href="#__codelineno-14-22"></a>cohort-chr1.release_missing2ref.no_calls.vcf.gz.tbi<span class="w">   </span>cohort-chrY.release_missing2ref.no_calls.vcf.gz
+<a id="__codelineno-14-23" name="__codelineno-14-23" href="#__codelineno-14-23"></a>cohort-chr20.release_missing2ref.no_calls.vcf.gz<span class="w">      </span>cohort-chrY.release_missing2ref.no_calls.vcf.gz.tbi
+<a id="__codelineno-14-24" name="__codelineno-14-24" href="#__codelineno-14-24"></a>cohort-chr20.release_missing2ref.no_calls.vcf.gz.tbi<span class="w">  </span>concat_PopVCFs.sh
+<a id="__codelineno-14-25" name="__codelineno-14-25" href="#__codelineno-14-25"></a>cohort-chr21.release_missing2ref.no_calls.vcf.gz<span class="w">      </span>PopVCF.merge.list
+</code></pre></div>
+</details>
+<details class="success">
+<summary>Expected Raw Data: <code>bam/</code></summary>
+<div class="highlight"><span class="filename">Run at the command line</span><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>ls<span class="w"> </span>triotrain/variant_calling/data/GIAB/bam
+</code></pre></div>
+<div class="highlight"><span class="filename">Check outputs</span><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>AJtrio.download<span class="w">                                        </span>HCtrio.download<span class="w">  </span>
+<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>AJtrio_Illumina_2x250bps_novoaligns_GRCh37_GRCh38.txt<span class="w">  </span>HCtrio_Illumina300X100X_wgs_novoalign_GRCh37_GRCh38.txt
+<a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>HG002_corrected_md5sums.feb19upload.txt
+</code></pre></div>
+</details>
+<details class="success">
+<summary>Expected Raw Data: <code>benchmark/</code></summary>
+<div class="highlight"><span class="filename">Run at the command line</span><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>ls<span class="w"> </span>triotrain/variant_calling/data/GIAB/benchmark/
+</code></pre></div>
+<div class="highlight"><span class="filename">Check outputs</span><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>HG002_GRCh38_1_22_v4.2.1_benchmark.bed<span class="w">         </span>HG005_GRCh38_1_22_v4.2.1_benchmark.vcf.gz
+<a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a>HG002_GRCh38_1_22_v4.2.1_benchmark.vcf.gz<span class="w">      </span>HG005_GRCh38_1_22_v4.2.1_benchmark.vcf.gz.tbi
+<a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a>HG002_GRCh38_1_22_v4.2.1_benchmark.vcf.gz.tbi<span class="w">  </span>HG005_README_v4.2.1.txt
+<a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a>HG002_README_v4.2.1.txt<span class="w">                      </span>HG006_benchmark.md5
+<a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a>HG003_GRCh38_1_22_v4.2.1_benchmark.bed<span class="w">         </span>HG006_GRCh38_1_22_v4.2.1_benchmark.bed
+<a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a>HG003_GRCh38_1_22_v4.2.1_benchmark.vcf.gz<span class="w">      </span>HG006_GRCh38_1_22_v4.2.1_benchmark.vcf.gz
+<a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a>HG003_GRCh38_1_22_v4.2.1_benchmark.vcf.gz.tbi<span class="w">  </span>HG006_GRCh38_1_22_v4.2.1_benchmark.vcf.gz.tbi
+<a id="__codelineno-18-8" name="__codelineno-18-8" href="#__codelineno-18-8"></a>HG003_README_v4.2.1.txt<span class="w">                      </span>HG006_README_v4.2.1.txt
+<a id="__codelineno-18-9" name="__codelineno-18-9" href="#__codelineno-18-9"></a>HG004_GRCh38_1_22_v4.2.1_benchmark.bed<span class="w">         </span>HG007_benchmark.md5
+<a id="__codelineno-18-10" name="__codelineno-18-10" href="#__codelineno-18-10"></a>HG004_GRCh38_1_22_v4.2.1_benchmark.vcf.gz<span class="w">      </span>HG007_GRCh38_1_22_v4.2.1_benchmark.bed
+<a id="__codelineno-18-11" name="__codelineno-18-11" href="#__codelineno-18-11"></a>HG004_GRCh38_1_22_v4.2.1_benchmark.vcf.gz.tbi<span class="w">  </span>HG007_GRCh38_1_22_v4.2.1_benchmark.vcf.gz
+<a id="__codelineno-18-12" name="__codelineno-18-12" href="#__codelineno-18-12"></a>HG004_README_v4.2.1.txt<span class="w">                      </span>HG007_GRCh38_1_22_v4.2.1_benchmark.vcf.gz.tbi
+<a id="__codelineno-18-13" name="__codelineno-18-13" href="#__codelineno-18-13"></a>HG005_benchmark.md5<span class="w">                          </span>HG007_README_v4.2.1.txt
+<a id="__codelineno-18-14" name="__codelineno-18-14" href="#__codelineno-18-14"></a>HG005_GRCh38_1_22_v4.2.1_benchmark.bed
+</code></pre></div>
+</details>
+<details class="success">
+<summary>Expected Raw Data: <code>reference/</code></summary>
+<div class="highlight"><span class="filename">Run at the command line</span><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a>ls<span class="w"> </span>triotrain/variant_calling/data/GIAB/reference/
+</code></pre></div>
+<div class="highlight"><span class="filename">Check outputs</span><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a>GRCh38_no_alt_analysis_set.fasta<span class="w">  </span>GRCh38_no_alt_analysis_set.fasta.fai<span class="w">  </span>md5checksums.txt
+</code></pre></div>
+</details>
+<h2 id="6-process-raw-data">6. Process Raw Data</h2>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>You will need to change this bash script to match your own system modules available. Reach out to your cluster's sys admin with any questions.</p>
+<p>These scripts can either be wrapped with SBATCH, or run interactively at the command line if you have enough memory. However, each script can take awhile to complete, particularly the <code>.download</code> scripts (1hr+). </p>
 </div>
-<p>This will allow you to run command line code from your terminal/screen. When running <code>start_interactive.sh</code>, an entire compute node was requested for adequate memory of large files:</p>
-<pre><code class="language-bash">source scripts/start_interactive.sh
-# srun --pty -p BioCompute --time=0-06:00:00 --exclusive --mem=0 -A schnabellab /bin/bash
-# scontrol show node lewis4-r630-htc4-node329
-NodeName=lewis4-r630-htc4-node329 Arch=x86_64 CoresPerSocket=28
-   CPUAlloc=56 CPUErr=0 CPUTot=56 CPULoad=0.68
-   AvailableFeatures=(null)
-   ActiveFeatures=(null)
-   Gres=(null)
-   NodeAddr=lewis4-r630-htc4-node329 NodeHostName=lewis4-r630-htc4-node329 Version=17.02
-   OS=Linux RealMemory=509577 AllocMem=509577 FreeMem=256579 Sockets=2 Boards=1
-   State=ALLOCATED ThreadsPerCore=2 TmpDisk=0 Weight=1 Owner=N/A MCS_label=N/A
-   Partitions=r630-htc4,htc4,BioCompute,General 
-   BootTime=2023-05-09T10:44:41 SlurmdStartTime=2023-05-09T10:45:14
-   CfgTRES=cpu=56,mem=509577M
-   AllocTRES=cpu=56,mem=509577M
-   CapWatts=n/a
-   CurrentWatts=0 LowestJoules=0 ConsumedJoules=0
-   ExtSensorsJoules=n/s ExtSensorsWatts=0 ExtSensorsTemp=n/s
-</code></pre>
-<h2 id="2-load-cluster-specific-modules"><strong>2. Load cluster-specific modules</strong></h2>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>You will need to change this bash script to match your own system modules available. Reach out to your cluster's sys admin with any questions.</p>
+<p>In addition to the raw data, <code>download_GIAB.sh</code> also creates (3) bash scripts to process raw data into the formats expected by the tutorial:</p>
+<ol>
+<li><code>concat_PopVCFs.sh</code> + input file <code>PopVCF.merge.list</code> &mdash; merges the per-chr VCFs into a single file</li>
+<li><code>AJtrio.download</code> &mdash; downloads GIAB Trio1</li>
+<li><code>HCtrio.download</code> &mdash; downloads GIAB Trio2</li>
+</ol>
+<h3 id="a-merge-the-popvcf">a. Merge the PopVCF</h3>
+<p>We need to create a single, genome-wide PopVCF from the raw per-chromosome PopVCF files. The per-chr Population VCFs were produced by the One Thousand Genomes Project (1kGP) and used to train the Human WGS.AF model. <a href="https://console.cloud.google.com/storage/browser/brain-genomics-public/research/cohort/1KGP/cohort_dv_glnexus_opt/v3_missing2ref?pageState=(%22StorageObjectListTable%22:(%22f%22:%22%255B%255D%22))&amp;prefix=&amp;forceOnObjectsSortingFiltering=false">You can view the raw files on Google Cloud Platform.</a></p>
+<p>Run the following at the command line:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a>bash<span class="w"> </span>triotrain/variant_calling/data/GIAB/allele_freq/concat_PopVCFs.sh
+</code></pre></div>
+<details class="success">
+<summary>Expected Intermediate Data: <code>allele_freq/</code></summary>
+<div class="highlight"><span class="filename">Run at the command line</span><pre><span></span><code><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a>ls<span class="w"> </span>triotrain/variant_calling/data/GIAB/allele_freq/<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>cohort.release
+</code></pre></div>
+<div class="highlight"><span class="filename">Check outputs</span><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a>cohort.release_missing2ref.no_calls.vcf.gz
+<a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a>cohort.release_missing2ref.no_calls.vcf.gz.csi
+</code></pre></div>
+</details>
+<h3 id="b-download-giab-sequence-data">b. Download GIAB Sequence Data</h3>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Given the large file size, the NIST FTP server runs slowly causing <code>curl</code> to timeout. <strong>You may need to run these scripts repeatedly until all data is transfered.</strong></p>
 </div>
-<p>This is how TrioTrain finds the system requirements.</p>
-<pre><code class="language-bash">source scripts/setup/modules.sh
-</code></pre>
-<h2 id="3-download-pre-trained-models">3. Download pre-trained models</h2>
-<p>Running a local copy of a container requires us to create a local copy of the <code>model.ckpt</code> files. Run the following command at the command line:</p>
-<pre><code class="language-bash">bash scripts/setup/download_models.sh
-</code></pre>
-<p>You should see the following directories created:</p>
-<pre><code class="language-bash"># ls triotrain/model_training/pretrained_models/
-v1.4.0_withIS_noAF  v1.4.0_withIS_withAF
-</code></pre>
-<p>The directory contents should include:</p>
-<pre><code class="language-bash"># ls triotrain/model_training/pretrained_models/v1.4.0_withIS_noAF/
-model.ckpt.data-00000-of-00001  model.ckpt.example_info.json  model.ckpt.index  model.ckpt.meta
-</code></pre>
-<pre><code class="language-bash"># ls triotrain/model_training/pretrained_models/v1.4.0_withIS_withAF/
-wgs_af.model.ckpt.data-00000-of-00001  wgs_af.model.ckpt.index
-wgs_af.model.ckpt.example_info.json    wgs_af.model.ckpt.meta
-</code></pre>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>These models are the human-trained models produced by Google Genomics Health Group. An index of the models used can be found <a href="existing_models.md">here</a>.</p>
+<p>We need to download the large sequence data files, and confirm they are not corrupted by checking the MD5 checksums, where available. These <code>BAM/BAI</code> files orginate from the GIAB FTP site. <a href="https://github.com/genome-in-a-bottle/giab_data_indexes">An index of GIAB data created with these samples can be found on GitHub.</a></p>
+<p>Run the following at the command line:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a>bash<span class="w"> </span>triotrain/variant_calling/data/GIAB/bam/AJtrio.download
+</code></pre></div>
+<details class="success">
+<summary>Expected Raw Data | HG002:</summary>
+<div class="highlight"><span class="filename">Run at the command line</span><pre><span></span><code><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a>ls<span class="w"> </span>triotrain/variant_calling/data/GIAB/bam/<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>HG002
+</code></pre></div>
+<div class="highlight"><span class="filename">Check outputs</span><pre><span></span><code><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a>HG002_corrected_md5sums.feb19upload.txt
+<a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a>HG002.GRCh38.2x250.bam
+<a id="__codelineno-26-3" name="__codelineno-26-3" href="#__codelineno-26-3"></a>HG002.GRCh38.2x250.bam.bai
+<a id="__codelineno-26-4" name="__codelineno-26-4" href="#__codelineno-26-4"></a>HG002.GRCh38.2x250.bam.bai.md5
+<a id="__codelineno-26-5" name="__codelineno-26-5" href="#__codelineno-26-5"></a>HG002.GRCh38.2x250.bam.md5
+</code></pre></div>
+</details>
+<details class="success">
+<summary>Expected Raw Data | HG003:</summary>
+<div class="highlight"><span class="filename">Run at the command line</span><pre><span></span><code><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a>ls<span class="w"> </span>triotrain/variant_calling/data/GIAB/bam/<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>HG003
+</code></pre></div>
+<div class="highlight"><span class="filename">Check outputs</span><pre><span></span><code><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a>HG003.GRCh38.2x250.bam
+<a id="__codelineno-28-2" name="__codelineno-28-2" href="#__codelineno-28-2"></a>HG003.GRCh38.2x250.bam.bai
+<a id="__codelineno-28-3" name="__codelineno-28-3" href="#__codelineno-28-3"></a>HG003.GRCh38.2x250.bam.bai.md5
+<a id="__codelineno-28-4" name="__codelineno-28-4" href="#__codelineno-28-4"></a>HG003.GRCh38.2x250.bam.md5
+</code></pre></div>
+</details>
+<details class="success">
+<summary>Expected Raw Data | HG004:</summary>
+<div class="highlight"><span class="filename">Run at the command line</span><pre><span></span><code><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a>ls<span class="w"> </span>triotrain/variant_calling/data/GIAB/bam/<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>HG004
+</code></pre></div>
+<div class="highlight"><span class="filename">Check outputs</span><pre><span></span><code><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a>HG004.GRCh38.2x250.bam
+<a id="__codelineno-30-2" name="__codelineno-30-2" href="#__codelineno-30-2"></a>HG004.GRCh38.2x250.bam.bai
+<a id="__codelineno-30-3" name="__codelineno-30-3" href="#__codelineno-30-3"></a>HG004.GRCh38.2x250.bam.bai.md5
+<a id="__codelineno-30-4" name="__codelineno-30-4" href="#__codelineno-30-4"></a>HG004.GRCh38.2x250.bam.md5
+</code></pre></div>
+</details>
+<p>And, run the following at the command line:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a>bash<span class="w"> </span>triotrain/variant_calling/data/GIAB/bam/HCtrio.download
+</code></pre></div>
+<details class="success">
+<summary>Expected Raw Data | HG005:</summary>
+<div class="highlight"><span class="filename">Run at the command line</span><pre><span></span><code><a id="__codelineno-32-1" name="__codelineno-32-1" href="#__codelineno-32-1"></a>ls<span class="w"> </span>triotrain/variant_calling/data/GIAB/bam/<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>HG005
+</code></pre></div>
+<div class="highlight"><span class="filename">Check outputs</span><pre><span></span><code><a id="__codelineno-33-1" name="__codelineno-33-1" href="#__codelineno-33-1"></a>HG005.GRCh38_full_plus_hs38d1_analysis_set_minus_alts.300x.bam
+<a id="__codelineno-33-2" name="__codelineno-33-2" href="#__codelineno-33-2"></a>HG005.GRCh38_full_plus_hs38d1_analysis_set_minus_alts.300x.bam.bai
+<a id="__codelineno-33-3" name="__codelineno-33-3" href="#__codelineno-33-3"></a>HG005.GRCh38_full_plus_hs38d1_analysis_set_minus_alts.300x.bam.bai.md5
+<a id="__codelineno-33-4" name="__codelineno-33-4" href="#__codelineno-33-4"></a>HG005.GRCh38_full_plus_hs38d1_analysis_set_minus_alts.300x.bam.md5
+</code></pre></div>
+</details>
+<details class="success">
+<summary>Expected Raw Data | HG006:</summary>
+<div class="highlight"><span class="filename">Run at the command line</span><pre><span></span><code><a id="__codelineno-34-1" name="__codelineno-34-1" href="#__codelineno-34-1"></a>ls<span class="w"> </span>triotrain/variant_calling/data/GIAB/bam/<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>HG006
+</code></pre></div>
+<div class="highlight"><span class="filename">Check outputs</span><pre><span></span><code><a id="__codelineno-35-1" name="__codelineno-35-1" href="#__codelineno-35-1"></a>HG006.GRCh38_full_plus_hs38d1_analysis_set_minus_alts.100x.bam
+<a id="__codelineno-35-2" name="__codelineno-35-2" href="#__codelineno-35-2"></a>HG006.GRCh38_full_plus_hs38d1_analysis_set_minus_alts.100x.bam.bai
+<a id="__codelineno-35-3" name="__codelineno-35-3" href="#__codelineno-35-3"></a>HG006.GRCh38_full_plus_hs38d1_analysis_set_minus_alts.100x.bam.bai.md5
+<a id="__codelineno-35-4" name="__codelineno-35-4" href="#__codelineno-35-4"></a>HG006.GRCh38_full_plus_hs38d1_analysis_set_minus_alts.100x.bam.md5
+</code></pre></div>
+</details>
+<details class="success">
+<summary>Expected Raw Data | HG007:</summary>
+<div class="highlight"><span class="filename">Run at the command line</span><pre><span></span><code><a id="__codelineno-36-1" name="__codelineno-36-1" href="#__codelineno-36-1"></a>ls<span class="w"> </span>triotrain/variant_calling/data/GIAB/bam/<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>HG007
+</code></pre></div>
+<div class="highlight"><span class="filename">Check outputs</span><pre><span></span><code><a id="__codelineno-37-1" name="__codelineno-37-1" href="#__codelineno-37-1"></a>HG007.GRCh38_full_plus_hs38d1_analysis_set_minus_alts.100x.bam
+<a id="__codelineno-37-2" name="__codelineno-37-2" href="#__codelineno-37-2"></a>HG007.GRCh38_full_plus_hs38d1_analysis_set_minus_alts.100x.bam.bai
+<a id="__codelineno-37-3" name="__codelineno-37-3" href="#__codelineno-37-3"></a>HG007.GRCh38_full_plus_hs38d1_analysis_set_minus_alts.100x.bam.bai.md5
+<a id="__codelineno-37-4" name="__codelineno-37-4" href="#__codelineno-37-4"></a>HG007.GRCh38_full_plus_hs38d1_analysis_set_minus_alts.100x.bam.md5
+</code></pre></div>
+</details>
+<h2 id="7-create-triotrain-inputs">7. Create TrioTrain Inputs</h2>
+<p>There are (3) required input files we must create before we can run TrioTrain. <a href="../../user-guide/usage_guide/#assumptions">Complete details about all required data can be found in the TrioTrain User Guide.</a></p>
+<h3 id="a-reference-dictionary-file-dict">a. <a href="../../user-guide/usage_guide/#required-raw-data">Reference Dictionary File (<code>.dict</code>)</a></h3>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>This step is specific to the Human reference genome GRCh38 as cattle-specific input files are packaged with TrioTrain. <strong>If you are working with a new species, you will need to create this file for your reference genome.</strong></p>
 </div>
-<h2 id="4-download-intermediate-giab-data">4. Download Intermediate GIAB data</h2>
-<p>Create a local copy of the GIAB trio data v4.2.1 for benchmarking. Run the following command at the command line:</p>
-<pre><code class="language-bash"># Download the checksums and intermediate files
-bash scripts/setup/download_GIAB.sh
-</code></pre>
-<h3 id="expected-intermediate-data-outputs">Expected Intermediate Data Outputs</h3>
-<p>After completing, you should see the following directories:</p>
-<pre><code class="language-bash"># ls triotrain/variant_calling/data/GIAB
-allele_freq  bam  benchmark  reference
-</code></pre>
-<p>The contents of the directories BEFORE running SLURM jobs includes:</p>
-<p><strong>1. <code>allele_freq/</code></strong></p>
-<pre><code class="language-bash"># ls triotrain/variant_calling/data/GIAB/allele_freq/
-cohort-chr10.release_missing2ref.no_calls.vcf.gz      cohort-chr21.release_missing2ref.no_calls.vcf.gz.tbi
-cohort-chr10.release_missing2ref.no_calls.vcf.gz.tbi  cohort-chr22.release_missing2ref.no_calls.vcf.gz
-cohort-chr11.release_missing2ref.no_calls.vcf.gz      cohort-chr22.release_missing2ref.no_calls.vcf.gz.tbi
-cohort-chr11.release_missing2ref.no_calls.vcf.gz.tbi  cohort-chr2.release_missing2ref.no_calls.vcf.gz
-cohort-chr12.release_missing2ref.no_calls.vcf.gz      cohort-chr2.release_missing2ref.no_calls.vcf.gz.tbi
-cohort-chr12.release_missing2ref.no_calls.vcf.gz.tbi  cohort-chr3.release_missing2ref.no_calls.vcf.gz
-cohort-chr13.release_missing2ref.no_calls.vcf.gz      cohort-chr3.release_missing2ref.no_calls.vcf.gz.tbi
-cohort-chr13.release_missing2ref.no_calls.vcf.gz.tbi  cohort-chr4.release_missing2ref.no_calls.vcf.gz
-cohort-chr14.release_missing2ref.no_calls.vcf.gz      cohort-chr4.release_missing2ref.no_calls.vcf.gz.tbi
-cohort-chr14.release_missing2ref.no_calls.vcf.gz.tbi  cohort-chr5.release_missing2ref.no_calls.vcf.gz
-cohort-chr15.release_missing2ref.no_calls.vcf.gz      cohort-chr5.release_missing2ref.no_calls.vcf.gz.tbi
-cohort-chr15.release_missing2ref.no_calls.vcf.gz.tbi  cohort-chr6.release_missing2ref.no_calls.vcf.gz
-cohort-chr16.release_missing2ref.no_calls.vcf.gz      cohort-chr6.release_missing2ref.no_calls.vcf.gz.tbi
-cohort-chr16.release_missing2ref.no_calls.vcf.gz.tbi  cohort-chr7.release_missing2ref.no_calls.vcf.gz
-cohort-chr17.release_missing2ref.no_calls.vcf.gz      cohort-chr7.release_missing2ref.no_calls.vcf.gz.tbi
-cohort-chr17.release_missing2ref.no_calls.vcf.gz.tbi  cohort-chr8.release_missing2ref.no_calls.vcf.gz
-cohort-chr18.release_missing2ref.no_calls.vcf.gz      cohort-chr8.release_missing2ref.no_calls.vcf.gz.tbi
-cohort-chr18.release_missing2ref.no_calls.vcf.gz.tbi  cohort-chr9.release_missing2ref.no_calls.vcf.gz
-cohort-chr19.release_missing2ref.no_calls.vcf.gz      cohort-chr9.release_missing2ref.no_calls.vcf.gz.tbi
-cohort-chr19.release_missing2ref.no_calls.vcf.gz.tbi  cohort-chrX.release_missing2ref.no_calls.vcf.gz
-cohort-chr1.release_missing2ref.no_calls.vcf.gz       cohort-chrX.release_missing2ref.no_calls.vcf.gz.tbi
-cohort-chr1.release_missing2ref.no_calls.vcf.gz.tbi   cohort-chrY.release_missing2ref.no_calls.vcf.gz
-cohort-chr20.release_missing2ref.no_calls.vcf.gz      cohort-chrY.release_missing2ref.no_calls.vcf.gz.tbi
-cohort-chr20.release_missing2ref.no_calls.vcf.gz.tbi  concat_PopVCFs.sh
-cohort-chr21.release_missing2ref.no_calls.vcf.gz      PopVCF.merge.list
-</code></pre>
-<p><strong>2. <code>bam/</code></strong></p>
-<pre><code class="language-bash"># ls triotrain/variant_calling/data/GIAB/bam/
-AJtrio.download                                        HCtrio.download  HCtrio.run
-AJtrio_Illumina_2x250bps_novoaligns_GRCh37_GRCh38.txt  HCtrio_Illumina300X100X_wgs_novoalign_GRCh37_GRCh38.txt
-AJtrio.run                                             HG002_corrected_md5sums.feb19upload.txt  
-</code></pre>
-<p><strong>3. <code>benchmark/</code></strong></p>
-<pre><code class="language-bash"># ls triotrain/variant_calling/data/GIAB/benchmark/
-HG002_GRCh38_1_22_v4.2_benchmark.bed         HG005_GRCh38_1_22_v4.2_benchmark.bed
-HG002_GRCh38_1_22_v4.2_benchmark.vcf.gz      HG005_GRCh38_1_22_v4.2_benchmark.vcf.gz
-HG002_GRCh38_1_22_v4.2_benchmark.vcf.gz.tbi  HG005_GRCh38_1_22_v4.2_benchmark.vcf.gz.tbi
-HG002_README_v4.2.1.txt                      HG005_README_v4.2.1.txt
-HG003_GRCh38_1_22_v4.2_benchmark.bed         HG006_GRCh38_1_22_v4.2_benchmark.bed
-HG003_GRCh38_1_22_v4.2_benchmark.vcf.gz      HG006_GRCh38_1_22_v4.2_benchmark.vcf.gz
-HG003_GRCh38_1_22_v4.2_benchmark.vcf.gz.tbi  HG006_GRCh38_1_22_v4.2_benchmark.vcf.gz.tbi
-HG003_README_v4.2.1.txt                      HG006_README_v4.2.1.txt
-HG004_GRCh38_1_22_v4.2_benchmark.bed         HG007_GRCh38_1_22_v4.2_benchmark.bed
-HG004_GRCh38_1_22_v4.2_benchmark.vcf.gz      HG007_GRCh38_1_22_v4.2_benchmark.vcf.gz
-HG004_GRCh38_1_22_v4.2_benchmark.vcf.gz.tbi  HG007_GRCh38_1_22_v4.2_benchmark.vcf.gz.tbi
-HG004_README_v4.2.1.txt                      HG007_README_v4.2.1.txt
-</code></pre>
-<p><strong>4. <code>reference/</code></strong></p>
-<pre><code class="language-bash"># ls triotrain/variant_calling/data/GIAB/reference/
-GRCh38_no_alt_analysis_set.fasta  GRCh38_no_alt_analysis_set.fasta.fai  md5checksums.txt
-</code></pre>
-<h2 id="5-download-raw-giab-data">5. Download Raw GIAB data</h2>
-<p>The following commands can either be wrapped with SBATCH, or run interactively at the command line if you have enough memory.</p>
-<pre><code class="language-bash"># Downloading raw data files for each GIAB trio
-# ensure you're in the DV-TrioTrain directory!
-bash scripts/start_interactive.sh
-. scripts/setup/modules.sh
-
-bash triotrain/variant_calling/data/GIAB/allele_freq/concat_PopVCFs.sh
-bash triotrain/variant_calling/data/GIAB/bam/AJtrio.download 
-bash triotrain/variant_calling/data/GIAB/bam/HCtrio.download
-</code></pre>
-<h3 id="expected-raw-data-outputs">Expected Raw Data Outputs</h3>
-<p><strong>1. <code>allele_freq/</code></strong></p>
-<pre><code class="language-bash"># ls triotrain/variant_calling/data/GIAB/allele_freq/
-</code></pre>
-<p><strong>2. <code>bam/</code></strong></p>
-<pre><code class="language-bash"># ls triotrain/variant_calling/data/GIAB/bam/
-
-</code></pre>
-<h2 id="6-submit-slurm-job-to-calculate-coverage-as-a-sanity-check">6. Submit SLURM job to calculate coverage as a sanity check</h2>
-<pre><code class="language-bash">bash scripts/start_interactive.sh
-. scripts/setup/modules.sh
-
-bash triotrain/variant_calling/data/GIAB/bam/AJtrio.run
-bash triotrain/variant_calling/data/GIAB/bam/HCtrio.run
-</code></pre>
-<h2 id="6-create-supplmentary-reference-files">6. Create supplmentary reference files</h2>
-<p>After the Human reference genome is downloaded, supplementary files must also be created.</p>
-<h3 id="reference-dictionary-file-with-picard">Reference dictionary file with <code>picard</code></h3>
-<p>MISSING: ADD THIS IN!</p>
-<h3 id="files-for-rtg-tools">Files for <code>rtg-tools</code></h3>
-<p>These files are required by <code>rtg-tools mendelian</code>. This step is specific to the Human reference genome GRCh38.</p>
-<pre><code class="language-bash">bash scripts/setup/setup_rtg_tools.sh
-</code></pre>
-<h2 id="7-create-the-demo-metadata-file">7. Create the demo metadata file</h2>
-<pre><code class="language-bash"># ensure you're running from the DV-TrioTrain directory!
-bash scripts/start_interactive.sh
-. scripts/setup/modules.sh
-. scripts/start_conda.sh
-python triotrain/model_training/demo/create_metadata.py
-</code></pre>
+<p>We need a reference dictionary file in the same directory as the reference genome. This file defines the valid genomic coordinates for TrioTrain's region shuffling. By default, region shuffling will only use the autosomes and X chromosome. However, you can expand or contract the shuffling area by providing an alternative region file (<code>.bed</code>) in the <a href="#b-metadata-file-csv">metadata file (<code>.csv</code>).</a></p>
+<p>Run at the command line:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-38-1" name="__codelineno-38-1" href="#__codelineno-38-1"></a>picard<span class="w"> </span>CreateSequenceDictionary<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-38-2" name="__codelineno-38-2" href="#__codelineno-38-2"></a><span class="w">    </span>--REFERENCE<span class="w"> </span>./triotrain/variant_calling/data/GIAB/reference/GRCh38_no_alt_analysis_set.fasta<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-38-3" name="__codelineno-38-3" href="#__codelineno-38-3"></a><span class="w">    </span>--OUTPUT<span class="w"> </span>./triotrain/variant_calling/data/GIAB/reference/GRCh38_no_alt_analysis_set.dict<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-38-4" name="__codelineno-38-4" href="#__codelineno-38-4"></a><span class="w">    </span>--SPECIES<span class="w"> </span>human
+</code></pre></div>
+<details class="success">
+<summary>Expected Output:</summary>
+<div class="highlight"><span class="filename">Run at the command line</span><pre><span></span><code><a id="__codelineno-39-1" name="__codelineno-39-1" href="#__codelineno-39-1"></a>ls<span class="w"> </span>triotrain/variant_calling/data/GIAB/reference/<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>.dict
+</code></pre></div>
+<div class="highlight"><span class="filename">Check output</span><pre><span></span><code><a id="__codelineno-40-1" name="__codelineno-40-1" href="#__codelineno-40-1"></a>GRCh38_no_alt_analysis_set.dict
+</code></pre></div>
+</details>
+<h3 id="b-metadata-file-csv">b. <a href="../../user-guide/usage_guide/#providing-required-data-to-triotrain">Metadata file (<code>.csv</code>)</a></h3>
+<p>We also need a metadata file to tell TrioTrain where to find all of previously downloaded Human GIAB data. This file contains pedigree information, and the absolute paths for file inputs. Absolute paths are required to help the Apptainer/Singularity containers identify local files. <a href="../../user-guide/usage_guide/#metadata-format">Formatting specifications for this required input can be found in the TrioTrain User Guide.</a></p>
+<p>For the tutorial, we've created a helper script to automatically create an example of this file. This script uses expectations of where the tutorial data are stored to add local paths. However, outside of the tutorial this file is a user-created input.</p>
+<p>Run the following at the command line:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-41-1" name="__codelineno-41-1" href="#__codelineno-41-1"></a><span class="nb">source</span><span class="w"> </span>./scripts/start_conda.sh<span class="w">                 </span><span class="c1"># Ensure the previously built conda env is active</span>
+<a id="__codelineno-41-2" name="__codelineno-41-2" href="#__codelineno-41-2"></a>python<span class="w"> </span>triotrain/model_training/tutorial/create_metadata.py
+</code></pre></div>
+<details class="success">
+<summary>Expected Output:</summary>
+<div class="highlight"><span class="filename">Run at the command line</span><pre><span></span><code><a id="__codelineno-42-1" name="__codelineno-42-1" href="#__codelineno-42-1"></a>ls<span class="w"> </span>triotrain/model_training/tutorial
+</code></pre></div>
+<div class="highlight"><span class="filename">Check output</span><pre><span></span><code><a id="__codelineno-43-1" name="__codelineno-43-1" href="#__codelineno-43-1"></a>create_metadata.py<span class="w">  </span>estimate.py<span class="w">  </span>GIAB.Human_tutorial_metadata.csv<span class="w">  </span>__init__.py<span class="w">  </span>resources_used.json
+</code></pre></div>
+</details>
+<h3 id="c-slurm-resource-config-file-json">c. <a href="../../user-guide/usage_guide/#configuring-slurm-resources">SLURM Resource Config File (<code>.json</code>)</a></h3>
+<p>The last required input we need for TrioTrain is the SLURM resource config file (<code>.json</code>). This file tells TrioTrain what resources to request from your HPC cluster when submitting SLURM jobs. <a href="../../user-guide/usage_guide/#resource-config-format">Formatting specifications for this required input can be found in the TrioTrain User Guide.</a></p>
+<details class="example">
+<summary>Example | Resource Config File</summary>
+<div class="highlight"><span class="filename">triotrain/model_training/tutorial/resources_used.json</span><pre><span></span><code><a id="__codelineno-44-1" name="__codelineno-44-1" href="#__codelineno-44-1"></a>{
+<a id="__codelineno-44-2" name="__codelineno-44-2" href="#__codelineno-44-2"></a>    &quot;make_examples&quot;: {
+<a id="__codelineno-44-3" name="__codelineno-44-3" href="#__codelineno-44-3"></a>        &quot;partition&quot;: &quot;hpc5,hpc6,BioCompute&quot;,
+<a id="__codelineno-44-4" name="__codelineno-44-4" href="#__codelineno-44-4"></a>        &quot;nodes&quot;: 1,
+<a id="__codelineno-44-5" name="__codelineno-44-5" href="#__codelineno-44-5"></a>        &quot;ntasks&quot;: 40,
+<a id="__codelineno-44-6" name="__codelineno-44-6" href="#__codelineno-44-6"></a>        &quot;mem&quot;: 379067,
+<a id="__codelineno-44-7" name="__codelineno-44-7" href="#__codelineno-44-7"></a>        &quot;CPUmem&quot;: 9000,
+<a id="__codelineno-44-8" name="__codelineno-44-8" href="#__codelineno-44-8"></a>        &quot;time&quot;: &quot;0-2:00:00&quot;,
+<a id="__codelineno-44-9" name="__codelineno-44-9" href="#__codelineno-44-9"></a>        &quot;account&quot;: &quot;animalsci&quot;,
+<a id="__codelineno-44-10" name="__codelineno-44-10" href="#__codelineno-44-10"></a>        &quot;email&quot;: &quot;jakth2@mail.missouri.edu&quot;
+<a id="__codelineno-44-11" name="__codelineno-44-11" href="#__codelineno-44-11"></a>    },
+<a id="__codelineno-44-12" name="__codelineno-44-12" href="#__codelineno-44-12"></a>    &quot;beam_shuffle&quot;: {
+<a id="__codelineno-44-13" name="__codelineno-44-13" href="#__codelineno-44-13"></a>        &quot;partition&quot;: &quot;hpc5,BioCompute&quot;,
+<a id="__codelineno-44-14" name="__codelineno-44-14" href="#__codelineno-44-14"></a>        &quot;nodes&quot;: 1,
+<a id="__codelineno-44-15" name="__codelineno-44-15" href="#__codelineno-44-15"></a>        &quot;ntasks&quot;: 40,
+<a id="__codelineno-44-16" name="__codelineno-44-16" href="#__codelineno-44-16"></a>        &quot;mem&quot;: 379067,
+<a id="__codelineno-44-17" name="__codelineno-44-17" href="#__codelineno-44-17"></a>        &quot;time&quot;: &quot;0-2:00:00&quot;,
+<a id="__codelineno-44-18" name="__codelineno-44-18" href="#__codelineno-44-18"></a>        &quot;account&quot;: &quot;animalsci&quot;,
+<a id="__codelineno-44-19" name="__codelineno-44-19" href="#__codelineno-44-19"></a>        &quot;email&quot;: &quot;jakth2@mail.missouri.edu&quot;
+<a id="__codelineno-44-20" name="__codelineno-44-20" href="#__codelineno-44-20"></a>    },
+<a id="__codelineno-44-21" name="__codelineno-44-21" href="#__codelineno-44-21"></a>    &quot;re_shuffle&quot;: {
+<a id="__codelineno-44-22" name="__codelineno-44-22" href="#__codelineno-44-22"></a>        &quot;partition&quot;: &quot;BioCompute,Lewis&quot;,
+<a id="__codelineno-44-23" name="__codelineno-44-23" href="#__codelineno-44-23"></a>        &quot;nodes&quot;: 1,
+<a id="__codelineno-44-24" name="__codelineno-44-24" href="#__codelineno-44-24"></a>        &quot;ntasks&quot;: 1,
+<a id="__codelineno-44-25" name="__codelineno-44-25" href="#__codelineno-44-25"></a>        &quot;mem&quot;: &quot;200G&quot;,
+<a id="__codelineno-44-26" name="__codelineno-44-26" href="#__codelineno-44-26"></a>        &quot;time&quot;: &quot;0-10:00:00&quot;,
+<a id="__codelineno-44-27" name="__codelineno-44-27" href="#__codelineno-44-27"></a>        &quot;account&quot;: &quot;animalsci&quot;,
+<a id="__codelineno-44-28" name="__codelineno-44-28" href="#__codelineno-44-28"></a>        &quot;email&quot;: &quot;jakth2@mail.missouri.edu&quot;
+<a id="__codelineno-44-29" name="__codelineno-44-29" href="#__codelineno-44-29"></a>    },
+<a id="__codelineno-44-30" name="__codelineno-44-30" href="#__codelineno-44-30"></a>    &quot;train_eval&quot;: {
+<a id="__codelineno-44-31" name="__codelineno-44-31" href="#__codelineno-44-31"></a>        &quot;partition&quot;: &quot;gpu3&quot;,
+<a id="__codelineno-44-32" name="__codelineno-44-32" href="#__codelineno-44-32"></a>        &quot;gres&quot;: &quot;gpu:2&quot;,
+<a id="__codelineno-44-33" name="__codelineno-44-33" href="#__codelineno-44-33"></a>        &quot;nodes&quot;: 1,
+<a id="__codelineno-44-34" name="__codelineno-44-34" href="#__codelineno-44-34"></a>        &quot;ntasks&quot;: 16,
+<a id="__codelineno-44-35" name="__codelineno-44-35" href="#__codelineno-44-35"></a>        &quot;mem&quot;: &quot;0&quot;,
+<a id="__codelineno-44-36" name="__codelineno-44-36" href="#__codelineno-44-36"></a>        &quot;time&quot;: &quot;2-00:00:00&quot;,
+<a id="__codelineno-44-37" name="__codelineno-44-37" href="#__codelineno-44-37"></a>        &quot;account&quot;: &quot;animalsci&quot;,
+<a id="__codelineno-44-38" name="__codelineno-44-38" href="#__codelineno-44-38"></a>        &quot;email&quot;: &quot;jakth2@mail.missouri.edu&quot;
+<a id="__codelineno-44-39" name="__codelineno-44-39" href="#__codelineno-44-39"></a>    },
+<a id="__codelineno-44-40" name="__codelineno-44-40" href="#__codelineno-44-40"></a>    &quot;select_ckpt&quot;: {
+<a id="__codelineno-44-41" name="__codelineno-44-41" href="#__codelineno-44-41"></a>        &quot;partition&quot;: &quot;BioCompute,Lewis&quot;,
+<a id="__codelineno-44-42" name="__codelineno-44-42" href="#__codelineno-44-42"></a>        &quot;nodes&quot;: 1,
+<a id="__codelineno-44-43" name="__codelineno-44-43" href="#__codelineno-44-43"></a>        &quot;ntasks&quot;: 1,
+<a id="__codelineno-44-44" name="__codelineno-44-44" href="#__codelineno-44-44"></a>        &quot;mem&quot;: 500,
+<a id="__codelineno-44-45" name="__codelineno-44-45" href="#__codelineno-44-45"></a>        &quot;time&quot;: &quot;0-00:30:00&quot;,
+<a id="__codelineno-44-46" name="__codelineno-44-46" href="#__codelineno-44-46"></a>        &quot;account&quot;: &quot;animalsci&quot;,
+<a id="__codelineno-44-47" name="__codelineno-44-47" href="#__codelineno-44-47"></a>        &quot;email&quot;: &quot;jakth2@mail.missouri.edu&quot;
+<a id="__codelineno-44-48" name="__codelineno-44-48" href="#__codelineno-44-48"></a>    },
+<a id="__codelineno-44-49" name="__codelineno-44-49" href="#__codelineno-44-49"></a>    &quot;call_variants&quot;: {
+<a id="__codelineno-44-50" name="__codelineno-44-50" href="#__codelineno-44-50"></a>        &quot;partition&quot;: &quot;hpc5,BioCompute&quot;,
+<a id="__codelineno-44-51" name="__codelineno-44-51" href="#__codelineno-44-51"></a>        &quot;nodes&quot;: 1,
+<a id="__codelineno-44-52" name="__codelineno-44-52" href="#__codelineno-44-52"></a>        &quot;ntasks&quot;: 40,
+<a id="__codelineno-44-53" name="__codelineno-44-53" href="#__codelineno-44-53"></a>        &quot;mem&quot;: 379067,
+<a id="__codelineno-44-54" name="__codelineno-44-54" href="#__codelineno-44-54"></a>        &quot;time&quot;: &quot;2-00:00:00&quot;,
+<a id="__codelineno-44-55" name="__codelineno-44-55" href="#__codelineno-44-55"></a>        &quot;account&quot;: &quot;animalsci&quot;,
+<a id="__codelineno-44-56" name="__codelineno-44-56" href="#__codelineno-44-56"></a>        &quot;email&quot;: &quot;jakth2@mail.missouri.edu&quot;
+<a id="__codelineno-44-57" name="__codelineno-44-57" href="#__codelineno-44-57"></a>    },
+<a id="__codelineno-44-58" name="__codelineno-44-58" href="#__codelineno-44-58"></a>    &quot;compare_happy&quot;: {
+<a id="__codelineno-44-59" name="__codelineno-44-59" href="#__codelineno-44-59"></a>        &quot;partition&quot;: &quot;BioCompute,hpc5&quot;,
+<a id="__codelineno-44-60" name="__codelineno-44-60" href="#__codelineno-44-60"></a>        &quot;nodes&quot;: 1,
+<a id="__codelineno-44-61" name="__codelineno-44-61" href="#__codelineno-44-61"></a>        &quot;ntasks&quot;: 40,
+<a id="__codelineno-44-62" name="__codelineno-44-62" href="#__codelineno-44-62"></a>        &quot;mem&quot;: &quot;300G&quot;,
+<a id="__codelineno-44-63" name="__codelineno-44-63" href="#__codelineno-44-63"></a>        &quot;time&quot;: &quot;0-12:00:00&quot;,
+<a id="__codelineno-44-64" name="__codelineno-44-64" href="#__codelineno-44-64"></a>        &quot;account&quot;: &quot;biocommunity&quot;,
+<a id="__codelineno-44-65" name="__codelineno-44-65" href="#__codelineno-44-65"></a>        &quot;email&quot;: &quot;jakth2@mail.missouri.edu&quot;
+<a id="__codelineno-44-66" name="__codelineno-44-66" href="#__codelineno-44-66"></a>    },
+<a id="__codelineno-44-67" name="__codelineno-44-67" href="#__codelineno-44-67"></a>    &quot;convert_happy&quot;: {
+<a id="__codelineno-44-68" name="__codelineno-44-68" href="#__codelineno-44-68"></a>        &quot;partition&quot;: &quot;BioCompute,hpc3,hpc5,Lewis&quot;,
+<a id="__codelineno-44-69" name="__codelineno-44-69" href="#__codelineno-44-69"></a>        &quot;nodes&quot;: 1,
+<a id="__codelineno-44-70" name="__codelineno-44-70" href="#__codelineno-44-70"></a>        &quot;ntasks&quot;: 24,
+<a id="__codelineno-44-71" name="__codelineno-44-71" href="#__codelineno-44-71"></a>        &quot;mem&quot;: &quot;120G&quot;,
+<a id="__codelineno-44-72" name="__codelineno-44-72" href="#__codelineno-44-72"></a>        &quot;time&quot;: &quot;0-05:00:00&quot;,
+<a id="__codelineno-44-73" name="__codelineno-44-73" href="#__codelineno-44-73"></a>        &quot;account&quot;: &quot;biocommunity&quot;,
+<a id="__codelineno-44-74" name="__codelineno-44-74" href="#__codelineno-44-74"></a>        &quot;email&quot;: &quot;jakth2@mail.missouri.edu&quot;
+<a id="__codelineno-44-75" name="__codelineno-44-75" href="#__codelineno-44-75"></a>    },
+<a id="__codelineno-44-76" name="__codelineno-44-76" href="#__codelineno-44-76"></a>    &quot;show_examples&quot;: {
+<a id="__codelineno-44-77" name="__codelineno-44-77" href="#__codelineno-44-77"></a>        &quot;partition&quot;: &quot;BioCompute,Lewis&quot;,
+<a id="__codelineno-44-78" name="__codelineno-44-78" href="#__codelineno-44-78"></a>        &quot;nodes&quot;: 1,
+<a id="__codelineno-44-79" name="__codelineno-44-79" href="#__codelineno-44-79"></a>        &quot;mem&quot;: &quot;1G&quot;,
+<a id="__codelineno-44-80" name="__codelineno-44-80" href="#__codelineno-44-80"></a>        &quot;time&quot;: &quot;0-02:00:00&quot;,
+<a id="__codelineno-44-81" name="__codelineno-44-81" href="#__codelineno-44-81"></a>        &quot;account&quot;: &quot;animalsci&quot;,
+<a id="__codelineno-44-82" name="__codelineno-44-82" href="#__codelineno-44-82"></a>        &quot;email&quot;: &quot;jakth2@mail.missouri.edu&quot;
+<a id="__codelineno-44-83" name="__codelineno-44-83" href="#__codelineno-44-83"></a>    },
+<a id="__codelineno-44-84" name="__codelineno-44-84" href="#__codelineno-44-84"></a>    &quot;summary_stats&quot;: {
+<a id="__codelineno-44-85" name="__codelineno-44-85" href="#__codelineno-44-85"></a>        &quot;partition&quot;: &quot;hpc5,hpc6,Lewis&quot;,
+<a id="__codelineno-44-86" name="__codelineno-44-86" href="#__codelineno-44-86"></a>        &quot;nodes&quot;: 1,
+<a id="__codelineno-44-87" name="__codelineno-44-87" href="#__codelineno-44-87"></a>        &quot;ntasks&quot;: 4,
+<a id="__codelineno-44-88" name="__codelineno-44-88" href="#__codelineno-44-88"></a>        &quot;mem&quot;: &quot;40G&quot;,
+<a id="__codelineno-44-89" name="__codelineno-44-89" href="#__codelineno-44-89"></a>        &quot;time&quot;: &quot;0-10:00:00&quot;,
+<a id="__codelineno-44-90" name="__codelineno-44-90" href="#__codelineno-44-90"></a>        &quot;account&quot;: &quot;schnabellab&quot;,
+<a id="__codelineno-44-91" name="__codelineno-44-91" href="#__codelineno-44-91"></a>        &quot;email&quot;: &quot;jakth2@mail.missouri.edu&quot;
+<a id="__codelineno-44-92" name="__codelineno-44-92" href="#__codelineno-44-92"></a>    },
+<a id="__codelineno-44-93" name="__codelineno-44-93" href="#__codelineno-44-93"></a>    &quot;mie_summary&quot;: {
+<a id="__codelineno-44-94" name="__codelineno-44-94" href="#__codelineno-44-94"></a>        &quot;partition&quot;: &quot;hpc3,hpc5,hpc6,Lewis&quot;,
+<a id="__codelineno-44-95" name="__codelineno-44-95" href="#__codelineno-44-95"></a>        &quot;nodes&quot;: 1,
+<a id="__codelineno-44-96" name="__codelineno-44-96" href="#__codelineno-44-96"></a>        &quot;mem&quot;: 251421,
+<a id="__codelineno-44-97" name="__codelineno-44-97" href="#__codelineno-44-97"></a>        &quot;time&quot;: &quot;0-10:00:00&quot;,
+<a id="__codelineno-44-98" name="__codelineno-44-98" href="#__codelineno-44-98"></a>        &quot;account&quot;: &quot;schnabellab&quot;,
+<a id="__codelineno-44-99" name="__codelineno-44-99" href="#__codelineno-44-99"></a>        &quot;email&quot;: &quot;jakth2@mail.missouri.edu&quot;
+<a id="__codelineno-44-100" name="__codelineno-44-100" href="#__codelineno-44-100"></a>    }
+<a id="__codelineno-44-101" name="__codelineno-44-101" href="#__codelineno-44-101"></a>}
+</code></pre></div>
+</details>
+<p>The hardware listed above for each phase (e.g. mem, ntasks, gpus, etc.)  illustrate which phases are memory intensive. These values should not be interpretedate as the minimum or the optimum resources required for each phase. The MU Lewis Research Computing Cluster is heterogenous, so several phases within the example config file request resources to maximize the number of compute nodes for running a memory-intensive phase.</p>
+<p>For the tutorial, copy the above example into a new file, and manually edit the SBATCH parameters to match your HPC cluster (i.e. changing the partition list, account, and email address).</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-45-1" name="__codelineno-45-1" href="#__codelineno-45-1"></a>cp<span class="w"> </span>./triotrain/model_training/tutorial/resources_used.json<span class="w"> </span>&lt;/path/to/new_file.json&gt;
+<a id="__codelineno-45-2" name="__codelineno-45-2" href="#__codelineno-45-2"></a>vi<span class="w"> </span>&lt;/path/to/new_file.json&gt;<span class="w">     </span><span class="c1"># update resources manually </span>
+</code></pre></div>
+<h3 id="d-optional-reference-sequence-data-file">d. <em>(OPTIONAL)</em> Reference Sequence Data File</h3>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>This step is specific to the Human reference genome GRCh38. Cattle-specific input files are packaged with TrioTrain. <strong>If you are working with a new species, you will need to create this file for your reference genome.</strong></p>
+</div>
+<p>If you have trio-binned test genomes, TrioTrain can help calculate Mendelian Inheritance Error rate using <code>rtg-tools mendelian</code>. However, you must create a Sequence Data File (SDF) for each reference genome in the same directory as the reference genome in a sub-directory called <code>rtg_tools/</code>. Additional details about <code>rtg-tools</code> can be <a href="https://github.com/RealTimeGenomics/rtg-tools">found on GitHub</a>, or by <a href="https://cdn.rawgit.com/RealTimeGenomics/rtg-tools/master/installer/resources/tools/RTGOperationsManual.pdf">reviewing the PDF documentation here</a>.</p>
+<p>For this tutorial, create the Human reference SDF by running the following at the command line:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-46-1" name="__codelineno-46-1" href="#__codelineno-46-1"></a><span class="nb">source</span><span class="w"> </span>./scripts/start_conda.sh<span class="w">     </span><span class="c1"># Ensure the previously built conda env is active</span>
+<a id="__codelineno-46-2" name="__codelineno-46-2" href="#__codelineno-46-2"></a>bash<span class="w"> </span>scripts/setup/setup_rtg_tools.sh
+</code></pre></div>
+<p>For other species, use the following template:</p>
+<details class="example">
+<summary>Example | Creating the SDF</summary>
+<div class="highlight"><span class="filename">./scripts/setup/setup_rtg_tools.sh</span><pre><span></span><code><a id="__codelineno-47-1" name="__codelineno-47-1" href="#__codelineno-47-1"></a><span class="ch">#!/bin/bash</span>
+<a id="__codelineno-47-2" name="__codelineno-47-2" href="#__codelineno-47-2"></a><span class="c1"># scripts/setup/build_rtg_tools.sh</span>
+<a id="__codelineno-47-3" name="__codelineno-47-3" href="#__codelineno-47-3"></a>
+<a id="__codelineno-47-4" name="__codelineno-47-4" href="#__codelineno-47-4"></a><span class="nb">echo</span><span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;=== scripts/setup/build_rtg_tools.sh &gt; start </span><span class="k">$(</span>date<span class="k">)</span><span class="s2">&quot;</span>
+<a id="__codelineno-47-5" name="__codelineno-47-5" href="#__codelineno-47-5"></a>
+<a id="__codelineno-47-6" name="__codelineno-47-6" href="#__codelineno-47-6"></a><span class="c1">##======= Create RTG-TOOLS SDF ======================================##</span>
+<a id="__codelineno-47-7" name="__codelineno-47-7" href="#__codelineno-47-7"></a><span class="c1"># required for using rtg-tools &#39;mendelian&#39;</span>
+<a id="__codelineno-47-8" name="__codelineno-47-8" href="#__codelineno-47-8"></a><span class="k">if</span><span class="w"> </span><span class="o">[</span><span class="w"> </span>!<span class="w"> </span>-f<span class="w"> </span>./triotrain/variant_calling/data/GIAB/reference/rtg_tools/reference.txt<span class="w"> </span><span class="o">]</span><span class="p">;</span><span class="w"> </span><span class="k">then</span>
+<a id="__codelineno-47-9" name="__codelineno-47-9" href="#__codelineno-47-9"></a><span class="w">    </span>rtg<span class="w"> </span>format<span class="w"> </span>-o<span class="w"> </span>./triotrain/variant_calling/data/GIAB/reference/rtg_tools/<span class="w"> </span>./triotrain/variant_calling/data/GIAB/reference/GRCh38_no_alt_analysis_set.fasta
+<a id="__codelineno-47-10" name="__codelineno-47-10" href="#__codelineno-47-10"></a><span class="k">else</span>
+<a id="__codelineno-47-11" name="__codelineno-47-11" href="#__codelineno-47-11"></a><span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;</span><span class="k">$(</span>date<span class="w"> </span><span class="s1">&#39;+%Y-%m-%d %H:%M:%S&#39;</span><span class="k">)</span><span class="s2"> INFO: RTG-TOOLS SDF already exists... SKIPPING AHEAD&quot;</span>
+<a id="__codelineno-47-12" name="__codelineno-47-12" href="#__codelineno-47-12"></a><span class="k">fi</span>
+<a id="__codelineno-47-13" name="__codelineno-47-13" href="#__codelineno-47-13"></a>
+<a id="__codelineno-47-14" name="__codelineno-47-14" href="#__codelineno-47-14"></a><span class="nb">echo</span><span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;=== scripts/setup/build_rtg_tools.sh&gt; end </span><span class="k">$(</span>date<span class="k">)</span><span class="s2">&quot;</span>
+</code></pre></div>
+</details>
+<hr />
+<h2 id="8-run-shuffling-demo">8. Run Shuffling Demo</h2>
+<p>Shuffling the labeled examples is a critical step to re-training DeepVariant because the model assumes successive training images are independent of one another. DeepVariant includes an Apache Beam pipeline that puts training examples in random genomic order. However, in our experience, getting the Python SDK for Beam, Apache Spark and SLURM to cooperate is a dependency nightmare.</p>
+<p>Our alternative approach splits the complete genome into subset regions before making the labeled examples. Each region is defined in non-overlapping, 0-based <code>BED</code> file. Within a shuffling region, all chromosomes are sampled to ensure they remain proportionally consistent with the complete genome. Thus, each region will produce a subset of examples across the genome, which are then shuffled using a single compute node. Rather than a Beam pipeline runner, labeled examples from each region are created via parallel SLURM jobs.</p>
+<hr />
+<p><strong>Before running TrioTrain in a new mamalian genome or on a new HPC cluster, we strongly recommend completing the region shuffling demo.</strong> We recommend using a small chromosome with <code>--demo-chr=&lt;region_literal&gt;</code>.
+The shuffling demo will help you tailor some of TrioTrain's default parameter values: <code>--max-examples</code> and <code>--est-examples</code>.</p>
+<details class="note">
+<summary>Note | Working in Other Species</summary>
+<p>The values for the above parameters will potentially vary widely across species, as the number of examples DeepVariant produces depends on several factors including:</p>
+<ul>
+<li>genome size</li>
+<li>the reference genome used</li>
+<li>how many variants are identified in an individual genome </li>
+</ul>
+<p>For example, the F1-hybrid offspring in cattle are crosses between diverent lineages, resulting in an abnormal amount heterzygous genotypes compared to typical cattle genomes. Instead of typical 8 million variants per genome, these samples produced 20+ million variants per genome. In our experience, this value is specific to each training genome, so TrioTrain will estimate this value based on the number of PASS variants within the corresponding TruthVCF. </p>
+<p><strong>For these unique cases, TrioTrain can easily overload your cluster's I/O capabilities, or write more than 10,000 files to a directory, or overwhelm the SLURM scheduler by submitting thousands of jobs simultaneously.</strong> Future versions of TrioTrain will address these challenges, but proceed with caution. Your cluster's SysAdmin will thank you!</p>
+</details>
+<p>In our experience with bovine genomes, setting <code>--max-examples=200000</code> is ideal as it creates many SLURM jobs for the <code>make_examples</code> and <code>beam_shuffle</code> phases. Numerous small jobs running quickly minimizes wall time between phases. The default value of <code>--est-examples=1.5</code> is based on running the shuffling demo with <code>--demo-chr=29</code> in an Angus genome. With the previously created <code>.dict</code> file created for the reference, TrioTrain will determine how many regions are required automatically.</p>
+<p>For bovine genomes we typically produce 60 - 130 shuffling regions, depending on the number of variants present in a sample's corresponding TruthVCF. We priorize a large number of regions, as this further increases the randomness during the <code>re_shuffle</code> processes which randomizes the order the model is given the shuffling regions.</p>
+<hr />
+<p>For the human GIAB tutorial, run the following at the command line:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-48-1" name="__codelineno-48-1" href="#__codelineno-48-1"></a><span class="c1"># You can add the --dry-run flag to this command to confirm the TrioTrain pipeline runs smoothly</span>
+<a id="__codelineno-48-2" name="__codelineno-48-2" href="#__codelineno-48-2"></a>python3<span class="w"> </span>triotrain/run_trio_train.py<span class="w">                                                                         </span><span class="se">\</span>
+<a id="__codelineno-48-3" name="__codelineno-48-3" href="#__codelineno-48-3"></a><span class="w">    </span>-g<span class="w"> </span>Father<span class="w">                                                                                               </span><span class="se">\</span>
+<a id="__codelineno-48-4" name="__codelineno-48-4" href="#__codelineno-48-4"></a><span class="w">    </span>-s<span class="w"> </span>human<span class="w">                                                                                                </span><span class="se">\</span>
+<a id="__codelineno-48-5" name="__codelineno-48-5" href="#__codelineno-48-5"></a><span class="w">    </span>-m<span class="w"> </span>triotrain/model_training/tutorial/GIAB.Human_tutorial_metadata.csv<span class="w">                                   </span><span class="se">\</span>
+<a id="__codelineno-48-6" name="__codelineno-48-6" href="#__codelineno-48-6"></a><span class="w">    </span>-n<span class="w"> </span>demo<span class="w">                                                                                                 </span><span class="se">\</span>
+<a id="__codelineno-48-7" name="__codelineno-48-7" href="#__codelineno-48-7"></a><span class="w">    </span>-r<span class="w"> </span>triotrain/model_training/tutorial/resources_used.json<span class="w">                                                </span><span class="se">\</span>
+<a id="__codelineno-48-8" name="__codelineno-48-8" href="#__codelineno-48-8"></a><span class="w">    </span>--demo-mode<span class="w">                                                                                             </span><span class="se">\</span>
+<a id="__codelineno-48-9" name="__codelineno-48-9" href="#__codelineno-48-9"></a><span class="w">    </span>--demo-chr<span class="w"> </span>chr21<span class="w">                                                                                        </span><span class="se">\</span>
+<a id="__codelineno-48-10" name="__codelineno-48-10" href="#__codelineno-48-10"></a><span class="w">    </span>--num-tests<span class="w"> </span><span class="m">3</span><span class="w">                                                                                           </span><span class="se">\</span>
+<a id="__codelineno-48-11" name="__codelineno-48-11" href="#__codelineno-48-11"></a><span class="w">    </span>--custom-checkpoint<span class="w"> </span>triotrain/model_training/pretrained_models/v1.4.0_withIS_withAF/wgs_af.model.ckpt<span class="w">   </span><span class="se">\</span>
+<a id="__codelineno-48-12" name="__codelineno-48-12" href="#__codelineno-48-12"></a><span class="w">    </span>--output<span class="w"> </span>../TUTORIAL<span class="w">                                                                                    </span><span class="se">\</span>
+<a id="__codelineno-48-13" name="__codelineno-48-13" href="#__codelineno-48-13"></a><span class="w">    </span>--benchmark
+</code></pre></div>
+<hr />
+<p>The shuffling demo will produce and submit (7) SLURM jobs by running (3) steps &mdash; for both Father &amp; Child:</p>
+<ol>
+<li><code>make_examples</code></li>
+<li><code>beam_shuffle</code></li>
+<li><code>re_shuffle</code></li>
+</ol>
+<p>The final step runs <code>call_variants</code> for just the Father.</p>
+<p><strong>If these jobs successfully complete, you will have a conservative estimate for the <code>--max-examples</code> and <code>--est-examples</code> parameters to ensure shuffling easily fits within your available memory.</strong></p>
+<hr />
+<p>There are (6) types of output files from running the demo:</p>
+<table>
+<thead>
+<tr>
+<th>File Extension</th>
+<th>Number of Files (Shards)</th>
+<th>Genome Used</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>labeled.tfrecords*.gz</code></td>
+<td>N</td>
+<td>Father, Child</td>
+</tr>
+<tr>
+<td><code>labeled.tfrecords*.gz.example_info.json</code></td>
+<td>N</td>
+<td>Father, Child</td>
+</tr>
+<tr>
+<td><code>labeled.shuffled*.tfrecord.gz</code></td>
+<td>N</td>
+<td>Father, Child</td>
+</tr>
+<tr>
+<td><code>labeled.shuffled.dataset_config.pbtxt</code></td>
+<td>1</td>
+<td>Father, Child</td>
+</tr>
+<tr>
+<td><code>labeled.shuffled.merged.dataset_config.pbtxt</code></td>
+<td>1</td>
+<td>Father, Child</td>
+</tr>
+<tr>
+<td><code>labeled.shuffled.merged.tfrecord.gz</code></td>
+<td>1</td>
+<td>Father, Child</td>
+</tr>
+<tr>
+<td><em>N = number of CPUs requested in your <code>resources_used.json</code> file, shards are numbered 0 &mdash; (N - 1).</em></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<details class="success">
+<summary>Expected Output | Father Shuffling:</summary>
+<div class="highlight"><span class="filename">Run at the command line</span><pre><span></span><code><a id="__codelineno-49-1" name="__codelineno-49-1" href="#__codelineno-49-1"></a>ls<span class="w"> </span>../TUTORIAL/demo/Human_tutorial/examples/<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>Father
+</code></pre></div>
+<div class="highlight"><span class="filename">Check output</span><pre><span></span><code><a id="__codelineno-50-1" name="__codelineno-50-1" href="#__codelineno-50-1"></a>Father.chr21.labeled.shuffled-00000-of-00040.tfrecord.gz
+<a id="__codelineno-50-2" name="__codelineno-50-2" href="#__codelineno-50-2"></a>Father.chr21.labeled.shuffled-00001-of-00040.tfrecord.gz
+<a id="__codelineno-50-3" name="__codelineno-50-3" href="#__codelineno-50-3"></a>Father.chr21.labeled.shuffled-00002-of-00040.tfrecord.gz
+<a id="__codelineno-50-4" name="__codelineno-50-4" href="#__codelineno-50-4"></a>Father.chr21.labeled.shuffled-00003-of-00040.tfrecord.gz
+<a id="__codelineno-50-5" name="__codelineno-50-5" href="#__codelineno-50-5"></a>Father.chr21.labeled.shuffled-00004-of-00040.tfrecord.gz
+<a id="__codelineno-50-6" name="__codelineno-50-6" href="#__codelineno-50-6"></a>Father.chr21.labeled.shuffled-00005-of-00040.tfrecord.gz
+<a id="__codelineno-50-7" name="__codelineno-50-7" href="#__codelineno-50-7"></a>Father.chr21.labeled.shuffled-00006-of-00040.tfrecord.gz
+<a id="__codelineno-50-8" name="__codelineno-50-8" href="#__codelineno-50-8"></a>Father.chr21.labeled.shuffled-00007-of-00040.tfrecord.gz
+<a id="__codelineno-50-9" name="__codelineno-50-9" href="#__codelineno-50-9"></a>Father.chr21.labeled.shuffled-00008-of-00040.tfrecord.gz
+<a id="__codelineno-50-10" name="__codelineno-50-10" href="#__codelineno-50-10"></a>Father.chr21.labeled.shuffled-00009-of-00040.tfrecord.gz
+<a id="__codelineno-50-11" name="__codelineno-50-11" href="#__codelineno-50-11"></a>Father.chr21.labeled.shuffled-00010-of-00040.tfrecord.gz
+<a id="__codelineno-50-12" name="__codelineno-50-12" href="#__codelineno-50-12"></a>Father.chr21.labeled.shuffled-00011-of-00040.tfrecord.gz
+<a id="__codelineno-50-13" name="__codelineno-50-13" href="#__codelineno-50-13"></a>Father.chr21.labeled.shuffled-00012-of-00040.tfrecord.gz
+<a id="__codelineno-50-14" name="__codelineno-50-14" href="#__codelineno-50-14"></a>Father.chr21.labeled.shuffled-00013-of-00040.tfrecord.gz
+<a id="__codelineno-50-15" name="__codelineno-50-15" href="#__codelineno-50-15"></a>Father.chr21.labeled.shuffled-00014-of-00040.tfrecord.gz
+<a id="__codelineno-50-16" name="__codelineno-50-16" href="#__codelineno-50-16"></a>Father.chr21.labeled.shuffled-00015-of-00040.tfrecord.gz
+<a id="__codelineno-50-17" name="__codelineno-50-17" href="#__codelineno-50-17"></a>Father.chr21.labeled.shuffled-00016-of-00040.tfrecord.gz
+<a id="__codelineno-50-18" name="__codelineno-50-18" href="#__codelineno-50-18"></a>Father.chr21.labeled.shuffled-00017-of-00040.tfrecord.gz
+<a id="__codelineno-50-19" name="__codelineno-50-19" href="#__codelineno-50-19"></a>Father.chr21.labeled.shuffled-00018-of-00040.tfrecord.gz
+<a id="__codelineno-50-20" name="__codelineno-50-20" href="#__codelineno-50-20"></a>Father.chr21.labeled.shuffled-00019-of-00040.tfrecord.gz
+<a id="__codelineno-50-21" name="__codelineno-50-21" href="#__codelineno-50-21"></a>Father.chr21.labeled.shuffled-00020-of-00040.tfrecord.gz
+<a id="__codelineno-50-22" name="__codelineno-50-22" href="#__codelineno-50-22"></a>Father.chr21.labeled.shuffled-00021-of-00040.tfrecord.gz
+<a id="__codelineno-50-23" name="__codelineno-50-23" href="#__codelineno-50-23"></a>Father.chr21.labeled.shuffled-00022-of-00040.tfrecord.gz
+<a id="__codelineno-50-24" name="__codelineno-50-24" href="#__codelineno-50-24"></a>Father.chr21.labeled.shuffled-00023-of-00040.tfrecord.gz
+<a id="__codelineno-50-25" name="__codelineno-50-25" href="#__codelineno-50-25"></a>Father.chr21.labeled.shuffled-00024-of-00040.tfrecord.gz
+<a id="__codelineno-50-26" name="__codelineno-50-26" href="#__codelineno-50-26"></a>Father.chr21.labeled.shuffled-00025-of-00040.tfrecord.gz
+<a id="__codelineno-50-27" name="__codelineno-50-27" href="#__codelineno-50-27"></a>Father.chr21.labeled.shuffled-00026-of-00040.tfrecord.gz
+<a id="__codelineno-50-28" name="__codelineno-50-28" href="#__codelineno-50-28"></a>Father.chr21.labeled.shuffled-00027-of-00040.tfrecord.gz
+<a id="__codelineno-50-29" name="__codelineno-50-29" href="#__codelineno-50-29"></a>Father.chr21.labeled.shuffled-00028-of-00040.tfrecord.gz
+<a id="__codelineno-50-30" name="__codelineno-50-30" href="#__codelineno-50-30"></a>Father.chr21.labeled.shuffled-00029-of-00040.tfrecord.gz
+<a id="__codelineno-50-31" name="__codelineno-50-31" href="#__codelineno-50-31"></a>Father.chr21.labeled.shuffled-00030-of-00040.tfrecord.gz
+<a id="__codelineno-50-32" name="__codelineno-50-32" href="#__codelineno-50-32"></a>Father.chr21.labeled.shuffled-00031-of-00040.tfrecord.gz
+<a id="__codelineno-50-33" name="__codelineno-50-33" href="#__codelineno-50-33"></a>Father.chr21.labeled.shuffled-00032-of-00040.tfrecord.gz
+<a id="__codelineno-50-34" name="__codelineno-50-34" href="#__codelineno-50-34"></a>Father.chr21.labeled.shuffled-00033-of-00040.tfrecord.gz
+<a id="__codelineno-50-35" name="__codelineno-50-35" href="#__codelineno-50-35"></a>Father.chr21.labeled.shuffled-00034-of-00040.tfrecord.gz
+<a id="__codelineno-50-36" name="__codelineno-50-36" href="#__codelineno-50-36"></a>Father.chr21.labeled.shuffled-00035-of-00040.tfrecord.gz
+<a id="__codelineno-50-37" name="__codelineno-50-37" href="#__codelineno-50-37"></a>Father.chr21.labeled.shuffled-00036-of-00040.tfrecord.gz
+<a id="__codelineno-50-38" name="__codelineno-50-38" href="#__codelineno-50-38"></a>Father.chr21.labeled.shuffled-00037-of-00040.tfrecord.gz
+<a id="__codelineno-50-39" name="__codelineno-50-39" href="#__codelineno-50-39"></a>Father.chr21.labeled.shuffled-00038-of-00040.tfrecord.gz
+<a id="__codelineno-50-40" name="__codelineno-50-40" href="#__codelineno-50-40"></a>Father.chr21.labeled.shuffled-00039-of-00040.tfrecord.gz
+<a id="__codelineno-50-41" name="__codelineno-50-41" href="#__codelineno-50-41"></a>Father.chr21.labeled.shuffled.dataset_config.pbtxt
+<a id="__codelineno-50-42" name="__codelineno-50-42" href="#__codelineno-50-42"></a>Father.chr21.labeled.tfrecords-00000-of-00040.gz
+<a id="__codelineno-50-43" name="__codelineno-50-43" href="#__codelineno-50-43"></a>Father.chr21.labeled.tfrecords-00000-of-00040.gz.example_info.json
+<a id="__codelineno-50-44" name="__codelineno-50-44" href="#__codelineno-50-44"></a>Father.chr21.labeled.tfrecords-00001-of-00040.gz
+<a id="__codelineno-50-45" name="__codelineno-50-45" href="#__codelineno-50-45"></a>Father.chr21.labeled.tfrecords-00001-of-00040.gz.example_info.json
+<a id="__codelineno-50-46" name="__codelineno-50-46" href="#__codelineno-50-46"></a>Father.chr21.labeled.tfrecords-00002-of-00040.gz
+<a id="__codelineno-50-47" name="__codelineno-50-47" href="#__codelineno-50-47"></a>Father.chr21.labeled.tfrecords-00002-of-00040.gz.example_info.json
+<a id="__codelineno-50-48" name="__codelineno-50-48" href="#__codelineno-50-48"></a>Father.chr21.labeled.tfrecords-00003-of-00040.gz
+<a id="__codelineno-50-49" name="__codelineno-50-49" href="#__codelineno-50-49"></a>Father.chr21.labeled.tfrecords-00003-of-00040.gz.example_info.json
+<a id="__codelineno-50-50" name="__codelineno-50-50" href="#__codelineno-50-50"></a>Father.chr21.labeled.tfrecords-00004-of-00040.gz
+<a id="__codelineno-50-51" name="__codelineno-50-51" href="#__codelineno-50-51"></a>Father.chr21.labeled.tfrecords-00004-of-00040.gz.example_info.json
+<a id="__codelineno-50-52" name="__codelineno-50-52" href="#__codelineno-50-52"></a>Father.chr21.labeled.tfrecords-00005-of-00040.gz
+<a id="__codelineno-50-53" name="__codelineno-50-53" href="#__codelineno-50-53"></a>Father.chr21.labeled.tfrecords-00005-of-00040.gz.example_info.json
+<a id="__codelineno-50-54" name="__codelineno-50-54" href="#__codelineno-50-54"></a>Father.chr21.labeled.tfrecords-00006-of-00040.gz
+<a id="__codelineno-50-55" name="__codelineno-50-55" href="#__codelineno-50-55"></a>Father.chr21.labeled.tfrecords-00006-of-00040.gz.example_info.json
+<a id="__codelineno-50-56" name="__codelineno-50-56" href="#__codelineno-50-56"></a>Father.chr21.labeled.tfrecords-00007-of-00040.gz
+<a id="__codelineno-50-57" name="__codelineno-50-57" href="#__codelineno-50-57"></a>Father.chr21.labeled.tfrecords-00007-of-00040.gz.example_info.json
+<a id="__codelineno-50-58" name="__codelineno-50-58" href="#__codelineno-50-58"></a>Father.chr21.labeled.tfrecords-00008-of-00040.gz
+<a id="__codelineno-50-59" name="__codelineno-50-59" href="#__codelineno-50-59"></a>Father.chr21.labeled.tfrecords-00008-of-00040.gz.example_info.json
+<a id="__codelineno-50-60" name="__codelineno-50-60" href="#__codelineno-50-60"></a>Father.chr21.labeled.tfrecords-00009-of-00040.gz
+<a id="__codelineno-50-61" name="__codelineno-50-61" href="#__codelineno-50-61"></a>Father.chr21.labeled.tfrecords-00009-of-00040.gz.example_info.json
+<a id="__codelineno-50-62" name="__codelineno-50-62" href="#__codelineno-50-62"></a>Father.chr21.labeled.tfrecords-00010-of-00040.gz
+<a id="__codelineno-50-63" name="__codelineno-50-63" href="#__codelineno-50-63"></a>Father.chr21.labeled.tfrecords-00010-of-00040.gz.example_info.json
+<a id="__codelineno-50-64" name="__codelineno-50-64" href="#__codelineno-50-64"></a>Father.chr21.labeled.tfrecords-00011-of-00040.gz
+<a id="__codelineno-50-65" name="__codelineno-50-65" href="#__codelineno-50-65"></a>Father.chr21.labeled.tfrecords-00011-of-00040.gz.example_info.json
+<a id="__codelineno-50-66" name="__codelineno-50-66" href="#__codelineno-50-66"></a>Father.chr21.labeled.tfrecords-00012-of-00040.gz
+<a id="__codelineno-50-67" name="__codelineno-50-67" href="#__codelineno-50-67"></a>Father.chr21.labeled.tfrecords-00012-of-00040.gz.example_info.json
+<a id="__codelineno-50-68" name="__codelineno-50-68" href="#__codelineno-50-68"></a>Father.chr21.labeled.tfrecords-00013-of-00040.gz
+<a id="__codelineno-50-69" name="__codelineno-50-69" href="#__codelineno-50-69"></a>Father.chr21.labeled.tfrecords-00013-of-00040.gz.example_info.json
+<a id="__codelineno-50-70" name="__codelineno-50-70" href="#__codelineno-50-70"></a>Father.chr21.labeled.tfrecords-00014-of-00040.gz
+<a id="__codelineno-50-71" name="__codelineno-50-71" href="#__codelineno-50-71"></a>Father.chr21.labeled.tfrecords-00014-of-00040.gz.example_info.json
+<a id="__codelineno-50-72" name="__codelineno-50-72" href="#__codelineno-50-72"></a>Father.chr21.labeled.tfrecords-00015-of-00040.gz
+<a id="__codelineno-50-73" name="__codelineno-50-73" href="#__codelineno-50-73"></a>Father.chr21.labeled.tfrecords-00015-of-00040.gz.example_info.json
+<a id="__codelineno-50-74" name="__codelineno-50-74" href="#__codelineno-50-74"></a>Father.chr21.labeled.tfrecords-00016-of-00040.gz
+<a id="__codelineno-50-75" name="__codelineno-50-75" href="#__codelineno-50-75"></a>Father.chr21.labeled.tfrecords-00016-of-00040.gz.example_info.json
+<a id="__codelineno-50-76" name="__codelineno-50-76" href="#__codelineno-50-76"></a>Father.chr21.labeled.tfrecords-00017-of-00040.gz
+<a id="__codelineno-50-77" name="__codelineno-50-77" href="#__codelineno-50-77"></a>Father.chr21.labeled.tfrecords-00017-of-00040.gz.example_info.json
+<a id="__codelineno-50-78" name="__codelineno-50-78" href="#__codelineno-50-78"></a>Father.chr21.labeled.tfrecords-00018-of-00040.gz
+<a id="__codelineno-50-79" name="__codelineno-50-79" href="#__codelineno-50-79"></a>Father.chr21.labeled.tfrecords-00018-of-00040.gz.example_info.json
+<a id="__codelineno-50-80" name="__codelineno-50-80" href="#__codelineno-50-80"></a>Father.chr21.labeled.tfrecords-00019-of-00040.gz
+<a id="__codelineno-50-81" name="__codelineno-50-81" href="#__codelineno-50-81"></a>Father.chr21.labeled.tfrecords-00019-of-00040.gz.example_info.json
+<a id="__codelineno-50-82" name="__codelineno-50-82" href="#__codelineno-50-82"></a>Father.chr21.labeled.tfrecords-00020-of-00040.gz
+<a id="__codelineno-50-83" name="__codelineno-50-83" href="#__codelineno-50-83"></a>Father.chr21.labeled.tfrecords-00020-of-00040.gz.example_info.json
+<a id="__codelineno-50-84" name="__codelineno-50-84" href="#__codelineno-50-84"></a>Father.chr21.labeled.tfrecords-00021-of-00040.gz
+<a id="__codelineno-50-85" name="__codelineno-50-85" href="#__codelineno-50-85"></a>Father.chr21.labeled.tfrecords-00021-of-00040.gz.example_info.json
+<a id="__codelineno-50-86" name="__codelineno-50-86" href="#__codelineno-50-86"></a>Father.chr21.labeled.tfrecords-00022-of-00040.gz
+<a id="__codelineno-50-87" name="__codelineno-50-87" href="#__codelineno-50-87"></a>Father.chr21.labeled.tfrecords-00022-of-00040.gz.example_info.json
+<a id="__codelineno-50-88" name="__codelineno-50-88" href="#__codelineno-50-88"></a>Father.chr21.labeled.tfrecords-00023-of-00040.gz
+<a id="__codelineno-50-89" name="__codelineno-50-89" href="#__codelineno-50-89"></a>Father.chr21.labeled.tfrecords-00023-of-00040.gz.example_info.json
+<a id="__codelineno-50-90" name="__codelineno-50-90" href="#__codelineno-50-90"></a>Father.chr21.labeled.tfrecords-00024-of-00040.gz
+<a id="__codelineno-50-91" name="__codelineno-50-91" href="#__codelineno-50-91"></a>Father.chr21.labeled.tfrecords-00024-of-00040.gz.example_info.json
+<a id="__codelineno-50-92" name="__codelineno-50-92" href="#__codelineno-50-92"></a>Father.chr21.labeled.tfrecords-00025-of-00040.gz
+<a id="__codelineno-50-93" name="__codelineno-50-93" href="#__codelineno-50-93"></a>Father.chr21.labeled.tfrecords-00025-of-00040.gz.example_info.json
+<a id="__codelineno-50-94" name="__codelineno-50-94" href="#__codelineno-50-94"></a>Father.chr21.labeled.tfrecords-00026-of-00040.gz
+<a id="__codelineno-50-95" name="__codelineno-50-95" href="#__codelineno-50-95"></a>Father.chr21.labeled.tfrecords-00026-of-00040.gz.example_info.json
+<a id="__codelineno-50-96" name="__codelineno-50-96" href="#__codelineno-50-96"></a>Father.chr21.labeled.tfrecords-00027-of-00040.gz
+<a id="__codelineno-50-97" name="__codelineno-50-97" href="#__codelineno-50-97"></a>Father.chr21.labeled.tfrecords-00027-of-00040.gz.example_info.json
+<a id="__codelineno-50-98" name="__codelineno-50-98" href="#__codelineno-50-98"></a>Father.chr21.labeled.tfrecords-00028-of-00040.gz
+<a id="__codelineno-50-99" name="__codelineno-50-99" href="#__codelineno-50-99"></a>Father.chr21.labeled.tfrecords-00028-of-00040.gz.example_info.json
+<a id="__codelineno-50-100" name="__codelineno-50-100" href="#__codelineno-50-100"></a>Father.chr21.labeled.tfrecords-00029-of-00040.gz
+<a id="__codelineno-50-101" name="__codelineno-50-101" href="#__codelineno-50-101"></a>Father.chr21.labeled.tfrecords-00029-of-00040.gz.example_info.json
+<a id="__codelineno-50-102" name="__codelineno-50-102" href="#__codelineno-50-102"></a>Father.chr21.labeled.tfrecords-00030-of-00040.gz
+<a id="__codelineno-50-103" name="__codelineno-50-103" href="#__codelineno-50-103"></a>Father.chr21.labeled.tfrecords-00030-of-00040.gz.example_info.json
+<a id="__codelineno-50-104" name="__codelineno-50-104" href="#__codelineno-50-104"></a>Father.chr21.labeled.tfrecords-00031-of-00040.gz
+<a id="__codelineno-50-105" name="__codelineno-50-105" href="#__codelineno-50-105"></a>Father.chr21.labeled.tfrecords-00031-of-00040.gz.example_info.json
+<a id="__codelineno-50-106" name="__codelineno-50-106" href="#__codelineno-50-106"></a>Father.chr21.labeled.tfrecords-00032-of-00040.gz
+<a id="__codelineno-50-107" name="__codelineno-50-107" href="#__codelineno-50-107"></a>Father.chr21.labeled.tfrecords-00032-of-00040.gz.example_info.json
+<a id="__codelineno-50-108" name="__codelineno-50-108" href="#__codelineno-50-108"></a>Father.chr21.labeled.tfrecords-00033-of-00040.gz
+<a id="__codelineno-50-109" name="__codelineno-50-109" href="#__codelineno-50-109"></a>Father.chr21.labeled.tfrecords-00033-of-00040.gz.example_info.json
+<a id="__codelineno-50-110" name="__codelineno-50-110" href="#__codelineno-50-110"></a>Father.chr21.labeled.tfrecords-00034-of-00040.gz
+<a id="__codelineno-50-111" name="__codelineno-50-111" href="#__codelineno-50-111"></a>Father.chr21.labeled.tfrecords-00034-of-00040.gz.example_info.json
+<a id="__codelineno-50-112" name="__codelineno-50-112" href="#__codelineno-50-112"></a>Father.chr21.labeled.tfrecords-00035-of-00040.gz
+<a id="__codelineno-50-113" name="__codelineno-50-113" href="#__codelineno-50-113"></a>Father.chr21.labeled.tfrecords-00036-of-00040.gz.example_info.json
+<a id="__codelineno-50-114" name="__codelineno-50-114" href="#__codelineno-50-114"></a>Father.chr21.labeled.tfrecords-00037-of-00040.gz
+<a id="__codelineno-50-115" name="__codelineno-50-115" href="#__codelineno-50-115"></a>Father.chr21.labeled.tfrecords-00037-of-00040.gz.example_info.json
+<a id="__codelineno-50-116" name="__codelineno-50-116" href="#__codelineno-50-116"></a>Father.chr21.labeled.tfrecords-00038-of-00040.gz
+<a id="__codelineno-50-117" name="__codelineno-50-117" href="#__codelineno-50-117"></a>Father.chr21.labeled.tfrecords-00038-of-00040.gz.example_info.json
+<a id="__codelineno-50-118" name="__codelineno-50-118" href="#__codelineno-50-118"></a>Father.chr21.labeled.tfrecords-00039-of-00040.gz
+<a id="__codelineno-50-119" name="__codelineno-50-119" href="#__codelineno-50-119"></a>Father.chr21.labeled.tfrecords-00039-of-00040.gz.example_info.json
+</code></pre></div>
+<p><strong>Confirm that SLURM jobs completed successfully</strong>
+<div class="highlight"><span class="filename">Run at the command line</span><pre><span></span><code><a id="__codelineno-51-1" name="__codelineno-51-1" href="#__codelineno-51-1"></a>cat<span class="w"> </span>../TUTORIAL/demo/Human_tutorial/logs/tracking-Baseline-v1.4.0.log<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>SUCCESS<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>Father<span class="w"> </span><span class="p">|</span><span class="w"> </span>wc<span class="w"> </span>-l
+</code></pre></div></p>
+<div class="highlight"><span class="filename">Check output</span><pre><span></span><code><a id="__codelineno-52-1" name="__codelineno-52-1" href="#__codelineno-52-1"></a><span class="m">41</span>
+</code></pre></div>
+</details>
+<details class="success">
+<summary>Expected Output | Child Shuffling:</summary>
+<div class="highlight"><span class="filename">Run at the command line</span><pre><span></span><code><a id="__codelineno-53-1" name="__codelineno-53-1" href="#__codelineno-53-1"></a>ls<span class="w"> </span>../TUTORIAL/demo/Human_tutorial/examples/<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>Child
+</code></pre></div>
+<div class="highlight"><span class="filename">Check output</span><pre><span></span><code><a id="__codelineno-54-1" name="__codelineno-54-1" href="#__codelineno-54-1"></a>Child.chr21.labeled.shuffled-00000-of-00040.tfrecord.gz
+<a id="__codelineno-54-2" name="__codelineno-54-2" href="#__codelineno-54-2"></a>Child.chr21.labeled.shuffled-00001-of-00040.tfrecord.gz
+<a id="__codelineno-54-3" name="__codelineno-54-3" href="#__codelineno-54-3"></a>Child.chr21.labeled.shuffled-00002-of-00040.tfrecord.gz
+<a id="__codelineno-54-4" name="__codelineno-54-4" href="#__codelineno-54-4"></a>Child.chr21.labeled.shuffled-00003-of-00040.tfrecord.gz
+<a id="__codelineno-54-5" name="__codelineno-54-5" href="#__codelineno-54-5"></a>Child.chr21.labeled.shuffled-00004-of-00040.tfrecord.gz
+<a id="__codelineno-54-6" name="__codelineno-54-6" href="#__codelineno-54-6"></a>Child.chr21.labeled.shuffled-00005-of-00040.tfrecord.gz
+<a id="__codelineno-54-7" name="__codelineno-54-7" href="#__codelineno-54-7"></a>Child.chr21.labeled.shuffled-00006-of-00040.tfrecord.gz
+<a id="__codelineno-54-8" name="__codelineno-54-8" href="#__codelineno-54-8"></a>Child.chr21.labeled.shuffled-00007-of-00040.tfrecord.gz
+<a id="__codelineno-54-9" name="__codelineno-54-9" href="#__codelineno-54-9"></a>Child.chr21.labeled.shuffled-00008-of-00040.tfrecord.gz
+<a id="__codelineno-54-10" name="__codelineno-54-10" href="#__codelineno-54-10"></a>Child.chr21.labeled.shuffled-00009-of-00040.tfrecord.gz
+<a id="__codelineno-54-11" name="__codelineno-54-11" href="#__codelineno-54-11"></a>Child.chr21.labeled.shuffled-00010-of-00040.tfrecord.gz
+<a id="__codelineno-54-12" name="__codelineno-54-12" href="#__codelineno-54-12"></a>Child.chr21.labeled.shuffled-00011-of-00040.tfrecord.gz
+<a id="__codelineno-54-13" name="__codelineno-54-13" href="#__codelineno-54-13"></a>Child.chr21.labeled.shuffled-00012-of-00040.tfrecord.gz
+<a id="__codelineno-54-14" name="__codelineno-54-14" href="#__codelineno-54-14"></a>Child.chr21.labeled.shuffled-00013-of-00040.tfrecord.gz
+<a id="__codelineno-54-15" name="__codelineno-54-15" href="#__codelineno-54-15"></a>Child.chr21.labeled.shuffled-00014-of-00040.tfrecord.gz
+<a id="__codelineno-54-16" name="__codelineno-54-16" href="#__codelineno-54-16"></a>Child.chr21.labeled.shuffled-00015-of-00040.tfrecord.gz
+<a id="__codelineno-54-17" name="__codelineno-54-17" href="#__codelineno-54-17"></a>Child.chr21.labeled.shuffled-00016-of-00040.tfrecord.gz
+<a id="__codelineno-54-18" name="__codelineno-54-18" href="#__codelineno-54-18"></a>Child.chr21.labeled.shuffled-00017-of-00040.tfrecord.gz
+<a id="__codelineno-54-19" name="__codelineno-54-19" href="#__codelineno-54-19"></a>Child.chr21.labeled.shuffled-00018-of-00040.tfrecord.gz
+<a id="__codelineno-54-20" name="__codelineno-54-20" href="#__codelineno-54-20"></a>Child.chr21.labeled.shuffled-00019-of-00040.tfrecord.gz
+<a id="__codelineno-54-21" name="__codelineno-54-21" href="#__codelineno-54-21"></a>Child.chr21.labeled.shuffled-00020-of-00040.tfrecord.gz
+<a id="__codelineno-54-22" name="__codelineno-54-22" href="#__codelineno-54-22"></a>Child.chr21.labeled.shuffled-00021-of-00040.tfrecord.gz
+<a id="__codelineno-54-23" name="__codelineno-54-23" href="#__codelineno-54-23"></a>Child.chr21.labeled.shuffled-00022-of-00040.tfrecord.gz
+<a id="__codelineno-54-24" name="__codelineno-54-24" href="#__codelineno-54-24"></a>Child.chr21.labeled.shuffled-00023-of-00040.tfrecord.gz
+<a id="__codelineno-54-25" name="__codelineno-54-25" href="#__codelineno-54-25"></a>Child.chr21.labeled.shuffled-00024-of-00040.tfrecord.gz
+<a id="__codelineno-54-26" name="__codelineno-54-26" href="#__codelineno-54-26"></a>Child.chr21.labeled.shuffled-00025-of-00040.tfrecord.gz
+<a id="__codelineno-54-27" name="__codelineno-54-27" href="#__codelineno-54-27"></a>Child.chr21.labeled.shuffled-00026-of-00040.tfrecord.gz
+<a id="__codelineno-54-28" name="__codelineno-54-28" href="#__codelineno-54-28"></a>Child.chr21.labeled.shuffled-00027-of-00040.tfrecord.gz
+<a id="__codelineno-54-29" name="__codelineno-54-29" href="#__codelineno-54-29"></a>Child.chr21.labeled.shuffled-00028-of-00040.tfrecord.gz
+<a id="__codelineno-54-30" name="__codelineno-54-30" href="#__codelineno-54-30"></a>Child.chr21.labeled.shuffled-00029-of-00040.tfrecord.gz
+<a id="__codelineno-54-31" name="__codelineno-54-31" href="#__codelineno-54-31"></a>Child.chr21.labeled.shuffled-00030-of-00040.tfrecord.gz
+<a id="__codelineno-54-32" name="__codelineno-54-32" href="#__codelineno-54-32"></a>Child.chr21.labeled.shuffled-00031-of-00040.tfrecord.gz
+<a id="__codelineno-54-33" name="__codelineno-54-33" href="#__codelineno-54-33"></a>Child.chr21.labeled.shuffled-00032-of-00040.tfrecord.gz
+<a id="__codelineno-54-34" name="__codelineno-54-34" href="#__codelineno-54-34"></a>Child.chr21.labeled.shuffled-00033-of-00040.tfrecord.gz
+<a id="__codelineno-54-35" name="__codelineno-54-35" href="#__codelineno-54-35"></a>Child.chr21.labeled.shuffled-00034-of-00040.tfrecord.gz
+<a id="__codelineno-54-36" name="__codelineno-54-36" href="#__codelineno-54-36"></a>Child.chr21.labeled.shuffled-00035-of-00040.tfrecord.gz
+<a id="__codelineno-54-37" name="__codelineno-54-37" href="#__codelineno-54-37"></a>Child.chr21.labeled.shuffled-00036-of-00040.tfrecord.gz
+<a id="__codelineno-54-38" name="__codelineno-54-38" href="#__codelineno-54-38"></a>Child.chr21.labeled.shuffled-00037-of-00040.tfrecord.gz
+<a id="__codelineno-54-39" name="__codelineno-54-39" href="#__codelineno-54-39"></a>Child.chr21.labeled.shuffled-00038-of-00040.tfrecord.gz
+<a id="__codelineno-54-40" name="__codelineno-54-40" href="#__codelineno-54-40"></a>Child.chr21.labeled.shuffled-00039-of-00040.tfrecord.gz
+<a id="__codelineno-54-41" name="__codelineno-54-41" href="#__codelineno-54-41"></a>Child.chr21.labeled.shuffled.dataset_config.pbtxt
+<a id="__codelineno-54-42" name="__codelineno-54-42" href="#__codelineno-54-42"></a>Child.chr21.labeled.tfrecords-00000-of-00040.gz
+<a id="__codelineno-54-43" name="__codelineno-54-43" href="#__codelineno-54-43"></a>Child.chr21.labeled.tfrecords-00000-of-00040.gz.example_info.json
+<a id="__codelineno-54-44" name="__codelineno-54-44" href="#__codelineno-54-44"></a>Child.chr21.labeled.tfrecords-00001-of-00040.gz
+<a id="__codelineno-54-45" name="__codelineno-54-45" href="#__codelineno-54-45"></a>Child.chr21.labeled.tfrecords-00001-of-00040.gz.example_info.json
+<a id="__codelineno-54-46" name="__codelineno-54-46" href="#__codelineno-54-46"></a>Child.chr21.labeled.tfrecords-00002-of-00040.gz
+<a id="__codelineno-54-47" name="__codelineno-54-47" href="#__codelineno-54-47"></a>Child.chr21.labeled.tfrecords-00002-of-00040.gz.example_info.json
+<a id="__codelineno-54-48" name="__codelineno-54-48" href="#__codelineno-54-48"></a>Child.chr21.labeled.tfrecords-00003-of-00040.gz
+<a id="__codelineno-54-49" name="__codelineno-54-49" href="#__codelineno-54-49"></a>Child.chr21.labeled.tfrecords-00003-of-00040.gz.example_info.json
+<a id="__codelineno-54-50" name="__codelineno-54-50" href="#__codelineno-54-50"></a>Child.chr21.labeled.tfrecords-00004-of-00040.gz
+<a id="__codelineno-54-51" name="__codelineno-54-51" href="#__codelineno-54-51"></a>Child.chr21.labeled.tfrecords-00004-of-00040.gz.example_info.json
+<a id="__codelineno-54-52" name="__codelineno-54-52" href="#__codelineno-54-52"></a>Child.chr21.labeled.tfrecords-00005-of-00040.gz
+<a id="__codelineno-54-53" name="__codelineno-54-53" href="#__codelineno-54-53"></a>Child.chr21.labeled.tfrecords-00005-of-00040.gz.example_info.json
+<a id="__codelineno-54-54" name="__codelineno-54-54" href="#__codelineno-54-54"></a>Child.chr21.labeled.tfrecords-00006-of-00040.gz
+<a id="__codelineno-54-55" name="__codelineno-54-55" href="#__codelineno-54-55"></a>Child.chr21.labeled.tfrecords-00006-of-00040.gz.example_info.json
+<a id="__codelineno-54-56" name="__codelineno-54-56" href="#__codelineno-54-56"></a>Child.chr21.labeled.tfrecords-00007-of-00040.gz
+<a id="__codelineno-54-57" name="__codelineno-54-57" href="#__codelineno-54-57"></a>Child.chr21.labeled.tfrecords-00007-of-00040.gz.example_info.json
+<a id="__codelineno-54-58" name="__codelineno-54-58" href="#__codelineno-54-58"></a>Child.chr21.labeled.tfrecords-00008-of-00040.gz
+<a id="__codelineno-54-59" name="__codelineno-54-59" href="#__codelineno-54-59"></a>Child.chr21.labeled.tfrecords-00008-of-00040.gz.example_info.json
+<a id="__codelineno-54-60" name="__codelineno-54-60" href="#__codelineno-54-60"></a>Child.chr21.labeled.tfrecords-00009-of-00040.gz
+<a id="__codelineno-54-61" name="__codelineno-54-61" href="#__codelineno-54-61"></a>Child.chr21.labeled.tfrecords-00009-of-00040.gz.example_info.json
+<a id="__codelineno-54-62" name="__codelineno-54-62" href="#__codelineno-54-62"></a>Child.chr21.labeled.tfrecords-00010-of-00040.gz
+<a id="__codelineno-54-63" name="__codelineno-54-63" href="#__codelineno-54-63"></a>Child.chr21.labeled.tfrecords-00010-of-00040.gz.example_info.json
+<a id="__codelineno-54-64" name="__codelineno-54-64" href="#__codelineno-54-64"></a>Child.chr21.labeled.tfrecords-00011-of-00040.gz
+<a id="__codelineno-54-65" name="__codelineno-54-65" href="#__codelineno-54-65"></a>Child.chr21.labeled.tfrecords-00011-of-00040.gz.example_info.json
+<a id="__codelineno-54-66" name="__codelineno-54-66" href="#__codelineno-54-66"></a>Child.chr21.labeled.tfrecords-00012-of-00040.gz
+<a id="__codelineno-54-67" name="__codelineno-54-67" href="#__codelineno-54-67"></a>Child.chr21.labeled.tfrecords-00012-of-00040.gz.example_info.json
+<a id="__codelineno-54-68" name="__codelineno-54-68" href="#__codelineno-54-68"></a>Child.chr21.labeled.tfrecords-00013-of-00040.gz
+<a id="__codelineno-54-69" name="__codelineno-54-69" href="#__codelineno-54-69"></a>Child.chr21.labeled.tfrecords-00013-of-00040.gz.example_info.json
+<a id="__codelineno-54-70" name="__codelineno-54-70" href="#__codelineno-54-70"></a>Child.chr21.labeled.tfrecords-00014-of-00040.gz
+<a id="__codelineno-54-71" name="__codelineno-54-71" href="#__codelineno-54-71"></a>Child.chr21.labeled.tfrecords-00014-of-00040.gz.example_info.json
+<a id="__codelineno-54-72" name="__codelineno-54-72" href="#__codelineno-54-72"></a>Child.chr21.labeled.tfrecords-00015-of-00040.gz
+<a id="__codelineno-54-73" name="__codelineno-54-73" href="#__codelineno-54-73"></a>Child.chr21.labeled.tfrecords-00015-of-00040.gz.example_info.json
+<a id="__codelineno-54-74" name="__codelineno-54-74" href="#__codelineno-54-74"></a>Child.chr21.labeled.tfrecords-00016-of-00040.gz
+<a id="__codelineno-54-75" name="__codelineno-54-75" href="#__codelineno-54-75"></a>Child.chr21.labeled.tfrecords-00016-of-00040.gz.example_info.json
+<a id="__codelineno-54-76" name="__codelineno-54-76" href="#__codelineno-54-76"></a>Child.chr21.labeled.tfrecords-00017-of-00040.gz
+<a id="__codelineno-54-77" name="__codelineno-54-77" href="#__codelineno-54-77"></a>Child.chr21.labeled.tfrecords-00017-of-00040.gz.example_info.json
+<a id="__codelineno-54-78" name="__codelineno-54-78" href="#__codelineno-54-78"></a>Child.chr21.labeled.tfrecords-00018-of-00040.gz
+<a id="__codelineno-54-79" name="__codelineno-54-79" href="#__codelineno-54-79"></a>Child.chr21.labeled.tfrecords-00018-of-00040.gz.example_info.json
+<a id="__codelineno-54-80" name="__codelineno-54-80" href="#__codelineno-54-80"></a>Child.chr21.labeled.tfrecords-00019-of-00040.gz
+<a id="__codelineno-54-81" name="__codelineno-54-81" href="#__codelineno-54-81"></a>Child.chr21.labeled.tfrecords-00019-of-00040.gz.example_info.json
+<a id="__codelineno-54-82" name="__codelineno-54-82" href="#__codelineno-54-82"></a>Child.chr21.labeled.tfrecords-00020-of-00040.gz
+<a id="__codelineno-54-83" name="__codelineno-54-83" href="#__codelineno-54-83"></a>Child.chr21.labeled.tfrecords-00020-of-00040.gz.example_info.json
+<a id="__codelineno-54-84" name="__codelineno-54-84" href="#__codelineno-54-84"></a>Child.chr21.labeled.tfrecords-00021-of-00040.gz
+<a id="__codelineno-54-85" name="__codelineno-54-85" href="#__codelineno-54-85"></a>Child.chr21.labeled.tfrecords-00021-of-00040.gz.example_info.json
+<a id="__codelineno-54-86" name="__codelineno-54-86" href="#__codelineno-54-86"></a>Child.chr21.labeled.tfrecords-00022-of-00040.gz
+<a id="__codelineno-54-87" name="__codelineno-54-87" href="#__codelineno-54-87"></a>Child.chr21.labeled.tfrecords-00022-of-00040.gz.example_info.json
+<a id="__codelineno-54-88" name="__codelineno-54-88" href="#__codelineno-54-88"></a>Child.chr21.labeled.tfrecords-00023-of-00040.gz
+<a id="__codelineno-54-89" name="__codelineno-54-89" href="#__codelineno-54-89"></a>Child.chr21.labeled.tfrecords-00023-of-00040.gz.example_info.json
+<a id="__codelineno-54-90" name="__codelineno-54-90" href="#__codelineno-54-90"></a>Child.chr21.labeled.tfrecords-00024-of-00040.gz
+<a id="__codelineno-54-91" name="__codelineno-54-91" href="#__codelineno-54-91"></a>Child.chr21.labeled.tfrecords-00024-of-00040.gz.example_info.json
+<a id="__codelineno-54-92" name="__codelineno-54-92" href="#__codelineno-54-92"></a>Child.chr21.labeled.tfrecords-00025-of-00040.gz
+<a id="__codelineno-54-93" name="__codelineno-54-93" href="#__codelineno-54-93"></a>Child.chr21.labeled.tfrecords-00025-of-00040.gz.example_info.json
+<a id="__codelineno-54-94" name="__codelineno-54-94" href="#__codelineno-54-94"></a>Child.chr21.labeled.tfrecords-00026-of-00040.gz
+<a id="__codelineno-54-95" name="__codelineno-54-95" href="#__codelineno-54-95"></a>Child.chr21.labeled.tfrecords-00026-of-00040.gz.example_info.json
+<a id="__codelineno-54-96" name="__codelineno-54-96" href="#__codelineno-54-96"></a>Child.chr21.labeled.tfrecords-00027-of-00040.gz
+<a id="__codelineno-54-97" name="__codelineno-54-97" href="#__codelineno-54-97"></a>Child.chr21.labeled.tfrecords-00027-of-00040.gz.example_info.json
+<a id="__codelineno-54-98" name="__codelineno-54-98" href="#__codelineno-54-98"></a>Child.chr21.labeled.tfrecords-00028-of-00040.gz
+<a id="__codelineno-54-99" name="__codelineno-54-99" href="#__codelineno-54-99"></a>Child.chr21.labeled.tfrecords-00028-of-00040.gz.example_info.json
+<a id="__codelineno-54-100" name="__codelineno-54-100" href="#__codelineno-54-100"></a>Child.chr21.labeled.tfrecords-00029-of-00040.gz
+<a id="__codelineno-54-101" name="__codelineno-54-101" href="#__codelineno-54-101"></a>Child.chr21.labeled.tfrecords-00029-of-00040.gz.example_info.json
+<a id="__codelineno-54-102" name="__codelineno-54-102" href="#__codelineno-54-102"></a>Child.chr21.labeled.tfrecords-00030-of-00040.gz
+<a id="__codelineno-54-103" name="__codelineno-54-103" href="#__codelineno-54-103"></a>Child.chr21.labeled.tfrecords-00030-of-00040.gz.example_info.json
+<a id="__codelineno-54-104" name="__codelineno-54-104" href="#__codelineno-54-104"></a>Child.chr21.labeled.tfrecords-00031-of-00040.gz
+<a id="__codelineno-54-105" name="__codelineno-54-105" href="#__codelineno-54-105"></a>Child.chr21.labeled.tfrecords-00031-of-00040.gz.example_info.json
+<a id="__codelineno-54-106" name="__codelineno-54-106" href="#__codelineno-54-106"></a>Child.chr21.labeled.tfrecords-00032-of-00040.gz
+<a id="__codelineno-54-107" name="__codelineno-54-107" href="#__codelineno-54-107"></a>Child.chr21.labeled.tfrecords-00032-of-00040.gz.example_info.json
+<a id="__codelineno-54-108" name="__codelineno-54-108" href="#__codelineno-54-108"></a>Child.chr21.labeled.tfrecords-00033-of-00040.gz
+<a id="__codelineno-54-109" name="__codelineno-54-109" href="#__codelineno-54-109"></a>Child.chr21.labeled.tfrecords-00033-of-00040.gz.example_info.json
+<a id="__codelineno-54-110" name="__codelineno-54-110" href="#__codelineno-54-110"></a>Child.chr21.labeled.tfrecords-00034-of-00040.gz
+<a id="__codelineno-54-111" name="__codelineno-54-111" href="#__codelineno-54-111"></a>Child.chr21.labeled.tfrecords-00034-of-00040.gz.example_info.json
+<a id="__codelineno-54-112" name="__codelineno-54-112" href="#__codelineno-54-112"></a>Child.chr21.labeled.tfrecords-00035-of-00040.gz
+<a id="__codelineno-54-113" name="__codelineno-54-113" href="#__codelineno-54-113"></a>Child.chr21.labeled.tfrecords-00035-of-00040.gz.example_info.json
+<a id="__codelineno-54-114" name="__codelineno-54-114" href="#__codelineno-54-114"></a>Child.chr21.labeled.tfrecords-00036-of-00040.gz
+<a id="__codelineno-54-115" name="__codelineno-54-115" href="#__codelineno-54-115"></a>Child.chr21.labeled.tfrecords-00036-of-00040.gz.example_info.json
+<a id="__codelineno-54-116" name="__codelineno-54-116" href="#__codelineno-54-116"></a>Child.chr21.labeled.tfrecords-00037-of-00040.gz
+<a id="__codelineno-54-117" name="__codelineno-54-117" href="#__codelineno-54-117"></a>Child.chr21.labeled.tfrecords-00037-of-00040.gz.example_info.json
+<a id="__codelineno-54-118" name="__codelineno-54-118" href="#__codelineno-54-118"></a>Child.chr21.labeled.tfrecords-00038-of-00040.gz
+<a id="__codelineno-54-119" name="__codelineno-54-119" href="#__codelineno-54-119"></a>Child.chr21.labeled.tfrecords-00038-of-00040.gz.example_info.json
+<a id="__codelineno-54-120" name="__codelineno-54-120" href="#__codelineno-54-120"></a>Child.chr21.labeled.tfrecords-00039-of-00040.gz
+<a id="__codelineno-54-121" name="__codelineno-54-121" href="#__codelineno-54-121"></a>Child.chr21.labeled.tfrecords-00039-of-00040.gz.example_info.json
+</code></pre></div>
+<p><strong>Confirm that SLURM jobs completed successfully</strong>
+<div class="highlight"><span class="filename">Run at the command line</span><pre><span></span><code><a id="__codelineno-55-1" name="__codelineno-55-1" href="#__codelineno-55-1"></a>cat<span class="w"> </span>../TUTORIAL/demo/Human_tutorial/logs/tracking-Baseline-v1.4.0.log<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>SUCCESS<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>Child<span class="w"> </span><span class="p">|</span><span class="w"> </span>wc<span class="w"> </span>-l
+</code></pre></div></p>
+<div class="highlight"><span class="filename">Check output</span><pre><span></span><code><a id="__codelineno-56-1" name="__codelineno-56-1" href="#__codelineno-56-1"></a><span class="m">41</span>
+</code></pre></div>
+</details>
+<details class="success">
+<summary>Expected Output | Benchmarking:</summary>
+<div class="highlight"><span class="filename">Run at the command line</span><pre><span></span><code><a id="__codelineno-57-1" name="__codelineno-57-1" href="#__codelineno-57-1"></a>less<span class="w"> </span>../TUTORIAL/demo/summary/Human_tutorial.SLURM.job_numbers.csv
+</code></pre></div>
+<div class="highlight"><span class="filename">Check output</span><pre><span></span><code><a id="__codelineno-58-1" name="__codelineno-58-1" href="#__codelineno-58-1"></a>AnalysisName,RunName,Parent,Phase,JobList
+<a id="__codelineno-58-2" name="__codelineno-58-2" href="#__codelineno-58-2"></a>Baseline-v1.4.0,Human_tutorial,Father,make_examples,27669522
+<a id="__codelineno-58-3" name="__codelineno-58-3" href="#__codelineno-58-3"></a>Baseline-v1.4.0,Human_tutorial,Father,beam_shuffle,27669523
+<a id="__codelineno-58-4" name="__codelineno-58-4" href="#__codelineno-58-4"></a>Baseline-v1.4.0,Human_tutorial,Father,make_examples,27669524
+<a id="__codelineno-58-5" name="__codelineno-58-5" href="#__codelineno-58-5"></a>Baseline-v1.4.0,Human_tutorial,Father,beam_shuffle,27669525
+<a id="__codelineno-58-6" name="__codelineno-58-6" href="#__codelineno-58-6"></a><span class="c1"># The JobList column will differ based on SLURM job IDs</span>
+</code></pre></div>
+</details>
+<p>After confirming all (7) jobs complete successfully, run the following at the command line:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-59-1" name="__codelineno-59-1" href="#__codelineno-59-1"></a>python3<span class="w"> </span>triotrain/model_training/tutorial/estimate.py<span class="w">                           </span><span class="se">\</span>
+<a id="__codelineno-59-2" name="__codelineno-59-2" href="#__codelineno-59-2"></a><span class="w">    </span>--vcf-file<span class="w"> </span>../TUTORIAL/demo/Human_tutorial/test_Father/test1_chr21.vcf.gz<span class="w">   </span><span class="se">\</span>
+<a id="__codelineno-59-3" name="__codelineno-59-3" href="#__codelineno-59-3"></a><span class="w">    </span>-g<span class="w"> </span>Father<span class="w">                                                                   </span><span class="se">\</span>
+<a id="__codelineno-59-4" name="__codelineno-59-4" href="#__codelineno-59-4"></a><span class="w">    </span>--demo-mode<span class="w">                                                                 </span><span class="se">\</span>
+<a id="__codelineno-59-5" name="__codelineno-59-5" href="#__codelineno-59-5"></a><span class="w">    </span>--env-file<span class="w"> </span>../TUTORIAL/demo/envs/run1.env
+</code></pre></div>
+<details class="success">
+<summary>Expected Output | Estimating TrioTrain Parameters:</summary>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-60-1" name="__codelineno-60-1" href="#__codelineno-60-1"></a><span class="o">=====</span><span class="w"> </span>start<span class="w"> </span>of<span class="w"> </span>triotrain/model_training/tutorial/estimate.py<span class="w"> </span>@<span class="w"> </span><span class="m">2023</span>-06-27<span class="w">  </span><span class="m">10</span>:54:59<span class="w"> </span><span class="o">=====</span>
+<a id="__codelineno-60-2" name="__codelineno-60-2" href="#__codelineno-60-2"></a><span class="m">2023</span>-06-27<span class="w"> </span><span class="m">10</span>:54:59<span class="w"> </span>AM<span class="w"> </span>-<span class="w"> </span><span class="o">[</span>INFO<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>DEMO<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>TRIO1<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>count_variants<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>Father<span class="o">]</span>:<span class="w"> </span>number<span class="w"> </span>of<span class="w"> </span>REF/REF<span class="w"> </span>variants<span class="w"> </span>found<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="m">44</span>,452
+<a id="__codelineno-60-3" name="__codelineno-60-3" href="#__codelineno-60-3"></a><span class="m">2023</span>-06-27<span class="w"> </span><span class="m">10</span>:54:59<span class="w"> </span>AM<span class="w"> </span>-<span class="w"> </span><span class="o">[</span>INFO<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>DEMO<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>TRIO1<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>count_variants<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>Father<span class="o">]</span>:<span class="w"> </span>number<span class="w"> </span>of<span class="w"> </span>PASS<span class="w"> </span>variants<span class="w"> </span>found<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="m">114</span>,332
+<a id="__codelineno-60-4" name="__codelineno-60-4" href="#__codelineno-60-4"></a><span class="m">2023</span>-06-27<span class="w"> </span><span class="m">10</span>:55:00<span class="w"> </span>AM<span class="w"> </span>-<span class="w"> </span><span class="o">[</span>INFO<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>DEMO<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>TRIO1<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>count_variants<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>Father<span class="o">]</span>:<span class="w"> </span>default<span class="w"> </span>maximum<span class="w"> </span>examples<span class="w"> </span>per<span class="w"> </span>region<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="m">200</span>,000
+<a id="__codelineno-60-5" name="__codelineno-60-5" href="#__codelineno-60-5"></a><span class="m">2023</span>-06-27<span class="w"> </span><span class="m">10</span>:55:00<span class="w"> </span>AM<span class="w"> </span>-<span class="w"> </span><span class="o">[</span>INFO<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>DEMO<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>TRIO1<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>count_variants<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>Father<span class="o">]</span>:<span class="w"> </span>default<span class="w"> </span>value<span class="w"> </span><span class="k">for</span><span class="w"> </span>--max-examples<span class="w"> </span>is<span class="w"> </span>appropriate
+<a id="__codelineno-60-6" name="__codelineno-60-6" href="#__codelineno-60-6"></a><span class="m">2023</span>-06-27<span class="w"> </span><span class="m">10</span>:55:00<span class="w"> </span>AM<span class="w"> </span>-<span class="w"> </span><span class="o">[</span>INFO<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>DEMO<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>TRIO1<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>count_variants<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>Father<span class="o">]</span>:<span class="w"> </span>added<span class="w"> </span><span class="s1">&#39;Demo_TotalVariants=114332&#39;</span><span class="w"> </span>to<span class="w"> </span>env<span class="w"> </span>file
+<a id="__codelineno-60-7" name="__codelineno-60-7" href="#__codelineno-60-7"></a><span class="m">2023</span>-06-27<span class="w"> </span><span class="m">10</span>:55:00<span class="w"> </span>AM<span class="w"> </span>-<span class="w"> </span><span class="o">[</span>INFO<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>DEMO<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>TRIO1<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>count_variants<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>Father<span class="o">]</span>:<span class="w"> </span>number<span class="w"> </span>of<span class="w"> </span>examples<span class="w"> </span>made<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="m">75</span>,902
+<a id="__codelineno-60-8" name="__codelineno-60-8" href="#__codelineno-60-8"></a><span class="m">2023</span>-06-27<span class="w"> </span><span class="m">10</span>:55:00<span class="w"> </span>AM<span class="w"> </span>-<span class="w"> </span><span class="o">[</span>INFO<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>DEMO<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>TRIO1<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>count_variants<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>Father<span class="o">]</span>:<span class="w"> </span>calculated<span class="w"> </span>examples<span class="w"> </span>per<span class="w"> </span>variant<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="m">0</span>.664
+<a id="__codelineno-60-9" name="__codelineno-60-9" href="#__codelineno-60-9"></a><span class="m">2023</span>-06-27<span class="w"> </span><span class="m">10</span>:55:00<span class="w"> </span>AM<span class="w"> </span>-<span class="w"> </span><span class="o">[</span>INFO<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>DEMO<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>TRIO1<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>count_variants<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>Father<span class="o">]</span>:<span class="w"> </span>default<span class="w"> </span>examples<span class="w"> </span>per<span class="w"> </span>variant<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="m">1</span>.5
+<a id="__codelineno-60-10" name="__codelineno-60-10" href="#__codelineno-60-10"></a><span class="m">2023</span>-06-27<span class="w"> </span><span class="m">10</span>:55:00<span class="w"> </span>AM<span class="w"> </span>-<span class="w"> </span><span class="o">[</span>INFO<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>DEMO<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>TRIO1<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>count_variants<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>Father<span class="o">]</span>:<span class="w"> </span>difference<span class="w"> </span>between<span class="w"> </span>default<span class="w"> </span>and<span class="w"> </span>calculated<span class="w"> </span>examples<span class="w"> </span>per<span class="w"> </span>variant<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="m">0</span>.836
+<a id="__codelineno-60-11" name="__codelineno-60-11" href="#__codelineno-60-11"></a><span class="m">2023</span>-06-27<span class="w"> </span><span class="m">10</span>:55:00<span class="w"> </span>AM<span class="w"> </span>-<span class="w"> </span><span class="o">[</span>INFO<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>DEMO<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>TRIO1<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>count_variants<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>Father<span class="o">]</span>:<span class="w"> </span>when<span class="w"> </span>running<span class="w"> </span>TrioTrain<span class="w"> </span>outside<span class="w"> </span>of<span class="w"> </span>this<span class="w"> </span>tutorial,<span class="w"> </span>please<span class="w"> </span>use<span class="w"> </span>--est-examples<span class="o">=</span><span class="m">0</span>.66
+<a id="__codelineno-60-12" name="__codelineno-60-12" href="#__codelineno-60-12"></a><span class="m">2023</span>-06-27<span class="w"> </span><span class="m">10</span>:55:00<span class="w"> </span>AM<span class="w"> </span>-<span class="w"> </span><span class="o">[</span>INFO<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>DEMO<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>TRIO1<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>count_variants<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>Father<span class="o">]</span>:<span class="w"> </span>added<span class="w"> </span><span class="s1">&#39;Est_Examples=0.66&#39;</span><span class="w"> </span>to<span class="w"> </span>env<span class="w"> </span><span class="nv">file</span>
+<a id="__codelineno-60-13" name="__codelineno-60-13" href="#__codelineno-60-13"></a><span class="o">=====</span><span class="w"> </span>end<span class="w"> </span>of<span class="w"> </span>triotrain/model_training/tutorial/estimate.py<span class="w"> </span>@<span class="w"> </span><span class="m">2023</span>-06-27<span class="w">  </span><span class="m">10</span>:55:00<span class="w"> </span><span class="o">=====</span>
+</code></pre></div>
+</details>
+<h2 id="9-run-triotrain-with-a-human-trio">9. Run TrioTrain with a Human Trio</h2>
+<p>Now that we know how to tailor TrioTrain for our non-bovine species (human), we can move forward with starting the pipeline.</p>
+<p>Run the following at the command line:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-61-1" name="__codelineno-61-1" href="#__codelineno-61-1"></a><span class="c1"># You can add the --dry-run flag to this command to confirm the TrioTrain pipeline runs smoothly</span>
+<a id="__codelineno-61-2" name="__codelineno-61-2" href="#__codelineno-61-2"></a>python3<span class="w"> </span>triotrain/run_trio_train.py<span class="w">                                                                         </span><span class="se">\</span>
+<a id="__codelineno-61-3" name="__codelineno-61-3" href="#__codelineno-61-3"></a><span class="w">    </span>-g<span class="w"> </span>Father<span class="w">                                                                                               </span><span class="se">\</span>
+<a id="__codelineno-61-4" name="__codelineno-61-4" href="#__codelineno-61-4"></a><span class="w">    </span>-s<span class="w"> </span>human<span class="w">                                                                                                </span><span class="se">\</span>
+<a id="__codelineno-61-5" name="__codelineno-61-5" href="#__codelineno-61-5"></a><span class="w">    </span>--est-examples<span class="w"> </span><span class="m">0</span>.66<span class="w">                                                                                     </span><span class="se">\</span>
+<a id="__codelineno-61-6" name="__codelineno-61-6" href="#__codelineno-61-6"></a><span class="w">    </span>-m<span class="w"> </span>triotrain/model_training/tutorial/GIAB.Human_tutorial_metadata.csv<span class="w">                                   </span><span class="se">\</span>
+<a id="__codelineno-61-7" name="__codelineno-61-7" href="#__codelineno-61-7"></a><span class="w">    </span>-n<span class="w"> </span>GIAB_Trio<span class="w">                                                                                            </span><span class="se">\</span>
+<a id="__codelineno-61-8" name="__codelineno-61-8" href="#__codelineno-61-8"></a><span class="w">    </span>-r<span class="w"> </span>triotrain/model_training/tutorial/resources_used.json<span class="w">                                                </span><span class="se">\</span>
+<a id="__codelineno-61-9" name="__codelineno-61-9" href="#__codelineno-61-9"></a><span class="w">    </span>--num-tests<span class="w"> </span><span class="m">3</span><span class="w">                                                                                           </span><span class="se">\</span>
+<a id="__codelineno-61-10" name="__codelineno-61-10" href="#__codelineno-61-10"></a><span class="w">    </span>--custom-checkpoint<span class="w"> </span>triotrain/model_training/pretrained_models/v1.4.0_withIS_withAF/wgs_af.model.ckpt<span class="w">   </span><span class="se">\</span>
+<a id="__codelineno-61-11" name="__codelineno-61-11" href="#__codelineno-61-11"></a><span class="w">    </span>--output<span class="w"> </span>../TUTORIAL<span class="w">                                                                                    </span><span class="se">\</span>
+<a id="__codelineno-61-12" name="__codelineno-61-12" href="#__codelineno-61-12"></a><span class="w">    </span>--benchmark<span class="w"> </span>--dry-run
+</code></pre></div>
 
 
 
@@ -903,7 +1656,7 @@ python triotrain/model_training/demo/create_metadata.py
       <div class="md-dialog__inner md-typeset"></div>
     </div>
     
-    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.top", "toc.integrate"], "search": "../../assets/javascripts/workers/search.208ed371.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.top", "toc.integrate", "content.code.copy"], "search": "../../assets/javascripts/workers/search.208ed371.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
       <script src="../../assets/javascripts/bundle.b4d07000.min.js"></script>

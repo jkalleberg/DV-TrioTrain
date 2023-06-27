@@ -65,7 +65,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#triotrain-usage-guide" class="md-skip">
+        <a href="#triotrain-data" class="md-skip">
           Skip to content
         </a>
       
@@ -370,7 +370,7 @@
   
     <li class="md-nav__item">
       <a href="../../getting-started/walk-through/" class="md-nav__link">
-        Human GIAB Demo
+        Human GIAB Tutorial
       </a>
     </li>
   
@@ -454,16 +454,31 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#required-data" class="md-nav__link">
-    Required Data
+  <a href="#required-raw-data" class="md-nav__link">
+    Required Raw Data
   </a>
   
-    <nav class="md-nav" aria-label="Required Data">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#triotrain-specific-inputs" class="md-nav__link">
+    TrioTrain-Specific Inputs
+  </a>
+  
+    <nav class="md-nav" aria-label="TrioTrain-Specific Inputs">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#assumptions" class="md-nav__link">
-    Assumptions
+  <a href="#configuring-slurm-resources" class="md-nav__link">
+    Configuring SLURM Resources
+  </a>
+  
+    <nav class="md-nav" aria-label="Configuring SLURM Resources">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#resource-config-format" class="md-nav__link">
+    Resource Config Format
   </a>
   
 </li>
@@ -472,8 +487,8 @@
     </nav>
   
 </li>
-      
-        <li class="md-nav__item">
+        
+          <li class="md-nav__item">
   <a href="#providing-required-data-to-triotrain" class="md-nav__link">
     Providing required data to TrioTrain
   </a>
@@ -482,29 +497,35 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#metadata-assumptions" class="md-nav__link">
+    Metadata Assumptions
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#minimum-data-required" class="md-nav__link">
-    Minimum data required
+    Minimum Data Required
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#metadata-format" class="md-nav__link">
+    Metadata Format
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#adding-more-test-genomes" class="md-nav__link">
+    Adding more test genomes
   </a>
   
 </li>
         
       </ul>
     </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#metadata-format" class="md-nav__link">
-    Metadata Format
-  </a>
-  
-    <nav class="md-nav" aria-label="Metadata Format">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#adding-more-test-genomes" class="md-nav__link">
-    Adding more test genomes
-  </a>
   
 </li>
         
@@ -658,75 +679,71 @@
   
 
 
-<h1 id="triotrain-usage-guide">TrioTrain Usage Guide</h1>
-<p>TrioTrain is a pipeline to automate re-training of DeepVariant models. Visit the DeepVariant
-<a href="https://github.com/google/deepvariant/blob/r1.5/docs/deepvariant-details.md">usage guide</a> to
-learn more in-depth details about how DeepVariant works. </p>
-<h2 id="required-data">Required Data</h2>
-<p>TrioTrain and DeepVariant use several input file formats:</p>
+<h1 id="triotrain-data">TrioTrain Data</h1>
+<p>TrioTrain and DeepVariant use several input file formats; however, all files must:</p>
+<ul>
+<li>exist before the execution of the pipeline</li>
+<li>be compatible with the reference genome provided to the pipeline</li>
+<li>be sorted and indexed</li>
+<li>contain only one sample per file</li>
+</ul>
+<h2 id="required-raw-data">Required Raw Data</h2>
 <ol>
 <li>
-<p><strong>A reference genome</strong></p>
+<p><strong>Reference Genome</strong></p>
 <ul>
 <li>must be in <a href="https://en.wikipedia.org/wiki/FASTA_format"><code>FASTA</code></a>
 format</li>
 <li>includes the corresponding
-<a href="http://www.htslib.org/doc/faidx.html"><code>.fai</code> index file</a> generated using the <code>samtools faidx</code> command.</li>
+<a href="http://www.htslib.org/doc/faidx.html"><code>.fai</code> index file</a> generated with <code>samtools faidx</code> and located in the same directory</li>
+<li>includes the corresponding <a href="https://gatk.broadinstitute.org/hc/en-us/articles/360036729911-CreateSequenceDictionary-Picard-"><code>.dict</code> file</a> generated with <code>picard</code> and located in the same directory</li>
+<li><em>(OPTIONALLY)</em> includes the corresponding <a href="https://github.com/RealTimeGenomics/rtg-tools">Sequence Data File (SDF)</a> generated with <code>rtg-tools format</code> and located at the same path in a sub-directory called "rtg_tools" &mdash; required for calculating Mendelian Inhertiance Errors with testing genomes</li>
 </ul>
 </li>
 <li>
-<p><strong>Aligned reads file(s)</strong></p>
+<p><strong>Aligned Reads File(s)</strong></p>
 <ul>
 <li>must be aligned to the reference genome above</li>
-<li>can be in either<ol>
-<li><a href="http://genome.sph.umich.edu/wiki/BAM"><code>BAM</code></a> format</li>
-<li><a href="https://www.ga4gh.org/product/cram/"><code>CRAM</code></a> format</li>
-</ol>
-</li>
-<li>includes the corresponding index file matching the reads format above<ol>
-<li><code>.bai</code> index file</li>
-<li><code>.csi</code> index file</li>
-</ol>
-</li>
+<li>can be in either <a href="http://genome.sph.umich.edu/wiki/BAM"><code>BAM</code></a> format or <a href="https://www.ga4gh.org/product/cram/"><code>CRAM</code></a> format</li>
+<li>includes the corresponding <code>.bai</code> or <code>.csi</code> index file located in the same directory</li>
 </ul>
 </li>
 <li>
-<p><strong>Benchmarking variant file(s)</strong></p>
+<p><strong>Benchmarking Variant File(s)</strong></p>
 <ul>
 <li>also referred to as  "truth genotypes", or "gold-standard genotypes"</li>
-<li>must be in in <a href="https://samtools.github.io/hts-specs/VCFv4.3.pdf"><code>VCF</code></a> format</li>
-<li>includes a corresponding <code>.tbi</code> index file generated with <code>tabix</code></li>
+<li>must be in in <a href="https://samtools.github.io/hts-specs/VCFv4.3.pdf"><code>VCF</code></a> format and compressed with <code>bgzip</code></li>
+<li>includes a corresponding <code>.tbi</code> index generated with <code>tabix</code> and located in the same directory</li>
+<li>excludes any homozygous reference genotypes and any sites that violate Mendelian inheritance expectations</li>
 </ul>
 </li>
 <li>
-<p><strong>Benchmarking region file(s)</strong></p>
+<p><strong>Benchmarking Region File(s)</strong></p>
 <ul>
 <li>also referred to as "callable regions"</li>
 <li>must be in <a href="https://bedtools.readthedocs.io/en/latest/content/general-usage.html"><code>BED</code></a> format</li>
-<li>must match the co-ordinantes of the reference genome above.</li>
+<li>must be compatible with the specified reference genome</li>
+<li>compressed files will be decompressed</li>
+<li>use <a href="https://bedtools.readthedocs.io/en/latest/content/overview.html?highlight=0-based#bed-starts-are-zero-based-and-bed-ends-are-one-based">0-based coordinates</a></li>
 </ul>
 </li>
 <li>
-<p><strong>A model checkpoint for DeepVariant</strong></p>
+<p><strong>Starting DeepVariant Model Checkpoint</strong></p>
 <ul>
-<li>used for warm-start a new model, or initializing weights with a previous model</li>
-<li>can either:<ol>
-<li>be downloaded from Google Cloud Platform (GCP)</li>
-<li>were created previously by a prior TrioTrain iteration</li>
-</ol>
-</li>
+<li>used for warm-start a new model  initializing weights with a previous model</li>
+<li>can either be downloaded from Google Cloud Platform (GCP) or created previously by a prior TrioTrain iteration</li>
 <li>
-<p>a checkpoint consists of four (4) file formats:</p>
-<ul>
+<p>Checkpoints consists of four (4) files all located in the same directory:</p>
+<ol>
 <li><code>.data-00000-of-00001</code></li>
 <li><code>.index</code></li>
 <li><code>.meta</code></li>
-<li><code>.example_info.json</code> - defines the channels to include in the variant examples in TensorFlow Record <a href="https://www.tensorflow.org/tutorials/load_data/tfrecord">(<code>tfRecord</code>)</a> format.</li>
-</ul>
+<li><code>.example_info.json</code> &mdash; defines which features to include as channels within the images given to DeepVariant in <a href="https://www.tensorflow.org/tutorials/load_data/tfrecord"><code>tfRecord</code> format</a></li>
+</ol>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Examples made with different channel(s), a different tfRecord shape, or a different DeepVariant version can be incompatible with alternative models. Get details about model features, such as shape, version and channels <a href="../existing_models/">here</a>.</p>
-<p><strong>Check the shape of a model with:</strong></p>
+<p>Examples made with different channel(s), a different tfRecord shape, or a different DeepVariant version can be incompatible with your chosen starting model. Get details about model features compatible with TrioTrain, such as shape, version and channels <a href="../existing_models/">here</a>.</p>
+<p><em>You can check the shape of a model's examples with:</em></p>
 <p><code>jq '.' &lt;model_name&gt;.example_info.json</code>.           </p>
 </div>
 </li>
@@ -735,75 +752,83 @@ format</li>
 <li>
 <p><em>(OPTIONAL)</em> <strong>Population Allele Frequencies</strong></p>
 <ul>
-<li>must be in <a href="https://samtools.github.io/hts-specs/VCFv4.3.pdf"><code>VCF</code></a> format</li>
-<li>includes a corresponding <code>.tbi</code> index file generated with <code>tabix</code></li>
+<li>must be in <a href="https://samtools.github.io/hts-specs/VCFv4.3.pdf"><code>VCF</code></a> format and compressed with <code>bgzip</code></li>
+<li>includes a corresponding <code>.tbi</code> index generated with <code>tabix</code> and located in the same directory</li>
 <li>genotypes should be removed</li>
 </ul>
 </li>
 </ol>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Our automated, cattle-optimized GATK Best Practices workflow used to generate our input files automatically performs realignment and  recalibration with Base Quality Score Recalibration <a href="https://gatk.broadinstitute.org/hc/en-us/articles/360035890531-Base-Quality-Score-Recalibration-BQSR-">(BQSR)</a>. <strong>BQSR is not required</strong> or recommended for using the single-step variant caller from DeepVariant, as it may decrease the accuracy.</p>
+<p>Our automated, cattle-optimized GATK Best Practices workflow used to generate our input files automatically performs realignment and  recalibration with Base Quality Score Recalibration <a href="https://gatk.broadinstitute.org/hc/en-us/articles/360035890531-Base-Quality-Score-Recalibration-BQSR-">(BQSR)</a>. <em>BQSR is not required or recommended for using the single-step variant caller from DeepVariant, as it may decrease the accuracy.</em></p>
 <p>However, re-training involves a small proportion of the total genomes processed by UMAG group (55 of ~6,000). Thus, removing BQSR would  decrease the quality of the entire cohort's GATK genotypes used in other research. The impact of including BQSR in our truth labels was not evaluated further during TrioTrain's development.</p>
 </div>
-<h3 id="assumptions">Assumptions</h3>
+<h2 id="triotrain-specific-inputs">TrioTrain-Specific Inputs</h2>
+<h3 id="configuring-slurm-resources">Configuring SLURM Resources</h3>
+<p>SLURM resources are handled by TrioTrain via a resource configuration file (<code>.json</code>).</p>
+<h4 id="resource-config-format">Resource Config Format</h4>
+<p>Contains nested dictionaries in the following format:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="p">{</span><span class="nt">&quot;phase_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">    </span><span class="nt">&quot;SLURM_SBATCH_PARAMETER&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;value&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">    </span><span class="nt">&quot;SLURM_SBATCH_PARAMETER&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;value&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">    </span><span class="nt">&quot;SLURM_SBATCH_PARAMETER&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;value&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="p">}</span>
+</code></pre></div>
+<p>There are (8) required phases within TrioTrain's SLURM config file. Valid <code>phase_names</code> for these include:</p>
+<ol>
+<li><code>make_examples</code></li>
+<li><code>beam_shuffle</code></li>
+<li><code>re_shuffle</code></li>
+<li><code>train_eval</code></li>
+<li><code>select_ckpt</code></li>
+<li><code>call_variants</code></li>
+<li><code>compare_happy</code></li>
+<li><code>convert_happy</code></li>
+</ol>
+<p>Additionally, there are (3) optional phase names for TrioTrain's supplementary analyes that include:</p>
+<ol>
+<li><code>show_examples</code> &mdash; for running TrioTrain in 'demo' mode</li>
+<li><code>summary_stats</code> &mdash; for calculating per-VCF stats for each test genome</li>
+<li><code>mie_summary</code> &mdash; for calculating Mendelian Inheritance Error rate in trio-binned test genomes</li>
+</ol>
+<p>The value for each <code>phase_name</code> is a nested dictionary that contains key:value pairs of parameters for running SBATCH job files. <a href="https://slurm.schedmd.com/sbatch.html">You can view valid SBATCH options in the SLURM documentation.</a></p>
+<h3 id="providing-required-data-to-triotrain">Providing required data to TrioTrain</h3>
+<p>Input files are handled by the primary input file for TrioTrain, a metadata file in <code>.csv</code> format. These metadata files are used to define different re-training approaches. For example, you can alter the order in which trios are seen when building a new model between two different metadata files. Metadata includes trio pedigree information, and the absolute file paths for the local data you want to give DeepVariant.</p>
+<h4 id="metadata-assumptions">Metadata Assumptions</h4>
 <ul>
-<li>All files must exist before the execution of the pipeline.</li>
-<li>All files must be compatible with the reference genome <code>FASTA</code> provided to the pipeline.</li>
-<li>Each file must contain only one sample per file.</li>
-<li>The files must be sorted and indexed.</li>
-<li><code>VCF</code> files<ul>
-<li>These files should be compressed with <code>bgzip</code></li>
-<li>Benchmark <code>VCF</code> files used as truth labels:<ul>
-<li>Excludes any homozygous reference genotypes.</li>
-<li>Excludes any sites that violate Mendelian inheritance expectations.</li>
-</ul>
-</li>
-</ul>
-</li>
-<li><code>BED</code> files<ul>
-<li>Compressed files will be decompressed automatically.</li>
-<li>These files use 0-based coordinates. <a href="https://bedtools.readthedocs.io/en/latest/content/overview.html?highlight=0-based#bed-starts-are-zero-based-and-bed-ends-are-one-based">Learn more here.</a> </li>
-</ul>
-</li>
-<li><code>BAM/CRAM</code> files<ul>
-<li>Either file type can be provided to TrioTrain.</li>
-</ul>
-</li>
-</ul>
-<h2 id="providing-required-data-to-triotrain">Providing required data to TrioTrain</h2>
-<p>Input files are handled by the primary input file for TrioTrain: a metadata file in <code>.csv</code> format. This file contains pedigree and file locations saved to disk for each trio is used to re-train DeepVariant.</p>
-<ul>
-<li>Each row corresponds to one complete family trio resulting in two iterations of TrioTrain.</li>
-<li>Row order determines the sequential order of how trios are used during re-training.</li>
-<li>There are 24 <strong>REQUIRED</strong> columns with headers that must be in the order specified in the <a href="#metadata-format">Metadata Format</a> section.</li>
+<li>The first row includes column headers which will become variable names within TrioTrain</li>
+<li>Each row corresponds to one complete family trio resulting in (2) re-training iterations, one for each parent</li>
+<li>Row order determines the sequential order of how trios seen by DeepVariant</li>
+<li>There are <strong>(24) REQUIRED</strong> columns that must be in the order specified in the <a href="#metadata-format">Metadata Format section below</a></li>
 </ul>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>If the data are available, you can perform additional iterations of TrioTrain by adding rows for additional trio(s) to the metadata <code>.csv</code> file.</p>
-<p>Likewise, further test replicates can be achieved by adding columns in sets of three [<code>BAM,TruthVCF,TruthBED</code>] for each additional test genome to the metadata <code>.csv</code> file.</p>
+<p>If the data are available, you can perform additional iterations of TrioTrain by adding rows for each additional trio.</p>
+<p>Likewise, further test replicates can be achieved by adding columns in sets of three [<code>BAM,TruthVCF,TruthBED</code>] for each additional test genome.</p>
 </div>
-<h3 id="minimum-data-required">Minimum data required</h3>
-<p>At a minimum, this metadata file must provide absolute paths to the following input files:</p>
+<h4 id="minimum-data-required">Minimum Data Required</h4>
+<p>At a minimum, the metadata file must provide absolute paths to the following input files:</p>
 <ol>
 <li>
-<p>TrioTrain performs two iterations of re-training, one for each parent in a trio. The following genomic data are <strong>REQUIRED</strong> for the entire family trio:</p>
+<p>TrioTrain performs two iterations of re-training, one for each parent in a trio which requires:</p>
 <ul>
 <li>Three (3) aligned read data <code>.bam</code> files, with the corresponding <code>.bai</code> index.</li>
 <li>Three (3) benchmark <code>.vcf.gz</code> files, with the corresponding <code>.vcf.gz.tbi</code> index.</li>
-<li>Three (3) benchmark region <code>.bed.gz</code> files.</li>
+<li>Three (3) benchmark region <code>.bed</code> files.</li>
 </ul>
 </li>
 <li>
-<p>TrioTrain tests the model produced for each iteration using a set of genomes previously unseen by the model. The following genomic data are <strong>REQUIRED</strong> from individual(s) outside of the family trio:</p>
+<p>TrioTrain tests the model produced for each iteration using a set of genomes previously unseen by the model. Ideally, these testing samples should consist of individuals outside of the family and requires:</p>
 <ul>
 <li>One or more (1+) aligned read data <code>.bam</code> files, with the corresponding <code>.bai</code> index.</li>
 <li>One or more (1+) benchmark <code>.vcf.gz</code> files, with the corresponding <code>.vcf.gz.tbi</code> index.</li>
-<li>One or more (1+) benchmark <code>.bed.gz</code> files.</li>
+<li>One or more (1+) benchmark <code>.bed</code> files.</li>
 </ul>
 </li>
 </ol>
-<h2 id="metadata-format">Metadata Format</h2>
+<hr />
+<h4 id="metadata-format">Metadata Format</h4>
 <table>
 <thead>
 <tr>
@@ -823,49 +848,49 @@ format</li>
 <tr>
 <td>2</td>
 <td>RunName</td>
-<td>The name of the output directory to be created; a unique memo/note for the analysis</td>
+<td>A unique name of the output directory</td>
 <td>string without spaces</td>
 </tr>
 <tr>
 <td>3</td>
 <td>ChildSampleID</td>
-<td>A primary, unique identifier for a child; must match the SampleID in the child’s VCF/BAM/BED files</td>
+<td>A primary, unique identifier for a child; must match the SampleID in the child’s <code>VCF/BAM/BED</code> files</td>
 <td>alpha-numeric characters</td>
 </tr>
 <tr>
 <td>4</td>
 <td>ChildLabID</td>
-<td>A secondary, unique ID for a child ; defaults to ChildSampleID</td>
+<td>A secondary, unique ID for a child ; <code>default=ChildSampleID</code></td>
 <td>alpha-numeric characters</td>
 </tr>
 <tr>
 <td>5</td>
 <td>FatherSampleID</td>
-<td>A primary, unique identifier for a father; must match the SampleID in the father’s VCF/BAM/BED files</td>
+<td>A primary, unique identifier for a father; must match the SampleID in the father’s <code>VCF/BAM/BED</code> files</td>
 <td>alpha-numeric characters</td>
 </tr>
 <tr>
 <td>6</td>
 <td>FatherLabID</td>
-<td>A secondary, unique ID for a father; defaults to  to FatherSampleID</td>
+<td>A secondary, unique ID for a father; <code>default=FatherSampleID</code></td>
 <td>alpha-numeric characters</td>
 </tr>
 <tr>
 <td>7</td>
 <td>MotherSampleID</td>
-<td>A primary, unique identifier for a mother; must match the SampleID in the mother’s VCF/BAM/BED files</td>
+<td>A primary, unique identifier for a mother; must match the SampleID in the mother’s <code>VCF/BAM/BED</code> files</td>
 <td>alpha-numeric characters</td>
 </tr>
 <tr>
 <td>8</td>
 <td>MotherLabID</td>
-<td>A secondary, unique ID for a mother; defaults to  to MotherSampleID</td>
+<td>A secondary, unique ID for a mother; <code>default=MotherSampleID</code></td>
 <td>alpha-numeric characters</td>
 </tr>
 <tr>
 <td>9</td>
 <td>ChildSex</td>
-<td>The sex of the child, where F=female, M=male, and U=unknown</td>
+<td>The sex of the child, where <code>F=female, M=male, U=unknown</code></td>
 <td><code>F</code>, <code>M</code>, <code>U</code></td>
 </tr>
 <tr>
@@ -960,7 +985,7 @@ format</li>
 </tr>
 </tbody>
 </table>
-<h3 id="adding-more-test-genomes">Adding more test genomes</h3>
+<h4 id="adding-more-test-genomes">Adding more test genomes</h4>
 <p>Each additional testing genome can be supplied by adding three (3) more columns in the following order:</p>
 <table>
 <thead>
@@ -997,7 +1022,7 @@ format</li>
 <p>The <code>#</code> in <code>Test#</code> does not correspond to the order each test is performed, as testing is performed in parallel. However, the number for each test genomes must be sequential to provide a unique label for output files.</p>
 </div>
 <h2 id="triotrain-outputs">TrioTrain Outputs</h2>
-<p>add a description here!</p>
+<p>TODO: add a description here!</p>
 
 
 
@@ -1040,7 +1065,7 @@ format</li>
       <div class="md-dialog__inner md-typeset"></div>
     </div>
     
-    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.top", "toc.integrate"], "search": "../../assets/javascripts/workers/search.208ed371.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.top", "toc.integrate", "content.code.copy"], "search": "../../assets/javascripts/workers/search.208ed371.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
       <script src="../../assets/javascripts/bundle.b4d07000.min.js"></script>
