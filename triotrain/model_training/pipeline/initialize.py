@@ -4,7 +4,6 @@ from helpers.iteration import Iteration
 from model_training.pipeline.setup import Setup
 from helpers.environment import Env
 from sys import exit
-from os import getcwd
 
 def initalize_weights(setup: Setup, itr: Iteration):
     """
@@ -22,6 +21,7 @@ def initalize_weights(setup: Setup, itr: Iteration):
         else:
             path = f"{setup.current_genome}StartCkptPath"
             file = f"{setup.current_genome}StartCkptName"
+    
     current_starting_point = None
 
     # If running GIAB benchmarking, using a default model or a CL-arg ckpt,
@@ -45,15 +45,15 @@ def initalize_weights(setup: Setup, itr: Iteration):
             current_starting_point = Path(
                 f"{str(warm_starting_ckpt_path)}/{str(warm_starting_ckpt_name)}"
             )
-
+        
         # Second, look a PRIOR ENV to define starting ckpt PATH only.
         if current_starting_point is None and itr.args.first_genome is not None:
             # Determine if we need to look in a completely different file...
             if setup.prior_trio_num != setup.current_trio_num:
                 prior_env_path = (
-                    Path(getcwd())
-                    / "envs"
-                    / f"{setup.args.name}-run{setup.prior_trio_num}.env"
+                    Path(itr.env.contents["OutPath"]) /
+                    "envs" /
+                    f"run{setup.prior_trio_num}.env"
                 )
                 prior_env = Env(
                     str(prior_env_path), itr.logger, dryrun_mode=itr.dryrun_mode
@@ -95,72 +95,6 @@ def initalize_weights(setup: Setup, itr: Iteration):
                 train_path_parent / prior_run_name / f"train_{setup.prior_genome}"
             )
 
-        ### TRAINING SPECIFIC STEPS -----------------------------------###
-        if (
-            itr.args.first_genome is not None
-            and itr.current_genome_num is not None
-            and itr.env is not None
-        ):
-            # Update the CURRENT ENV to include the testing ckpt PATH
-            itr.env.add_to(
-                f"{itr.train_genome}TestCkptPath",
-                str(itr.train_dir),
-                dryrun_mode=setup.args.dry_run,
-                msg=f"{logging_msg}",
-            )
-
-            ### Include the NEXT starting ckpt PATH -------------------###
-            update_this_env = None
-            # Determine if we need to update a completely different file...
-            if setup.current_trio_num != setup.next_trio_num:
-                #  Set the CURRENT training PATH as the NEXT genome's starting PATH
-                if setup.next_trio_num is not None:
-                    if not setup.args.dry_run:
-                        print("FIX THIS!")
-                        breakpoint()
-                        next_env_path = (
-                            Path(getcwd())
-                            / "envs"
-                            / f"{itr.args.name}-run{setup.next_trio_num}.env"
-                        )
-
-                        if next_env_path.exists() is False:
-                            next_itr = itr.current_genome_num + 1
-                            setup.process_env(
-                                itr_num=next_itr,
-                            )
-
-                        next_env = Env(
-                            str(next_env_path),
-                            itr.logger,
-                            debug_mode=setup.args.debug,
-                            dryrun_mode=setup.args.dry_run,
-                        )
-                        try:
-                            next_env.check_out()
-                            update_this_env = next_env
-                        except ValueError as e:
-                            itr.logger.warning(f"{logging_msg}: {e}")
-                    else:
-                        itr.logger.info(
-                            f"[DRY_RUN] - {logging_msg}: unable to update next trio env file"
-                        )
-                else:
-                    itr.logger.error(
-                        f"[{itr._mode_string}]: next_trio_num can not be 'None', unable to update next trio env file.\nExiting..."
-                    )
-                    exit(1)
-            # or if we can update the CURRENT ENV
-            else:
-                update_this_env = itr.env
-
-            if update_this_env is not None:
-                update_this_env.add_to(
-                    f"{setup.next_genome}StartCkptPath",
-                    str(itr.train_dir),
-                    dryrun_mode=setup.args.dry_run,
-                )
-
     if current_starting_point and itr.env is not None:
         # If only a directory is found, add just the PATH
         if current_starting_point.is_dir():
@@ -168,6 +102,7 @@ def initalize_weights(setup: Setup, itr: Iteration):
                 path,
                 str(current_starting_point),
                 dryrun_mode=setup.args.dry_run,
+                msg=logging_msg
             )
             itr.logger.info(
                 f"{logging_msg}: warm-starting model location | '{current_starting_point}'"
@@ -186,14 +121,14 @@ def initalize_weights(setup: Setup, itr: Iteration):
                     path,
                     str(current_starting_point.parent),
                     dryrun_mode=setup.args.dry_run,
-                    msg=f"{logging_msg}",
+                    msg=logging_msg,
                 )
 
                 itr.env.add_to(
                     file,
                     str(current_starting_point.name),
                     dryrun_mode=setup.args.dry_run,
-                    msg=f"{logging_msg}",
+                    msg=logging_msg,
                 )
             else:
                 itr.logger.error(
@@ -210,3 +145,68 @@ def initalize_weights(setup: Setup, itr: Iteration):
                 f"{logging_msg}: unable to find a warm-starting model location.\nExiting..."
             )
             exit(1)
+    
+    ### TRAINING SPECIFIC STEPS -----------------------------------###
+    if (
+        itr.args.first_genome is not None
+        and itr.current_genome_num > 0
+        and itr.env is not None
+    ):
+        # Update the CURRENT ENV to include the testing ckpt PATH
+        itr.env.add_to(
+            f"{itr.train_genome}TestCkptPath",
+            str(itr.train_dir),
+            dryrun_mode=setup.args.dry_run,
+            msg=logging_msg,
+        )
+
+        ### Include the NEXT starting ckpt PATH -------------------###
+        update_this_env = None
+        # Determine if we need to update a completely different file...
+        if setup.current_trio_num != setup.next_trio_num:
+            #  Set the CURRENT training PATH as the NEXT genome's starting PATH
+            if setup.next_trio_num is not None:
+                if not setup.args.dry_run:
+                    next_env_path = (
+                        Path(itr.env.contents["OutPath"]) /
+                        "envs" /
+                        f"run{setup.next_trio_num}.env"
+                    )
+
+                    if next_env_path.exists() is False:
+                        next_itr = itr.current_genome_num + 1
+                        setup.process_env(
+                            itr_num=next_itr,
+                        )
+
+                    next_env = Env(
+                        str(next_env_path),
+                        itr.logger,
+                        debug_mode=setup.args.debug,
+                        dryrun_mode=setup.args.dry_run,
+                    )
+                    try:
+                        next_env.check_out()
+                        update_this_env = next_env
+                    except ValueError as e:
+                        itr.logger.warning(f"{logging_msg}: {e}")
+                else:
+                    itr.logger.info(
+                        f"[DRY_RUN] - {logging_msg}: unable to update next trio env file"
+                    )
+            else:
+                itr.logger.error(
+                    f"[{itr._mode_string}]: next_trio_num can not be 'None', unable to update next trio env file.\nExiting..."
+                )
+                exit(1)
+        # or if we can update the CURRENT ENV
+        else:
+            update_this_env = itr.env
+
+        if update_this_env is not None:
+            update_this_env.add_to(
+                f"{setup.next_genome}StartCkptPath",
+                str(itr.train_dir),
+                dryrun_mode=setup.args.dry_run,
+                msg=logging_msg,
+            )
