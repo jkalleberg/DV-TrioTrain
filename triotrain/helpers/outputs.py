@@ -69,11 +69,7 @@ def check_if_output_exists(
             num_unique_files = 0
             unique_files_list = []
     else:
-        if dryrun_mode:
-            logger.info(
-                f"[DRY_RUN] - {msg}: search path does not exist, as expected | '{str(search_path)}'"
-            )
-        else:
+        if not dryrun_mode:
             logger.warning(
                 f"{msg}: unable to search a non-existant path | '{str(search_path)}'"
             )
