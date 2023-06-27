@@ -20,7 +20,7 @@ The following software are required:
 | `java/openjdk` | 17.0.3      | | `htslib`       | 1.14        |
 | `apptainer`    | 1.1.7-1.el7 | |`samtools`     | 1.14        |
 
-TrioTrain expects the software listed above (modules) to be pre-built, and available locally on your SLURM-based HPC cluster. For example, on the MU Lewis Computing cluster, we can:
+TrioTrain expects the software listed above (referred to as modules) to be pre-built, and available locally on your SLURM-based HPC cluster. For example, on the MU Lewis Computing cluster, we can:
 
 ```bash
 # Search for modules with:
@@ -34,7 +34,7 @@ module spider <tool_search_string>
 module load <module_name>
 ```
 
-These locally-available software are loaded via an executable bash helper script (`modules.sh`).
+These locally-available software are loaded by TrioTrain via an executable bash helper script (`modules.sh`).
 
 ---
 

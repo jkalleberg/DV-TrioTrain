@@ -49,11 +49,9 @@ singularity run -B /usr/lib/locale/:/usr/lib/locale/ \
 
 ## Model Builders
 
-TrioTrain provides a model development framework for DeepVariant, and is therefore compatible with **any diploid species without NIST-GIAB reference materials.** We built the DV-TT pipeline to extend DeepVariant with cattle, bison, and yak genomes.
+TrioTrain provides a model development framework for DeepVariant, and is therefore compatible with **any diploid species without NIST-GIAB reference materials.** The current version of DV-TT extends DeepVariant for use with cattle, bison, and yak genomes. Future versions of TrioTrain will hopefully support other domesticated animal species with the requisite data.
 
-TrioTrain builds new models by starting with an existing DeepVariant model. Version 0.8 currently uses DV-v1.4's short-read Whole Genome Sequence (WGS) model trained with the human GIAB samples.
-
-TrioTrain can optionally add the allele frequency channel, if given population-level allele frequency data (PopVCF).
+TrioTrain builds new models by starting with an existing DeepVariant model. The current version of TT uses DV-v1.4's short-read Whole Genome Sequence (WGS) model trained with the human GIAB samples. TrioTrain can optionally add the allele frequency channel, if given population-level allele frequency data (PopVCF).
 
 ### Setup TrioTrain
 
@@ -65,7 +63,7 @@ First, change directories to your working directory.
 cd /path/to/working_dir
 ```
 
-Then, complete these guides in order:
+Then, complete these guides in the following order:
 
 1. [Installation Guide](installation.md)
 1. [Configuration Guide](configuration.md)
