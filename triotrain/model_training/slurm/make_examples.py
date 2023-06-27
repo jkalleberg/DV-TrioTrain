@@ -11,9 +11,11 @@ example:
         --dry-run
 """
 import argparse
+from csv import reader
 from dataclasses import dataclass, field
 from logging import Logger
-from os import environ, path as p
+from os import environ
+from os import path as p
 from pathlib import Path
 from sys import exit, path
 from typing import Union
@@ -76,7 +78,7 @@ def collect_args() -> argparse.Namespace:
         type=str,
         default=None,
         metavar="<int>",
-    ) 
+    )
     parser.add_argument(
         "-d",
         "--debug",
@@ -140,6 +142,7 @@ class Examples:
         default="/usr/lib/locale/:/usr/lib/locale/", init=False, repr=False
     )
     _bindings: list = field(default_factory=list, init=False, repr=False)
+    _chr: list = field(default_factory=list, init=False, repr=False)
     _phase: str = field(default="make_examples", init=False, repr=False)
     _version: str = field(
         default=str(environ.get("BIN_VERSION_DV")), init=False, repr=False
@@ -147,20 +150,12 @@ class Examples:
 
     def __post_init__(self) -> None:
         self._image = f"deepvariant_{self._version}.sif"
-        # if self.cow:
-        #     self.CHR = list(map(str, range(1, 30))) + ["X", "Y"]
-        #     self.CHR_Order = {k: v for v, k in enumerate(self.CHR)}
-        # else:
-        #     self.logger.error("ADD LOGIC FOR HANDELING DIFFERENT CHR NUMBERS")
-        #     exit(1)
 
     def load_variables(self) -> None:
         """
         Load in variables from the env file, and define python variables.
         """
-        self.env = Env(
-            self.args.env_file, self.logger, dryrun_mode=self.args.dry_run
-        )
+        self.env = Env(self.args.env_file, self.logger, dryrun_mode=self.args.dry_run)
         env_vars = [
             "RunOrder",
             "N_Parts",
@@ -191,17 +186,57 @@ class Examples:
             self._examples_dir,
         ) = self.env.load(*env_vars)
 
+    def set_reference(self) -> None:
+        """Define the reference genome + .dict file"""
+        self._reference = Path(self._ref_dir) / self._ref_file
+        assert (
+            self._reference.exists()
+        ), f"Reference Genome FASTA file [{self._reference.name}] does not exist"
+
+        # figure out which autosomes + sex chromsomes we're including
+        bed_files = list(Path(self._ref_dir).glob("*.bed"))
+        default_region_file = bed_files[0].name
+
+        with open(
+            f"{self._ref_dir}/{default_region_file}", "r", encoding="utf8"
+        ) as default_region:
+            tsv_reader = reader(default_region, delimiter="\t")
+            for row in tsv_reader:
+                (chrom, start, stop) = row
+                self._chr.append(chrom)
+
+        # figure out chromosome names in reference
+        self._ref_dict = Path(self._ref_dir) / f"{self._reference.stem}.dict"
+        assert (
+            self._ref_dict.exists()
+        ), f"Reference Genome DICT file [{self._ref_dict.name}] does not exist"
+
+        valid_chrs = list()
+        with open(str(self._ref_dict), "r", encoding="utf8") as dict_file:
+            tsv_reader = reader(dict_file, delimiter="\t")
+            # skip header
+            next(tsv_reader)
+            for row in tsv_reader:
+                (sq, chr, len, m5, ur, sp) = row
+
+                if "human" in sp.lower():
+                    chr_name = chr.split(":")[1]
+                    if chr_name.isalnum() and "ebv" not in chr_name.lower():
+                        valid_chrs.append(chr_name)
+
+        # figure out which chr are NOT included by default
+        chr_set = set(self._chr)
+        exclude_chr = [x for x in valid_chrs if x not in chr_set]
+        self.exclude_chroms = " ".join(exclude_chr)
+
     def set_genome(self) -> None:
         """
         Define which genome from a Trio to make examples.
         """
-        self._reference = Path(self._ref_dir) / self._ref_file
+
         self._bam = Path(self._bam_dir) / self._bam_file
         self._truth_vcf = Path(self._truth_dir) / self._truth_vcf_file
         self._callable_bed = Path(self._callable_dir) / self._callable_file
-        assert (
-            self._reference.exists()
-        ), f"Reference Genome FASTA file [{self._reference.name}] does not exist"
         assert self._bam.exists(), f"BAM file [{self._bam.name}] does not exist"
         assert (
             self._truth_vcf.exists()
@@ -217,31 +252,38 @@ class Examples:
         self._region_bindings = None
         self._regions_flags = None
         self._exclude_flags = None
-        self.exclude_chroms = "Y"
         self._logger_msg = f"TRIO{self._trio_num}] - [{self.args.genome}"
 
         # run 'make_examples' for the demo chromosome only
         if self.args.region_bed is not None and self.args.region_num is None:
             self.demo_chromosome = self.args.region_bed
             bed_file = Path(self.args.region_bed).resolve()
-            
+
             if self.args.region_bed.isdigit():
                 self._mode = "DEMO"
-                self.logger.debug(f"A NUMERICAL VALUE FOR REGION WAS ENTERED | '{self.args.region_bed}'")
+                self.logger.debug(
+                    f"A NUMERICAL VALUE FOR REGION WAS ENTERED | '{self.args.region_bed}'"
+                )
                 self._output_prefix = f"{self.args.genome}.{self.demo_chromosome}"
             elif ":" in self.args.region_bed or "chr" in self.args.region_bed.lower():
                 self._mode = "REGION_LITERAL"
-                self.logger.debug(f"A LITERAL VALUE FOR REGION WAS ENTERED | '{self.args.region_bed}'")
-                self._output_prefix = f"{self.args.genome}.{self.demo_chromosome}" 
+                self.logger.debug(
+                    f"A LITERAL VALUE FOR REGION WAS ENTERED | '{self.args.region_bed}'"
+                )
+                self._output_prefix = f"{self.args.genome}.{self.demo_chromosome}"
             elif bed_file.exists():
                 self._mode = "REGION_FILE"
-                self.logger.debug(f"AN EXISTING FILE FOR REGION WAS ENTERED | '{bed_file}'")
+                self.logger.debug(
+                    f"AN EXISTING FILE FOR REGION WAS ENTERED | '{bed_file}'"
+                )
                 self._output_prefix = f"{self.args.genome}.{bed_file.name}"
                 # self._output_prefix = f"{self.args.genome}.region_file"
             else:
-                self.logger.debug(f"AN UNKNOWN VALUE FOR REGION WAS ENTERED | '{self.args.region_bed}'")
+                self.logger.debug(
+                    f"AN UNKNOWN VALUE FOR REGION WAS ENTERED | '{self.args.region_bed}'"
+                )
                 breakpoint()
-            
+
             self.logger.info(
                 f"[{self._mode}] - [{self._logger_msg}]: examples include '{self.demo_chromosome}' only"
             )
@@ -278,19 +320,17 @@ class Examples:
                     )
 
         # run 'make_examples' using the regions-shuffling files created by the TrioTrain pipeline
-        elif (
-            self.args.region_num is not None and self.args.region_num.isdigit()
-        ):
+        elif self.args.region_num is not None and self.args.region_num.isdigit():
             self._exclude_flags = ["--exclude_regions", f"{self.exclude_chroms}"]
             self._output_prefix = f"{self.args.genome}.region{self.args.region_num}"
             self._mode = "REGION_SHUFFLE"
-            self._logger_msg = f"TRIO{self._trio_num}] - [{self.args.genome} - [region{self.args.region}"
+            self._logger_msg = f"TRIO{self._trio_num}] - [{self.args.genome} - [region{self.args.region_num}"
             self.logger.info(
                 f"[{self._mode}] - [{self._logger_msg}]: examples include the regions from the Beam-Shuffling BED File(s)"
             )
 
             self._regions_dir = Path(self._examples_dir) / "regions"
-            self._region_file = f"{self.args.genome}-region{self.args.region}.bed"
+            self._region_file = f"{self.args.genome}-region{self.args.region_num}.bed"
             self._region_file_path = self._regions_dir / self._region_file
             if not self._region_file_path.exists():
                 self.logger.error(
@@ -546,6 +586,7 @@ class Examples:
         """
         if self.args.get_help is False:
             self.load_variables()
+            self.set_reference()
             self.set_genome()
             self.process_region()
             self.process_pop_vcf()
@@ -560,8 +601,9 @@ def __init__() -> None:
     """
     Final function to make_examples within a SLURM job
     """
-    from helpers.wrapper import timestamp, Wrapper
     from helpers.utils import get_logger
+    from helpers.wrapper import Wrapper, timestamp
+
     # Collect command line arguments
     args = collect_args()
 
