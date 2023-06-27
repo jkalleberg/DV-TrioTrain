@@ -187,24 +187,24 @@ class Setup:
         if self.args.debug is False:
             if self.meta.first_genome is None:
                 print(
-                    f"============================================================\nStarting GIAB Benchmarking Iteration {self.meta.itr_num}-of-{self.meta.num_of_iterations} @ {timestamp()}\n============================================================"
+                    f"============================================================\nStarting GIAB Benchmarking Iteration {self.meta.itr_num+1}-of-{self.meta.num_of_iterations} @ {timestamp()}\n============================================================"
                 ) 
             elif self.demo_mode:
                 print(
-                    f"============================================================\nStarting Demo CHR{self.args.demo_chr} Iteration {self.meta.itr_num}-of-{self.meta.num_of_iterations} @ {timestamp()}\nINFO: Current [Genome={self.current_genome}; Trio={self.current_trio_num}]\nINFO: Next [Genome={self.next_genome}; Trio={self.next_trio_num}]\n============================================================"
+                    f"============================================================\nStarting Demo CHR{self.args.demo_chr} Iteration {self.meta.itr_num+1}-of-{self.meta.num_of_iterations} @ {timestamp()}\nINFO: Current [Genome={self.current_genome}; Trio={self.current_trio_num}]\nINFO: Next [Genome={self.next_genome}; Trio={self.next_trio_num}]\n============================================================"
                 )
             elif self.demo_mode is False:
                 if self.meta.itr_num == 0:
                     print(
-                        f"============================================================\nStarting Baseline-DV Iteration {self.meta.itr_num}-of-{self.meta.num_of_iterations} @ {timestamp()}\n============================================================"
+                        f"============================================================\nStarting Baseline-DV Iteration {self.meta.itr_num+1}-of-{self.meta.num_of_iterations} @ {timestamp()}\n============================================================"
                     )
-                elif 1 <= self.meta.itr_num < self.meta.num_of_iterations:
+                elif 0 <= self.meta.itr_num+1 < self.meta.num_of_iterations:
                     print(
-                        f"============================================================\nStarting Iteration {self.meta.itr_num}-of-{self.meta.num_of_iterations} @ {timestamp()}\nINFO: Prior [Genome={self.prior_genome}; Trio={self.prior_trio_num}]\nINFO: Current [Genome={self.current_genome}; Trio={self.current_trio_num}]\nINFO: Next [Genome={self.next_genome}; Trio={self.next_trio_num}]\nINFO: Current Genome Job Dependencies: {self.current_genome_deps}\nINFO: Next Genome Job Dependencies: {self.next_genome_deps}\n============================================================"
+                        f"============================================================\nStarting Iteration {self.meta.itr_num+1}-of-{self.meta.num_of_iterations} @ {timestamp()}\nINFO: Prior [Genome={self.prior_genome}; Trio={self.prior_trio_num}]\nINFO: Current [Genome={self.current_genome}; Trio={self.current_trio_num}]\nINFO: Next [Genome={self.next_genome}; Trio={self.next_trio_num}]\nINFO: Current Genome Job Dependencies: {self.current_genome_deps}\nINFO: Next Genome Job Dependencies: {self.next_genome_deps}\n============================================================"
                     )
-                elif self.meta.itr_num == self.meta.num_of_iterations:
+                elif self.meta.itr_num+1 == self.meta.num_of_iterations:
                     print(
-                        f"============================================================\nStarting Final Iteration {self.meta.itr_num}-of-{self.meta.num_of_iterations}\nINFO: Prior: [Genome={self.prior_genome}]; Trio={self.prior_trio_num}]\nINFO: Current: [Genome={self.current_genome}; Trio={self.current_trio_num}\nINFO: Current Genome Job Dependencies: {self.current_genome_deps}\nINFO: Next Genome Job Dependencies: {self.next_genome_deps}\n============================================================"
+                        f"============================================================\nStarting Final Iteration {self.meta.itr_num+1}-of-{self.meta.num_of_iterations}\nINFO: Prior: [Genome={self.prior_genome}; Trio={self.prior_trio_num}]\nINFO: Current: [Genome={self.current_genome}; Trio={self.current_trio_num}]\nINFO: Current Genome Job Dependencies: {self.current_genome_deps}\nINFO: Next Genome Job Dependencies: {self.next_genome_deps}\n============================================================"
                     )
 
     def end_iteration(self) -> None:
@@ -212,5 +212,5 @@ class Setup:
         Pretty-print a terminal wrapper for each analysis run
         """
         print(
-            f"============================================================\nEnd of Iteration {self.meta.itr_num}-of-{self.meta.num_of_iterations} @ {timestamp()}\nCURRENT DEPS: {self.current_genome_deps}\nNEXT DEPS: {self.next_genome_deps}\n============================================================"
+            f"============================================================\nEnd of Iteration {self.meta.itr_num+1}-of-{self.meta.num_of_iterations} @ {timestamp()}\nCURRENT DEPS: {self.current_genome_deps}\nNEXT DEPS: {self.next_genome_deps}\n============================================================"
         )

@@ -194,6 +194,11 @@ def initalize_weights(setup: Setup, itr: Iteration):
                     itr.logger.info(
                         f"[DRY_RUN] - {logging_msg}: unable to update next trio env file"
                     )
+            elif setup.meta.itr_num+1 == setup.meta.num_of_iterations:
+                
+                itr.logger.info(
+                    f"[{itr._mode_string}]: final iteration detected; unable to update next trio env file")
+                return
             else:
                 itr.logger.error(
                     f"[{itr._mode_string}]: next_trio_num can not be 'None', unable to update next trio env file.\nExiting..."

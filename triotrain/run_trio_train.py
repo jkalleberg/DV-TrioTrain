@@ -114,7 +114,7 @@ def run_trio_train(eval_genome="Child") -> None:
         end = begining + 1
     
     # Define the baseline environment
-    env = pipeline.process_env(begining)
+    new_env = pipeline.process_env(begining)
 
     if not pipeline.args.demo_mode and end != pipeline.meta.num_of_iterations and pipeline.args.terminate is None:
         end = pipeline.meta.num_of_iterations  
@@ -123,15 +123,21 @@ def run_trio_train(eval_genome="Child") -> None:
     for itr in range(begining, end):
         # do not re-create the first env, 
         # or when running the second iteration for each trio
-        if itr != begining and itr % 2 != 0:
-            env = pipeline.process_env(itr_num=itr)
 
-        number_completed_itrs += 1
+        if pipeline.args.demo_mode:
+            if itr != begining and itr % 2 != 0:
+                new_env = pipeline.process_env(itr_num=itr)
+        else:
+            if itr != begining:
+                new_env = pipeline.process_env(itr_num=itr)
+
         pipeline.start_iteration(
             current_deps=pipeline.current_genome_deps,
             next_deps=pipeline.next_genome_deps,
         )
-        # new_env = pipeline.meta.env
+        breakpoint()
+        number_completed_itrs += 1
+        new_env = pipeline.meta.env
 
         if pipeline.args.first_genome is None:
             current_itr = Iteration(
@@ -142,7 +148,7 @@ def run_trio_train(eval_genome="Child") -> None:
                 total_num_tests=pipeline.meta.num_tests,
                 train_genome=None,
                 eval_genome=None,
-                env=env,
+                env=new_env,
                 logger=logger,
                 args=pipeline.args,
                 current_genome_dependencies=pipeline.current_genome_deps,
@@ -159,7 +165,7 @@ def run_trio_train(eval_genome="Child") -> None:
                 total_num_tests=pipeline.meta.num_tests,
                 train_genome=None,
                 eval_genome=None,
-                env=env,
+                env=new_env,
                 logger=logger,
                 args=pipeline.args,
                 current_genome_dependencies=pipeline.current_genome_deps,
@@ -175,7 +181,7 @@ def run_trio_train(eval_genome="Child") -> None:
                 total_num_tests=pipeline.meta.num_tests,
                 train_genome=pipeline.current_genome,
                 eval_genome=pipeline.eval_genome,
-                env=env,
+                env=new_env,
                 logger=logger,
                 args=pipeline.args,
                 prior_genome=pipeline.prior_genome,
