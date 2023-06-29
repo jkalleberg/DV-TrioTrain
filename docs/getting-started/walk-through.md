@@ -808,19 +808,22 @@ python3 triotrain/model_training/tutorial/estimate.py                           
 
 ??? success "Expected Output | Estimating TrioTrain Parameters:"
     ```bash
-    ===== start of triotrain/model_training/tutorial/estimate.py @ 2023-06-27  10:54:59 =====
-    2023-06-27 10:54:59 AM - [INFO] - [DEMO] - [TRIO1] - [count_variants] - [Father]: number of REF/REF variants found | 44,452
-    2023-06-27 10:54:59 AM - [INFO] - [DEMO] - [TRIO1] - [count_variants] - [Father]: number of PASS variants found | 114,332
-    2023-06-27 10:55:00 AM - [INFO] - [DEMO] - [TRIO1] - [count_variants] - [Father]: default maximum examples per region | 200,000
-    2023-06-27 10:55:00 AM - [INFO] - [DEMO] - [TRIO1] - [count_variants] - [Father]: default value for --max-examples is appropriate
-    2023-06-27 10:55:00 AM - [INFO] - [DEMO] - [TRIO1] - [count_variants] - [Father]: added 'Demo_TotalVariants=114332' to env file
-    2023-06-27 10:55:00 AM - [INFO] - [DEMO] - [TRIO1] - [count_variants] - [Father]: number of examples made | 75,902
-    2023-06-27 10:55:00 AM - [INFO] - [DEMO] - [TRIO1] - [count_variants] - [Father]: calculated examples per variant | 0.664
-    2023-06-27 10:55:00 AM - [INFO] - [DEMO] - [TRIO1] - [count_variants] - [Father]: default examples per variant | 1.5
-    2023-06-27 10:55:00 AM - [INFO] - [DEMO] - [TRIO1] - [count_variants] - [Father]: difference between default and calculated examples per variant | 0.836
-    2023-06-27 10:55:00 AM - [INFO] - [DEMO] - [TRIO1] - [count_variants] - [Father]: when running TrioTrain outside of this tutorial, please use --est-examples=0.66
-    2023-06-27 10:55:00 AM - [INFO] - [DEMO] - [TRIO1] - [count_variants] - [Father]: added 'Est_Examples=0.66' to env file
-    ===== end of triotrain/model_training/tutorial/estimate.py @ 2023-06-27  10:55:00 =====
+    ===== start of triotrain/model_training/tutorial/estimate.py @ 2023-06-29  11:25:27 =====
+    2023-06-29 11:25:27 AM - [INFO] - [DEMO] - [TRIO1] - [count_variants] - [Father]: number of REF/REF variants found | 44,452
+    2023-06-29 11:25:27 AM - [INFO] - [DEMO] - [TRIO1] - [count_variants] - [Father]: number of PASS variants found | 114,332
+    2023-06-29 11:25:28 AM - [INFO] - [DEMO] - [TRIO1] - [count_variants] - [Father]: default maximum examples per region | 200,000
+    2023-06-29 11:25:28 AM - [INFO] - [DEMO] - [TRIO1] - [count_variants] - [Father]: default value for --max-examples is appropriate
+    2023-06-29 11:25:28 AM - [INFO] - adding Demo_TotalVariants='114332'
+    2023-06-29 11:25:28 AM - [INFO] - [DEMO] - [TRIO1] - [count_variants] - [Father]: added 'Demo_TotalVariants=114332' to env file
+    2023-06-29 11:25:28 AM - [INFO] - [DEMO] - [TRIO1] - [count_variants] - [Father]: number of examples made | 75,902
+    2023-06-29 11:25:28 AM - [INFO] - [DEMO] - [TRIO1] - [count_variants] - [Father]: calculated examples per variant | 0.664
+    2023-06-29 11:25:28 AM - [INFO] - [DEMO] - [TRIO1] - [count_variants] - [Father]: prevent underestimating which creates too many examples per region by rounding up to the nearest 0.5 | 1.0
+    2023-06-29 11:25:28 AM - [INFO] - [DEMO] - [TRIO1] - [count_variants] - [Father]: default examples per variant | 1.5
+    2023-06-29 11:25:28 AM - [INFO] - [DEMO] - [TRIO1] - [count_variants] - [Father]: difference between default and calculated examples per variant | 0.836
+    2023-06-29 11:25:28 AM - [INFO] - [DEMO] - [TRIO1] - [count_variants] - [Father]: when running TrioTrain outside of this tutorial, please use '--est-examples=1.0'
+    2023-06-29 11:25:28 AM - [INFO] - adding Est_Examples='1.0'
+    2023-06-29 11:25:28 AM - [INFO] - [DEMO] - [TRIO1] - [count_variants] - [Father]: added 'Est_Examples=1.0' to env file
+    ===== end of triotrain/model_training/tutorial/estimate.py @ 2023-06-29  11:25:28 =====
     ```
 
 ## 9. Run TrioTrain with a Human Trio
@@ -834,7 +837,7 @@ Run the following at the command line:
 python3 triotrain/run_trio_train.py                                                                         \
     -g Father                                                                                               \
     -s human                                                                                                \
-    --est-examples 0.66                                                                                     \
+    --est-examples 1                                                                                     \
     -m triotrain/model_training/tutorial/GIAB.Human_tutorial_metadata.csv                                   \
     -n GIAB_Trio                                                                                            \
     -r triotrain/model_training/tutorial/resources_used.json                                                \
