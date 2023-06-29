@@ -703,6 +703,7 @@ class CallVariants:
                 slurm_job.display_command(
                     current_job=self.job_num,
                     total_jobs=total_jobs,
+                    display_mode=self.itr.dryrun_mode,
                     debug_mode=self.itr.debug_mode,
                 )
 
