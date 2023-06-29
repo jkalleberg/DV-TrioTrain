@@ -472,6 +472,7 @@ class RunTrioTrain:
                         )
 
                     beam_job_nums = shuffle_examples.run()
+                    
                     if beam_job_nums is None:
                         no_dependencies_required = True
                     else:
@@ -487,7 +488,7 @@ class RunTrioTrain:
                         total_jobs_in_phase=1,
                         genome=genome,
                     )
-
+    
                     if self.use_regions_shuffle or self.itr.demo_mode:
                         # submit with no dependencies
                         if no_dependencies_required:
@@ -559,7 +560,7 @@ class RunTrioTrain:
                             no_dependencies_required = check_if_all_same(
                                 show_examples, None
                             )
-                            print(f"NoShowExamplesJobs? {no_dependencies_required}")
+                            # print(f"NoShowExamplesJobs? {no_dependencies_required}")
                 else:
                     self.itr.logger.info(
                         f"[{self.itr._mode_string}] - [data_prep_jobs] - [{self.logger_msg}]: jobs are currently running... SKIPPING AHEAD"
