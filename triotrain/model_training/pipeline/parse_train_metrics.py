@@ -19,11 +19,11 @@ Usage:
 """
 # Load libraries
 import argparse
-from sys import exit
+from sys import exit, path
 from dataclasses import dataclass, field
 from json import load
 from logging import Logger
-from os import environ, getcwd, path
+from os import environ, getcwd, path as p
 from pathlib import Path
 
 import pandas as pd
@@ -404,8 +404,8 @@ def __init__() -> None:
     Wrapper(__file__, "start").wrap_script(timestamp())
 
     # Create error log
-    current_file = path.basename(__file__)
-    module_name = path.splitext(current_file)[0]
+    current_file = p.basename(__file__)
+    module_name = p.splitext(current_file)[0]
     logger = get_logger(module_name)
 
     # Check command line args

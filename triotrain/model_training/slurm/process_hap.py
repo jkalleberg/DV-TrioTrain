@@ -12,11 +12,11 @@ from csv import DictReader, reader
 from dataclasses import dataclass, field
 from logging import Logger
 from operator import itemgetter
-from os import path
+from os import path as p
 from pathlib import Path
 from subprocess import PIPE, Popen
 from subprocess import run as run_sub
-from sys import exit
+from sys import exit, path
 from typing import DefaultDict, Union
 
 abs_path = Path(__file__).resolve()
@@ -789,8 +789,8 @@ def __init__() -> None:
     Wrapper(__file__, "start").wrap_script(timestamp())
 
     # Create error log
-    current_file = path.basename(__file__)
-    module_name = path.splitext(current_file)[0]
+    current_file = p.basename(__file__)
+    module_name = p.splitext(current_file)[0]
     logger = get_logger(module_name)
 
     # Check command line args
