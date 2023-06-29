@@ -98,7 +98,10 @@ class ReShuffleExamples:
         self._ignoring_beam_shuffle = check_if_all_same(self.beam_shuffling_jobs, None)
         if not self._ignoring_beam_shuffle:
             self._num_to_ignore = len(find_NaN(self.beam_shuffling_jobs))
-            self._num_to_run = len(find_not_NaN(self.beam_shuffling_jobs))
+            if len(find_not_NaN(self.beam_shuffling_jobs)) > 0:
+                self._num_to_run = 1
+            else:
+                self._num_to_run = 0
             self._run_jobs = True
 
         elif self.re_shuffle_job_num:
