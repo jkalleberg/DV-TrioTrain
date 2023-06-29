@@ -10,9 +10,9 @@ example:
 import argparse
 from dataclasses import dataclass, field
 from logging import Logger
-from os import environ, path
+from os import environ, path as p
 from pathlib import Path
-from sys import exit
+from sys import exit, path
 
 from spython.main import Client
 
@@ -20,6 +20,7 @@ abs_path = Path(__file__).resolve()
 module_path = str(abs_path.parent.parent.parent)
 path.append(module_path)
 from helpers.wrapper import timestamp
+from helpers.environment import Env
 
 
 def collect_args() -> argparse.Namespace:
@@ -161,7 +162,7 @@ class Happy:
     """
 
     args: argparse.Namespace
-    logger: h.Logger
+    logger: Logger
     image_name: str = "hap.py_v0.3.12"
     _base_binding: str = field(
         default="/usr/lib/locale/:/usr/lib/locale/", init=False, repr=False
@@ -181,7 +182,7 @@ class Happy:
         """
         Load in variables from the env file, and define python variables.
         """
-        self.env = h.Env(self.args.env_file, self.logger, dryrun_mode=self.args.dry_run)
+        self.env = Env(self.args.env_file, self.logger, dryrun_mode=self.args.dry_run)
         env_vars = [
             "RunOrder",
             "N_Parts",
@@ -469,8 +470,8 @@ def __init__() -> None:
     Wrapper(__file__, "start").wrap_script(timestamp())
 
     # Create error log
-    current_file = path.basename(__file__)
-    module_name = path.splitext(current_file)[0]
+    current_file = p.basename(__file__)
+    module_name = p.splitext(current_file)[0]
     logger = get_logger(module_name)
 
     # Check command line args
