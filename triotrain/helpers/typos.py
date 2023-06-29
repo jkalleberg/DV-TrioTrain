@@ -1,7 +1,7 @@
 """
 sauce: https://stackoverflow.com/questions/62106645/what-is-efficient-way-to-check-if-current-word-is-close-to-a-word-in-string"""
 
-from Levenshtein import jaro_winkler
+import Levenshtein
 
 
 def check_typos(original_word: str, new_word: str) -> list:
@@ -22,7 +22,7 @@ def check_typos(original_word: str, new_word: str) -> list:
     min_similarity = 0.75
     output = []
     results = [
-        [jaro_winkler(x, y) for x in original_word.split()] for y in new_word.split()
+        [Levenshtein.jaro_winkler(x, y) for x in original_word.split()] for y in new_word.split()
     ]
     for x in results:
         if max(x) >= min_similarity:
