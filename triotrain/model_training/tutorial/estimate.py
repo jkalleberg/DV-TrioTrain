@@ -3,6 +3,7 @@ from logging import Logger
 from os import path as p, environ
 from sys import exit, path
 from pathlib import Path
+from math import isclose
 
 # get the absolute path to the triotrain/ dir
 abs_path = Path(__file__).resolve()
@@ -14,6 +15,7 @@ from helpers.utils import get_logger
 from helpers.wrapper import Wrapper, timestamp
 from model_training.prep.count import count_variants
 from helpers.files import TestFile
+from helpers.round import round_up
 
 def collect_args() -> argparse.Namespace:
     """
@@ -184,31 +186,33 @@ def __init__() -> None:
         logger.info(
             f"{logger_msg}: calculated examples per variant | {round(examples_per_variant, ndigits=3):,}"
         )
+
+        est_examples_per_v = round_up(examples_per_variant, 0.5)
+        logger.info(f"{logger_msg}: prevent underestimating which creates too many examples per region by rounding up to the nearest 0.5 | {est_examples_per_v}")
         
         logger.info(
             f"{logger_msg}: default examples per variant | {default_ex_per_var:,}"
         )
 
-        _delta = default_ex_per_var - examples_per_variant
-
-        logger.info(
-            f"{logger_msg}: difference between default and calculated examples per variant | {round(_delta, ndigits=3):,}"
-        )
-
-        if abs(_delta) > 0.5:
-            logger.info(f"{logger_msg}: when running TrioTrain outside of this tutorial, please use --est-examples={round(examples_per_variant, ndigits=2)}"
-        )
+        if isclose(default_ex_per_var, est_examples_per_v):
+            parameter_value = default_ex_per_var
+            logger.info(f"{logger_msg}: default value for --est-examples is appropriate")
         else:
-            logger.info(f"{logger_msg}: default value for --est-examples is appropriate"
-        )
-
+            parameter_value = est_examples_per_v
+            _delta = default_ex_per_var - examples_per_variant
+            logger.info(
+            f"{logger_msg}: difference between default and calculated examples per variant | {round(_delta, ndigits=3):,}"
+            )
+            logger.info(f"{logger_msg}: when running TrioTrain outside of this tutorial, please use '--est-examples={parameter_value}'"
+            )
+        
         env.add_to(
             f"Est_Examples",
-            str(round(examples_per_variant, ndigits=2)),
+            str(parameter_value),
             dryrun_mode=args.dry_run,
             )
         logger.info(
-            f"{logger_msg}: added 'Est_Examples={round(examples_per_variant, ndigits=2)}' to env file"
+            f"{logger_msg}: added 'Est_Examples={parameter_value}' to env file"
         )
         
     else:
