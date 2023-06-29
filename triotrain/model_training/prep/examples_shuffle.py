@@ -455,8 +455,7 @@ class BeamShuffleExamples:
             )
 
         if self.itr.dryrun_mode:
-            if self._re_shuffle_dependencies:
-                self._re_shuffle_dependencies[dependency_index] = generate_job_id()
+            self._re_shuffle_dependencies[dependency_index] = generate_job_id()
         else:
             if self.itr.demo_mode:
                 slurm_job.get_status(
@@ -470,10 +469,7 @@ class BeamShuffleExamples:
                 )
 
             if slurm_job.status == 0:
-                if self._re_shuffle_dependencies:
-                    self._re_shuffle_dependencies[
-                        dependency_index
-                    ] = slurm_job.job_number
+                self._re_shuffle_dependencies[dependency_index] = slurm_job.job_number
             else:
                 self.itr.logger.error(
                     f"{self.logger_msg}: unable to submit SLURM job",
@@ -540,7 +536,7 @@ class BeamShuffleExamples:
         """
         Determine if shuffling outputs already exist
         """
-        self.set_genome()
+        # self.set_genome()
 
         # determine if outputs already exist
         # and skip this phase if they do
@@ -705,6 +701,7 @@ class BeamShuffleExamples:
                     )
                     sys.exit(1)
 
+                self.set_genome()
                 for r in self.jobs_to_run:
                     skip_re_runs = check_if_all_same(
                         self.shuffle_examples_job_nums, None
@@ -713,16 +710,12 @@ class BeamShuffleExamples:
                         region_index = r
                     else:
                         region_index = self.shuffle_examples_job_nums[r]
-                        # remove the place holder job num
-                        if self._re_shuffle_dependencies:
-                            del self._re_shuffle_dependencies[region_index]
 
                     self.job_num = (
                         region_index + 1
                     )  # THIS HAS TO BE +1 to avoid starting with a region0
-                    self.set_genome()
-                    self.set_region(current_region=self.job_num)
 
+                    self.set_region(current_region=self.job_num)
                     self.find_outputs()
                     self.submit_job(
                         dependency_index=region_index,
@@ -740,14 +733,13 @@ class BeamShuffleExamples:
             if self._outputs_exist:
                 return
 
+            self.set_genome()
             for r in range(0, int(self._total_regions)):
                 self.job_num = (
                     r + 1
                 )  # THIS HAS TO BE +1 to avoid starting with a region0
-                self.set_genome()
                 self.set_region(current_region=self.job_num)
                 self.find_outputs()
-                print("NO HERE!")
                 self.submit_job(
                     dependency_index=r, total_jobs=int(self._total_regions)
                 )  # THIS HAS TO BE r because indexing of the list of job ids starts with 0
