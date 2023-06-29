@@ -601,7 +601,7 @@ class CallVariants:
                     self.num_vcfs_found,
                     expected_outputs,
                     logger_msg,
-                    msg,
+                    "DeepVariant outputs",
                     self.itr.logger,
                 )
                 if missing_files:
