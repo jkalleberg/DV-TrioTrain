@@ -399,6 +399,7 @@ class MakeExamples:
                 else:
                     self._outputs_exist = True
         else:
+            self._outputs_exist = False
             self._num_tfrecords_found = 0
 
     def submit_job(
