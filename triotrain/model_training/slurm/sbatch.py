@@ -247,7 +247,7 @@ class SubmitSBATCH:
         label: str,
         logger: Logger,
         logger_msg: str,
-    ):
+    ) -> None:
         self.job_file = sbatch_dir / job_file
         self.job_label = label
         self.jobnum_pattern = compile(r"\d+")
@@ -261,7 +261,7 @@ class SubmitSBATCH:
 
     def build_command(
         self, prior_job_number: Union[None, str, list], allow_dep_failure: bool = False
-    ):
+    ) -> None:
         """
         Creates a 'sbatch <job_file>' subprocess command, depending on if there are job dependencies or not.
         """
@@ -301,7 +301,7 @@ class SubmitSBATCH:
         total_jobs: int = 1,
         display_mode=False,
         debug_mode=False,
-    ):
+    ) -> None:
         """
         Prints the sbatch command used to submit a job.
         """
@@ -317,7 +317,7 @@ class SubmitSBATCH:
                 f"{self.logger_msg}: submitting SLURM job with command: {' '.join(self.cmd)}"
             )
 
-    def get_status(self, current_job: int = 1, total_jobs: int = 1, debug_mode=False):
+    def get_status(self, current_job: int = 1, total_jobs: int = 1, debug_mode=False) -> None:
         """
         Determines if a SLURM job was submitted correctly.
         """

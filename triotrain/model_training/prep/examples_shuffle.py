@@ -12,8 +12,13 @@ from typing import List, Union
 from helpers.files import WriteFiles
 from helpers.iteration import Iteration
 from helpers.outputs import check_expected_outputs, check_if_output_exists
-from helpers.utils import (check_if_all_same, create_deps, find_NaN,
-                           find_not_NaN, generate_job_id)
+from helpers.utils import (
+    check_if_all_same,
+    create_deps,
+    find_NaN,
+    find_not_NaN,
+    generate_job_id,
+)
 from model_training.slurm.sbatch import SBATCH, SubmitSBATCH
 
 
@@ -262,7 +267,7 @@ class BeamShuffleExamples:
             self.model_label,
             self.handler_label,
             # f"{self.logger_msg}{self.region_logger_msg}",
-            self.logger_msg
+            self.logger_msg,
         )
 
         if slurm_job.check_sbatch_file():
@@ -271,9 +276,7 @@ class BeamShuffleExamples:
                 and self.make_examples_jobs[index] is not None
                 and self.overwrite
             ):
-                self.itr.logger.info(
-                    f"{self.logger_msg}: re-writing job file now... "
-                )
+                self.itr.logger.info(f"{self.logger_msg}: re-writing job file now... ")
             else:
                 self.itr.logger.info(
                     f"{self.logger_msg}: SLURM job file already exists... SKIPPING AHEAD"
@@ -281,9 +284,7 @@ class BeamShuffleExamples:
                 return
         else:
             if self.itr.debug_mode:
-                self.itr.logger.debug(
-                    f"{self.logger_msg}: creating job file now... "
-                )
+                self.itr.logger.debug(f"{self.logger_msg}: creating job file now... ")
 
         command_list = slurm_job._start_conda + [
             f"conda run --no-capture-output -p ./miniconda_envs/beam_v2.30 python3 triotrain/model_training/prep/shuffle_tfrecords_beam.py --input_pattern_list={self.itr.examples_dir}/{self.prefix}.labeled.tfrecords-?????-of-000??.gz --output_pattern_prefix={self.itr.examples_dir}/{self.prefix}.labeled.shuffled --output_dataset_config_pbtxt={self.itr.examples_dir}/{self.prefix}.labeled.shuffled.dataset_config.pbtxt --output_dataset_name={self.genome} --runner=DirectRunner --direct_num_workers={self.n_parts} --direct_running_mode='in_memory'",
@@ -394,7 +395,9 @@ class BeamShuffleExamples:
         """
         Submit SLURM jobs to queue.
         """
-        num_missing_files = int(self.n_parts) - int(self._num_shuff_tfrecords_found)  # type: ignore
+        if self._outputs_exist:
+            self._skipped_counter += 1
+            return
 
         slurm_job = self.make_job(index=dependency_index)
 
@@ -403,7 +406,9 @@ class BeamShuffleExamples:
                 slurm_job.display_job()
             else:
                 slurm_job.write_job()
-    
+
+        num_missing_files = int(self.n_parts) - int(self._num_shuff_tfrecords_found)  # type: ignore
+
         if not self.overwrite:
             if resubmission:
                 if self._ignoring_make_examples:
@@ -442,13 +447,16 @@ class BeamShuffleExamples:
                 display_mode=self.itr.dryrun_mode,
             )
         else:
-            slurm_job.display_command(debug_mode=self.itr.debug_mode)
-        
+            slurm_job.display_command(
+                current_job=self.job_num,
+                total_jobs=total_jobs,
+                display_mode=self.itr.dryrun_mode,
+                debug_mode=self.itr.debug_mode,
+            )
+
         if self.itr.dryrun_mode:
             if self._re_shuffle_dependencies:
-                self._re_shuffle_dependencies[
-                    dependency_index
-                    ] = generate_job_id()
+                self._re_shuffle_dependencies[dependency_index] = generate_job_id()
         else:
             if self.itr.demo_mode:
                 slurm_job.get_status(
@@ -595,7 +603,7 @@ class BeamShuffleExamples:
             missing_shuffled_files = False
         else:
             missing_shuffled_files = False
-        
+
         if phase is None:
             self.find_beam_shuffled_pbtxt(phase=self._phase, find_all=find_all)
         else:
@@ -714,12 +722,14 @@ class BeamShuffleExamples:
                     )  # THIS HAS TO BE +1 to avoid starting with a region0
                     self.set_genome()
                     self.set_region(current_region=self.job_num)
+
                     self.find_outputs()
                     self.submit_job(
                         dependency_index=region_index,
                         resubmission=True,
                         total_jobs=self._num_to_run,
                     )  # THIS (^) HAS TO BE region_index to ensure the dependencies maintain appropriate order
+                    breakpoint()
 
         # run all regions for the first time
         else:
@@ -738,6 +748,7 @@ class BeamShuffleExamples:
                 self.set_genome()
                 self.set_region(current_region=self.job_num)
                 self.find_outputs()
+                print("NO HERE!")
                 self.submit_job(
                     dependency_index=r, total_jobs=int(self._total_regions)
                 )  # THIS HAS TO BE r because indexing of the list of job ids starts with 0

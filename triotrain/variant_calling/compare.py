@@ -399,7 +399,7 @@ class CompareHappy:
                     self._outputs_found,
                     expected_outputs,
                     logging_msg,
-                    msg,
+                    "hap.py output files",
                     self.itr.logger,
                 )
                 if missing_files:

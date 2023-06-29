@@ -67,13 +67,17 @@ class MakeExamples:
         self.total_shards = self.n_parts - 1
         if "N_Parts" not in self.itr.env.contents:
             self.itr.env.add_to(
-                "N_Parts", str(self.n_parts), dryrun_mode=self.itr.dryrun_mode,
-                msg=f"[{self.itr._mode_string}] - [{self._phase}]"
+                "N_Parts",
+                str(self.n_parts),
+                dryrun_mode=self.itr.dryrun_mode,
+                msg=f"[{self.itr._mode_string}] - [{self._phase}]",
             )
         if "TotalShards" not in self.itr.env.contents:
             self.itr.env.add_to(
-                "TotalShards", str(self.total_shards), dryrun_mode=self.itr.dryrun_mode,
-                msg=f"[{self.itr._mode_string}] - [{self._phase}]"
+                "TotalShards",
+                str(self.total_shards),
+                dryrun_mode=self.itr.dryrun_mode,
+                msg=f"[{self.itr._mode_string}] - [{self._phase}]",
             )
         if self.track_resources:
             assert (
@@ -123,11 +127,11 @@ class MakeExamples:
             self._print_msg = f"    echo SUCCESS: make_examples for demo-{self.genome}, part $t of {self.total_shards} &"
             self.current_region = self.itr.demo_chromosome
             if "chr" in self.itr.demo_chromosome.lower():
-                self.region_str = f"- [{self.itr.demo_chromosome}]" 
+                self.region_str = f"- [{self.itr.demo_chromosome}]"
                 self.prefix = f"{self.genome}-{self.itr.demo_chromosome}"
                 self.job_label = f"{self.genome}{self.itr.current_trio_num}-{self.itr.demo_chromosome}"
             else:
-                self.region_str = f"- [chr{self.itr.demo_chromosome}]" 
+                self.region_str = f"- [chr{self.itr.demo_chromosome}]"
                 self.prefix = f"{self.genome}-chr{self.itr.demo_chromosome}"
                 self.job_label = f"{self.genome}{self.itr.current_trio_num}-chr{self.itr.demo_chromosome}"
         elif current_region == 0 or current_region is None:
@@ -457,7 +461,12 @@ class MakeExamples:
                 display_mode=self.itr.dryrun_mode,
             )
         else:
-            slurm_job.display_command(display_mode=self.itr.dryrun_mode, debug_mode=self.itr.debug_mode)
+            slurm_job.display_command(
+                current_job=self.job_num,
+                total_jobs=total_jobs,
+                display_mode=self.itr.dryrun_mode,
+                debug_mode=self.itr.debug_mode,
+            )
 
         if self.itr.dryrun_mode:
             self._beam_shuffle_dependencies.insert(dependency_index, generate_job_id())
@@ -643,11 +652,7 @@ class MakeExamples:
         # run all regions for the first time
         else:
             if self._skip_phase:
-                return
-
-            # self.find_outputs(find_all=True) 
-            # if self._outputs_exist:
-            #     return
+                return self._beam_shuffle_dependencies
 
             for r in range(0, int(self._total_regions)):
                 self.job_num = (
