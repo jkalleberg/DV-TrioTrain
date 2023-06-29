@@ -883,5 +883,5 @@ python3 triotrain/run_trio_train.py  -g Father -s human --est-examples 1 -m trio
 ```
 
 ```bash
-python3 triotrain/run_trio_train.py  -g Father -s human --est-examples 1 -m triotrain/model_training/tutorial/GIAB.Human_tutorial_metadata.csv -n GIAB_Trio -r triotrain/model_training/tutorial/resources_used.json --num-tests 3 --custom-checkpoint triotrain/model_training/pretrained_models/v1.4.0_withIS_withAF/wgs_af.model.ckpt --output ../TUTORIAL --start-itr 0 --stop-itr 1 --restart-jobs '{"compare_happpy": [2, 3]}' --dry-run 
+python3 triotrain/run_trio_train.py  -g Father -s human --est-examples 1 -m triotrain/model_training/tutorial/GIAB.Human_tutorial_metadata.csv -n GIAB_Trio -r triotrain/model_training/tutorial/resources_used.json --num-tests 3 --custom-checkpoint triotrain/model_training/pretrained_models/v1.4.0_withIS_withAF/wgs_af.model.ckpt --output ../TUTORIAL --start-itr 0 --stop-itr 1 --restart-jobs '{"compare_happy": [2, 3]}' --dry-run 
 ```
