@@ -365,7 +365,6 @@ def __init__() -> None:
         logger=logger,
         args=args,
     )
-
     if args.debug:
         logger.debug(f"Current Iteration | {current_itr}")
 

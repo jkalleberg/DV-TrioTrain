@@ -12,8 +12,10 @@ from logging import Logger
 from os import environ, getcwd
 from pathlib import Path
 from typing import Union
+
 from helpers.environment import Env
 from helpers.utils import create_deps
+
 
 @dataclass
 class Iteration:
@@ -68,7 +70,9 @@ class Iteration:
 
         if self.demo_mode and self.current_trio_num is not None:
             if "chr" in self.demo_chromosome.lower():
-                self._mode_string = f"DEMO] - [TRIO{self.current_trio_num}] - [{self.demo_chromosome}"
+                self._mode_string = (
+                    f"DEMO] - [TRIO{self.current_trio_num}] - [{self.demo_chromosome}"
+                )
             else:
                 self._mode_string = f"DEMO] - [TRIO{self.current_trio_num}] - [CHR{self.demo_chromosome}"
         elif self.current_genome_num == 0 and self.train_genome is None:
@@ -79,7 +83,7 @@ class Iteration:
             and self.train_genome is not None
         ):
             self._mode_string = f"TRIO{self.current_trio_num}"
-        elif self.train_genome is None:
+        elif self.current_trio_num is None and self.train_genome is None:
             self._mode_string = f"Benchmark"
         else:
             self._mode_string = f"TRIO{self.current_trio_num}"
@@ -138,6 +142,21 @@ class Iteration:
                     f"[DRY_RUN] - [{self._mode_string}] - [setup]: env file does not exist, as expected | '{self.env.env_file}'"
                 )
 
+        if self.debug_mode:
+            self.logger.debug(
+                f"[{self._mode_string}] - [setup]: current_genome_num | {self.current_genome_num}"
+            )
+            self.logger.debug(
+                f"[{self._mode_string}] - [setup]: train_genome | {self.train_genome}"
+            )
+            self.logger.debug(
+                f"[{self._mode_string}] - [setup]: current_trio_num | {self.current_trio_num}"
+            )
+            examples = self.env.contents["ExamplesDir"]
+            self.logger.debug(
+                f"[{self._mode_string}] - [setup]: examples_dir | {examples}"
+            )
+
         if self.demo_mode and self.current_trio_num is not None:
             self.train_num_regions = 1
             self.eval_num_regions = 1
@@ -161,8 +180,8 @@ class Iteration:
             self.model_label = f"{self.run_name}-{self._version}"
 
         elif (
-            self.train_genome is not None
-            and self.current_genome_num != 0
+            # self.train_genome is not None and
+            self.current_genome_num != 0
             and self.current_trio_num is not None
         ):
             self.run_name = self.env.contents["RunName"]
