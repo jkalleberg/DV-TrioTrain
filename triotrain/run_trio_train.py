@@ -15,8 +15,8 @@ example:
 """
 
 ### --- PYTHON LIBRARIES ---- ###
-import os
-import sys
+from os import path
+from sys import exit
 
 from helpers.files import WriteFiles
 from helpers.iteration import Iteration
@@ -29,8 +29,8 @@ from model_training.pipeline.args import (
     get_defaults,
 )
 from model_training.pipeline.initialize import initalize_weights
-from model_training.pipeline.setup import Setup
 from model_training.pipeline.run import RunTrioTrain
+from model_training.pipeline.setup import Setup
 
 
 def run_trio_train(eval_genome="Child") -> None:
@@ -50,8 +50,8 @@ def run_trio_train(eval_genome="Child") -> None:
     Wrapper(__file__, "start").wrap_script(timestamp())
 
     # Create error log
-    current_file = os.path.basename(__file__)
-    module_name = os.path.splitext(current_file)[0]
+    current_file = path.basename(__file__)
+    module_name = path.splitext(current_file)[0]
     logger = get_logger(module_name)
 
     # Check command line args
@@ -98,7 +98,7 @@ def run_trio_train(eval_genome="Child") -> None:
         begining = 1
         if pipeline.args.show_regions:
             # Determine if show_regions file is valid
-            pipeline.find_show_regions_file() 
+            pipeline.find_show_regions_file()
     else:
         begining = 0
 
@@ -107,21 +107,25 @@ def run_trio_train(eval_genome="Child") -> None:
             logger.error(
                 f"The value for --stop-itr must be greater than or equal to '{begining}'.\nExiting... "
             )
-            sys.exit(1)
+            exit(1)
         else:
             end = pipeline.args.terminate
     else:
         end = begining + 1
-    
+
     # Define the baseline environment
     new_env = pipeline.process_env(begining)
 
-    if not pipeline.args.demo_mode and end != pipeline.meta.num_of_iterations and pipeline.args.terminate is None:
-        end = pipeline.meta.num_of_iterations  
+    if (
+        not pipeline.args.demo_mode
+        and end != pipeline.meta.num_of_iterations
+        and pipeline.args.terminate is None
+    ):
+        end = pipeline.meta.num_of_iterations
 
     number_completed_itrs = 0
     for itr in range(begining, end):
-        # do not re-create the first env, 
+        # do not re-create the first env,
         # or when running the second iteration for each trio
 
         if pipeline.args.demo_mode:
@@ -135,7 +139,7 @@ def run_trio_train(eval_genome="Child") -> None:
             current_deps=pipeline.current_genome_deps,
             next_deps=pipeline.next_genome_deps,
         )
-        
+
         number_completed_itrs += 1
         new_env = pipeline.meta.env
 

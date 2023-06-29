@@ -14,19 +14,22 @@ example:
 import argparse
 import os
 import re
-import sys
 from dataclasses import dataclass, field
 from logging import Logger
 from pathlib import Path
+from sys import exit, path
 from typing import Union
 
-import helpers as h
-import helpers_logger
 from regex import compile, search
+
+abs_path = Path(__file__).resolve()
+module_path = str(abs_path.parent.parent.parent)
+path.append(module_path)
+from helpers.environment import Env
 
 
 # Parsing command line inputs function
-def collect_args():
+def collect_args() -> argparse.Namespace:
     """
     Process the command line arguments to execute script.
     """
@@ -137,7 +140,7 @@ class MergeSelect:
 
     ckpt_file: Path
     logger: Logger
-    env: h.Env
+    env: Env
     next_genome: Union[str, None] = None
     next_run: Union[int, None] = None
     debug_mode: bool = False
@@ -156,7 +159,7 @@ class MergeSelect:
             self.logger.error(
                 f"Invalid value for next_genome [{self.next_genome}] provided.\n Exiting... "
             )
-            sys.exit(1)
+            exit(1)
         else:
             self.logger.info(f"Next Genome = [{self.next_genome}]")
             index = valid_genomes.index(self.next_genome)
@@ -170,7 +173,7 @@ class MergeSelect:
                 self.logger.error(
                     f"Unable to identify a current_genome index\nExiting... "
                 )
-                sys.exit(1)
+                exit(1)
 
         if self.next_run is not None:
             self.current_run = int(self.next_run - 1)
@@ -338,9 +341,7 @@ class MergeSelect:
             else:
                 analysis_name = self.env.env_path.name.split("-")[0]
                 next_env_file = f"envs/{analysis_name}-run{self.next_run}.env"
-                next_env = h.Env(
-                    next_env_file, self.logger, dryrun_mode=self.dryrun_mode
-                )
+                next_env = Env(next_env_file, self.logger, dryrun_mode=self.dryrun_mode)
 
                 if (
                     f"{self.next_genome}StartCkptName" not in next_env.contents
@@ -362,20 +363,23 @@ class MergeSelect:
         self.record_results()
 
 
-def __init__():
+def __init__() -> None:
     """
     Final function to perform select_ckpt within a SLURM job
     """
+    from helpers.utils import get_logger
+    from helpers.wrapper import Wrapper, timestamp
+
     # Collect command line arguments
     args = collect_args()
 
     # Collect start time
-    Wrapper(__file__, "start").wrap_script(h.timestamp())
+    Wrapper(__file__, "start").wrap_script(timestamp())
 
     # Create error log
     current_file = os.path.basename(__file__)
     module_name = os.path.splitext(current_file)[0]
-    logger = helpers_logger.get_logger(module_name)
+    logger = get_logger(module_name)
 
     # Check command line args
     check_args(args, logger)
@@ -390,7 +394,7 @@ def __init__():
     else:
         next_run = int(args.next_run)
 
-    env = h.Env(args.env_file, logger, dryrun_mode=args.dry_run)
+    env = Env(args.env_file, logger, dryrun_mode=args.dry_run)
     ckpt_file = Path(args.current_ckpt)
 
     MergeSelect(
@@ -403,7 +407,7 @@ def __init__():
         dryrun_mode=args.dry_run,
     ).run()
 
-    Wrapper(__file__, "end").wrap_script(h.timestamp())
+    Wrapper(__file__, "end").wrap_script(timestamp())
 
 
 # Execute functions created
