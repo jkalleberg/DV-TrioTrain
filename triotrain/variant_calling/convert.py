@@ -63,7 +63,10 @@ class ConvertHappy:
             ), "missing a WriteFiles object to save SLURM job IDs"
 
         self._final_jobs = create_deps(self.itr.total_num_tests)
-        self.logger_msg = f"[{self.itr._mode_string}] - [{self._phase}]"
+        if self.itr.train_genome is None:
+            self.logger_msg = f"[{self.itr._mode_string}] - [{self._phase}]"
+        else:
+            self.logger_msg = f"[{self.itr._mode_string}] - [{self._phase}] - [{self.itr.train_genome}]"
 
     def set_genome(self) -> None:
         """
@@ -293,21 +296,23 @@ class ConvertHappy:
         if phase is None:
             logging_msg = self.logger_msg
         else:
-            logging_msg = f"[{self.itr._mode_string}] - [{phase}]"
+            logging_msg = (
+                f"[{self.itr._mode_string}] - [{phase}] - [{self.itr.train_genome}]"
+            )
 
         # Count how many outputs were made when converting Hap.py VCFs into Metrics Values
         # Define the regrex pattern of expected output
         if find_all:
             if phase == "compare_happy":
-                msg = "hap.py output file(s)"
+                msg = "all hap.py output files"
                 expected_outputs = int(self.itr.total_num_tests * 11)
                 _regex = rf"^(happy\d+).+\.(?!out$|\.sh$).+$"
             elif phase == "convert_happy":
-                msg = "converted hap.py file(s)"
+                msg = "all converted hap.py files"
                 expected_outputs = self.itr.total_num_tests
                 _regex = compile(r"^Test\d+.converted\-metrics\.tsv$")
             else:
-                msg = f"final metrics files"
+                msg = f"all final metrics files"
                 expected_outputs = int(self.itr.total_num_tests * outputs_per_test)
                 # _regex = compile(r"^Test\d+.*metrics(\.csv$|\.tsv$)")
                 _regex = compile(
@@ -315,19 +320,19 @@ class ConvertHappy:
                 )
         else:
             if phase == "compare_happy":
-                msg = "hap.py output file(s)"
+                msg = "hap.py output file"
                 expected_outputs = 11
                 _regex = rf"^({self.prefix}).+\.(?!out$|\.sh$).+$"
             elif phase == "convert_happy":
-                msg = "converted hap.py file(s)"
+                msg = "the converted hap.py file"
                 expected_outputs = 1
                 _regex = compile(rf"^{self.test_name}.converted\-metrics\.tsv$")
             elif phase == "process_happy":
-                msg = "processed hap.py file(s)"
+                msg = "processed hap.py file"
                 expected_outputs = 1
                 _regex = compile(rf"^{self.test_name}\.total\.metrics\.csv$")
             else:
-                msg = f"intermediate metrics file(s)"
+                msg = f"intermediate metrics file"
                 expected_outputs = outputs_per_test
                 _regex = compile(
                     rf"^{self.test_name}\.(converted\-|total\.)metrics(\.csv$|\.tsv$)"
@@ -470,7 +475,7 @@ class ConvertHappy:
                     self.itr.logger.error(
                         f"{self.logger_msg}: expected SLURM jobs to be submitted, but they were not",
                     )
-                    self._final_jobs = None
+                    # self._final_jobs = None
                     self.itr.logger.warning(
                         f"{self.logger_msg}: fatal error encountered, unable to proceed further with pipeline.\nExiting... ",
                     )
@@ -479,7 +484,7 @@ class ConvertHappy:
         if self.track_resources and self.benchmarking_file is not None:
             self.benchmark()
 
-    def unique_values_in_list_of_lists(self, lst: list):
+    def unique_values_in_list_of_lists(self, lst: list) -> list:
         """
         Identify unique values between list
         """
@@ -518,7 +523,7 @@ class ConvertHappy:
             )
             self._jobs_to_run = unique_runs
 
-    def run(self) -> Union[List[Union[str, None]], None]:
+    def run(self) -> List[Union[str, None]]:
         """
         Combines all the steps for comparing model testing results into one step.
         """
@@ -543,8 +548,8 @@ class ConvertHappy:
                     self.itr.logger.info(
                         f"{self.logger_msg}: final SLURM jobs updated to {self._final_jobs}"
                     )
-                else:
-                    self._final_jobs = None
+                # else:
+                #     self._final_jobs = [None]
             else:
                 if not self._ignoring_compare_happy:
                     self.itr.logger.info(
@@ -592,7 +597,7 @@ class ConvertHappy:
                     if self.test_genome is None:
                         continue
                     else:
-                        self.find_outputs(phase=self._phase)
+                        # self.find_outputs(phase=self._phase)
 
                         # Indexing of the list of job ids starts with 0
                         self.submit_job(
@@ -604,7 +609,7 @@ class ConvertHappy:
         else:
             # determine if jobs need to be submitted
             if self._skip_phase:
-                return
+                return self._final_jobs
 
             self.find_outputs(find_all=True)
             self.double_check(phase_to_check=self._phase)
@@ -614,7 +619,7 @@ class ConvertHappy:
                 self._outputs_exist = False
 
             if self._outputs_exist:
-                return
+                return self._final_jobs
 
             for test_index in range(0, int(self.itr.total_num_tests)):
                 self.job_num = (
@@ -625,8 +630,6 @@ class ConvertHappy:
                 if self.test_genome is None:
                     continue
                 else:
-                    self.find_outputs(find_all=False)
-
                     # re-submit 'convert_happy' if 'compare_happy' was re-run
                     self.submit_job(
                         total_jobs=int(self.itr.total_num_tests),
@@ -634,5 +637,4 @@ class ConvertHappy:
                     )
 
         self.check_submissions()
-
         return self._final_jobs
