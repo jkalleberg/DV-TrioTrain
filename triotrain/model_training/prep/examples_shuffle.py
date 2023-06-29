@@ -5,7 +5,7 @@ description: contains all of the functions specific to the Beam shuffle_examples
 usage:
     from examples_beam_shuffle import BeamShuffleExamples
 """
-import sys
+from sys import exit
 from dataclasses import dataclass, field
 from typing import List, Union
 
@@ -176,7 +176,7 @@ class BeamShuffleExamples:
                                     self.itr.logger.error(
                                         f"{self.logger_msg}: an 8-digit value must be provided for any number greater than {self._total_regions}.\nExiting..."
                                     )
-                                    sys.exit(1)
+                                    exit(1)
 
                                 self._num_to_run -= 1
                                 self._num_to_ignore += 1
@@ -528,7 +528,7 @@ class BeamShuffleExamples:
             self.itr.logger.warning(
                 f"{self.logger_msg}: fatal error encountered, unable to proceed further with pipeline.\nExiting... ",
             )
-            sys.exit(1)
+            exit(1)
 
     def find_outputs(
         self, phase: Union[str, None] = None, find_all: bool = False
@@ -660,7 +660,7 @@ class BeamShuffleExamples:
             else:
                 self.submit_job()
             self.check_submissions()
-            return
+            return self._re_shuffle_dependencies
 
         # Determine if we are re-running some of the regions for make_examples
         if (
@@ -699,7 +699,7 @@ class BeamShuffleExamples:
                     self.itr.logger.error(
                         f"{self.logger_msg}: max number of re-submission SLURM jobs is {self._total_regions} but {self._num_to_run} were provided.\nExiting... ",
                     )
-                    sys.exit(1)
+                    exit(1)
 
                 self.set_genome()
                 for r in self.jobs_to_run:
