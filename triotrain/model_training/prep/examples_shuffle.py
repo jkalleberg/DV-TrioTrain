@@ -729,7 +729,6 @@ class BeamShuffleExamples:
                         resubmission=True,
                         total_jobs=self._num_to_run,
                     )  # THIS (^) HAS TO BE region_index to ensure the dependencies maintain appropriate order
-                    breakpoint()
 
         # run all regions for the first time
         else:
