@@ -259,7 +259,7 @@ class ReShuffleExamples:
 
         return slurm_job
 
-    def find_merged_outputs(self, msg: str):
+    def find_merged_outputs(self, msg: str) -> None:
         """
         Determine if merging is necessary
         """
@@ -340,6 +340,9 @@ class ReShuffleExamples:
         """
         Submit SLURM job to queue
         """
+        if self._outputs_exist:
+            return
+
         slurm_job = self.make_job()
 
         if slurm_job is not None:
@@ -467,13 +470,13 @@ class ReShuffleExamples:
         """
         self.set_genome()
         self.find_restart_jobs()
-        self.find_outputs(find_all=True)
 
         # determine if we are re-running the training
         if (
             self.re_shuffle_job_num or not self._ignoring_beam_shuffle
         ) and self._run_jobs is not None:
             if self._num_to_run == 0:
+                self.find_outputs(find_all=True)
                 self._skipped_counter = self._num_to_ignore
                 if self._train_dependency and self._train_dependency[0] is not None:
                     self.itr.logger.info(
@@ -513,9 +516,7 @@ class ReShuffleExamples:
         else:
             if self._skip_phase:
                 return
-
-            if self._outputs_exist:
-                return
+            self.find_outputs(find_all=True)
             self.submit_job()
 
         self.check_submission()

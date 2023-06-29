@@ -12,13 +12,8 @@ from typing import List, Union
 from helpers.files import WriteFiles
 from helpers.iteration import Iteration
 from helpers.outputs import check_expected_outputs, check_if_output_exists
-from helpers.utils import (
-    check_if_all_same,
-    create_deps,
-    find_NaN,
-    find_not_NaN,
-    generate_job_id,
-)
+from helpers.utils import (check_if_all_same, create_deps, find_NaN,
+                           find_not_NaN, generate_job_id)
 from model_training.slurm.sbatch import SBATCH, SubmitSBATCH
 
 
@@ -330,10 +325,10 @@ class BeamShuffleExamples:
             )
 
         logger_msg = f"[{self.itr._mode_string}] - [{phase}] - [{self.genome}]"
-        # if find_all:
-        #     logger_msg = f"[{self.itr._mode_string}] - [{phase}] - [{self.genome}]"
-        # else:
-            # logger_msg = f"[{self.itr._mode_string}] - [{phase}] - [{self.genome}]{self.region_logger_msg}"
+        if find_all:
+            msg = "all the shuffled tfrecord shards"
+        else:
+            msg = "shuffled tfrecord shards"
 
         # Confirm examples do not already exist
         (
@@ -342,7 +337,7 @@ class BeamShuffleExamples:
             shuff_tfrecord_files,
         ) = check_if_output_exists(
             shuff_examples_pattern,
-            "the shuffled tfrecord shards",
+            msg,
             self.itr.examples_dir,
             logger_msg,
             self.itr.logger,
@@ -372,10 +367,10 @@ class BeamShuffleExamples:
             )
 
         logger_msg = f"[{self.itr._mode_string}] - [{phase}] - [{self.genome}]"
-        # if find_all:
-        #     logger_msg = f"[{self.itr._mode_string}] - [{phase}] - [{self.genome}]"
-        # else:
-        #     logger_msg = f"[{self.itr._mode_string}] - [{phase}] - [{self.genome}]{self.region_logger_msg}"
+        if find_all:
+            msg = "all the shuffled pbtxt files"
+        else:
+            msg = "the shuffled pbtxt files"
 
         # Confirm region#'s config does not already exist
         (
@@ -384,7 +379,7 @@ class BeamShuffleExamples:
             config_files,
         ) = check_if_output_exists(
             shuffled_config_regex,
-            "the shuffled pbtxt files",
+            msg,
             self.itr.examples_dir,
             logger_msg,
             self.itr.logger,
@@ -407,7 +402,7 @@ class BeamShuffleExamples:
                 slurm_job.display_job()
             else:
                 slurm_job.write_job()
-        
+    
         if not self.overwrite:
             if resubmission:
                 self.itr.logger.info(

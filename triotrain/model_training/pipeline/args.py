@@ -6,11 +6,12 @@ usage:
     from pipeline_args import collect_args, check_args
 """
 import argparse
+import importlib
 import json
 from logging import Logger
 from pathlib import Path
 from sys import exit
-import importlib
+
 
 # use the doc string from __main__
 def get_docstring(script_name, script_path):
@@ -19,6 +20,7 @@ def get_docstring(script_name, script_path):
     spec.loader.exec_module(foo)
     return foo.__doc__
 
+
 def collect_args() -> argparse.ArgumentParser:
     """
     process the command line arguments to execute script.
@@ -26,8 +28,8 @@ def collect_args() -> argparse.ArgumentParser:
     # get the relative path to the triotrain/ dir
     h_path = Path(__file__).parent.parent.parent
     doc = get_docstring(
-        script_name = "run_trio_train.py",
-        script_path = str(h_path / "run_trio_train.py"))
+        script_name="run_trio_train.py", script_path=str(h_path / "run_trio_train.py")
+    )
 
     parser = argparse.ArgumentParser(
         description=doc,
@@ -78,7 +80,7 @@ def collect_args() -> argparse.ArgumentParser:
         help="[REQUIRED]\ninput file (.sh)\nhelper script which loads the local software packages\n(default: %(default)s)",
         default="./scripts/setup/modules.sh",
         type=str,
-        metavar="</path/file>"
+        metavar="</path/file>",
     )
     parser.add_argument(
         "--output",
@@ -86,8 +88,8 @@ def collect_args() -> argparse.ArgumentParser:
         help="directory path \nre-direct where to save TrioTrain results\n(default: %(default)s)",
         default="../TRIO_TRAINING_OUTPUTS",
         type=str,
-        metavar="</path/dir>"
-    ) 
+        metavar="</path/dir>",
+    )
     parser.add_argument(
         "--benchmark",
         dest="benchmark",
@@ -157,7 +159,7 @@ def collect_args() -> argparse.ArgumentParser:
         help="sets the default autosomes + sex chromosomes to use for training\n(default: %(default)s)",
         type=str,
         default="cow",
-    ) 
+    )
     parser.add_argument(
         "-t",
         "--num-tests",
@@ -187,7 +189,7 @@ def collect_args() -> argparse.ArgumentParser:
         help="if True, call_variants and benchmarking will expect trios",
         action="store_true",
     )
-    
+
     demo = parser.add_argument_group("pipeline demo")
     demo.add_argument(
         "--demo-mode",
@@ -306,58 +308,58 @@ def get_args(parser: argparse.ArgumentParser) -> argparse.Namespace:
     Return the key=value arguments from the command line
     """
     # manual_args_list = [
-        # "-m",
-        # "metadata/230313_benchmarking.csv",
-        # "metadata/230307_PASS.csv",
-        # "--first-genome",
-        # "Father",
-        # "Mother",
-        # "None",
-        # "--name",
-        # "230313_GIAB",
-        # "220913_NewTrios",
-        # "221118_NewTrios",
-        # "221214_MotherFirst",
-        # "--species",
-        # "cow",
-        # "human",
-        # "-r",
-        # "resource_configs/221113_resources_used.json",
-        # "resource_configs/221205_resources_used.json",
-        # "--demo-mode",
-        # "--show-regions-file",
-        # "region_files/DEMO_PASS1.show_regions.bed",
-        # "--num-tests",
-        # "19",
-        # "6",
-        # "--start-itr",
-        # "1",
-        # "--stop-itr",
-        # "2",
-        # "--dry-run",
-        # "--debug",
-        # "--update",
-        # "--custom-checkpoint",
-        # "/storage/hpc/group/UMAG_test/WORKING/jakth2/deep-variant/pretrained_models/DV1.4_WGS.AF_cattle2/model.ckpt-120844",
-        # "/storage/hpc/group/UMAG_test/WORKING/jakth2/deep-variant/pretrained_models/DV1.4_WGS.AF_cattle3/model.ckpt-935368",
-        # "/storage/hpc/group/UMAG_test/WORKING/jakth2/deep-variant/pretrained_models/DV1.4_WGS.AF_cattle4/model.ckpt-282383",
-        # "/storage/hpc/group/UMAG_test/WORKING/jakth2/deep-variant/pretrained_models/DV1.4_WGS.AF_cattle5/model.ckpt-336710",
-        # "/storage/hpc/group/UMAG_test/WORKING/jakth2/deep-variant/pretrained_models/v1.4.0-withIS-noPop/model.ckpt",
-        # "/storage/hpc/group/UMAG_test/WORKING/jakth2/deep-variant/pretrained_models/v1.4.0-withIS-withPop/wgs_af.model.ckpt",  
-        # "pretrained_models/v1.4.0-withIS-withPop/wgs_af.model.ckpt",
-        # "--channel-info",
-        # '{"channels": [1, 2, 3, 4, 5, 6, 8, 19]}',
-        # "/storage/hpc/group/UMAG_test/WORKING/jakth2/TRIO_TRAINING_OUTPUTS/220913_NewTrios/PASS11/examples/Mother.example_info.json",
-        # "--use-gpu",
-        # "--benchmark",
-        # "--trio-dependencies",
-        # "None,None,None,26144414",
-        # "--overwrite",
-        # "--restart-jobs",
-        # '{"re_shuffle:Father": [1]}',
-        # '{"call_variants": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]}',
-        # '{"convert_happy": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]}',
-        # '{"convert_happy": [2, 3, 4, 5, 6]}', 
+    # "-m",
+    # "metadata/230313_benchmarking.csv",
+    # "metadata/230307_PASS.csv",
+    # "--first-genome",
+    # "Father",
+    # "Mother",
+    # "None",
+    # "--name",
+    # "230313_GIAB",
+    # "220913_NewTrios",
+    # "221118_NewTrios",
+    # "221214_MotherFirst",
+    # "--species",
+    # "cow",
+    # "human",
+    # "-r",
+    # "resource_configs/221113_resources_used.json",
+    # "resource_configs/221205_resources_used.json",
+    # "--demo-mode",
+    # "--show-regions-file",
+    # "region_files/DEMO_PASS1.show_regions.bed",
+    # "--num-tests",
+    # "19",
+    # "6",
+    # "--start-itr",
+    # "1",
+    # "--stop-itr",
+    # "2",
+    # "--dry-run",
+    # "--debug",
+    # "--update",
+    # "--custom-checkpoint",
+    # "/storage/hpc/group/UMAG_test/WORKING/jakth2/deep-variant/pretrained_models/DV1.4_WGS.AF_cattle2/model.ckpt-120844",
+    # "/storage/hpc/group/UMAG_test/WORKING/jakth2/deep-variant/pretrained_models/DV1.4_WGS.AF_cattle3/model.ckpt-935368",
+    # "/storage/hpc/group/UMAG_test/WORKING/jakth2/deep-variant/pretrained_models/DV1.4_WGS.AF_cattle4/model.ckpt-282383",
+    # "/storage/hpc/group/UMAG_test/WORKING/jakth2/deep-variant/pretrained_models/DV1.4_WGS.AF_cattle5/model.ckpt-336710",
+    # "/storage/hpc/group/UMAG_test/WORKING/jakth2/deep-variant/pretrained_models/v1.4.0-withIS-noPop/model.ckpt",
+    # "/storage/hpc/group/UMAG_test/WORKING/jakth2/deep-variant/pretrained_models/v1.4.0-withIS-withPop/wgs_af.model.ckpt",
+    # "pretrained_models/v1.4.0-withIS-withPop/wgs_af.model.ckpt",
+    # "--channel-info",
+    # '{"channels": [1, 2, 3, 4, 5, 6, 8, 19]}',
+    # "/storage/hpc/group/UMAG_test/WORKING/jakth2/TRIO_TRAINING_OUTPUTS/220913_NewTrios/PASS11/examples/Mother.example_info.json",
+    # "--use-gpu",
+    # "--benchmark",
+    # "--trio-dependencies",
+    # "None,None,None,26144414",
+    # "--overwrite",
+    # "--restart-jobs",
+    # '{"re_shuffle:Father": [1]}',
+    # '{"call_variants": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]}',
+    # '{"convert_happy": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]}',
+    # '{"convert_happy": [2, 3, 4, 5, 6]}',
     # ]
     # return parser.parse_args(manual_args_list)
     return parser.parse_args()
@@ -400,7 +402,9 @@ def check_args(args: argparse.Namespace, logger: Logger, default_channels: str) 
             args.resource_config
         ), "Missing --resources; Please designate a path to pipeline compute resources in JSON format"
 
-        assert (Path(args.modules).is_file), f"unable to find the modules file | '{args.modules}'"
+        assert Path(
+            args.modules
+        ).is_file, f"unable to find the modules file | '{args.modules}'"
 
         if args.demo_mode and args.show_regions:
             assert (
@@ -410,7 +414,7 @@ def check_args(args: argparse.Namespace, logger: Logger, default_channels: str) 
         if args.overwrite:
             assert (
                 args.restart_jobs
-            ), f"--overwrite is set, but missing --restart-jobs.\nPlease provide a JSON dictionary with the following format:\n{{'phase': ['jobid', 'jobid', 'None', 'jobid']}}.\n\t- 'phase' determines which parts of the pipeline to re-run completely\n\t- any jobid = 'None' will be have the SLURM job file and any existing fresults overwritten"
+            ), f"--overwrite is set, but missing --restart-jobs.\nPlease provide a JSON dictionary with the following format:\n{{'phase': ['jobid', 'jobid', 'None', 'jobid']}}.\n\t- 'phase' determines which parts of the pipeline to re-run completely\n\t- any jobid = 'None' will be have the SLURM job file and any existing results overwritten"
 
             if args.begin is not None:
                 if args.terminate is not None:

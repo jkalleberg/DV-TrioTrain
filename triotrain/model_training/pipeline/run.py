@@ -647,7 +647,7 @@ class RunTrioTrain:
         """
         # create the default regions_file for testing, if necessary
         self.itr.logger.info(
-            f"[{self.itr._mode_string}] - [test_model]: if missing, making the default region file now... "
+            f"[{self.itr._mode_string}] - [test_model] - [{self.itr.train_genome}]: if missing, making the default region file now... "
         )
 
         regions = MakeRegions(
@@ -679,12 +679,12 @@ class RunTrioTrain:
             )
 
             if not self.re_running_jobs:
-                test_model.find_all_outputs(phase="test_model_jobs")
+                test_model.find_all_outputs(phase="test_model")
 
                 # skip ahead if all outputs exist already
                 if test_model._outputs_exist:
                     self.itr.logger.info(
-                        f"------------ SKIPPING [{self.itr._mode_string}] - [test_model_jobs] - [{self.logger_msg}] ------------"
+                        f"------------ SKIPPING [{self.itr._mode_string}] - [test_model] - [{self.logger_msg}] ------------"
                     )
                     return
 
@@ -764,7 +764,7 @@ class RunTrioTrain:
             )
 
         convert_job_nums = convert_results.run()
-
+        
         # Determine if any 'convert_happy' jobs were submitted
         no_dependencies_required = check_if_all_same(convert_job_nums, None)
         if no_dependencies_required:
@@ -772,7 +772,7 @@ class RunTrioTrain:
 
         if phase_skipped_counter == 3:
             self.itr.logger.info(
-                f"------------ SKIPPING [{self.itr._mode_string}] - [test_model_jobs] - [{self.logger_msg}] ------------"
+                f"------------ SKIPPING [{self.itr._mode_string}] - [test_model] - [{self.logger_msg}] ------------"
             )
 
     def make_and_submit_jobs(

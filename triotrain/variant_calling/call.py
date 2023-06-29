@@ -58,11 +58,14 @@ class CallVariants:
         if self.track_resources:
             assert (
                 self.benchmarking_file is not None
-            ), "missing a h.WriteFiles object to save SLURM job IDs"
+            ), "missing a WriteFiles() object to save SLURM job IDs"
 
         self._select_ckpt_job = [self.itr.current_genome_dependencies[3]]
         self._compare_dependencies = create_deps(num=self.itr.total_num_tests)
-        self.logger_msg = f"[{self.itr._mode_string}] - [{self._phase}]"
+        if self.itr.train_genome is None:
+            self.logger_msg = f"[{self.itr._mode_string}] - [{self._phase}]"
+        else:
+            self.logger_msg = f"[{self.itr._mode_string}] - [{self._phase}] - [{self.itr.train_genome}]"
 
     def set_genome(self) -> None:
         """
@@ -197,7 +200,7 @@ class CallVariants:
                 "RefFASTA_Path",
                 "RefFASTA_File",
             ]
-            
+
             if self.genome is None or self.itr.current_genome_num == 0:
                 if "BaselineTestCkptName" in self.itr.env.contents:
                     extra_vars = ["BaselineModelResultsDir"]
@@ -552,11 +555,14 @@ class CallVariants:
         """
         self.set_genome()
         if phase is None:
-            logger_msg = f"[{self.itr._mode_string}] - [{self._phase}]"
+            logger_msg = f"[{self.itr._mode_string}] - [{self._phase}] - [{self.itr.train_genome}]"
         else:
-            logger_msg = f"[{self.itr._mode_string}] - [{phase}]"
+            logger_msg = (
+                f"[{self.itr._mode_string}] - [{phase}] - [{self.itr.train_genome}]"
+            )
 
         if find_all:
+            msg = "all the DeepVariant VCF outputs"
             if self.itr.total_num_tests is not None:
                 expected_outputs = int(
                     self.itr.total_num_tests * number_outputs_per_test
@@ -566,6 +572,7 @@ class CallVariants:
 
             vcf_pattern = r"test.*(\.tbi$|\.gz$)"
         else:
+            msg = "DeepVariant VCF output"
             expected_outputs = number_outputs_per_test
             logger_msg = logger_msg + f" - [test{self.test_num}]"
             vcf_output_regex = fnmatch.translate(f"{self.prefix}.vcf.gz*")
@@ -578,7 +585,7 @@ class CallVariants:
             files,
         ) = check_if_output_exists(
             vcf_pattern,
-            "DeepVariant VCF outputs",
+            msg,
             Path(self.outdir),
             logger_msg,
             self.itr.logger,
@@ -594,7 +601,7 @@ class CallVariants:
                     self.num_vcfs_found,
                     expected_outputs,
                     logger_msg,
-                    "DeepVariant VCF outputs",
+                    msg,
                     self.itr.logger,
                 )
                 if missing_files:

@@ -55,7 +55,10 @@ class CompareHappy:
     def __post_init__(self) -> None:
         if self.itr.env is None:
             return
-        self.logger_msg = f"[{self.itr._mode_string}] - [{self._phase}]"
+        if self.itr.train_genome is None:
+            self.logger_msg = f"[{self.itr._mode_string}] - [{self._phase}]"
+        else:
+            self.logger_msg = f"[{self.itr._mode_string}] - [{self._phase}] - [{self.itr.train_genome}]"
         self.n_parts = self.slurm_resources[self._phase]["ntasks"]
 
         if "N_Parts" not in self.itr.env.contents:
@@ -351,6 +354,7 @@ class CompareHappy:
 
         # Define the regrex pattern of expected output
         if find_all:
+            msg = "all hap.py output files"
             expected_outputs = int(self.itr.total_num_tests * outputs_per_test)
 
             # Define the regrex pattern of expected output
@@ -361,6 +365,7 @@ class CompareHappy:
             # finally, exclude any file with a .out or .sh extension
             # which is required for Baseline
         else:
+            msg = "hap.py output files"
             expected_outputs = outputs_per_test
             compare_happy_regex = rf"^({self.prefix}).+\.(?!out$|\.sh$).+$"
             logging_msg = f"{logging_msg} - [{self.test_logger_msg}]"
@@ -378,7 +383,7 @@ class CompareHappy:
             files,
         ) = check_if_output_exists(
             compare_happy_regex,
-            "hap.py output files",
+            msg,
             Path(self.outdir),
             logging_msg,
             self.itr.logger,
@@ -394,7 +399,7 @@ class CompareHappy:
                     self._outputs_found,
                     expected_outputs,
                     logging_msg,
-                    "hap.py output files",
+                    msg,
                     self.itr.logger,
                 )
                 if missing_files:

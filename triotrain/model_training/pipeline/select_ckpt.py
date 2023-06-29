@@ -52,7 +52,9 @@ class SelectCheckpoint:
     _skipped_counter: int = field(default=0, init=False, repr=False)
 
     def __post_init__(self) -> None:
-        self.logger_msg = f"[{self.itr._mode_string}] - [{self._phase}]"
+        self.logger_msg = (
+            f"[{self.itr._mode_string}] - [{self._phase}] - [{self.itr.train_genome}]"
+        )
         if self.track_resources:
             assert (
                 self.benchmarking_file is not None
@@ -136,7 +138,9 @@ class SelectCheckpoint:
         if phase is None:
             logging_msg = self.logger_msg
         else:
-            logging_msg = f"[{self.itr._mode_string}] - [{phase}]"
+            logging_msg = (
+                f"[{self.itr._mode_string}] - [{phase}] - [{self.itr.train_genome}]"
+            )
 
         self.find_selected_ckpt_vars(phase=phase)
 
@@ -262,7 +266,9 @@ class SelectCheckpoint:
         if phase is None:
             logger_msg = self.logger_msg
         else:
-            logger_msg = f"[{self.itr._mode_string}] - [{phase}]"
+            logger_msg = (
+                f"[{self.itr._mode_string}] - [{phase}] - [{self.itr.train_genome}]"
+            )
 
         # confirm if select-ckpt job has already finished correctly
         if (
@@ -312,9 +318,7 @@ class SelectCheckpoint:
                         )
         else:
             self.ckpt_selected = False
-            self.itr.logger.info(
-                f"{logger_msg}: {self.itr.train_genome}{self.itr.current_trio_num} testing checkpoint does not exist"
-            )
+            self.itr.logger.info(f"{logger_msg}: testing checkpoint does not exist")
 
         self._outputs_exist = self.ckpt_selected
 
@@ -429,7 +433,7 @@ class SelectCheckpoint:
                 and self.itr.current_genome_num != 0
             ):
                 self.itr.logger.info(
-                    f"{self.logger_msg}: prior iteration [#{int(self.itr.current_genome_num) - 1}] select-ckpt's SLURM job ID is 'None', no additional dependncies required."
+                    f"{self.logger_msg}: prior iteration [#{int(self.itr.current_genome_num) - 1}] select-ckpt's SLURM job ID is 'None', so no extra dependencies are required"
                 )
         else:
             self.itr.logger.info(

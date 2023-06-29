@@ -65,7 +65,7 @@ class TrainEval:
         else:
             self._cpu_mem = None
 
-        self.logger_msg = f"[{self.itr._mode_string}] - [{self._phase}]"
+        self.logger_msg = f"[{self.itr._mode_string}] - [{self._phase}] - [{self.itr.train_genome}]"
         self.epochs = self.itr.env.contents["N_Epochs"]
         self.batches = self.itr.env.contents["BatchSize"]
         self._total_ntasks = self.slurm_resources["train_eval"]["ntasks"]
