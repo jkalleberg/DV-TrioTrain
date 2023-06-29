@@ -47,6 +47,7 @@ class BeamShuffleExamples:
     )
     _run_jobs: Union[bool, None] = field(default=None, init=False, repr=False)
     _skipped_counter: int = field(default=0, init=False, repr=False)
+    _skip_phase: bool = field(default=False, init=False, repr=False)
     _total_regions: int = field(default=0, init=False, repr=False)
 
     def __post_init__(self) -> None:
