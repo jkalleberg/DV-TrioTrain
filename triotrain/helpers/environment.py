@@ -18,7 +18,7 @@ class Env:
         logger: Logger,
         debug_mode: bool = False,
         dryrun_mode: bool = False,
-    ):
+    ) -> None:
         self.env_file = env_file
         self.env_path = Path(self.env_file)
         self.logger = logger
@@ -41,7 +41,10 @@ class Env:
                     f"{self.env_path.name} contains {len(self.contents)} variables"
                 )
         else:
-            raise ValueError(f"unable to load variables, {self.env_path} is empty")
+            self.logger.error(
+                f"unable to load variables, '{self.env_path}' is empty\nExiting..."
+            )
+            exit(1)
 
     def test_contents(self, *variables: str) -> bool:
         """Give a list of variable names, search within an environment file, and print a msg depending on if they are found.
