@@ -11,10 +11,13 @@ import json
 from logging import Logger
 from pathlib import Path
 from sys import exit
+from typing import Text
+
+from helpers.typos import check_typos
 
 
 # use the doc string from __main__
-def get_docstring(script_name, script_path):
+def get_docstring(script_name, script_path) -> Text:
     spec = importlib.util.spec_from_file_location(script_name, script_path)
     foo = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(foo)
@@ -189,6 +192,24 @@ def collect_args() -> argparse.ArgumentParser:
         help="if True, call_variants and benchmarking will expect trios",
         action="store_true",
     )
+    # hidden argument
+    parser.add_argument(
+        "--phases",
+        dest="_phases",
+        help=argparse.SUPPRESS,
+        default=[
+            "make_examples",
+            "beam_shuffle",
+            "re_shuffle",
+            "train_eval",
+            "select_ckpt",
+            "call_variants",
+            "compare_happy",
+            "convert_happy",
+            "show_examples",
+        ],
+        required=False,
+    )
 
     demo = parser.add_argument_group("pipeline demo")
     demo.add_argument(
@@ -227,24 +248,12 @@ def collect_args() -> argparse.ArgumentParser:
         default=False,
         action="store_true",
     )
-    phases = [
-        "make_examples",
-        "beam_shuffle",
-        "re_shuffle",
-        "train_eval",
-        "select_ckpt",
-        "call_variants",
-        "compare_happy",
-        "convert_happy",
-        "show_examples",
-        "compare_neat",
-    ]
-    phases_string = ",\n".join(phases)
 
+    _phases_string = ",\n".join(parser.get_default("_phases"))
     restart.add_argument(
         "--restart-jobs",
         dest="restart_jobs",
-        help=f"provide a JSON dictionary containing phase names as keys, and a list of SLURM job IDs as values\nyour choice of phases:\n{phases_string}\n(default: %(default)s)",
+        help=f"provide a JSON dictionary containing phase names as keys, and a list of SLURM job IDs as values\nyour choice of phases:\n{_phases_string}\n(default: %(default)s)",
         type=json.loads,
         default=None,
         metavar='{"phase": [jobid1, jobid2, jobid3]}',
@@ -422,6 +431,25 @@ def check_args(args: argparse.Namespace, logger: Logger, default_channels: str) 
                     assert (
                         num_runs_to_overwrite == 1
                     ), f"--overwrite is set, but attempting to run {num_runs_to_overwrite} iterations.\nPlease adjust either --start-itr or --stop-itr flags so that only one iteration will be overwritten at a time"
+
+        # warn the user against phase name typos
+        if args.restart_jobs:
+            phase_dict = dict()
+            for k in args.restart_jobs.keys():
+                close_matches = list()
+                if k not in args._phases:
+                    for p in args._phases:
+                        match_found = check_typos(p, k)
+                        if match_found:
+                            close_matches.append(match_found[0])
+                    phase_dict[k] = close_matches
+            
+            if phase_dict:
+                for k,l in phase_dict.items():
+                    if isinstance(l, list):
+                        options_str = "', or '".join(l)
+                        logger.info(f"invalid phase entered: '{k}', did you mean to enter '{options_str}'?\nExiting...")
+                        exit(1)
 
         if args.channel_info == default_channels:
             use_default_channels = True
