@@ -327,9 +327,9 @@ class BeamShuffleExamples:
 
         logger_msg = f"[{self.itr._mode_string}] - [{phase}] - [{self.genome}]"
         if find_all:
-            msg = "all the shuffled tfrecord shards"
+            msg = "all shuffled tfrecord shards"
         else:
-            msg = "shuffled tfrecord shards"
+            msg = "the shuffled tfrecord shards"
 
         # Confirm examples do not already exist
         (
@@ -406,9 +406,10 @@ class BeamShuffleExamples:
     
         if not self.overwrite:
             if resubmission:
-                self.itr.logger.info(
-                    f"{self.logger_msg}: re-submitting job because [{num_missing_files}] shards failed to create tfrecords files"
-                )
+                if self._ignoring_make_examples:
+                    self.itr.logger.info(
+                        f"{self.logger_msg}: re-submitting job because [{num_missing_files}] shards failed to create tfrecords files"
+                    )
             else:
                 self.itr.logger.info(
                     f"{self.logger_msg}: submitting job to create [{num_missing_files}] labeled tfrecords shards"
@@ -548,8 +549,8 @@ class BeamShuffleExamples:
             # logger_msg = logger_msg + self.region_logger_msg
             expected_shuffle_outputs = self.n_parts
             expected_config_outputs = 1
-            file_type1 = "shuffled tfrecord shards"
-            file_type2 = "config file"
+            file_type1 = "the shuffled tfrecord shards"
+            file_type2 = "the config file"
         else:
             expected_shuffle_outputs = self.total_shuffle_outputs_expected1
             expected_config_outputs = self.total_pbtxt_outputs_expected

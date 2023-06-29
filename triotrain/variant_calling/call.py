@@ -555,11 +555,17 @@ class CallVariants:
         """
         self.set_genome()
         if phase is None:
-            logger_msg = f"[{self.itr._mode_string}] - [{self._phase}] - [{self.itr.train_genome}]"
+            if self.itr.train_genome is None:
+                logger_msg = f"[{self.itr._mode_string}] - [{self._phase}]"
+            else:
+                logger_msg = f"[{self.itr._mode_string}] - [{self._phase}] - [{self.itr.train_genome}]"
         else:
-            logger_msg = (
-                f"[{self.itr._mode_string}] - [{phase}] - [{self.itr.train_genome}]"
-            )
+            if self.itr.train_genome is None:
+                logger_msg = f"[{self.itr._mode_string}] - [{phase}]"
+            else:
+                logger_msg = (
+                    f"[{self.itr._mode_string}] - [{phase}] - [{self.itr.train_genome}]"
+                )
 
         if find_all:
             msg = "all the DeepVariant VCF outputs"
