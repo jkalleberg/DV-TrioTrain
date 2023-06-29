@@ -7,13 +7,20 @@ example:
 """
 # Load python libraries
 import argparse
-import os
-import subprocess
 from dataclasses import dataclass, field
+from logging import Logger
+from os import environ, getcwd
 from pathlib import Path
+from subprocess import run as run_sub
+from sys import path
 
-import helpers as h
 from regex import compile
+from suffix import remove_suffixes
+
+abs_path = Path(__file__).resolve()
+module_path = str(abs_path.parent.parent.parent)
+path.append(module_path)
+from helpers.environment import Env
 
 
 @dataclass
@@ -24,12 +31,12 @@ class Convert:
 
     # required values
     args: argparse.Namespace
-    logger: h.Logger
+    logger: Logger
 
     # internal, imutable values
     _phase: str = field(default="convert_happy", init=False, repr=False)
     _version: str = field(
-        default=str(os.environ.get("BIN_VERSION_DV")), init=False, repr=False
+        default=str(environ.get("BIN_VERSION_DV")), init=False, repr=False
     )
 
     def __post_init__(self) -> None:
@@ -53,7 +60,7 @@ class Convert:
         """
         Detects which test number is being run.
         """
-        file = h.remove_suffixes(self.happy_vcf_file_path)
+        file = remove_suffixes(self.happy_vcf_file_path)
         file_name = Path(file).name
         digits_only = compile(r"\d+")
         match = digits_only.search(file_name)
@@ -118,7 +125,7 @@ class Convert:
         """
         Load in variables from the env file, and define python variables.
         """
-        self.env = h.Env(self.args.env_file, self.logger, dryrun_mode=self.args.dry_run)
+        self.env = Env(self.args.env_file, self.logger, dryrun_mode=self.args.dry_run)
         env_vars = [
             "RunName",
             "RunOrder",
@@ -179,7 +186,7 @@ class Convert:
             exit(1)
 
         assert (
-            os.getcwd() == code_path
+            getcwd() == code_path
         ), "Run the workflow in the deep-variant/ directory only!"
 
         if f"{self._train_genome}TestCkptName" in self.env.contents:
@@ -250,7 +257,7 @@ class Convert:
         #   CALLABLE_REGIONS FILE
         #   Thus dropping all loci/positions which are NOT
         #   contained in the truth regions file
-        bcftools_query = subprocess.run(
+        bcftools_query = run_sub(
             [
                 "bcftools",
                 "query",

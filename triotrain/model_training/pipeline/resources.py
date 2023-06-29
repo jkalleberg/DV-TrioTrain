@@ -1,4 +1,4 @@
-def process_resource(txt: str):
+def process_resource(txt: str) -> str:
     """
     Handle any special characters and remove any separators.
 

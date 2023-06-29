@@ -10,21 +10,25 @@ example:
 
 # load python libraries
 import argparse
-import os
 from dataclasses import dataclass, field
 from logging import Logger
+from os import environ, path
 from pathlib import Path
 from shutil import copy2, rmtree
 from sys import exit
 from typing import Dict, List
 
-import helpers as h
-import helpers_logger
 from natsort import natsorted
 from regex import compile, search
 
+abs_path = Path(__file__).resolve()
+module_path = str(abs_path.parent.parent.parent)
+path.append(module_path)
+from helpers.environment import Env
+from helpers.files import TestFile
 
-def collect_args():
+
+def collect_args() -> argparse.Namespace:
     """
     Require three command line arguments to execute script.
     """
@@ -72,7 +76,7 @@ def check_args(args: argparse.Namespace, logger: Logger):
             str_args += f"{key}={val} | "
 
         logger.debug(str_args)
-        logger.debug(f"using DeepVariant version | {os.environ.get('BIN_VERSION_DV')}")
+        logger.debug(f"using DeepVariant version | {environ.get('BIN_VERSION_DV')}")
 
     if args.dry_run:
         logger.info("[DRY_RUN] - output will display to screen only")
@@ -99,7 +103,7 @@ class ClearTmp:
         # Confirm that the env file exists before setting variables
         self.dryrun_mode: bool = self.args.dry_run
         self.debug_mode: bool = self.args.debug
-        self.env = h.Env(self.args.env_file, self.logger, dryrun_mode=self.args.dry_run)
+        self.env = Env(self.args.env_file, self.logger, dryrun_mode=self.args.dry_run)
         self.parents = ["Mother", "Father"]
         self.trio = self.parents + ["Child"]
         self._phase = "clean_tmp"
@@ -147,7 +151,7 @@ class ClearTmp:
         if self._baseline_mode:
             # Load in environment variables
             vars = ["BaselineModelResultsDir"]
-            results = h.Env.load(self.env, *vars)
+            results = Env.load(self.env, *vars)
             self.results_dir = Path(str(results))
             self.genome = None
         else:
@@ -164,7 +168,7 @@ class ClearTmp:
 
             if self.genome in self.parents:
                 vars = [f"{self.genome}TestDir", f"{self.genome}CompareDir"]
-                test, compare = h.Env.load(self.env, *vars)
+                test, compare = Env.load(self.env, *vars)
                 self.test_dir = Path(test)
                 self.compare_dir = Path(compare)
 
@@ -186,7 +190,7 @@ class ClearTmp:
                     files.append(self.results_dir / file_found.group())
 
             new_file = "example_info.json"
-            new = h.TestFile(file=self.results_dir / new_file, logger=self.logger)
+            new = TestFile(file=self.results_dir / new_file, logger=self.logger)
         else:
             logging_msg = f"{self.logger_msg} - [{self.genome}]"
             for f in self.examples_dir.iterdir():
@@ -198,7 +202,7 @@ class ClearTmp:
                     files.append(self.examples_dir / file_found.group())
 
             new_file = f"{self.genome}.example_info.json"
-            new = h.TestFile(file=self.examples_dir / new_file, logger=self.logger)
+            new = TestFile(file=self.examples_dir / new_file, logger=self.logger)
 
         new.check_missing(logger_msg=logging_msg, debug_mode=True)
 
@@ -208,7 +212,7 @@ class ClearTmp:
         files = natsorted(files, key=str)
         keep_file = files[0]
 
-        keep = h.TestFile(file=keep_file, logger=self.logger)
+        keep = TestFile(file=keep_file, logger=self.logger)
         keep.check_existing(logger_msg=logging_msg, debug_mode=True)
         if not keep.file_exists:
             self.logger.error(
@@ -432,16 +436,19 @@ def __init__():
     """
     Loads in command line arguments and cleans up temporary files accordingly.
     """
+    from helpers.utils import get_logger
+    from helpers.wrapper import Wrapper, timestamp
+
     # Collect command line arguments
     args = collect_args()
 
     # Collect start time
-    Wrapper(__file__, "start").wrap_script(h.timestamp())
+    Wrapper(__file__, "start").wrap_script(timestamp())
 
     # Create error log
-    current_file = os.path.basename(__file__)
-    module_name = os.path.splitext(current_file)[0]
-    logger = helpers_logger.get_logger(module_name)
+    current_file = path.basename(__file__)
+    module_name = path.splitext(current_file)[0]
+    logger = get_logger(module_name)
 
     # Check command line args
     check_args(args, logger)
@@ -449,7 +456,7 @@ def __init__():
     wipe_files = ClearTmp(args, logger)
 
     wipe_files.run()
-    Wrapper(__file__, "end").wrap_script(h.timestamp())
+    Wrapper(__file__, "end").wrap_script(timestamp())
 
 
 # Execute all functions

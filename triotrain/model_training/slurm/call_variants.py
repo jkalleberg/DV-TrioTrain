@@ -14,12 +14,12 @@ from os import environ, path, sched_getaffinity
 from pathlib import Path
 from typing import Union
 
-import helpers as h
-import helpers_logger
 from spython.main import Client
 
 
-def collect_args():
+
+
+def collect_args() -> argparse.Namespace:
     """
     Process command line argument to execute script.
     """
@@ -134,7 +134,7 @@ class TestModel:
     """
 
     args: argparse.Namespace
-    logger: h.Logger
+    logger: Logger
     demo_chromosome: Union[str, int, None] = "29"
     _phase: str = field(default="testing_model", init=False, repr=False)
     _base_binding: str = field(
@@ -163,7 +163,7 @@ class TestModel:
         """
         load in variables from the env file, and define python variables
         """
-        self.env = h.Env(self.args.env_file, self.logger, dryrun_mode=self.args.dry_run)
+        self.env = Env(self.args.env_file, self.logger, dryrun_mode=self.args.dry_run)
 
         if "N_Parts" not in self.env.contents:
             self._n_shards = self._nproc
@@ -476,27 +476,30 @@ class TestModel:
             self.get_help()
 
 
-def __init__():
+def __init__() -> None:
     """
     Final function to call_variants within a SLURM job
     """
+    from helpers.utils import get_logger
+    from helpers.wrapper import Wrapper, timestamp
+
     # Collect command line arguments
     args = collect_args()
 
     # Collect start time
-    Wrapper(__file__, "start").wrap_script(h.timestamp())
+    Wrapper(__file__, "start").wrap_script(timestamp())
 
     # Create error log
     current_file = path.basename(__file__)
     module_name = path.splitext(current_file)[0]
-    logger = helpers_logger.get_logger(module_name)
+    logger = get_logger(module_name)
 
     # Check command line args
     check_args(args, logger)
     TestModel(args, logger).run()
 
     # Collect start time
-    Wrapper(__file__, "end").wrap_script(h.timestamp())
+    Wrapper(__file__, "end").wrap_script(timestamp())
 
 
 # Execute functions created

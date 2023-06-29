@@ -9,28 +9,27 @@ example:
     --dry-run
 """
 import argparse
-import csv
-import re
-import sys
+from csv import DictReader
+from re import findall, IGNORECASE
+from sys import exit, path
 from dataclasses import dataclass, field
 from json import load
 from logging import Logger
-from os import environ, getcwd, path
+from os import environ, getcwd, path as p
 from pathlib import Path
 from typing import List, Union
 
 from spython.main import Client
 
-sys.path.append(
-    "/storage/hpc/group/UMAG_test/WORKING/jakth2/deep-variant/scripts/model_training"
-)
-import helpers as h
-import helpers_logger
-from iteration import Iteration
-from sbatch import SBATCH, SubmitSBATCH
+abs_path = Path(__file__).resolve()
+module_path = str(abs_path.parent.parent.parent)
+path.append(module_path)
+from helpers.files import WriteFiles, TestFile
+from helpers.iteration import Iteration
+from helpers.utils import generate_job_id, check_if_all_same
+from model_training.slurm.sbatch import SBATCH, SubmitSBATCH
 
-
-def collect_args():
+def collect_args() -> argparse.Namespace:
     """
     Process command line argument to execute script.
     """
@@ -114,7 +113,7 @@ class DTVariantCaller:
 
     # required variables
     args: argparse.Namespace
-    logger: h.Logger
+    logger: Logger
 
     # optional variables
     use_gpu: bool = False
@@ -177,7 +176,7 @@ class DTVariantCaller:
         Collect the SBATCH resources from the config file provided
         """
         # Confirm data input is an existing file
-        resources = h.TestFile(str(self._resource_input), self.logger)
+        resources = TestFile(str(self._resource_input), self.logger)
         resources.check_existing(
             logger_msg=self._logger_msg, debug_mode=self.args.debug
         )
@@ -202,26 +201,26 @@ class DTVariantCaller:
                 self.logger.error(
                     f"{self._logger_msg}: please update --resources to include '{self._phase}'\nExiting..."
                 )
-                sys.exit(1)
+                exit(1)
         else:
             self.logger.error(
                 f"{self._logger_msg}: please update --resources an existing config file\nExiting..."
             )
-            sys.exit(1)
+            exit(1)
 
     def load_metadata(self) -> None:
         """
         Read in and save the metadata file as a dictionary.
         """
         # Confirm data input is an existing file
-        metadata = h.TestFile(str(self._metadata_input), self.logger)
+        metadata = TestFile(str(self._metadata_input), self.logger)
         metadata.check_existing(logger_msg=self._logger_msg, debug_mode=self.args.debug)
         if metadata.file_exists:
             # read in the csv file
             with open(
                 str(self._metadata_input), mode="r", encoding="utf-8-sig"
             ) as data:
-                dict_reader = csv.DictReader(data)
+                dict_reader = DictReader(data)
                 self._data_list = list(dict_reader)
                 self._total_lines = len(self._data_list)
                 self._total_trios = int(self._total_lines / 3)
@@ -256,7 +255,7 @@ class DTVariantCaller:
 
         # Reference ---------------------------------------
         _reference = Path(self._data_list[index]["RefFASTA"])
-        self._reference = h.TestFile(_reference, self.logger)
+        self._reference = TestFile(_reference, self.logger)
         self._reference.check_existing(
             logger_msg=self._test_logger_msg, debug_mode=self.args.debug
         )
@@ -279,7 +278,7 @@ class DTVariantCaller:
                 _regions = None
 
         if _regions is not None:
-            self._regions = h.TestFile(_regions, self.logger)
+            self._regions = TestFile(_regions, self.logger)
             self._regions.check_existing(
                 logger_msg=self._test_logger_msg, debug_mode=self.args.debug
             )
@@ -332,22 +331,22 @@ class DTVariantCaller:
 
         for i, sample in enumerate(trio_data):
             sample_info = sample["Info"]
-            trio_list = re.findall(r"trio\d+", sample_info, re.IGNORECASE)
+            trio_list = findall(r"trio\d+", sample_info, IGNORECASE)
             if not any(trio_list):
                 self.logger.error(
                     f"{self._logger_msg}: unable to find a valid trio number; expected 'Trio#' in the Info column\nExiting..."
                 )
-                sys.exit(1)
+                exit(1)
             else:
                 self._trio_name = trio_list[0]
                 sample["TrioName"] = self._trio_name
 
-            rel_list = re.findall(r"child|mother|father", sample_info, re.IGNORECASE)
+            rel_list = findall(r"child|mother|father", sample_info, IGNORECASE)
             if not any(rel_list):
                 self.logger.error(
                     f"{self._logger_msg}: unable to find a valid relationship; expected either 'child', 'mother' or 'father' in the Info column\nExiting..."
                 )
-                sys.exit(1)
+                exit(1)
             else:
                 relationship = rel_list[0]
                 sample["Relationship"] = relationship
@@ -364,7 +363,7 @@ class DTVariantCaller:
             self._child_sampleID = child_info["SampleID"]
             self._child_labID = child_info["LabID"]
             _child_BAM = Path(child_info["ReadsBAM"])
-            self._child_BAM = h.TestFile(_child_BAM, self.logger)
+            self._child_BAM = TestFile(_child_BAM, self.logger)
             self._child_BAM.check_existing(
                 logger_msg=self._test_logger_msg, debug_mode=self.args.debug
             )
@@ -392,7 +391,7 @@ class DTVariantCaller:
             self._mother_sampleID = mother_info["SampleID"]
             self._mother_labID = mother_info["LabID"]
             _mother_BAM = Path(mother_info["ReadsBAM"])
-            self._mother_BAM = h.TestFile(_mother_BAM, self.logger)
+            self._mother_BAM = TestFile(_mother_BAM, self.logger)
             self._mother_BAM.check_existing(
                 logger_msg=self._test_logger_msg, debug_mode=self.args.debug
             )
@@ -420,7 +419,7 @@ class DTVariantCaller:
             self._father_sampleID = father_info["SampleID"]
             self._father_labID = father_info["LabID"]
             _father_BAM = Path(father_info["ReadsBAM"])
-            self._father_BAM = h.TestFile(_father_BAM, self.logger)
+            self._father_BAM = TestFile(_father_BAM, self.logger)
             self._father_BAM.check_existing(
                 logger_msg=self._test_logger_msg, debug_mode=self.args.debug
             )
@@ -442,7 +441,7 @@ class DTVariantCaller:
                 f"{self._trio_name} {self._father_sampleID} {paternal} {maternal} {sex} 0"
             )
 
-        self._pedigree = h.WriteFiles(
+        self._pedigree = WriteFiles(
             path_to_file=str(self._output_path),
             file=f"{self._trio_name}.PED",
             logger=self.logger,
@@ -478,7 +477,7 @@ class DTVariantCaller:
         self._itr.log_dir = output.parent
         self._output_path = output.parent
 
-        _output = h.TestFile(str(output), self.logger)
+        _output = TestFile(str(output), self.logger)
         _output.check_existing(
             logger_msg=self._test_logger_msg, debug_mode=self.args.debug
         )
@@ -494,7 +493,7 @@ class DTVariantCaller:
                 self.logger.error(
                     f"{self._test_logger_msg}: invalid relationship provided, expected ['Child', 'Mother' or 'Father'] | '{relationship}'\nExiting..."
                 )
-                sys.exit(1)
+                exit(1)
 
             self.logger.info(
                 f"{self._test_logger_msg}: existing file found | '{_output.file}'... SKIPPING AHEAD"
@@ -514,7 +513,7 @@ class DTVariantCaller:
                 self.logger.warning(
                     f"{self._test_logger_msg}: invalid relationship provided, expected ['Child', 'Mother' or 'Father'] | '{relationship}'\nExiting..."
                 )
-                sys.exit(1)
+                exit(1)
 
     def create_bindings(self) -> None:
         """
@@ -651,7 +650,7 @@ class DTVariantCaller:
                     total_jobs=total_jobs,
                     display_mode=self.args.dry_run,
                 )
-                self._job_nums.insert(index, h.generate_job_id())
+                self._job_nums.insert(index, generate_job_id())
             else:
                 submit_slurm_job.display_command(
                     current_job=(index + 1),
@@ -678,7 +677,7 @@ class DTVariantCaller:
         if self.args.debug:
             self._total_trios = 1
 
-        call_vars_results = h.check_if_all_same(self._job_nums, None)
+        call_vars_results = check_if_all_same(self._job_nums, None)
 
         if call_vars_results is False:
             if self._job_nums and len(self._job_nums) == 1:
@@ -719,7 +718,7 @@ class DTVariantCaller:
             self.logger.warning(
                 f"[{self._logger_msg}: fatal error encountered, unable to proceed further with pipeline.\nExiting... ",
             )
-            sys.exit(1)
+            exit(1)
 
     def process_samples(self) -> None:
         """
@@ -753,23 +752,25 @@ class DTVariantCaller:
         self.process_samples()
 
 
-def __init__():
+def __init__() -> None:
+    from helpers.utils import get_logger
+    from helpers.wrapper import Wrapper, timestamp
     # Collect command line arguments
     args = collect_args()
 
     # Collect start time
-    Wrapper(__file__, "start").wrap_script(h.timestamp())
+    Wrapper(__file__, "start").wrap_script(timestamp())
 
     # Create error log
-    current_file = path.basename(__file__)
-    module_name = path.splitext(current_file)[0]
-    logger = helpers_logger.get_logger(module_name)
+    current_file = p.basename(__file__)
+    module_name = p.splitext(current_file)[0]
+    logger = get_logger(module_name)
 
     check_args(args=args, logger=logger)
 
     DTVariantCaller(args=args, logger=logger).run()
 
-    Wrapper(__file__, "end").wrap_script(h.timestamp())
+    Wrapper(__file__, "end").wrap_script(timestamp())
 
 
 # Execute functions created

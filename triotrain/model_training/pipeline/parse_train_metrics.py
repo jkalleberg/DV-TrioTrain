@@ -19,19 +19,23 @@ Usage:
 """
 # Load libraries
 import argparse
-import json
-import os
-import sys
+from sys import exit
 from dataclasses import dataclass, field
+from json import load
 from logging import Logger
+from os import environ, getcwd, path
 from pathlib import Path
 
-import helpers as h
-import helpers_logger
 import pandas as pd
 
+abs_path = Path(__file__).resolve()
+module_path = str(abs_path.parent.parent.parent)
+path.append(module_path)
+from helpers.environment import Env
+from helpers.files import WriteFiles
 
-def collect_args():
+
+def collect_args() -> argparse.Namespace:
     """
     Require two command line arguments to execute script.
     """
@@ -89,7 +93,7 @@ def collect_args():
     # )
 
 
-def check_args(args: argparse.Namespace, logger: Logger):
+def check_args(args: argparse.Namespace, logger: Logger) -> None:
     """
     With "--debug", display command line args provided.
     With "--dry-run", display a msg.
@@ -101,7 +105,7 @@ def check_args(args: argparse.Namespace, logger: Logger):
             str_args += f"{key}={val} | "
 
         logger.debug(str_args)
-        logger.debug(f"using DeepVariant version | {os.environ.get('BIN_VERSION_DV')}")
+        logger.debug(f"using DeepVariant version | {environ.get('BIN_VERSION_DV')}")
 
     if args.dry_run:
         logger.info("[DRY_RUN]: output will display to screen and not write to a file")
@@ -121,7 +125,7 @@ class ParseMetrics:
     """
 
     genome: str
-    env: h.Env
+    env: Env
     logger: Logger
     threshold: float = 20.0
     debug_mode: bool = False
@@ -154,11 +158,11 @@ class ParseMetrics:
 
         try:
             assert (
-                os.getcwd() == code_path
+                getcwd() == code_path
             ), "Run the workflow in the deep-variant/ directory only!"
         except AssertionError as error_msg:
             self.logger.error(f"{error_msg}.\nExiting... ")
-            sys.exit(1)
+            exit(1)
 
     def set_genome(self) -> None:
         """
@@ -229,7 +233,7 @@ class ParseMetrics:
         for file in range(len(metrics_stem)):
             metrics = self._eval_dir / metrics_name[file]
             with metrics.open(mode="r") as read_file:
-                step_metrics = json.load(read_file)
+                step_metrics = load(read_file)
                 rows_list.append(step_metrics)
 
         # Create a pandas DataFrame
@@ -279,7 +283,7 @@ class ParseMetrics:
                 )
         except AssertionError as error_msg:
             self.logger.error(error_msg)
-            sys.exit(1)
+            exit(1)
 
         max_f1_all = self._sorted_data[["F1/All"]].idxmax()
         min_loss = self._sorted_data[["loss"]].idxmin()
@@ -353,7 +357,7 @@ class ParseMetrics:
         """
         if self.dryrun_mode is False:
             # Define the output CSV to be created
-            outfile = h.WriteFiles(
+            outfile = WriteFiles(
                 self._outpath,
                 f"{self._run_name}-{self.genome}-evaluation-metrics.csv",
                 self.logger,
@@ -385,24 +389,27 @@ class ParseMetrics:
         self.save_results()
 
 
-def __init__():
+def __init__() -> None:
     """
     Collect evaluation metrics across multiple evaluations
     into a single CSV file.
     """
+    from helpers.utils import get_logger
+    from helpers.wrapper import Wrapper, timestamp
+
     # Collect command line arguments
     args = collect_args()
 
     # Collect start time
-    Wrapper(__file__, "start").wrap_script(h.timestamp())
+    Wrapper(__file__, "start").wrap_script(timestamp())
 
     # Create error log
-    current_file = os.path.basename(__file__)
-    module_name = os.path.splitext(current_file)[0]
-    logger = helpers_logger.get_logger(module_name)
+    current_file = path.basename(__file__)
+    module_name = path.splitext(current_file)[0]
+    logger = get_logger(module_name)
 
     # Check command line args
-    _version = os.environ.get("BIN_VERSION_DV")
+    _version = environ.get("BIN_VERSION_DV")
 
     if args.debug:
         str_args = "COMMAND LINE ARGS USED: "
@@ -416,10 +423,10 @@ def __init__():
         pd.set_option("display.max_rows", None)
         pd.set_option("display.max_columns", None)
 
-    env = h.Env(args.env_file, logger, dryrun_mode=args.dry_run)
+    env = Env(args.env_file, logger, dryrun_mode=args.dry_run)
     ParseMetrics(args.genome, env, logger).run()
 
-    Wrapper(__file__, "end").wrap_script(h.timestamp())
+    Wrapper(__file__, "end").wrap_script(timestamp())
 
 
 # Execute functions created

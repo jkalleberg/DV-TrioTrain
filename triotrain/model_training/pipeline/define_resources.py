@@ -9,21 +9,20 @@ Usage:
 
 # load in python libraries
 import argparse
-import json
 import logging
-import os
-import re
-import sys
+from json import dump, dumps
+from os import environ
+from os import path as p
 from pathlib import Path
+from re import fullmatch
+from sys import exit
 from typing import Dict, List, Union
-
-# get the relative path to the triotrain/ dir
-h_path = str(Path(__file__).parent.parent.parent)
-sys.path.append(h_path)
-import helpers
+from phase import process_phase
+from resources import process_resource
 
 
-def collect_args():
+
+def collect_args() -> argparse.Namespace:
     """Handles the command line arguments.
 
     Returns
@@ -153,7 +152,7 @@ def collect_args():
     return parser.parse_args()
 
 
-def check_email(email: str):
+def check_email(email: str) -> None:
     """Confirms if a string matches <email@address.com> format
 
     Parameters
@@ -164,10 +163,10 @@ def check_email(email: str):
     # regular expression representing email format expectations
     regex = r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b"
     # pass the string into the fullmatch() method
-    assert re.fullmatch(regex, email), f"Email [{email}] is invalid"
+    assert fullmatch(regex, email), f"Email [{email}] is invalid"
 
 
-def check_time(time_str: str):
+def check_time(time_str: str) -> None:
     """Confirms if a string matches 0-00:00:00 or days-Hours:Minutes:Seconds format
 
     Parameters
@@ -175,7 +174,7 @@ def check_time(time_str: str):
     time_str : str
     """
     regex = r"(\d{1}\-\d{2}\:\d{2}\:\d{2})"
-    assert re.fullmatch(regex, time_str), f"Time entry [{time_str}] is invalid"
+    assert fullmatch(regex, time_str), f"Time entry [{time_str}] is invalid"
 
 
 class UseJSON(Dict[str, str]):
@@ -188,14 +187,14 @@ class UseJSON(Dict[str, str]):
     """
 
     def __str__(self):
-        return json.dumps(self)
+        return dumps(self)
 
     def write_to_file(self, output_file: str = "output.json"):
         """
         write the JSON format data to a file
         """
         with open(output_file, mode="w", encoding="UTF-8") as file:
-            json.dump(self, file)
+            dump(self, file)
 
 
 class Pipeline:
@@ -248,7 +247,7 @@ class Pipeline:
                     self.logger.error(
                         f"You told me to edit {self.num_phases} phases, but there are only {self.max_num_phases} available\nExiting...",
                     )
-                    sys.exit(1)
+                    exit(1)
                 else:
                     self.num_phases: int = int_n_input
                     self.number_entered = True
@@ -297,7 +296,7 @@ class Pipeline:
                 )
                 self.logger.info("---------------")
                 resource_label = f"RESOURCE {index + 1}-of-{self.num_resources}"
-                self.resource_name: str = helpers.h.process_resource(
+                self.resource_name: str = process_resource(
                     str(
                         input(
                             f"{self.phase_label} --- {resource_label} | Enter a valid RESOURCE name: "
@@ -428,7 +427,7 @@ class Pipeline:
         phase_input = str(
             input(f"{phase_counter} | Enter a valid PHASE name: ").lower()
         )
-        self.phase_input = helpers.h.process_phase(phase_input)
+        self.phase_input = process_phase(phase_input)
         if self.phase_input == "none":
             self.logger.warning(f"[{phase_counter}] SKIPPING AHEAD...")
         elif self.phase_input not in self.valid_phases:
@@ -457,7 +456,9 @@ class Pipeline:
                 return
 
 
-def edit_pipeline(default_dict: Dict[str, Dict[str, str]], logger: logging.Logger) -> Dict[str, Dict[str, str]]:
+def edit_pipeline(
+    default_dict: Dict[str, Dict[str, str]], logger: logging.Logger
+) -> Dict[str, Dict[str, str]]:
     """_summary_
 
     Parameters
@@ -511,20 +512,24 @@ def edit_pipeline(default_dict: Dict[str, Dict[str, str]], logger: logging.Logge
         return default_dict
 
 
-def __init__():
+def __init__() -> None:
+    """_summary_
+    """
+    from helpers.utils import get_logger
+    from helpers.wrapper import Wrapper, timestamp
     # Collect command line arguments
     args = collect_args()
 
     # Collect start time
-    helpers.Wrapper(__file__, "start").wrap_script(helpers.h.timestamp())
+    Wrapper(__file__, "start").wrap_script(timestamp())
 
     # Create error log
-    current_file = os.path.basename(__file__)
-    module_name = os.path.splitext(current_file)[0]
-    logger: logging.Logger = helpers.log.get_logger(module_name)
+    current_file = p.basename(__file__)
+    module_name = p.splitext(current_file)[0]
+    logger: logging.Logger = get_logger(module_name)
 
     # Check command line args
-    _version = os.environ.get("BIN_VERSION_DV")
+    _version = environ.get("BIN_VERSION_DV")
     if args.debug:
         str_args = "COMMAND LINE ARGS USED: "
         for key, val in vars(args).items():
@@ -536,7 +541,7 @@ def __init__():
         check_email(args.email)
     except AssertionError as error:
         logger.exception(f"{error}\nExiting... ")
-        sys.exit(1)
+        exit(1)
 
     # Memory requested for each CPU
     mem_per_core_mb = int(args.mem_rich / args.cpu_rich)
@@ -645,7 +650,7 @@ def __init__():
         for key, value in output.items():
             logger.info(f"[{key}] = {value}")
 
-    helpers.Wrapper(current_file, "end").wrap_script(helpers.h.timestamp())
+    Wrapper(current_file, "end").wrap_script(timestamp())
 
 
 # Execute functions created

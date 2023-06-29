@@ -291,7 +291,7 @@ def run_trio_train(eval_genome="Child") -> None:
             ).run()
 
             # --- switch the dependencies so that prior becomes current before the next iteration starts ---#
-            # no_prior_jobs_run = helpers.h.check_if_all_same(pipeline.next_genome_deps, None)
+            # no_prior_jobs_run = check_if_all_same(pipeline.next_genome_deps, None)
             pipeline.end_iteration()
             pipeline.current_genome_deps = pipeline.next_genome_deps
             pipeline.next_genome_deps = create_deps()

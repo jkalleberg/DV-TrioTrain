@@ -12,11 +12,12 @@ example:
 """
 # load in python libraries
 import argparse
-import os
-import re
 from dataclasses import dataclass, field
 from logging import Logger
+from os import environ
+from os import path as p
 from pathlib import Path
+from re import findall
 from sys import exit, path
 from typing import Union
 
@@ -99,7 +100,7 @@ def collect_args() -> argparse.Namespace:
     # )
 
 
-def check_args(args: argparse.Namespace, logger: Logger):
+def check_args(args: argparse.Namespace, logger: Logger) -> None:
     """
     With "--debug", display command line args provided.
 
@@ -113,7 +114,7 @@ def check_args(args: argparse.Namespace, logger: Logger):
             str_args += f"{key}={val} | "
 
         logger.debug(str_args)
-        logger.debug(f"using DeepVariant version | {os.environ.get('BIN_VERSION_DV')}")
+        logger.debug(f"using DeepVariant version | {environ.get('BIN_VERSION_DV')}")
 
     if args.dry_run:
         logger.info("[DRY_RUN]: output will display to screen and not write to a file")
@@ -179,7 +180,7 @@ class MergeSelect:
             self.current_run = int(self.next_run - 1)
         else:
             run_path = str(self.ckpt_file.parent.parent.parent.stem)
-            run_num = re.findall(r"[0-9]+", run_path)[0]
+            run_num = findall(r"[0-9]+", run_path)[0]
             self.current_run = int(run_num)
 
         vars_list = [
@@ -377,8 +378,8 @@ def __init__() -> None:
     Wrapper(__file__, "start").wrap_script(timestamp())
 
     # Create error log
-    current_file = os.path.basename(__file__)
-    module_name = os.path.splitext(current_file)[0]
+    current_file = p.basename(__file__)
+    module_name = p.splitext(current_file)[0]
     logger = get_logger(module_name)
 
     # Check command line args

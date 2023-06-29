@@ -1,4 +1,4 @@
-def process_phase(txt: str):
+def process_phase(txt: str) -> str:
     """
     Handle any special characters and only use '_' as a separator.
 

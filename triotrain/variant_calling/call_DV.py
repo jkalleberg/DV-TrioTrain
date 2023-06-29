@@ -10,27 +10,28 @@ example:
 
 """
 import argparse
-import csv
-import sys
+from csv import DictReader
 from dataclasses import dataclass, field
 from json import load
 from logging import Logger
-from os import environ, getcwd, path
+from os import environ, getcwd
+from os import path as p
 from pathlib import Path
+from sys import exit, path
 from typing import List, Union
 
 from spython.main import Client
 
-sys.path.append(
-    "/storage/hpc/group/UMAG_test/WORKING/jakth2/deep-variant/scripts/model_training"
-)
-import helpers as h
-import helpers_logger
-from iteration import Iteration
-from sbatch import SBATCH, SubmitSBATCH
+abs_path = Path(__file__).resolve()
+module_path = str(abs_path.parent.parent.parent)
+path.append(module_path)
+from helpers.files import TestFile
+from helpers.iteration import Iteration
+from helpers.utils import generate_job_id
+from model_training.slurm.sbatch import SBATCH, SubmitSBATCH
 
 
-def collect_args():
+def collect_args() -> argparse.Namespace:
     """
     Process command line argument to execute script.
     """
@@ -113,7 +114,7 @@ class VariantCaller:
 
     # required variables
     args: argparse.Namespace
-    logger: h.Logger
+    logger: Logger
 
     # optional variables
     use_gpu: bool = False
@@ -183,7 +184,7 @@ class VariantCaller:
         Collect the SBATCH resources from the config file provided
         """
         # Confirm data input is an existing file
-        resources = h.TestFile(str(self._resource_input), self.logger)
+        resources = TestFile(str(self._resource_input), self.logger)
         resources.check_existing(
             logger_msg=self._logger_msg, debug_mode=self.args.debug
         )
@@ -205,26 +206,26 @@ class VariantCaller:
                 self.logger.error(
                     f"{self._logger_msg}: please update --resources to include '{self._phase}'\nExiting..."
                 )
-                sys.exit(1)
+                exit(1)
         else:
             self.logger.error(
                 f"{self._logger_msg}: please update --resources an existing config file\nExiting..."
             )
-            sys.exit(1)
+            exit(1)
 
     def load_metadata(self) -> None:
         """
         Read in and save the metadata file as a dictionary.
         """
         # Confirm data input is an existing file
-        metadata = h.TestFile(str(self._metadata_input), self.logger)
+        metadata = TestFile(str(self._metadata_input), self.logger)
         metadata.check_existing(logger_msg=self._logger_msg, debug_mode=self.args.debug)
         if metadata.file_exists:
             # read in the csv file
             with open(
                 str(self._metadata_input), mode="r", encoding="utf-8-sig"
             ) as data:
-                dict_reader = csv.DictReader(data)
+                dict_reader = DictReader(data)
                 self._data_list = list(dict_reader)
                 self._total_lines = len(self._data_list)
         else:
@@ -250,14 +251,12 @@ class VariantCaller:
             if k in input_paths:
                 if v != "NA":
                     if k == "ModelCkpt":
-                        testing_file = h.TestFile(
+                        testing_file = TestFile(
                             f"{self._data_list[index][k]}.data-00000-of-00001",
                             self.logger,
                         )
                     else:
-                        testing_file = h.TestFile(
-                            self._data_list[index][k], self.logger
-                        )
+                        testing_file = TestFile(self._data_list[index][k], self.logger)
 
                     testing_file.check_existing(
                         logger_msg=self._test_logger_msg, debug_mode=self.args.debug
@@ -386,7 +385,7 @@ class VariantCaller:
         """
         output = Path(self._data_list[index]["OutPath"]) / f"{self._sampleID}.vcf.gz"
 
-        testing_file = h.TestFile(str(output), self.logger)
+        testing_file = TestFile(str(output), self.logger)
         testing_file.check_existing(
             logger_msg=self._test_logger_msg, debug_mode=self.args.debug
         )
@@ -592,7 +591,7 @@ class VariantCaller:
                     display_mode=self.args.dry_run,
                 )
                 if self._job_nums:
-                    self._job_nums[index] = h.generate_job_id()
+                    self._job_nums[index] = generate_job_id()
             else:
                 submit_slurm_job.display_command(
                     current_job=(index + 1),
@@ -641,23 +640,26 @@ class VariantCaller:
         self.process_samples()
 
 
-def __init__():
+def __init__() -> None:
+    from helpers.utils import get_logger
+    from helpers.wrapper import Wrapper, timestamp
+
     # Collect command line arguments
     args = collect_args()
 
     # Collect start time
-    Wrapper(__file__, "start").wrap_script(h.timestamp())
+    Wrapper(__file__, "start").wrap_script(timestamp())
 
     # Create error log
-    current_file = path.basename(__file__)
-    module_name = path.splitext(current_file)[0]
-    logger = helpers_logger.get_logger(module_name)
+    current_file = p.basename(__file__)
+    module_name = p.splitext(current_file)[0]
+    logger = get_logger(module_name)
 
     check_args(args=args, logger=logger)
 
     VariantCaller(args=args, logger=logger).run()
 
-    Wrapper(__file__, "end").wrap_script(h.timestamp())
+    Wrapper(__file__, "end").wrap_script(timestamp())
 
 
 # Execute functions created

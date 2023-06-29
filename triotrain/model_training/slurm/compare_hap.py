@@ -8,18 +8,21 @@ example:
         --dry-run
 """
 import argparse
-import sys
 from dataclasses import dataclass, field
 from logging import Logger
 from os import environ, path
 from pathlib import Path
+from sys import exit
 
-import helpers as h
-import helpers_logger
 from spython.main import Client
 
+abs_path = Path(__file__).resolve()
+module_path = str(abs_path.parent.parent.parent)
+path.append(module_path)
+from helpers.wrapper import timestamp
 
-def collect_args():
+
+def collect_args() -> argparse.Namespace:
     """
     Process command line argument to execute script.
     """
@@ -117,7 +120,7 @@ def collect_args():
     # return parser.parse_args(["--env-file", "envs/new_trios_test-run0.env", "--debug"])
 
 
-def check_args(args: argparse.Namespace, logger: Logger):
+def check_args(args: argparse.Namespace, logger: Logger) -> None:
     """
     With "--debug", display command line args provided.
 
@@ -254,7 +257,7 @@ class Happy:
                 self.logger.error(
                     f"[{self._mode}] - [{self._phase}] - [{self._logger_msg}]: default regions file must be an existing file [{str(self.default_regions_path)}]. Exiting... "
                 )
-                sys.exit(1)
+                exit(1)
 
     def set_test_genome(self) -> None:
         """
@@ -435,7 +438,7 @@ class Happy:
                     return
             self.build_bindings()
             self.build_command()
-            print(f"----- Starting hap.py now @ {h.timestamp()} -----")
+            print(f"----- Starting hap.py now @ {timestamp()} -----")
             self.logger.info(
                 f"[{self._mode}] - [{self._phase}] - [{self._logger_msg}] : Command Used |"
             )
@@ -447,32 +450,35 @@ class Happy:
                 quiet=False,
             ):
                 print(line, end="")
-            print(f"----- End of hap.py @ {h.timestamp()} -----")
+            print(f"----- End of hap.py @ {timestamp()} -----")
         else:
             self.happy_help()
 
 
-def __init__():
+def __init__() -> None:
     """
     Final function to compare_happy within a SLURM job
     """
+    from helpers.utils import get_logger
+    from helpers.wrapper import Wrapper
+
     # Collect command line arguments
     args = collect_args()
 
     # Collect start time
-    Wrapper(__file__, "start").wrap_script(h.timestamp())
+    Wrapper(__file__, "start").wrap_script(timestamp())
 
     # Create error log
     current_file = path.basename(__file__)
     module_name = path.splitext(current_file)[0]
-    logger = helpers_logger.get_logger(module_name)
+    logger = get_logger(module_name)
 
     # Check command line args
     check_args(args, logger)
     Happy(args, logger).run()
 
     # Collect start time
-    Wrapper(__file__, "end").wrap_script(h.timestamp())
+    Wrapper(__file__, "end").wrap_script(timestamp())
 
 
 # Execute functions created

@@ -3,10 +3,10 @@
 description: creates a Logger for the TrioTrain pipeline.
 
 usage:
-    import helpers_logger
+    from helpers.logger import LogFormatter
 """
 import logging
-import sys
+from sys import stdout
 
 class LogFormatter(logging.Formatter):
     """
@@ -53,7 +53,7 @@ def get_stream_handler() -> logging.StreamHandler:
     """
     Writes any log messages from general status updates, plus warnings and errors to the screen
     """
-    stream_handler = logging.StreamHandler(sys.stdout)
+    stream_handler = logging.StreamHandler(stdout)
     stream_handler.setLevel(logging.DEBUG)
     stream_handler.setFormatter(LogFormatter())
     return stream_handler

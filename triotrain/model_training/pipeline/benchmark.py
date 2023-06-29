@@ -11,23 +11,26 @@ example:
 
 # Load python libs
 import argparse
-import csv
-import datetime
-import os
-import subprocess
-import sys
+from csv import DictReader
 from dataclasses import dataclass, field
+from datetime import timedelta
 from logging import Logger
+from os import environ, getcwd, listdir, path
 from pathlib import Path
+from subprocess import CalledProcessError
+from subprocess import run as run_sub
+from sys import exit
 from typing import Dict
 
-import helpers as h
-import helpers_logger
 import pandas as pd
+from helpers.environment import Env
+from helpers.files import WriteFiles
+from helpers.outputs import check_if_output_exists
+from phase import process_phase
 from regex import compile
 
 
-def collect_args():
+def collect_args() -> argparse.Namespace:
     """
     Process the command line arguments to execute script.
     """
@@ -89,7 +92,8 @@ def collect_args():
             "compare_neat",
         ],
     )
-    return parser.get_default("phase_list"), parser.parse_args()
+    # parser.get_default("phase_list")
+    return parser.parse_args()
 
 
 def check_args(args: argparse.Namespace, logger: Logger) -> None:
@@ -106,7 +110,7 @@ def check_args(args: argparse.Namespace, logger: Logger) -> None:
             str_args += f"{key}={val} | "
 
         logger.debug(str_args)
-        logger.debug(f"using DeepVariant version | {os.environ.get('BIN_VERSION_DV')}")
+        logger.debug(f"using DeepVariant version | {environ.get('BIN_VERSION_DV')}")
 
     if args.dry_run:
         logger.info("[DRY_RUN]: output will display to screen and not write to a file")
@@ -172,11 +176,11 @@ class Benchmark:
         h, m, s = hms_string.split(":")
         return int(days) * 86400 + int(h) * 3600 + int(m) * 60 + int(s)
 
-    def get_timedelta(self, total_seconds: int) -> datetime.timedelta:
+    def get_timedelta(self, total_seconds: int) -> timedelta:
         """
         Convert number of seconds into a timedelta format.
         """
-        return datetime.timedelta(seconds=total_seconds)
+        return timedelta(seconds=total_seconds)
 
     def get_timedelta_str(self, tdelta) -> str:
         """
@@ -203,17 +207,17 @@ class Benchmark:
         Load in variables from the env_file
         """
         # Confirm that the env file exists before setting variables
-        env = h.Env(str(self.args.env_file), self.logger)
+        env = Env(str(self.args.env_file), self.logger)
         # Load in environment variables
         var_list = ["RunName", "CodePath", "ResultsDir"]
         self.name, code_path, results_dir = env.load(*var_list)
         self._results_dir = Path(results_dir)
 
-        if os.getcwd() != code_path:
+        if getcwd() != code_path:
             self.logger.error(
-                f"execute {__file__} from {code_path}, not {os.getcwd()}\nExiting..."
+                f"execute {__file__} from {code_path}, not {getcwd()}\nExiting..."
             )
-            sys.exit()
+            exit()
 
         self._search_path = self._results_dir.parent
 
@@ -244,7 +248,7 @@ class Benchmark:
             )
             return
 
-        search_dirs = [d for d in os.listdir(str(self._search_path)) if d != "summary"]
+        search_dirs = [d for d in listdir(str(self._search_path)) if d != "summary"]
 
         if self.args.debug:
             iter = [search_dirs[0]]
@@ -252,7 +256,7 @@ class Benchmark:
             iter = search_dirs
 
         for dir in iter:
-            logs_exist, total_jobs_in_phase, log_file_names = h.check_if_output_exists(
+            logs_exist, total_jobs_in_phase, log_file_names = check_if_output_exists(
                 match_pattern=search_pattern,
                 file_type="SLURM log files",
                 search_path=self._search_path / dir / "logs",
@@ -284,7 +288,7 @@ class Benchmark:
                 f"Unable to open [{self.args.csv_file}] because it does not exist"
             )
             with open(self.args.csv_file, mode="r") as csv_file:
-                csv_reader = csv.DictReader(csv_file)
+                csv_reader = DictReader(csv_file)
                 line_count = 0
                 for row in csv_reader:
                     line_count += 1
@@ -294,7 +298,7 @@ class Benchmark:
                 ), f"Unable to load in input data from [{self.args.csv_file}]"
         except AssertionError as err:
             self.logger.exception(f"{err}\nExiting... ")
-            sys.exit()
+            exit()
 
     def process_csv_file(self) -> None:
         """
@@ -307,7 +311,7 @@ class Benchmark:
                     if len(v) != 0:
                         jobs = v.split(",")
                         total_jobs_in_phase = len(jobs)
-                        phase_name = h.process_phase(value["phase"].lower())
+                        phase_name = process_phase(value["phase"].lower())
                         if phase_name in self.list_of_phases:
                             self._job_nums.extend(jobs)
                             self._phases_used.extend([phase_name] * total_jobs_in_phase)
@@ -350,7 +354,7 @@ class Benchmark:
                 # Collect the resources used by the current job number
                 # if the job state=COMPLETED and make the output
                 # parsable with '|' but don't include a trailing '|'
-                resources = subprocess.run(
+                resources = run_sub(
                     [
                         "sacct",
                         f"-j{job}",
@@ -363,12 +367,12 @@ class Benchmark:
                     text=True,
                     check=True,
                 )
-            except subprocess.CalledProcessError as err:
+            except CalledProcessError as err:
                 self.logger.error(
                     f"Resource collection stopped at {int(count):,}-of-{int(self._num_jobs):,} for [Job#:{job}]",
                 )
                 self.logger.error(f"{err}\n{err.stderr}\nExiting... ")
-                sys.exit(err.returncode)
+                exit(err.returncode)
 
             # remove trailing new line from output string
             # and split lines into a list of 3 lines (header, slurm batch job, child process(es))
@@ -403,7 +407,7 @@ class Benchmark:
                     self.logger.error(
                         f"I haven't been told  how to handle {len(output)} child process(es) {current_phase} yet!\n{output}",
                     )
-                    sys.exit(2)
+                    exit(2)
             elif len(output) < 3:
                 self._skipped_jobs.append(job)
                 self.logger.warning(
@@ -414,7 +418,7 @@ class Benchmark:
                 self.logger.error(
                     f"I haven't been told  how to handle {len(output)} child process(es) {current_phase} yet!\n{output}",
                 )
-                sys.exit(2)
+                exit(2)
 
             # Convert CPUTime in days into seconds
             CPUTime = self._resources_used[6]
@@ -592,7 +596,7 @@ class Benchmark:
             print("---------------------------------------------")
         else:
             # Define the summary output CSV file to be created
-            summary_file = h.WriteFiles(
+            summary_file = WriteFiles(
                 str(self._results_dir),
                 f"{self.name}.summary_resources.csv",
                 self.logger,
@@ -625,22 +629,25 @@ class Benchmark:
         self.write_results()
 
 
-def __init__():
+def __init__() -> None:
     """
     Iterating through SLURM job numbers, totalling up core hours charged,
     and calculating summary statistics for Wall Time, Memory Usage to inform
     resources to request for each phase's jobs.
     """
+    from helpers.utils import get_logger
+    from helpers.wrapper import Wrapper, timestamp
+
     # Collect command line args
     default_phases, args = collect_args()
 
     # Collect start time
-    Wrapper(__file__, "start").wrap_script(h.timestamp())
+    Wrapper(__file__, "start").wrap_script(timestamp())
 
     # Create error log
-    current_file = os.path.basename(__file__)
-    module_name = os.path.splitext(current_file)[0]
-    logger = helpers_logger.get_logger(module_name)
+    current_file = path.basename(__file__)
+    module_name = path.splitext(current_file)[0]
+    logger = get_logger(module_name)
 
     # Check command-line args
     check_args(args, logger)
@@ -657,7 +664,7 @@ def __init__():
 
     Benchmark(args, logger, phases, use_default_phases=use_defaults).run()
 
-    Wrapper(__file__, "end").wrap_script(h.timestamp())
+    Wrapper(__file__, "end").wrap_script(timestamp())
 
 
 # Execute functions created

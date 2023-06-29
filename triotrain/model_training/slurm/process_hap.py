@@ -7,20 +7,25 @@ usage:
 """
 
 import argparse
-import csv
-import operator
-import os
-import subprocess
-import sys
 from collections import OrderedDict, defaultdict
+from csv import DictReader, reader
 from dataclasses import dataclass, field
+from logging import Logger
+from operator import itemgetter
+from os import path
 from pathlib import Path
+from subprocess import PIPE, Popen
+from subprocess import run as run_sub
+from sys import exit
 from typing import DefaultDict, Union
 
-import args_process_hap
-import helpers as h
-import helpers_logger
-from slurm_convert_hap import Convert
+abs_path = Path(__file__).resolve()
+module_path = str(abs_path.parent.parent.parent)
+path.append(module_path)
+from args_hap import check_args, collect_args
+from convert_hap import Convert
+from helpers.dictionary import add_to_dict
+from helpers.files import WriteFiles
 
 
 @dataclass
@@ -31,7 +36,7 @@ class Process:
 
     # required values
     args: argparse.Namespace
-    logger: h.Logger
+    logger: Logger
 
     # internal, imutable values
     _combinations: list = field(default_factory=list, init=False, repr=False)
@@ -130,14 +135,14 @@ class Process:
         awk_command = '$1=="#CHROM" {print $10}'
 
         if awk_command is not None:
-            zcat = subprocess.Popen(
+            zcat = Popen(
                 [
                     "zcat",
                     str(self.convert_happy._test_vcf_file_path),
                 ],
-                stdout=subprocess.PIPE,
+                stdout=PIPE,
             )
-            awk = subprocess.run(
+            awk = run_sub(
                 ["awk", awk_command],
                 stdin=zcat.stdout,
                 capture_output=True,
@@ -285,9 +290,9 @@ class Process:
                 print("PATTERN:", hash_key)
                 print("\t".join(line.values()))
                 self.logger.error(
-                    f"{self._logger_msg}: edit {os.path.basename(__file__)} to include the missing pattern(s)"
+                    f"{self._logger_msg}: edit {path.basename(__file__)} to include the missing pattern(s)"
                 )
-                sys.exit(1)
+                exit(1)
 
         # Count how many times each value combination is observed
         self.record_counts(hash_key, self._counts_default_dict)
@@ -299,7 +304,7 @@ class Process:
         sorted_d = dict(
             sorted(
                 self._counts_default_dict.items(),
-                key=operator.itemgetter(1),
+                key=itemgetter(1),
                 reverse=True,
             )
         )
@@ -334,12 +339,12 @@ class Process:
         if self.convert_happy.file_tsv.exists():
             with open(self.convert_happy.file_tsv, mode="r") as data:
                 # Open the file as read only
-                for line in csv.DictReader(data, delimiter="\t"):
+                for line in DictReader(data, delimiter="\t"):
                     self.count_metrics(line=line, show_weirdos=reload)
         else:
             if self.args.dry_run:
                 # stream in the convert-tsv stdout to process without writing an intermediate file
-                for line in csv.DictReader(
+                for line in DictReader(
                     self.convert_happy.tsv_format,
                     fieldnames=self.convert_happy._custom_header,
                     delimiter="\t",
@@ -349,7 +354,7 @@ class Process:
                 self.logger.error(
                     f"{self._logger_msg}: unable to find existing TSV file | '{self.convert_happy.file_tsv}'\nExiting..."
                 )
-                sys.exit(1)
+                exit(1)
 
         if len(self._counts_default_dict.keys()) != self.expected_num_metrics:
             self.logger.warning(
@@ -359,7 +364,7 @@ class Process:
             for key, value in self._counts_default_dict.items():
                 print(f"KEY: {key}\t VALUE:{value}")
             print("Exiting...")
-            sys.exit(1)
+            exit(1)
 
         # Sort the Dictionary
         if sort_decreasing:
@@ -398,8 +403,8 @@ class Process:
 
             # read in the existing counts data from file
             with open(str(self.convert_happy.interm_file_csv), "r") as data:
-                for row in csv.reader(data):
-                    h.add_to_dict(
+                for row in reader(data):
+                    add_to_dict(
                         update_dict=self._counts_dict,
                         new_key=row[0],
                         new_val=row[1],
@@ -410,7 +415,7 @@ class Process:
 
             for k, v in self._counts_dict.items():
                 if k in self._valid_keys and k not in self._metadata.keys():
-                    h.add_to_dict(
+                    add_to_dict(
                         update_dict=self._metadata,
                         new_key=k,
                         new_val=v,
@@ -453,7 +458,7 @@ class Process:
                 metric_label = f"{label}{metric}"
             else:
                 metric_label = f"{label}{metric}s"
-            h.add_to_dict(
+            add_to_dict(
                 update_dict=self._internal_dict1,
                 new_key=metric_label,
                 new_val=running_total,
@@ -464,7 +469,7 @@ class Process:
         sum_label = f"{label}Total"
         if self.args.debug:
             self.logger.debug(f"{self._logger_msg}: SUM = {_sum}")
-        h.add_to_dict(
+        add_to_dict(
             update_dict=self._internal_dict1,
             new_key=sum_label,
             new_val=_sum,
@@ -507,7 +512,7 @@ class Process:
                             f"{self._logger_msg}: {new_key} = {proportion}%"
                         )
 
-                    h.add_to_dict(
+                    add_to_dict(
                         update_dict=self._internal_dict2,
                         new_key=new_key,
                         new_val=f"{proportion}%",
@@ -610,7 +615,7 @@ class Process:
 
     def metric_totals(
         self,
-    ):
+    ) -> None:
         """
         Calculate the sum of metrics
         """
@@ -622,7 +627,7 @@ class Process:
             else:
                 key = f"{metric}s_Total"
 
-            h.add_to_dict(
+            add_to_dict(
                 update_dict=self._internal_dict1,
                 new_key=key,
                 new_val=_sum,
@@ -701,7 +706,7 @@ class Process:
                         continue
                     else:
                         num_missing_items += 1
-                        h.add_to_dict(
+                        add_to_dict(
                             update_dict=missing_values,
                             new_key=k,
                             new_val=v,
@@ -718,7 +723,7 @@ class Process:
             self.logger.error(
                 f"{self._logger_msg}: unexpected patterns detected.\nExiting..."
             )
-            sys.exit(1)
+            exit(1)
 
     def write_output(self, outfile: Path, out_dict: dict) -> None:
         """
@@ -729,7 +734,7 @@ class Process:
                 f"[DRY_RUN] - {self._logger_msg}: metrics by type contents:"
             )
 
-        file = h.WriteFiles(
+        file = WriteFiles(
             str(outfile.parent),
             outfile.name,
             self.logger,
@@ -766,7 +771,7 @@ class Process:
             )
 
 
-def __init__():
+def __init__() -> None:
     """
     Open a VCF file and split the INFO field into multiple self._columns.
 
@@ -774,19 +779,22 @@ def __init__():
 
     The self._columns compare the variants between a 'truth' VCF and a 'test' VCF to identify similarities and differences that result after model re-training.
     """
+    from helpers.utils import get_logger
+    from helpers.wrapper import Wrapper, timestamp
+
     # Collect command line arguments
-    args = args_process_hap.collect_args()
+    args = collect_args()
 
     # Collect start time
-    Wrapper(__file__, "start").wrap_script(h.timestamp())
+    Wrapper(__file__, "start").wrap_script(timestamp())
 
     # Create error log
-    current_file = os.path.basename(__file__)
-    module_name = os.path.splitext(current_file)[0]
-    logger = helpers_logger.get_logger(module_name)
+    current_file = path.basename(__file__)
+    module_name = path.splitext(current_file)[0]
+    logger = get_logger(module_name)
 
     # Check command line args
-    args_process_hap.check_args(args, logger)
+    check_args(args, logger)
 
     if args.dry_run:
         logger.info("flag --dry-run set; metrics will not be written to a file")
@@ -798,9 +806,9 @@ def __init__():
         ).run()
     except AssertionError as error:
         print(f"{error}\nExiting...")
-        sys.exit(1)
+        exit(1)
 
-    Wrapper(__file__, "end").wrap_script(h.timestamp())
+    Wrapper(__file__, "end").wrap_script(timestamp())
 
 
 # Execute functions created
