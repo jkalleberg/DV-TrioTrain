@@ -646,9 +646,7 @@ class RunTrioTrain:
         Make and submit model testing jobs
         """
         # create the default regions_file for testing, if necessary
-        self.itr.logger.info(
-            f"[{self.itr._mode_string}] - [test_model] - [{self.logger_msg}]: if missing, making the default region file now... "
-        )
+        
 
         regions = MakeRegions(
             self.itr,
