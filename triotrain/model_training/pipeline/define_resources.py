@@ -17,9 +17,9 @@ from pathlib import Path
 from re import fullmatch
 from sys import exit
 from typing import Dict, List, Union
+
 from phase import process_phase
 from resources import process_resource
-
 
 
 def collect_args() -> argparse.Namespace:
@@ -513,10 +513,10 @@ def edit_pipeline(
 
 
 def __init__() -> None:
-    """_summary_
-    """
+    """_summary_"""
     from helpers.utils import get_logger
     from helpers.wrapper import Wrapper, timestamp
+
     # Collect command line arguments
     args = collect_args()
 

@@ -296,9 +296,12 @@ class ConvertHappy:
         if phase is None:
             logging_msg = self.logger_msg
         else:
-            logging_msg = (
-                f"[{self.itr._mode_string}] - [{phase}] - [{self.itr.train_genome}]"
-            )
+            if self.itr.train_genome is None:
+                logging_msg = f"[{self.itr._mode_string}] - [{phase}]"
+            else:
+                logging_msg = (
+                    f"[{self.itr._mode_string}] - [{phase}] - [{self.itr.train_genome}]"
+                )
 
         # Count how many outputs were made when converting Hap.py VCFs into Metrics Values
         # Define the regrex pattern of expected output
@@ -314,7 +317,6 @@ class ConvertHappy:
             else:
                 msg = f"all final metrics files"
                 expected_outputs = int(self.itr.total_num_tests * outputs_per_test)
-                # _regex = compile(r"^Test\d+.*metrics(\.csv$|\.tsv$)")
                 _regex = compile(
                     r"^Test\d+.(converted\-|total\.)metrics(\.csv$|\.tsv$)"
                 )
@@ -548,8 +550,6 @@ class ConvertHappy:
                     self.itr.logger.info(
                         f"{self.logger_msg}: final SLURM jobs updated to {self._final_jobs}"
                     )
-                # else:
-                #     self._final_jobs = [None]
             else:
                 if not self._ignoring_compare_happy:
                     self.itr.logger.info(
@@ -597,8 +597,6 @@ class ConvertHappy:
                     if self.test_genome is None:
                         continue
                     else:
-                        # self.find_outputs(phase=self._phase)
-
                         # Indexing of the list of job ids starts with 0
                         self.submit_job(
                             total_jobs=self.itr.total_num_tests,

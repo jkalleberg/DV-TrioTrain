@@ -647,7 +647,7 @@ class RunTrioTrain:
         """
         # create the default regions_file for testing, if necessary
         self.itr.logger.info(
-            f"[{self.itr._mode_string}] - [test_model] - [{self.itr.train_genome}]: if missing, making the default region file now... "
+            f"[{self.itr._mode_string}] - [test_model] - [{self.logger_msg}]: if missing, making the default region file now... "
         )
 
         regions = MakeRegions(
@@ -764,7 +764,7 @@ class RunTrioTrain:
             )
 
         convert_job_nums = convert_results.run()
-        
+
         # Determine if any 'convert_happy' jobs were submitted
         no_dependencies_required = check_if_all_same(convert_job_nums, None)
         if no_dependencies_required:

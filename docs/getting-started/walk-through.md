@@ -18,7 +18,7 @@ ls
     ```bash
     APPTAINER_CACHE   deepvariant_1.4.0-gpu.sif  docs    hap.py_v0.3.12.sif  miniconda_envs  README.md  triotrain
     APPTAINER_TMPDIR  deepvariant_1.4.0.sif      errors  LICENSE             mkdocs.yml      scripts
-    ```
+```
 
     * `triotrain/` directory contains Python modules for the DV-TrioTrain package
 
@@ -42,7 +42,7 @@ There are two options:
 
 ??? example "Option 2: Automated"
     Using the same syntax as in Option 1 above, edit the [template script](https://github.com/jkalleberg/DV-TrioTrain/blob/bac33c732065fa7fa1e92097e8f31da383261f4f/scripts/start_interactive.sh) to match your system's resources.
-    
+
     Then, run the following at the command line:
 
     ```bash
@@ -84,7 +84,7 @@ bash scripts/setup/download_models.sh
 ??? success "Expected Output: Default human model"
     ```bash title="Run at the command line"
     ls triotrain/model_training/pretrained_models/v1.4.0_withIS_noAF/
-    ```
+```
 
     ```bash title="Check outputs"
     model.ckpt.data-00000-of-00001  model.ckpt.example_info.json  model.ckpt.index  model.ckpt.meta
@@ -93,7 +93,7 @@ bash scripts/setup/download_models.sh
 ??? success "Expected Output: WGS.AF human model"
     ```bash title="Run at the command line"
     ls triotrain/model_training/pretrained_models/v1.4.0_withIS_withAF/
-    ```
+```
 
     ```bash title="Check outputs"
     wgs_af.model.ckpt.data-00000-of-00001  wgs_af.model.ckpt.index
@@ -223,7 +223,7 @@ bash scripts/setup/download_GIAB.sh
 ## 6. Process Raw Data
 
 !!! note
-    These scripts can either be wrapped with SBATCH, or run interactively at the command line if you have enough memory. However, each script can take awhile to complete, particularly the `.download` scripts (1hr+). 
+    These scripts can either be wrapped with SBATCH, or run interactively at the command line if you have enough memory. However, each script can take awhile to complete, particularly the `.download` scripts (1hr+).
 
 In addition to the raw data, `download_GIAB.sh` also creates (3) bash scripts to process raw data into the formats expected by the tutorial:
 
@@ -268,7 +268,7 @@ bash triotrain/variant_calling/data/GIAB/bam/AJtrio.download
 ??? success "Expected Raw Data | HG002:"
     ```bash title="Run at the command line"
     ls triotrain/variant_calling/data/GIAB/bam/ | grep HG002
-    ```
+```
 
     ```bash title="Check outputs"
     HG002_corrected_md5sums.feb19upload.txt
@@ -281,7 +281,7 @@ bash triotrain/variant_calling/data/GIAB/bam/AJtrio.download
 ??? success "Expected Raw Data | HG003:"
     ```bash title="Run at the command line"
     ls triotrain/variant_calling/data/GIAB/bam/ | grep HG003
-    ```
+```
 
     ```bash title="Check outputs"
     HG003.GRCh38.2x250.bam
@@ -293,7 +293,7 @@ bash triotrain/variant_calling/data/GIAB/bam/AJtrio.download
 ??? success "Expected Raw Data | HG004:"
     ```bash title="Run at the command line"
     ls triotrain/variant_calling/data/GIAB/bam/ | grep HG004
-    ```
+```
 
     ```bash title="Check outputs"
     HG004.GRCh38.2x250.bam
@@ -311,7 +311,7 @@ bash triotrain/variant_calling/data/GIAB/bam/HCtrio.download
 ??? success "Expected Raw Data | HG005:"
     ```bash title="Run at the command line"
     ls triotrain/variant_calling/data/GIAB/bam/ | grep HG005
-    ```
+```
 
     ```bash title="Check outputs"
     HG005.GRCh38_full_plus_hs38d1_analysis_set_minus_alts.300x.bam
@@ -322,7 +322,7 @@ bash triotrain/variant_calling/data/GIAB/bam/HCtrio.download
 ??? success "Expected Raw Data | HG006:"
     ```bash title="Run at the command line"
     ls triotrain/variant_calling/data/GIAB/bam/ | grep HG006
-    ```
+```
 
     ```bash title="Check outputs"
     HG006.GRCh38_full_plus_hs38d1_analysis_set_minus_alts.100x.bam
@@ -334,7 +334,7 @@ bash triotrain/variant_calling/data/GIAB/bam/HCtrio.download
 ??? success "Expected Raw Data | HG007:"
     ```bash title="Run at the command line"
     ls triotrain/variant_calling/data/GIAB/bam/ | grep HG007
-    ```
+```
 
     ```bash title="Check outputs"
     HG007.GRCh38_full_plus_hs38d1_analysis_set_minus_alts.100x.bam
@@ -366,7 +366,7 @@ picard CreateSequenceDictionary \
 ??? success "Expected Output:"
     ```bash title="Run at the command line"
     ls triotrain/variant_calling/data/GIAB/reference/ | grep .dict
-    ```
+```
 
     ```bash title="Check output"
     GRCh38_no_alt_analysis_set.dict
@@ -388,7 +388,7 @@ python triotrain/model_training/tutorial/create_metadata.py
 ??? success "Expected Output:"
     ```bash title="Run at the command line"
     ls triotrain/model_training/tutorial
-    ```
+```
 
     ```bash title="Check output"
     create_metadata.py  estimate.py  GIAB.Human_tutorial_metadata.csv  __init__.py  resources_used.json
@@ -401,7 +401,7 @@ The last required input we need for TrioTrain is the SLURM resource config file 
 ??? example "Example | Resource Config File"
     ``` title="triotrain/model_training/tutorial/resources_used.json"
     --8<-- "./triotrain/model_training/tutorial/resources_used.json"
-    ```
+ ```
 
 The hardware listed above for each phase (e.g. mem, ntasks, gpus, etc.)  illustrate which phases are memory intensive. These values should not be interpretedate as the minimum or the optimum resources required for each phase. The MU Lewis Research Computing Cluster is heterogenous, so several phases within the example config file request resources to maximize the number of compute nodes for running a memory-intensive phase.
 
@@ -432,7 +432,7 @@ For other species, use the following template:
 ??? example "Example | Creating the SDF"
     ```bash title="./scripts/setup/setup_rtg_tools.sh"
     --8<-- "scripts/setup/setup_rtg_tools.sh"
-    ```
+```
 
 ---
 
@@ -511,7 +511,7 @@ There are (6) types of output files from running the demo:
 ??? success "Expected Output | Father Shuffling:"
     ```bash title="Run at the command line"
     ls ../TUTORIAL/demo/Human_tutorial/examples/ | grep Father
-    ```
+```
 
     ```bash title="Check output"
     Father.chr21.labeled.shuffled-00000-of-00040.tfrecord.gz
@@ -647,7 +647,7 @@ There are (6) types of output files from running the demo:
 ??? success "Expected Output | Child Shuffling:"
     ```bash title="Run at the command line"
     ls ../TUTORIAL/demo/Human_tutorial/examples/ | grep Child
-    ```
+```
 
     ```bash title="Check output"
     Child.chr21.labeled.shuffled-00000-of-00040.tfrecord.gz
@@ -785,7 +785,7 @@ There are (6) types of output files from running the demo:
 ??? success "Expected Output | Benchmarking:"
     ```bash title="Run at the command line"
     less ../TUTORIAL/demo/summary/Human_tutorial.SLURM.job_numbers.csv
-    ```
+```
 
     ```bash title="Check output"
     AnalysisName,RunName,Parent,Phase,JobList
@@ -824,7 +824,7 @@ python3 triotrain/model_training/tutorial/estimate.py                           
     2023-06-29 11:25:28 AM - [INFO] - adding Est_Examples='1.0'
     2023-06-29 11:25:28 AM - [INFO] - [DEMO] - [TRIO1] - [count_variants] - [Father]: added 'Est_Examples=1.0' to env file
     ===== end of triotrain/model_training/tutorial/estimate.py @ 2023-06-29  11:25:28 =====
-    ```
+```
 
 ## 9. Run TrioTrain with a Human Trio
 
@@ -880,4 +880,8 @@ Individual SLURM jobs can be re-submitted easily by adding the following flags:
 
 ```bash
 python3 triotrain/run_trio_train.py  -g Father -s human --est-examples 1 -m triotrain/model_training/tutorial/GIAB.Human_tutorial_metadata.csv -n GIAB_Trio -r triotrain/model_training/tutorial/resources_used.json --num-tests 3 --custom-checkpoint triotrain/model_training/pretrained_models/v1.4.0_withIS_withAF/wgs_af.model.ckpt --output ../TUTORIAL --start-itr 1 --restart-jobs '{"make_examples:Father": [4]}' --overwrite --dry-run 
+```
+
+```bash
+python3 triotrain/run_trio_train.py  -g Father -s human --est-examples 1 -m triotrain/model_training/tutorial/GIAB.Human_tutorial_metadata.csv -n GIAB_Trio -r triotrain/model_training/tutorial/resources_used.json --num-tests 3 --custom-checkpoint triotrain/model_training/pretrained_models/v1.4.0_withIS_withAF/wgs_af.model.ckpt --output ../TUTORIAL --start-itr 0 --stop-itr 1 --restart-jobs '{"compare_happpy": [2, 3]}' --dry-run 
 ```

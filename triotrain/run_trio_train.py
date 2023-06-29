@@ -45,7 +45,7 @@ def run_trio_train(eval_genome="Child") -> None:
     parser = collect_args()
     channel_defaults = get_defaults(parser, "channel_info")
     args = get_args(parser=parser)
-
+    
     # Collect start time
     Wrapper(__file__, "start").wrap_script(timestamp())
 
