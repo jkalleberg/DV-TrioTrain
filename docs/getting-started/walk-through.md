@@ -846,3 +846,38 @@ python3 triotrain/run_trio_train.py                                             
     --output ../TUTORIAL                                                                                    \
     --benchmark --dry-run
 ```
+
+Occasionally, a SLURM job may fail randomly. For example, you may get an email with the following subject line:
+
+`SLURM Job_id=27671698 Name=examples-parallel-Father1-region4 Failed, Run time 00:20:27, NODE_FAIL`
+
+SLURM job re-submission works on (1) TrioTrain iteration at a time, to prevent re-submitting duplicate jobs or currently running jobs from another iteration.
+
+Individual SLURM jobs can be re-submitted easily by adding the following flags:
+
+* `start-itr`: tells TrioTrain which specific iteration to re-start (i.e. Father1 = 1, Mother1 = 2, etc.)
+* `restart-jobs`: tells TrioTrain which job(s) to restart for a particular phase by providing a JSON-format string in '{"phase_name<:genome>": [job_num]}' format. Job number uses 1-based indexing, so that region1/test1 jobs correspond to `job_num=1`
+
+Re-submitting an upstream job, will re-submit all downstream jobs for that iteration. Re-submitting `make_examples` for `Father-region1` will re-run nearly the entire iteration as the initial job will also trigger TrioTrain to re-submit `beam_shuffle` for `Father-region1` followed by `re_shuffle` for `Father`. Re-shuffling will trigger `train_eval`, `select_ckt`, and `call_variants`, which then triggers `compare_happy` and `convert_happy`.
+
+For the above example, run the following at the command line:
+
+```bash
+python3 triotrain/run_trio_train.py  -g Father -s human --est-examples 1 -m triotrain/model_training/tutorial/GIAB.Human_tutorial_metadata.csv -n GIAB_Trio -r triotrain/model_training/tutorial/resources_used.json --num-tests 3 --custom-checkpoint triotrain/model_training/pretrained_models/v1.4.0_withIS_withAF/wgs_af.model.ckpt --output ../TUTORIAL --start-itr 1 --restart-jobs '{"make_examples:Father": [4]}' --dry-run 
+```
+
+THESE JOBS WILL NOT RE-WRITE A SLURM JOB FILE, but simply re-submit an existing SBATCH file. If you want to re-write a file, see below.
+
+SLURM jobs may also fail due to insufficient resource requests, particularly the `beam_shuffle` or `re_shuffle` jobs. These jobs will require you to overwrite the existing SBATCH job file with new resources
+
+Individual SLURM jobs can be re-submitted easily by adding the following flags:
+
+* `start-itr`: tells TrioTrain which specific iteration to re-start (i.e. Father1 = 1, Mother1 = 2, etc.)
+* `restart-jobs`: tells TrioTrain which job(s) to restart for a particular phase by providing a JSON-format string in '{"phase_name<:genome>": [job_num]}' format. Job number uses 1-based indexing, so that region1/test1 jobs correspond to `job_num=1`
+* `overwrite`: tells TrioTrain to re-write a new SBATCH file and overwrite existing results files by re-submitting the new job file.
+
+ which can easily be achieve with the following:
+
+```bash
+python3 triotrain/run_trio_train.py  -g Father -s human --est-examples 1 -m triotrain/model_training/tutorial/GIAB.Human_tutorial_metadata.csv -n GIAB_Trio -r triotrain/model_training/tutorial/resources_used.json --num-tests 3 --custom-checkpoint triotrain/model_training/pretrained_models/v1.4.0_withIS_withAF/wgs_af.model.ckpt --output ../TUTORIAL --start-itr 1 --restart-jobs '{"make_examples:Father": [4]}' --overwrite --dry-run 
+```
