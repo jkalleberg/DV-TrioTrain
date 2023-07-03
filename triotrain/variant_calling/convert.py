@@ -73,7 +73,10 @@ class ConvertHappy:
         Defines the genome to have hap.py outputs processed.
         """
         if self.itr.env is not None:
-            if (
+            if self.itr.demo_mode:
+                self.genome = self.itr.train_genome
+                self.outdir = str(self.itr.env.contents[f"{self.genome}CompareDir"]) 
+            elif (
                 "baseline" in self.model_label.lower()
                 or self.itr.current_genome_num == 0
             ):
@@ -305,36 +308,40 @@ class ConvertHappy:
 
         # Count how many outputs were made when converting Hap.py VCFs into Metrics Values
         # Define the regrex pattern of expected output
+        if phase == "compare_happy":
+            msg = "hap.py output file(s)"
+        elif phase == "convert_happy":
+            msg = "converted hap.py file(s)"
+        elif phase == "process_happy":
+            msg = "processed hap.py file(s)"
+        else:
+            msg = f"intermediate metrics file(s)"
+
         if find_all:
+            final_msg = f"all {msg}"
             if phase == "compare_happy":
-                msg = "all hap.py output files"
                 expected_outputs = int(self.itr.total_num_tests * 11)
                 _regex = rf"^(happy\d+).+\.(?!out$|\.sh$).+$"
             elif phase == "convert_happy":
-                msg = "all converted hap.py files"
                 expected_outputs = self.itr.total_num_tests
                 _regex = compile(r"^Test\d+.converted\-metrics\.tsv$")
             else:
-                msg = f"all final metrics files"
                 expected_outputs = int(self.itr.total_num_tests * outputs_per_test)
                 _regex = compile(
                     r"^Test\d+.(converted\-|total\.)metrics(\.csv$|\.tsv$)"
                 )
         else:
+            final_msg = msg
             if phase == "compare_happy":
-                msg = "hap.py output file"
                 expected_outputs = 11
                 _regex = rf"^({self.prefix}).+\.(?!out$|\.sh$).+$"
             elif phase == "convert_happy":
-                msg = "the converted hap.py file"
                 expected_outputs = 1
                 _regex = compile(rf"^{self.test_name}.converted\-metrics\.tsv$")
             elif phase == "process_happy":
-                msg = "processed hap.py file"
                 expected_outputs = 1
                 _regex = compile(rf"^{self.test_name}\.total\.metrics\.csv$")
             else:
-                msg = f"intermediate metrics file"
                 expected_outputs = outputs_per_test
                 _regex = compile(
                     rf"^{self.test_name}\.(converted\-|total\.)metrics(\.csv$|\.tsv$)"
@@ -352,7 +359,7 @@ class ConvertHappy:
             files,
         ) = check_if_output_exists(
             _regex,
-            msg,
+            final_msg,
             Path(self.outdir),
             logging_msg,
             self.itr.logger,

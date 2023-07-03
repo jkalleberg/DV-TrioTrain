@@ -555,15 +555,12 @@ class CallVariants:
         """
         self.set_genome()
         if phase is None:
-            if self.itr.train_genome is None:
-                logger_msg = f"[{self.itr._mode_string}] - [{self._phase}]"
-            else:
-                logger_msg = f"[{self.itr._mode_string}] - [{self._phase}] - [{self.itr.train_genome}]"
+            logging_msg = self.logger_msg
         else:
             if self.itr.train_genome is None:
-                logger_msg = f"[{self.itr._mode_string}] - [{phase}]"
+                logging_msg = f"[{self.itr._mode_string}] - [{phase}]"
             else:
-                logger_msg = (
+                logging_msg = (
                     f"[{self.itr._mode_string}] - [{phase}] - [{self.itr.train_genome}]"
                 )
 
@@ -580,7 +577,7 @@ class CallVariants:
         else:
             msg = "DeepVariant VCF output"
             expected_outputs = number_outputs_per_test
-            logger_msg = logger_msg + f" - [test{self.test_num}]"
+            logging_msg = logging_msg + f" - [test{self.test_num}]"
             vcf_output_regex = fnmatch.translate(f"{self.prefix}.vcf.gz*")
             vcf_pattern = compile(vcf_output_regex)
 
@@ -593,7 +590,7 @@ class CallVariants:
             vcf_pattern,
             msg,
             Path(self.outdir),
-            logger_msg,
+            logging_msg,
             self.itr.logger,
             debug_mode=self.itr.debug_mode,
             dryrun_mode=self.itr.dryrun_mode,
@@ -606,7 +603,7 @@ class CallVariants:
                 missing_files = check_expected_outputs(
                     self.num_vcfs_found,
                     expected_outputs,
-                    logger_msg,
+                    logging_msg,
                     "DeepVariant outputs",
                     self.itr.logger,
                 )

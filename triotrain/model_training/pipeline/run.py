@@ -472,7 +472,7 @@ class RunTrioTrain:
                         )
 
                     beam_job_nums = shuffle_examples.run()
-                    
+
                     if beam_job_nums is None:
                         no_dependencies_required = True
                     else:
@@ -488,7 +488,7 @@ class RunTrioTrain:
                         total_jobs_in_phase=1,
                         genome=genome,
                     )
-    
+
                     if self.use_regions_shuffle or self.itr.demo_mode:
                         # submit with no dependencies
                         if no_dependencies_required:
@@ -647,7 +647,6 @@ class RunTrioTrain:
         Make and submit model testing jobs
         """
         # create the default regions_file for testing, if necessary
-        
 
         regions = MakeRegions(
             self.itr,

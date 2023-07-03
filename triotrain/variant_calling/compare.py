@@ -350,7 +350,12 @@ class CompareHappy:
         if phase is None:
             logging_msg = self.logger_msg
         else:
-            logging_msg = f"[{self.itr._mode_string}] - [{phase}]"
+            if self.itr.train_genome is None:
+                logging_msg = f"[{self.itr._mode_string}] - [{phase}]"
+            else:
+                logging_msg = (
+                    f"[{self.itr._mode_string}] - [{phase}] - [{self.itr.train_genome}]"
+                )
 
         # Define the regrex pattern of expected output
         if find_all:
