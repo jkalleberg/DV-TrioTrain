@@ -542,7 +542,6 @@ class ConvertHappy:
                 lst=[self._jobs_to_run, new_jobs_to_run]
             )
             self._jobs_to_run = unique_runs
-        breakpoint()
 
     def run(self) -> List[Union[str, None]]:
         """
