@@ -321,7 +321,7 @@ class ConvertHappy:
             final_msg = f"all {msg}"
             if phase == "compare_happy":
                 expected_outputs = int(self.itr.total_num_tests * 11)
-                _regex = rf"^(happy\d+).+\.(?!out$|\.sh$).+$"
+                _regex = rf"^(happy\d+).+\.(?![out$|\.sh$]).+$"
             elif phase == "convert_happy":
                 expected_outputs = self.itr.total_num_tests
                 _regex = compile(r"^Test\d+.converted\-metrics\.tsv$")
