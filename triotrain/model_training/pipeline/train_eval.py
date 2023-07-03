@@ -12,16 +12,11 @@ from pathlib import Path
 from sys import exit
 from typing import List, Union
 
-from helpers.files import TestFile, WriteFiles
+from helpers.files import WriteFiles
 from helpers.iteration import Iteration
 from helpers.outputs import check_expected_outputs, check_if_output_exists
-from helpers.utils import (
-    check_if_all_same,
-    create_deps,
-    find_NaN,
-    find_not_NaN,
-    generate_job_id,
-)
+from helpers.utils import (check_if_all_same, create_deps, find_NaN,
+                           find_not_NaN, generate_job_id)
 from model_training.pipeline.select_ckpt import SelectCheckpoint
 from model_training.slurm.sbatch import SBATCH, SubmitSBATCH
 from regex import compile
@@ -104,6 +99,7 @@ class TrainEval:
         self._ignoring_re_shuffle = check_if_all_same(
             self.itr.current_genome_dependencies[0:2], None
         )
+
         if not self._ignoring_re_shuffle:
             self.itr.logger.info(f"{self.logger_msg}: re-shuffle was submitted...")
             self._num_to_ignore = 0
@@ -164,8 +160,10 @@ class TrainEval:
                 self.itr.logger.error(
                     f"{self.logger_msg}: expected a list of 1 SLURM jobs (or 'None' as a place holder)"
                 )
+                self._num_to_run = 0
                 self._run_jobs = None
         else:
+            self._num_to_run = 1
             self._run_jobs = True
             if self.itr.debug_mode:
                 self.itr.logger.debug(
@@ -495,8 +493,9 @@ class TrainEval:
         """
         Submit SLURM jobs to queue.
         """
-        self.find_outputs()
-
+        if self._outputs_exist:
+            self._skipped_counter += 1
+            return
         slurm_job = self.make_job()
 
         if slurm_job is not None:
@@ -579,8 +578,8 @@ class TrainEval:
         Combine all the steps required to submit a job to SLURM queue into one step
         """
         self.find_restart_jobs()
+        
         # determine if we are re-running the training
-        # if (self.train_job_num or not self._ignoring_re_shuffle) and self._run_jobs is not None:
         if self._num_to_run == 0:
             self._skipped_counter = self._num_to_ignore
             if (
@@ -611,11 +610,8 @@ class TrainEval:
                     f"{self.logger_msg}: there should only be one train_eval_job, but {self._num_to_run} were provided.\nExiting... ",
                 )
                 exit(1)
+            self.find_outputs()
             self.submit_job()
-
-        # # or running it for the first time
-        # else:
-        #     self.submit_job()
 
         self.check_submission()
         return self._select_ckpt_dependency
