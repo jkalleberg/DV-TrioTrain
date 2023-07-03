@@ -291,7 +291,6 @@ def run_trio_train(eval_genome="Child") -> None:
             ).run()
 
             # --- switch the dependencies so that prior becomes current before the next iteration starts ---#
-            # no_prior_jobs_run = check_if_all_same(pipeline.next_genome_deps, None)
             pipeline.end_iteration()
             pipeline.current_genome_deps = pipeline.next_genome_deps
             pipeline.next_genome_deps = create_deps()
@@ -332,26 +331,17 @@ def run_trio_train(eval_genome="Child") -> None:
             ).run()
 
             # --- switch the dependencies so that prior becomes current before the next iteration starts ---#
-            are_next_genome_jobs_running = check_if_all_same(
-                pipeline.next_genome_deps, None
-            )
             pipeline.end_iteration()
-            # print(f"NO NEXT GENOME JOBS RUNNING? {are_next_genome_jobs_running}")
-
             pipeline.current_genome_deps = pipeline.next_genome_deps
             pipeline.next_genome_deps = create_deps()
 
-        # elif no_prior_jobs_run and itr != begining:
-        #     logger.info(
-        #         f"============ SKIPPING [Trio{pipeline.current_trio_num}] - [{pipeline.current_genome}] ============"
-        #     )
-        #     continue
+        breakpoint()
 
     ### ---------------------------- ###
     Wrapper(__file__, "end").wrap_script(timestamp())
 
 
-def __init__():
+def __init__() -> None:
     """
     Determine what happens if this script is run
     from the command line, rather than imported
