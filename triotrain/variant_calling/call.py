@@ -581,6 +581,11 @@ class CallVariants:
             vcf_output_regex = fnmatch.translate(f"{self.prefix}.vcf.gz*")
             vcf_pattern = compile(vcf_output_regex)
 
+        if self.itr.args.debug:
+            self.itr.logger.debug(
+                f"{logging_msg}: regular expression used | {vcf_output_regex}"
+            )
+
         # Confirm Genome's output VCF does not already exist
         (
             self.existing_output_vcf,
@@ -651,8 +656,6 @@ class CallVariants:
         """
         Submits a SLURM job to the queue.
         """
-        self.find_outputs()
-
         if self._outputs_exist:
             self._skipped_counter += 1
             if self._compare_dependencies:
@@ -830,7 +833,8 @@ class CallVariants:
                     )
 
                 if self._num_to_run <= self.itr.total_num_tests:
-                    self.find_outputs(find_all=True)
+                    self.find_outputs(find_all=True, phase=self._phase)
+
                     if self.overwrite:
                         self.itr.logger.info(
                             f"{self.logger_msg}: re-submitting {self._num_to_run}-of-{self.itr.total_num_tests} SLURM jobs",
@@ -866,6 +870,7 @@ class CallVariants:
                     if self.test_genome is None:
                         continue
                     else:
+                        self.find_outputs(find_all=False)
                         self.submit_job(
                             dependency_index=test_index,
                             total_jobs=self.itr.total_num_tests,
@@ -892,12 +897,14 @@ class CallVariants:
                 else:
                     # re-submit 'call_variants' if 'select_ckpt' was re-submitted
                     if self.itr.current_genome_dependencies[3] is not None:
+                        self.find_outputs()
                         # THIS HAS TO BE t because indexing of
                         # the list of job ids starts with 0
                         self.submit_job(
                             dependency_index=t, total_jobs=self.itr.total_num_tests
                         )
                     else:
+                        self.find_outputs()
                         # THIS HAS TO BE t because indexing of
                         # the list of job ids starts with 0
                         self.submit_job(

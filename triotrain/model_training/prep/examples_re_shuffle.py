@@ -294,10 +294,10 @@ class ReShuffleExamples:
 
         if self._variable_found:
             self.itr.logger.info(
-                f"{msg}: found the total number of examples... SKIPPING AHEAD"
+                f"{msg}: found the '{self.new_variable_name}' variable... SKIPPING AHEAD"
             )
         else:
-            self.itr.logger.info(f"{msg}: missing the total number of examples")
+            self.itr.logger.info(f"{msg}: missing the '{self.new_variable_name}' variable")
 
     def find_merged_tfrecords(self, msg: str, expected_outputs: int = 1) -> None:
         """
@@ -435,8 +435,9 @@ class ReShuffleExamples:
                 f"[{self.itr._mode_string}] - [{phase}] - [{self.genome}]"
             )
 
+        if phase == 'find_outputs':
+            self.find_variable(msg=merged_logger_msg)
         self.find_merged_outputs(msg=merged_logger_msg)
-        self.find_variable(msg=merged_logger_msg)
 
         if self.itr.demo_mode:
             self.find_merged_tfrecords(msg=merged_logger_msg)

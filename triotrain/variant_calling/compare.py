@@ -572,7 +572,10 @@ class CompareHappy:
                     self.converting.find_outputs(find_all=True, phase=self._phase)
                     self._outputs_exist = self.converting._outputs_exist
                     self._outputs_found = self.converting._outputs_found
-                    self.converting.double_check(phase_to_check=self._phase)
+
+                    if self.converting._expected_outputs > self._outputs_found > 0:
+                        self.converting.double_check(phase_to_check=self._phase)
+                        self.converting.double_check(phase_to_check="process_happy")
 
                     if self.overwrite:
                         self.itr.logger.info(
@@ -611,6 +614,8 @@ class CompareHappy:
                     if self.test_genome is None:
                         continue
                     else:
+                        self.find_outputs(find_all=False)
+
                         # Indexing of the list of job ids starts with 0
                         self.submit_job(
                             total_jobs=self.itr.total_num_tests,
@@ -627,6 +632,7 @@ class CompareHappy:
 
             if self._outputs_exist:
                 return
+            
             for t in range(0, int(self.itr.total_num_tests)):
                 self.job_num = t + 1
                 # THIS HAS TO BE +1 to avoid labeling files Test0

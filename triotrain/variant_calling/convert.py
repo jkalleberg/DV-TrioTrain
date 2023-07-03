@@ -75,7 +75,7 @@ class ConvertHappy:
         if self.itr.env is not None:
             if self.itr.demo_mode:
                 self.genome = self.itr.train_genome
-                self.outdir = str(self.itr.env.contents[f"{self.genome}CompareDir"]) 
+                self.outdir = str(self.itr.env.contents[f"{self.genome}CompareDir"])
             elif (
                 "baseline" in self.model_label.lower()
                 or self.itr.current_genome_num == 0
@@ -320,34 +320,36 @@ class ConvertHappy:
         if find_all:
             final_msg = f"all {msg}"
             if phase == "compare_happy":
-                expected_outputs = int(self.itr.total_num_tests * 11)
+                self._expected_outputs = int(self.itr.total_num_tests * 11)
                 _regex = rf"^(happy\d+).+\.(?![out$|\.sh$]).+$"
             elif phase == "convert_happy":
-                expected_outputs = self.itr.total_num_tests
+                self._expected_outputs = self.itr.total_num_tests
                 _regex = compile(r"^Test\d+.converted\-metrics\.tsv$")
             else:
-                expected_outputs = int(self.itr.total_num_tests * outputs_per_test)
+                self._expected_outputs = int(
+                    self.itr.total_num_tests * outputs_per_test
+                )
                 _regex = compile(
                     r"^Test\d+.(converted\-|total\.)metrics(\.csv$|\.tsv$)"
                 )
         else:
             final_msg = msg
             if phase == "compare_happy":
-                expected_outputs = 11
+                self._expected_outputs = 11
                 _regex = rf"^({self.prefix}).+\.(?!out$|\.sh$).+$"
             elif phase == "convert_happy":
-                expected_outputs = 1
+                self._expected_outputs = 1
                 _regex = compile(rf"^{self.test_name}.converted\-metrics\.tsv$")
             elif phase == "process_happy":
-                expected_outputs = 1
+                self._expected_outputs = 1
                 _regex = compile(rf"^{self.test_name}\.total\.metrics\.csv$")
             else:
-                expected_outputs = outputs_per_test
+                self._expected_outputs = outputs_per_test
                 _regex = compile(
                     rf"^{self.test_name}\.(converted\-|total\.)metrics(\.csv$|\.tsv$)"
                 )
             logging_msg = f"{logging_msg} - [{self.test_logger_msg}]"
-        
+
         if self.itr.args.debug:
             self.itr.logger.debug(f"{logging_msg}: regular expression used | {_regex}")
 
@@ -373,7 +375,7 @@ class ConvertHappy:
             else:
                 missing_files = check_expected_outputs(
                     self._outputs_found,
-                    expected_outputs,
+                    self._expected_outputs,
                     logging_msg,
                     msg,
                     self.itr.logger,
@@ -382,7 +384,9 @@ class ConvertHappy:
                 if missing_files:
                     if find_all:
                         self._num_to_ignore = self._outputs_found
-                        self._num_to_run = int(expected_outputs - self._outputs_found)
+                        self._num_to_run = int(
+                            self._expected_outputs - self._outputs_found
+                        )
                     self._outputs_exist = False
                 else:
                     self._outputs_exist = True
@@ -504,6 +508,13 @@ class ConvertHappy:
         """
         Check if we have a converted-metrics file, but are missing the total.metrics file, and re-run convert-happy
         """
+        if self.itr.train_genome is None:
+            logging_msg = f"[{self.itr._mode_string}] - [{phase_to_check}]"
+        else:
+            logging_msg = f"[{self.itr._mode_string}] - [{phase_to_check}] - [{self.itr.train_genome}]"
+        self.itr.logger.info(
+            f"{logging_msg}: double checking for output files now...")
+        
         new_jobs_to_run = []
 
         if self._outputs_found is None:
@@ -531,6 +542,7 @@ class ConvertHappy:
                 lst=[self._jobs_to_run, new_jobs_to_run]
             )
             self._jobs_to_run = unique_runs
+        breakpoint()
 
     def run(self) -> List[Union[str, None]]:
         """
@@ -574,7 +586,8 @@ class ConvertHappy:
                                 f"{self.logger_msg}: --overwrite=True, any exiting results files will be re-written..."
                             )
                     else:
-                        self.double_check(phase_to_check=self._phase)
+                        if self._expected_outputs > self._outputs_found > 0:
+                            self.double_check(phase_to_check=self._phase)
                         self.itr.logger.info(
                             f"{self.logger_msg}: submitting {self._num_to_run}-of-{self.itr.total_num_tests} SLURM jobs",
                         )
