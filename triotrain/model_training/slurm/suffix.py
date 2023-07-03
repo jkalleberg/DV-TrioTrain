@@ -1,3 +1,6 @@
+from pathlib import Path
+
+
 def remove_suffixes(filename: Path, remove_all: bool = True) -> Path:
     """
     Removing multiple file suffixes.

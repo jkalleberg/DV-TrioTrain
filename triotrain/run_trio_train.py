@@ -45,7 +45,7 @@ def run_trio_train(eval_genome="Child") -> None:
     parser = collect_args()
     channel_defaults = get_defaults(parser, "channel_info")
     args = get_args(parser=parser)
-    
+
     # Collect start time
     Wrapper(__file__, "start").wrap_script(timestamp())
 
@@ -336,7 +336,7 @@ def run_trio_train(eval_genome="Child") -> None:
                 pipeline.next_genome_deps, None
             )
             pipeline.end_iteration()
-            print(f"NO NEXT GENOME JOBS RUNNING? {are_next_genome_jobs_running}")
+            # print(f"NO NEXT GENOME JOBS RUNNING? {are_next_genome_jobs_running}")
 
             pipeline.current_genome_deps = pipeline.next_genome_deps
             pipeline.next_genome_deps = create_deps()
