@@ -976,7 +976,7 @@ class Environment:
                     if Path(new_dir).is_dir():
                         if self.debug_mode:
                             self.logger.debug(
-                                f"{self.logging_msg}: directory [{new_dir}] already exists"
+                                f"{self.logging_msg}: directory found | '{new_dir}'"
                             )
                     else:
                         Path(new_dir).mkdir()

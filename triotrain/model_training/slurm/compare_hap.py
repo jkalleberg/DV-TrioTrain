@@ -10,7 +10,8 @@ example:
 import argparse
 from dataclasses import dataclass, field
 from logging import Logger
-from os import environ, path as p
+from os import environ
+from os import path as p
 from pathlib import Path
 from sys import exit, path
 
@@ -19,8 +20,8 @@ from spython.main import Client
 abs_path = Path(__file__).resolve()
 module_path = str(abs_path.parent.parent.parent)
 path.append(module_path)
-from helpers.wrapper import timestamp
 from helpers.environment import Env
+from helpers.wrapper import timestamp
 
 
 def collect_args() -> argparse.Namespace:
@@ -294,7 +295,7 @@ class Happy:
         if self._scratch_dir.is_dir():
             if self.args.debug:
                 self.logger.debug(
-                    f"[{self._mode}] - [{self._phase}] - [{self._logger_msg}]: directory [{self._scratch_dir}] already exists"
+                    f"[{self._mode}] - [{self._phase}] - [{self._logger_msg}]: directory found '{self._scratch_dir}'"
                 )
         else:
             self._scratch_dir.mkdir()

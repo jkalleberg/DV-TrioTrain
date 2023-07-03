@@ -347,7 +347,7 @@ class ConvertHappy:
                     rf"^{self.test_name}\.(converted\-|total\.)metrics(\.csv$|\.tsv$)"
                 )
             logging_msg = f"{logging_msg} - [{self.test_logger_msg}]"
-
+        
         if self.itr.args.debug:
             self.itr.logger.debug(f"{logging_msg}: regular expression used | {_regex}")
 

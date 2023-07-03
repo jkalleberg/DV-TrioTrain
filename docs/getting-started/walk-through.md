@@ -824,7 +824,7 @@ python3 triotrain/model_training/tutorial/estimate.py                           
     2023-06-29 11:25:28 AM - [INFO] - adding Est_Examples='1.0'
     2023-06-29 11:25:28 AM - [INFO] - [DEMO] - [TRIO1] - [count_variants] - [Father]: added 'Est_Examples=1.0' to env file
     ===== end of triotrain/model_training/tutorial/estimate.py @ 2023-06-29  11:25:28 =====
-```
+    ```
 
 ## 9. Run TrioTrain with a Human Trio
 

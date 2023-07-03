@@ -274,7 +274,7 @@ class MakeRegions:
         if self._region_dir.is_dir():
             if self.itr.debug_mode:
                 self.itr.logger.debug(
-                    f"[{self.itr._mode_string}] - [{self._phase}]: directory [{self._region_dir}] already exists"
+                    f"[{self.itr._mode_string}] - [{self._phase}]: directory found | '{self._region_dir}'"
                 )
         else:
             if self.itr.debug_mode:
