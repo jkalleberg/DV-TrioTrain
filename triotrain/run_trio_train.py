@@ -20,7 +20,7 @@ from sys import exit
 
 from helpers.files import WriteFiles
 from helpers.iteration import Iteration
-from helpers.utils import check_if_all_same, create_deps, get_logger
+from helpers.utils import create_deps, get_logger
 from helpers.wrapper import Wrapper, timestamp
 from model_training.pipeline.args import (
     check_args,
@@ -335,7 +335,7 @@ def run_trio_train(eval_genome="Child") -> None:
             pipeline.current_genome_deps = pipeline.next_genome_deps
             pipeline.next_genome_deps = create_deps()
 
-        breakpoint()
+        # breakpoint()
 
     ### ---------------------------- ###
     Wrapper(__file__, "end").wrap_script(timestamp())
