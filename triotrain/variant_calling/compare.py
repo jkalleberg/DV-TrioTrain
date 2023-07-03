@@ -363,7 +363,7 @@ class CompareHappy:
             expected_outputs = int(self.itr.total_num_tests * outputs_per_test)
 
             # Define the regrex pattern of expected output
-            compare_happy_regex = rf"^(happy\d+).+\.(?!out$|\.sh$).+$"
+            compare_happy_regex = rf"^(happy\d+).+\.(?![out$|\.sh$]).+$"
             # This ^ regex says: match if it starts with
             # 'happy#-no-flags', then allow any number of matches
             # between the pattern and the extension
@@ -372,7 +372,7 @@ class CompareHappy:
         else:
             msg = "hap.py output files"
             expected_outputs = outputs_per_test
-            compare_happy_regex = rf"^({self.prefix}).+\.(?!out$|\.sh$).+$"
+            compare_happy_regex = rf"^({self.prefix}).+\.(?![out$|\.sh$]).+$"
             logging_msg = f"{logging_msg} - [{self.test_logger_msg}]"
 
         if self.itr.args.debug:
