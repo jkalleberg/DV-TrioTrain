@@ -16,7 +16,7 @@ from logging import Logger
 from os import environ
 from os import path as p
 from pathlib import Path
-from random import random
+from random import random, sample
 from subprocess import getstatusoutput
 from sys import exit, path
 from typing import List, Union
@@ -235,7 +235,7 @@ class ReShuffle:
             self.itr.logger.info(
                 f"{self.logger_msg}: randomizing the order of merged regions now... ",
             )
-            random_regions = random.sample(
+            random_regions = sample(
                 range(1, self._num_merged_regions + 1), self._num_merged_regions
             )
 
