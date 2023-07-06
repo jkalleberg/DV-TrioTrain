@@ -94,17 +94,21 @@ class MakeExamples:
         """
         if self.itr.demo_mode:
             self.genome = self.itr.train_genome
-
+            self._total_regions = 1
         elif self.itr.dryrun_mode:
             self.genome = self.itr.train_genome
+            self._total_regions = 5
 
         if self.train_mode and self.itr.train_num_regions is not None:
             self.genome = self.itr.train_genome
             self.trio_dependency = self.itr.current_genome_dependencies[0]
+            self._total_regions = self.itr.train_num_regions
         elif self.train_mode is False and self.itr.eval_num_regions is not None:
             self.genome = self.itr.eval_genome
             self.trio_dependency = self.itr.current_genome_dependencies[1]
+            self._total_regions = self.itr.eval_num_regions
 
+        self._beam_shuffle_dependencies = create_deps(self._total_regions)
         self.logger_msg = (
             f"[{self.itr._mode_string}] - [{self._phase}] - [{self.genome}]"
         )
@@ -113,16 +117,6 @@ class MakeExamples:
         """
         Define the current region
         """
-        if self.itr.demo_mode:
-            self._total_regions = 1
-        elif self.itr.dryrun_mode:
-            self._total_regions = 5
-
-        if self.train_mode and self.itr.train_num_regions is not None:
-            self._total_regions = self.itr.train_num_regions
-        elif self.train_mode is False and self.itr.eval_num_regions is not None:
-            self._total_regions = self.itr.eval_num_regions
-
         if self.itr.demo_mode:
             self._print_msg = f"    echo SUCCESS: make_examples for demo-{self.genome}, part $t of {self.total_shards} &"
             self.current_region = self.itr.demo_chromosome
@@ -158,7 +152,6 @@ class MakeExamples:
                 self.jobs_to_ignore = find_NaN(self.make_examples_job_nums)
                 self._num_to_run = len(self.jobs_to_run)
                 self._num_to_ignore = len(self.jobs_to_ignore)
-                self._beam_shuffle_dependencies = create_deps(self._total_regions)
 
                 if self.jobs_to_run:
                     updated_jobs_list = []
@@ -473,7 +466,7 @@ class MakeExamples:
             )
 
         if self.itr.dryrun_mode:
-            self._beam_shuffle_dependencies.insert(dependency_index, generate_job_id())
+            self._beam_shuffle_dependencies[dependency_index] = generate_job_id()
         else:
             if self.itr.demo_mode:
                 slurm_job.get_status(
@@ -487,14 +480,12 @@ class MakeExamples:
                 )
 
             if slurm_job.status == 0:
-                self._beam_shuffle_dependencies.insert(
-                    dependency_index, slurm_job.job_number
-                )
+                self._beam_shuffle_dependencies[dependency_index] = slurm_job.job_number
             else:
                 self.itr.logger.error(
                     f"{self.logger_msg}{self.region_logger_msg}: unable to submit SLURM job",
                 )
-                self._beam_shuffle_dependencies.insert(dependency_index, None)
+                self._beam_shuffle_dependencies[dependency_index] = None
 
     def check_submissions(self) -> None:
         """
