@@ -716,6 +716,18 @@ class BeamShuffleExamples:
                     )  # THIS HAS TO BE +1 to avoid starting with a region0
 
                     self.set_region(current_region=self.job_num)
+                    if not self.overwrite:
+                        self.itr.logger.info(
+                            f"{self.logger_msg}: --overwrite=False, any exiting results will not be re-written",
+                        )
+                        self.itr.logger.info(
+                            f"{self.logger_msg}: --overwrite=False, jobs will run ONLY if missing any output files",
+                        )
+
+                    else:
+                        self.itr.logger.info(
+                            f"{self.logger_msg}: --overwrite=True, any exiting results files will be re-written...",
+                        )
                     self.find_outputs()
                     self.submit_job(
                         dependency_index=region_index,
