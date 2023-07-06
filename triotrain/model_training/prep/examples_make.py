@@ -365,7 +365,7 @@ class MakeExamples:
         else:
             expected_outputs = int(self.n_parts)
             label = "labeled tfrecord shards"
-            log_msg = f"{logger_msg}{self.region_str}"
+            log_msg = f"{logger_msg} {self.region_str}"
 
         # Confirm examples do not already exist
         (
@@ -635,7 +635,10 @@ class MakeExamples:
 
                 if not self.overwrite:
                     self.itr.logger.info(
-                        f"{self.logger_msg}: --overwrite=False, any exiting results will not be re-written...",
+                        f"{self.logger_msg}: --overwrite=False, any exiting results will not be re-written",
+                    )
+                    self.itr.logger.info(
+                        f"{self.logger_msg}: --overwrite=False, jobs will run ONLY if missing any output files",
                     )
 
                 else:
