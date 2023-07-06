@@ -205,6 +205,7 @@ class RunTrioTrain:
 
         for i, index in enumerate(indexes):
             if index is not None:
+                
                 if self.overwrite and (
                     isinstance(index, str) or index > total_jobs_in_phase
                 ):
@@ -225,6 +226,16 @@ class RunTrioTrain:
 
                     self._jobIDs[i] = index
                 else:
+                    if index > total_jobs_in_phase:
+                        self.itr.logger.error(f"{logger_msg}: invalid index value provided...")
+                        self.itr.logger.error(f"{logger_msg}: you entered '{index}'...")
+                        if total_jobs_in_phase == 1:
+                            self.itr.logger.error(f"{logger_msg}: did you mean to enter '0' or '{total_jobs_in_phase}'?")
+                        else:
+                            self.itr.logger.error(f"{logger_msg}: did you mean to enter a number between '0 - {total_jobs_in_phase-1}' or '1 - {total_jobs_in_phase}'?")
+                        print("Exiting...")
+                        exit(1)
+                        
                     self._jobIDs[index] = index
             else:
                 self._jobIDs[i] = None
