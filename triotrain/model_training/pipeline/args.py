@@ -436,6 +436,10 @@ def check_args(args: argparse.Namespace, logger: Logger, default_channels: str) 
         if args.restart_jobs:
             phase_dict = dict()
             for k in args.restart_jobs.keys():
+                # ignore genome when checking for typos
+                if ":" in k:
+                    k = k.split(":")[0]
+                    
                 close_matches = list()
                 if k not in args._phases:
                     for p in args._phases:
