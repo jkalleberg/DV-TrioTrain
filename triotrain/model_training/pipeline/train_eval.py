@@ -106,7 +106,7 @@ class TrainEval:
             self._num_to_run = 1
             self._run_jobs = True
 
-        elif self.train_job_num:
+        elif self.train_job_num[0] is not None:
             if self.overwrite and self._outputs_exist:
                 self.itr.logger.info(
                     f"{self.logger_msg}: --overwrite=True, any exiting results files will be re-written..."
