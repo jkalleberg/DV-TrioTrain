@@ -127,23 +127,23 @@ class MakeExamples:
             self._print_msg = f"    echo SUCCESS: make_examples for demo-{self.genome}, part $t of {self.total_shards} &"
             self.current_region = self.itr.demo_chromosome
             if "chr" in self.itr.demo_chromosome.lower():
-                self.region_str = f"- [{self.itr.demo_chromosome}]"
+                self.region_logger_msg = f" - [{self.itr.demo_chromosome}]"
                 self.prefix = f"{self.genome}-{self.itr.demo_chromosome}"
                 self.job_label = f"{self.genome}{self.itr.current_trio_num}-{self.itr.demo_chromosome}"
             else:
-                self.region_str = f"- [chr{self.itr.demo_chromosome}]"
+                self.region_logger_msg = f" - [chr{self.itr.demo_chromosome}]"
                 self.prefix = f"{self.genome}-chr{self.itr.demo_chromosome}"
                 self.job_label = f"{self.genome}{self.itr.current_trio_num}-chr{self.itr.demo_chromosome}"
         elif current_region == 0 or current_region is None:
             self._print_msg = f"    echo SUCCESS: make_examples for {self.genome}, part $t of {self.total_shards} &"
             self.current_region = None
-            self.region_str = ""
+            self.region_logger_msg = ""
             self.prefix = self.genome
             self.job_label = f"{self.genome}{self.itr.current_trio_num}"
         else:
             self._print_msg = f"    echo SUCCESS: make_examples for {self.genome}-region{self.current_region}, part $t of {self.total_shards} &"
             self.current_region = current_region
-            self.region_str = f"- [region{self.current_region}]"
+            self.region_logger_msg = f" - [region{self.current_region}]"
             self.prefix = f"{self.genome}-region{self.current_region}"
             self.job_label = (
                 f"{self.genome}{self.itr.current_trio_num}-region{self.current_region}"
@@ -283,23 +283,23 @@ class MakeExamples:
             self.job_name,
             self.model_label,
             self.handler_label,
-            f"{self.logger_msg}",
+            f"{self.logger_msg}{self.region_logger_msg}",
         )
 
         if slurm_job.check_sbatch_file():
             if len(self.make_examples_job_nums) > 0:
                 if self.make_examples_job_nums[index] is not None and self.overwrite:
                     self.itr.logger.info(
-                        f"{self.logger_msg}: --overwrite=True, re-writing the existing SLURM job now..."
+                        f"{self.logger_msg}{self.region_logger_msg}: --overwrite=True, re-writing the existing SLURM job now..."
                     )
                 else:
                     self.itr.logger.info(
-                        f"{self.logger_msg}: SLURM job file already exists... SKIPPING AHEAD"
+                        f"{self.logger_msg}{self.region_logger_msg}: SLURM job file already exists... SKIPPING AHEAD"
                     )
                     return
         else:
             if self.itr.debug_mode:
-                self.itr.logger.debug(f"{self.logger_msg}: creating job file now... ")
+                self.itr.logger.debug(f"{self.logger_msg}{self.region_logger_msg}: creating job file now... ")
 
         if self.itr.demo_mode:
             command_args = (
@@ -360,12 +360,12 @@ class MakeExamples:
 
         if find_all:
             expected_outputs = int(self.n_parts) * self._total_regions
-            label = "the labeled tfrecord shards"
+            label = "the labeled.tfrecords"
             log_msg = logger_msg
         else:
             expected_outputs = int(self.n_parts)
-            label = "labeled tfrecord shards"
-            log_msg = f"{logger_msg} {self.region_str}"
+            label = "labeled.tfrecords"
+            log_msg = f"{logger_msg}{self.region_logger_msg}"
 
         # Confirm examples do not already exist
         (
@@ -417,8 +417,12 @@ class MakeExamples:
               the number created depends on
               the number of CPUs available from SLURM.
         """
-        if self._outputs_exist:
+        if not self.overwrite and self._outputs_exist:
             self._skipped_counter += 1
+            if resubmission:
+                self.itr.logger.info(
+                    f"{self.logger_msg}{self.region_logger_msg}: --overwrite=False; skipping job because found all labeled.tfrecords"
+                )
             return
 
         slurm_job = self.make_job(index=dependency_index)
@@ -434,16 +438,16 @@ class MakeExamples:
         if not self.overwrite:
             if resubmission:
                 self.itr.logger.info(
-                    f"{self.logger_msg}{self.region_str}: re-submitting job because [{num_missing_files}] shards failed to create tfrecords files"
+                    f"{self.logger_msg}{self.region_logger_msg}: --overwrite=False; re-submitting job because missing [{num_missing_files}] labeled.tfrecords"
                 )
             else:
                 self.itr.logger.info(
-                    f"{self.logger_msg}{self.region_str}: submitting job to create [{num_missing_files}] labeled tfrecords shards"
+                    f"{self.logger_msg}{self.region_logger_msg}: submitting job to create [{num_missing_files}] labeled.tfrecords"
                 )
 
         else:
             self.itr.logger.info(
-                f"{self.logger_msg}{self.region_str}: re-submitting job to overwrite any existing tfrecords files"
+                f"{self.logger_msg}{self.region_logger_msg}: --overwrite=True; re-submitting job because replacing existing labeled.tfrecords"
             )
 
         slurm_job = SubmitSBATCH(
@@ -451,7 +455,7 @@ class MakeExamples:
             f"{self.job_name}.sh",
             self.handler_label,
             self.itr.logger,
-            f"{self.logger_msg}{self.region_str}",
+            f"{self.logger_msg}{self.region_logger_msg}",
         )
 
         slurm_job.build_command(prior_job_number=None)
@@ -488,7 +492,7 @@ class MakeExamples:
                 )
             else:
                 self.itr.logger.error(
-                    f"{self.logger_msg}{self.region_str}: unable to submit SLURM job",
+                    f"{self.logger_msg}{self.region_logger_msg}: unable to submit SLURM job",
                 )
                 self._beam_shuffle_dependencies.insert(dependency_index, None)
 
@@ -527,10 +531,6 @@ class MakeExamples:
         elif self._skipped_counter != 0:
             if self._skipped_counter == self._total_regions:
                 self._beam_shuffle_dependencies = [None]
-            else:
-                self.itr.logger.info(
-                    f"{self.logger_msg}: skipping {self._skipped_counter} regions"
-                )
         else:
             self.itr.logger.error(
                 f"{self.logger_msg}: expected SLURM jobs to be submitted, but they were not",
@@ -595,62 +595,55 @@ class MakeExamples:
             )
             return
 
-        # determine if we are demo region only
+        # Determine if we are running demo region only
         if self.itr.demo_mode:
             self.set_region(current_region=self._total_regions)
             self.find_outputs()
             self.submit_job()
 
-        # determine if we are re-submitting some of the regions for make_examples:
+        # Determine if we are re-submitting some of the regions for make_examples:
         elif self.make_examples_job_nums and self._run_jobs is not None:
             if self._num_to_run == 0:
-                self._beam_shuffle_dependencies = [None]
-            elif self._num_to_run != self._total_regions:
-                self.itr.logger.info(
-                    f"{self.logger_msg}: re-submitting {self._num_to_run}-of-{self._total_regions} SLURM jobs to the queue",
-                )
-            elif self._num_to_run == self._total_regions:
-                self.itr.logger.info(
-                    f"{self.logger_msg}: attempting to re-submit all [{self._total_regions}] SLURM jobs now... ",
-                )
-            else:
-                self.itr.logger.error(
-                    f"{self.logger_msg}: max number of re-submission SLURM jobs is {self._total_regions} but {self._num_to_run} were provided.\nExiting... ",
-                )
-                exit(1)
-
-            if not self._beam_shuffle_dependencies:
-                self._beam_shuffle_dependencies = create_deps(self._total_regions)
-
-            for r in self.jobs_to_run:
-                region_index = self.make_examples_job_nums[r]
-                self.job_num = (
-                    region_index + 1
-                )  # THIS HAS TO BE +1 to avoid starting with a region0
-
-                # remove the place holder job num
-                del self._beam_shuffle_dependencies[region_index]
-
-                self.set_region(current_region=self.job_num)
-
-                if not self.overwrite:
+                self._skipped_counter = self._num_to_ignore
+                if (
+                    self._beam_shuffle_dependencies
+                    and check_if_all_same(self._beam_shuffle_dependencies, None) is False
+                ):
                     self.itr.logger.info(
-                        f"{self.logger_msg}: --overwrite=False, any exiting results will not be re-written",
+                        f"{self.logger_msg}: beam_shuffle dependencies updated to {self._beam_shuffle_dependencies}"
                     )
-                    self.itr.logger.info(
-                        f"{self.logger_msg}: --overwrite=False, jobs will run ONLY if missing any output files",
-                    )
-
                 else:
+                    self._beam_shuffle_dependencies = None
+            else:
+                if self._num_to_run <= self._total_regions:
                     self.itr.logger.info(
-                        f"{self.logger_msg}: --overwrite=True, any exiting results files will be re-written...",
+                            f"{self.logger_msg}: attempting to re-submit {self._num_to_run}-of-{self._total_regions} SLURM jobs to the queue",
+                        )
+                else:
+                    self.itr.logger.error(
+                        f"{self.logger_msg}: max number of re-submission SLURM jobs is {self._total_regions} but {self._num_to_run} were provided.\nExiting... ",
                     )
-                self.find_outputs()
-                self.submit_job(
-                    dependency_index=region_index,
-                    resubmission=True,
-                    total_jobs=int(self._num_to_run),
-                )  # THIS (^) HAS TO BE region_index to ensure the dependencies maintain appropriate order
+                    exit(1)
+
+                # if not self._beam_shuffle_dependencies:
+                #     self._beam_shuffle_dependencies = create_deps(self._total_regions)
+
+                for r in self.jobs_to_run:
+                    region_index = self.make_examples_job_nums[r]
+                    self.job_num = (
+                        region_index + 1
+                    )  # THIS HAS TO BE +1 to avoid starting with a region0
+
+                    # remove the place holder job num
+                    # del self._beam_shuffle_dependencies[region_index]
+
+                    self.set_region(current_region=self.job_num)
+                    self.find_outputs()
+                    self.submit_job(
+                        dependency_index=region_index,
+                        resubmission=True,
+                        total_jobs=int(self._num_to_run),
+                    )  # THIS (^) HAS TO BE region_index to ensure the dependencies maintain appropriate order
 
         # run all regions for the first time
         else:

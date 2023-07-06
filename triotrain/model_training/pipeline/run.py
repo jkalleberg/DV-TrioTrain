@@ -260,14 +260,14 @@ class RunTrioTrain:
                 return
             else:
                 self.re_running_jobs = True
-                if len(self._jobIDs) == 1:
-                    self.itr.logger.info(
-                        f"{logger_msg}: attempting to re-submit the only SLURM job now..."
-                    )
-                else:
-                    self.itr.logger.info(
-                        f"{logger_msg}: attempting to re-submit all {total_jobs_in_phase} jobs now..."
-                    )
+                # if len(self._jobIDs) == 1:
+                #     self.itr.logger.info(
+                #         f"{logger_msg}: attempting to re-submit the only SLURM job now..."
+                #     )
+                # else:
+                #     self.itr.logger.info(
+                #         f"{logger_msg}: attempting to re-submit all {total_jobs_in_phase} jobs now..."
+                #     )
 
     def count_jobs(self, genome: str = "Child") -> None:
         """
