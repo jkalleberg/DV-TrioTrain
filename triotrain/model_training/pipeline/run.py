@@ -352,7 +352,7 @@ class RunTrioTrain:
                 and self.itr.demo_mode is False
             ):
                 self.itr.logger.info(
-                    f"[{self.itr._mode_string}] - [setup]: --use-regions-shuffle is set; if missing, making region files now... "
+                    f"[{self.itr._mode_string}] - [setup]: --use-regions-shuffle is set"
                 )
                 regions = MakeRegions(
                     self.itr,
@@ -614,21 +614,22 @@ class RunTrioTrain:
         if next_genome is not None:
             self.process_re_runs("select_ckpt")
 
-            select_ckpt = SelectCheckpoint(
-                itr=self.itr,
-                slurm_resources=self.resource_dict,
-                model_label=self.model_label,
-                train_eval_job_num=train_job_num,
-                select_ckpt_job_num=self._jobIDs,
-                track_resources=self.track_resources,
-                benchmarking_file=self.benchmarking_file,
-                overwrite=self.overwrite,
-            )
-            self.itr = select_ckpt.run()
-        else:
-            self.itr.logger.info(
-                f"[{self.itr._mode_string}] - [re_training_jobs] - [{self.logger_msg}]: next checkpoint will not be identified since there is no 'next_genome'"
-            )
+        select_ckpt = SelectCheckpoint(
+            itr=self.itr,
+            slurm_resources=self.resource_dict,
+            model_label=self.model_label,
+            train_eval_job_num=train_job_num,
+            select_ckpt_job_num=self._jobIDs,
+            track_resources=self.track_resources,
+            benchmarking_file=self.benchmarking_file,
+            overwrite=self.overwrite,
+        )
+        self.itr = select_ckpt.run()
+        breakpoint()
+        # else:
+        #     self.itr.logger.info(
+        #         f"[{self.itr._mode_string}] - [re_training_jobs] - [{self.logger_msg}]: next checkpoint will not be identified since there is no 'next_genome'"
+        #     )
 
         # Determine if a 'select-ckpt' job was submitted
         no_dependencies_required = check_if_all_same(

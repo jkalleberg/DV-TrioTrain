@@ -382,12 +382,16 @@ class MakeRegions:
         output_file.check_missing()
 
         if not output_file.file_exists:
-            self.itr.logger.info(
-                f"[{self.itr._mode_string}] - [{self._phase}] - [{self.logger_msg}]: creating a default region file"
-            )
+            if self.itr.debug_mode:
+                self.itr.logger.debug(
+                    f"[{self.itr._mode_string}] - [{self._phase}]: creating the default region file now..."
+                )
             self._autosome_BED_data.to_csv(
                 output_file.path / output_file.file, sep="\t", index=False, header=False
             )
+        else:
+            if self.itr.debug_mode:
+                self.itr.logger.debug(f"[{self.itr._mode_string}] - [{self._phase}]: found default region file | '{output_file.file_path}'")
 
     def set_genome(
         self,
@@ -482,7 +486,7 @@ class MakeRegions:
                 )
         else:
             self.itr.logger.info(
-                f"{self._logger_msg}: using the default call_variants regions file"
+                f"{self._logger_msg}: using the default regions file | '{self.itr.default_region_file}'"
             )
 
         # Determine if number of regions has already been set
