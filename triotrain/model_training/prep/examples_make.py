@@ -194,12 +194,12 @@ class MakeExamples:
 
                     if updated_jobs_list:
                         self.jobs_to_run = updated_jobs_list
-
+                        
                 if 0 < self._num_to_ignore < self._total_regions:
                     self.itr.logger.info(
                         f"{self.logger_msg}: ignoring {self._num_to_ignore}-of-{self._total_regions} SLURM jobs"
                     )
-                else:
+                elif self._num_to_ignore == self._total_regions:
                     self.itr.logger.info(
                         f"{self.logger_msg}: there are no jobs to re-submit for '{self._phase}:{self.genome}'... SKIPPING AHEAD"
                     )
@@ -595,14 +595,8 @@ class MakeExamples:
             )
             return
 
-        # Determine if we are running demo region only
-        if self.itr.demo_mode:
-            self.set_region(current_region=self._total_regions)
-            self.find_outputs()
-            self.submit_job()
-
         # Determine if we are re-submitting some of the regions for make_examples:
-        elif self.make_examples_job_nums and self._run_jobs is not None:
+        if self.make_examples_job_nums and self._run_jobs is not None:
             if self._num_to_run == 0:
                 self._skipped_counter = self._num_to_ignore
                 if (
