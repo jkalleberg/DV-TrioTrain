@@ -174,10 +174,17 @@ class RunTrioTrain:
                 f"{logger_msg}: re-starting jobs were provided for '{phase}:{genome}'"
             )
             inputs = self.restart_jobs[f"{phase}:{genome}"]
+            self.re_running_jobs = True
         elif phase in self.restart_jobs.keys():
+            self.itr.logger.info(
+                f"{logger_msg}: re-starting jobs were provided for '{phase}'"
+            )
             inputs = self.restart_jobs[phase]
+            self.re_running_jobs = True
         else:
             inputs = None
+            self.re_running_jobs = False
+
         if inputs is not None:
             # check if all elements in inputs are integers
             if all([isinstance(item, int) for item in inputs]):
@@ -412,12 +419,12 @@ class RunTrioTrain:
                         overwrite=self.overwrite,
                         make_examples_job_nums=self._jobIDs,
                     )
-
+                    
                     if not self.re_running_jobs and not self.overwrite:
                         make_examples.find_all_outputs()
 
                         # skip ahead if all outputs exist already
-                        if make_examples._outputs_exist:
+                        if make_examples._outputs_exist and not self.restart_jobs:
                             self.itr.logger.info(
                                 f"------------ SKIPPING [{self.itr._mode_string}] - [data_prep_jobs] - [{genome}] ------------"
                             )
