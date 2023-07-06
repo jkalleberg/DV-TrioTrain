@@ -443,6 +443,7 @@ class RunTrioTrain:
 
                     # make + submit any make_examples jobs
                     examples_job_nums = make_examples.run()
+                    breakpoint()
 
                     # Determine if any 'make_examples' jobs were submitted
                     if examples_job_nums is None:
@@ -490,6 +491,7 @@ class RunTrioTrain:
                         )
 
                     beam_job_nums = shuffle_examples.run()
+                    breakpoint()
 
                     if beam_job_nums is None:
                         no_dependencies_required = True

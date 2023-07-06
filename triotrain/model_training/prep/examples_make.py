@@ -111,7 +111,8 @@ class MakeExamples:
         self._beam_shuffle_dependencies = create_deps(self._total_regions)
         self.logger_msg = (
             f"[{self.itr._mode_string}] - [{self._phase}] - [{self.genome}]"
-        )
+            )
+        
 
     def set_region(self, current_region: Union[int, str, None] = None) -> None:
         """
@@ -141,6 +142,15 @@ class MakeExamples:
             self.prefix = f"{self.genome}-region{self.current_region}"
             self.job_label = (
                 f"{self.genome}{self.itr.current_trio_num}-region{self.current_region}"
+            )
+        
+        if self.itr.demo_mode:
+            self.logger_msg = (
+            f"[{self.itr._mode_string}] - [{self._phase}] - [{self.genome}]"
+            )
+        else:
+            self.logger_msg = (
+            f"[{self.itr._mode_string}] - [{self._phase}] - [{self.genome}]{self.region_logger_msg}"
             )
 
     def find_restart_jobs(self) -> None:
@@ -276,23 +286,23 @@ class MakeExamples:
             self.job_name,
             self.model_label,
             self.handler_label,
-            f"{self.logger_msg}{self.region_logger_msg}",
+            f"{self.logger_msg}",
         )
 
         if slurm_job.check_sbatch_file():
             if len(self.make_examples_job_nums) > 0:
                 if self.make_examples_job_nums[index] is not None and self.overwrite:
                     self.itr.logger.info(
-                        f"{self.logger_msg}{self.region_logger_msg}: --overwrite=True, re-writing the existing SLURM job now..."
+                        f"{self.logger_msg}: --overwrite=True, re-writing the existing SLURM job now..."
                     )
                 else:
                     self.itr.logger.info(
-                        f"{self.logger_msg}{self.region_logger_msg}: SLURM job file already exists... SKIPPING AHEAD"
+                        f"{self.logger_msg}: SLURM job file already exists... SKIPPING AHEAD"
                     )
                     return
         else:
             if self.itr.debug_mode:
-                self.itr.logger.debug(f"{self.logger_msg}{self.region_logger_msg}: creating job file now... ")
+                self.itr.logger.debug(f"{self.logger_msg}: creating job file now... ")
 
         if self.itr.demo_mode:
             command_args = (
@@ -388,7 +398,7 @@ class MakeExamples:
                     self._num_tfrecords_found,
                     expected_outputs,
                     log_msg,
-                    "labeled tfrecord files",
+                    "labeled.tfrecord",
                     self.itr.logger,
                 )
                 if missing_files:
@@ -414,7 +424,7 @@ class MakeExamples:
             self._skipped_counter += 1
             if resubmission:
                 self.itr.logger.info(
-                    f"{self.logger_msg}{self.region_logger_msg}: --overwrite=False; skipping job because found all labeled.tfrecords"
+                    f"{self.logger_msg}: --overwrite=False; skipping job because found all labeled.tfrecords"
                 )
             return
 
@@ -431,16 +441,16 @@ class MakeExamples:
         if not self.overwrite:
             if resubmission:
                 self.itr.logger.info(
-                    f"{self.logger_msg}{self.region_logger_msg}: --overwrite=False; re-submitting job because missing [{num_missing_files}] labeled.tfrecords"
+                    f"{self.logger_msg}: --overwrite=False; re-submitting job because missing [{num_missing_files}] labeled.tfrecords"
                 )
             else:
                 self.itr.logger.info(
-                    f"{self.logger_msg}{self.region_logger_msg}: submitting job to create [{num_missing_files}] labeled.tfrecords"
+                    f"{self.logger_msg}: submitting job to create [{num_missing_files}] labeled.tfrecords"
                 )
 
         else:
             self.itr.logger.info(
-                f"{self.logger_msg}{self.region_logger_msg}: --overwrite=True; re-submitting job because replacing existing labeled.tfrecords"
+                f"{self.logger_msg}: --overwrite=True; re-submitting job because replacing existing labeled.tfrecords"
             )
 
         slurm_job = SubmitSBATCH(
@@ -448,7 +458,7 @@ class MakeExamples:
             f"{self.job_name}.sh",
             self.handler_label,
             self.itr.logger,
-            f"{self.logger_msg}{self.region_logger_msg}",
+            f"{self.logger_msg}",
         )
 
         slurm_job.build_command(prior_job_number=None)
@@ -483,7 +493,7 @@ class MakeExamples:
                 self._beam_shuffle_dependencies[dependency_index] = slurm_job.job_number
             else:
                 self.itr.logger.error(
-                    f"{self.logger_msg}{self.region_logger_msg}: unable to submit SLURM job",
+                    f"{self.logger_msg}: unable to submit SLURM job",
                 )
                 self._beam_shuffle_dependencies[dependency_index] = None
 

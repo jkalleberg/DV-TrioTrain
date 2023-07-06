@@ -68,10 +68,12 @@ class ReShuffleExamples:
             self.genome = self.itr.train_genome
             self.index = 0
             self._total_regions = self.itr.train_num_regions
+            self.trio_dependency = self.itr.current_genome_dependencies[0]
         else:
             self.genome = self.itr.eval_genome
             self.index = 1
             self._total_regions = self.itr.eval_num_regions
+            self.trio_dependency = self.itr.current_genome_dependencies[1]
 
         self.logger_msg = (
             f"[{self.itr._mode_string}] - [{self._phase}] - [{self.genome}]"
@@ -90,7 +92,6 @@ class ReShuffleExamples:
 
         self.total_outputs_expected = 1
         self._re_shuffle_dependencies = create_deps(1)
-
     def find_restart_jobs(self) -> None:
         """
         Collect any SLURM job ids for running tests to avoid submitting a job while it's already running.
@@ -105,11 +106,6 @@ class ReShuffleExamples:
             self._run_jobs = True
 
         elif self.re_shuffle_job_num:
-            if self.overwrite and self._outputs_exist:
-                self.itr.logger.info(
-                    f"{self.logger_msg}: --overwrite=True, any exiting results files will be re-written..."
-                )
-
             num_job_ids = len(self.re_shuffle_job_num)
             if num_job_ids == 1:
                 jobs_to_run = find_not_NaN(self.re_shuffle_job_num)
@@ -224,10 +220,11 @@ class ReShuffleExamples:
             self.logger_msg,
         )
 
+        print("RESHUFF JOB NUM:", self.re_shuffle_job_num)
+        print("OVERWRITE?", self.overwrite)
         if slurm_job.check_sbatch_file():
             if (
                 self.re_shuffle_job_num
-                and self.re_shuffle_job_num[0] is not None
                 and self.overwrite
             ):
                 self.itr.logger.info(
@@ -278,10 +275,10 @@ class ReShuffleExamples:
 
         if self.merged_config.file_exists:
             self.itr.logger.info(
-                f"{msg}: found the [1] merged config.pbtxt file... SKIPPING AHEAD"
+                f"{msg}: found the [1] labeled.shuffled.merged.dataset_config.pbtxt file... SKIPPING AHEAD"
             )
         else:
-            self.itr.logger.info(f"{msg}: missing the merged config.pbtxt file")
+            self.itr.logger.info(f"{msg}: missing the labeled.shuffled.merged.dataset_config.pbtxt file")
 
     def find_variable(self, msg: str) -> None:
         """
@@ -317,7 +314,7 @@ class ReShuffleExamples:
             files_list,
         ) = check_if_output_exists(
             merged_shards_regex,
-            "the merged tfrecords files",
+            "the labeled.shuffled.merged.tfrecords",
             self.itr.examples_dir,
             msg,
             logger=self.itr.logger,
@@ -330,7 +327,7 @@ class ReShuffleExamples:
                 num_merged_tfrecords,
                 expected_outputs,
                 msg,
-                "merged tfrecords files",
+                "labeled.shuffled.merged.tfrecords",
                 self.itr.logger,
             )
 
@@ -339,11 +336,16 @@ class ReShuffleExamples:
             else:
                 self._merged_tfrecords_exist = True
 
-    def submit_job(self) -> Union[int, str, None]:
+    def submit_job(self, resubmission: bool = False) -> Union[int, str, None]:
         """
         Submit SLURM job to queue
         """
-        if self._outputs_exist:
+        if not self.overwrite and self._outputs_exist:
+            self._skipped_counter += 1
+            if resubmission:
+                self.itr.logger.info(
+                    f"{self.logger_msg}: --overwrite=False; skipping job because found all labeled.tfrecords"
+                )
             return
 
         slurm_job = self.make_job()
@@ -353,13 +355,28 @@ class ReShuffleExamples:
                 slurm_job.display_job()
             else:
                 slurm_job.write_job()
-
+        
+        if not self.overwrite:
+            if resubmission:
+                if self._ignoring_make_examples:
+                    self.itr.logger.info(
+                        f"{self.logger_msg}: --overwrite=False; re-submitting job because missing labeled.shuffled.merged outputs"
+                    )
+            else:
+                self.itr.logger.info(
+                    f"{self.logger_msg}: submitting job to create the labeled.shuffled.merged outputs"
+                )
+        else:
+            self.itr.logger.info(
+                f"{self.logger_msg}: --overwrite=True; re-submitting job because replacing existing labeled.shuffled.merged outputs"
+            )
+        
         submit_slurm_job = SubmitSBATCH(
             self.itr.job_dir,
             f"{self.job_name}.sh",
             self.handler_label,
             self.itr.logger,
-            self.logger_msg,
+            f"{self.logger_msg}",
         )
 
         if self.beam_shuffling_jobs is not None:
@@ -405,7 +422,6 @@ class ReShuffleExamples:
 
         elif self._skipped_counter == 1:
             self._train_dependency = None
-
         else:
             self.itr.logger.error(
                 f"{self.logger_msg}: expected SLURM jobs to be submitted, but they were not",
@@ -424,10 +440,6 @@ class ReShuffleExamples:
         """
         Determine if re-shuffling outputs already exist
         """
-        self.set_genome()
-
-        # determine if outputs already exist
-        # and skip this phase if they do
         if phase is None:
             merged_logger_msg = self.logger_msg
         else:
@@ -437,6 +449,7 @@ class ReShuffleExamples:
 
         if phase == 'find_outputs':
             self.find_variable(msg=merged_logger_msg)
+        
         self.find_merged_outputs(msg=merged_logger_msg)
 
         if self.itr.demo_mode:
@@ -456,15 +469,13 @@ class ReShuffleExamples:
 
                 if (
                     self.overwrite
-                    and self.re_shuffle_job_num
-                    and self.re_shuffle_job_num[0] is not None
+                    and (self.re_shuffle_job_num or not self._ignoring_beam_shuffle)
                 ):
                     self._outputs_exist = False
                 else:
                     if (
                         self._merged_tfrecords_exist
                         and self._merged_config_exists
-                        and self._variable_found
                     ):
                         self._outputs_exist = True
 
@@ -475,12 +486,18 @@ class ReShuffleExamples:
         self.set_genome()
         self.find_restart_jobs()
 
-        # determine if we are re-running the training
+        # SKIP everything if a Trio Dependency was provided
+        if self.trio_dependency is not None:
+            self.itr.logger.info(
+                f"{self.logger_msg}: current genome dependency provided [SLURM job # {self.trio_dependency}]... SKIPPING AHEAD",
+            )
+            return
+
+        # Determine if we are re-running the training
         if (
             self.re_shuffle_job_num or not self._ignoring_beam_shuffle
         ) and self._run_jobs is not None:
             if self._num_to_run == 0:
-                self.find_outputs(find_all=True)
                 self._skipped_counter = self._num_to_ignore
                 if self._train_dependency and self._train_dependency[0] is not None:
                     self.itr.logger.info(
@@ -491,30 +508,40 @@ class ReShuffleExamples:
             else:
                 if not self._ignoring_beam_shuffle:
                     self.itr.logger.info(
-                        f"{self.logger_msg}: beam-shuffle was submitted...",
+                        f"{self.logger_msg}: beam_shuffle jobs were submitted...",
+                    )
+                
+                skip_re_runs = check_if_all_same(
+                        self.re_shuffle_job_num, None
                     )
 
+                if skip_re_runs:
+                    msg = "sub"
+                else:
+                    msg = "re-sub"
+
                 if self._num_to_run == 1:
-                    self.find_outputs(find_all=True)
-                    if self.overwrite:
-                        self.itr.logger.info(
-                            f"{self.logger_msg}: re-submitting {self._num_to_run}-of-1 SLURM job",
-                        )
-                        if self._outputs_exist:
-                            self.itr.logger.info(
-                                f"{self.logger_msg}: --overwrite=True, any exiting results files will be re-written..."
-                            )
-                    else:
-                        self.itr.logger.info(
-                            f"{self.logger_msg}: submitting {self._num_to_run}-of-1 SLURM job",
+                    self.itr.logger.info(
+                            f"{self.logger_msg}: attempting to {msg}mit {self._num_to_run}-of-1 SLURM jobs to the queue",
                         )
                 else:
                     self.itr.logger.error(
-                        f"{self.logger_msg}: there should only be one re_shuffle_job, but {self._num_to_run} were provided.\nExiting... ",
+                        f"{self.logger_msg}: max number of SLURM jobs for {msg}mission is 1 but {self._num_to_run} were provided.\nExiting... ",
                     )
                     exit(1)
+                
+                if not skip_re_runs:
+                    if not self.overwrite:
+                        self.itr.logger.info(
+                            f"{self.logger_msg}: --overwrite=False, jobs will run ONLY if missing any output files",
+                        )
 
-                self.submit_job()
+                    else:
+                        self.itr.logger.info(
+                            f"{self.logger_msg}: --overwrite=True, any exiting results files will be re-written...",
+                        )                           
+                self.find_outputs(find_all=True)
+                self.submit_job(resubmission=True)
 
         # or running it for the first time
         else:
