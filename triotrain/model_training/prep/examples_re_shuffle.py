@@ -259,14 +259,13 @@ class ReShuffleExamples:
         """
         Determine if merging is necessary
         """
-        # Define the text output
         self.merged_config = WriteFiles(
             str(self.itr.examples_dir),
             f"{self.pattern}.labeled.shuffled.merged.dataset_config.pbtxt",
             self.itr.logger,
-            logger_msg=msg,
-        )
+            logger_msg=msg)
         self.merged_config.check_missing()
+
         self._merged_config_exists = self.merged_config.file_exists
 
         if self.merged_config.file_exists:
@@ -274,7 +273,7 @@ class ReShuffleExamples:
                 f"{msg}: found the 1 labeled.shuffled.merged.dataset_config.pbtxt file... SKIPPING AHEAD"
             )
         else:
-            self.itr.logger.info(f"{msg}: missing the labeled.shuffled.merged.dataset_config.pbtxt file")
+            self.itr.logger.info(f"{msg}: missing the labeled.shuffled.merged.dataset_config.pbtxt file | '{self.merged_config.file_path}'")
 
     def find_variable(self, msg: str) -> None:
         """
@@ -340,7 +339,7 @@ class ReShuffleExamples:
             self._skipped_counter += 1
             if resubmission:
                 self.itr.logger.info(
-                    f"{self.logger_msg}: --overwrite=False; skipping job because found all labeled.tfrecords"
+                    f"{self.logger_msg}: --overwrite=False; skipping job because found all labeled.shuffled.merged outputs"
                 )
             return
 
@@ -495,7 +494,7 @@ class ReShuffleExamples:
         # Determine if we are re-running the training
         if (
             self.re_shuffle_job_num or not self._ignoring_beam_shuffle
-        ) and self._run_jobs is not None:
+        ):
             if self._num_to_run == 0:
                 self._skipped_counter = self._num_to_ignore
                 if self._train_dependency and self._train_dependency[0] is not None:
@@ -505,18 +504,16 @@ class ReShuffleExamples:
                 else:
                     self._train_dependency = None
             else:
-                if not self._ignoring_beam_shuffle:
-                    self.itr.logger.info(
-                        f"{self.logger_msg}: beam_shuffle jobs were submitted...",
-                    )
-                
                 skip_re_runs = check_if_all_same(
                         self.re_shuffle_job_num, None
                     )
 
-                if skip_re_runs:
+                if skip_re_runs or self._ignoring_beam_shuffle:
                     msg = "sub"
                 else:
+                    self.itr.logger.info(
+                        f"{self.logger_msg}: beam_shuffle jobs were submitted...",
+                    )
                     msg = "re-sub"
 
                 if self._num_to_run == 1:
@@ -528,17 +525,7 @@ class ReShuffleExamples:
                         f"{self.logger_msg}: max number of SLURM jobs for {msg}mission is 1 but {self._num_to_run} were provided.\nExiting... ",
                     )
                     exit(1)
-                
-                if not skip_re_runs:
-                    if not self.overwrite:
-                        self.itr.logger.info(
-                            f"{self.logger_msg}: --overwrite=False, jobs will run ONLY if missing any output files",
-                        )
-
-                    else:
-                        self.itr.logger.info(
-                            f"{self.logger_msg}: --overwrite=True, any exiting results files will be re-written...",
-                        )                           
+                        
                 self.find_outputs(find_all=True)
                 self.submit_job(resubmission=True)
 
