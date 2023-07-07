@@ -623,17 +623,11 @@ class MakeExamples:
                     )
                     exit(1)
 
-                # if not self._beam_shuffle_dependencies:
-                #     self._beam_shuffle_dependencies = create_deps(self._total_regions)
-
                 for r in self.jobs_to_run:
                     region_index = self.make_examples_job_nums[r]
                     self.job_num = (
                         region_index + 1
                     )  # THIS HAS TO BE +1 to avoid starting with a region0
-
-                    # remove the place holder job num
-                    # del self._beam_shuffle_dependencies[region_index]
 
                     self.set_region(current_region=self.job_num)
                     self.find_outputs()
