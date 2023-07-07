@@ -181,7 +181,7 @@ class RunTrioTrain:
         bool
             if True, entry can be used to index a list of SLURM jobs
         """
-        return str(value).isdigit() and 0 <= int(value) <= max_jobs
+        return str(value).isdigit() and 0 <= int(value) < max_jobs
 
     def process_re_runs(
         self, phase: str, total_jobs_in_phase: int = 1, genome: Union[str, None] = None
@@ -258,7 +258,11 @@ class RunTrioTrain:
                     self.itr.logger.error(
                         f"{logger_msg}: invalid index value provided..."
                     )
-                    self.itr.logger.error(f"{logger_msg}: you entered '{index}'...")
+                    if index >= total_jobs_in_phase:
+                        self.itr.logger.error(f"{logger_msg}: you entered '{index + 1}'...")
+                    else:
+                        self.itr.logger.error(f"{logger_msg}: you entered '{index}'...")
+                    
                     if total_jobs_in_phase == 1:
                         self.itr.logger.error(
                             f"{logger_msg}: did you mean to enter '0' or '{total_jobs_in_phase}'?"
