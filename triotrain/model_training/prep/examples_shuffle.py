@@ -577,7 +577,7 @@ class BeamShuffleExamples:
                 self._num_shuff_tfrecords_found,
                 expected_shuffle_outputs,
                 log_msg,
-                file_type1,
+                file_type1.split(" ")[1],
                 self.itr.logger,
             )
         else:
@@ -592,7 +592,7 @@ class BeamShuffleExamples:
                     self._num_shuff_tfrecords_found,
                     self.total_shuffle_outputs_expected2,
                     log_msg,
-                    file_type1,
+                    file_type1.split(" ")[1],
                     self.itr.logger,
                 )
             else:
