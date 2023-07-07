@@ -166,11 +166,9 @@ class RunTrioTrain:
         bool
             if True, entry is a valid SLURM job ID
         """
-        return len(value) in [8] and value.isdigit()
+        return len(str(value)) in [8] and str(value).isdigit()
 
-    def is_job_index(
-        self, value: Union[int, str], max_jobs: int = 1
-    ) -> bool:
+    def is_job_index(self, value: Union[int, str], max_jobs: int = 1) -> bool:
         """Determine if a user entered value is list index, indicating a job to be re-run.
 
         Parameters
@@ -181,9 +179,9 @@ class RunTrioTrain:
         Returns
         -------
         bool
-            _description_
+            if True, entry can be used to index a list of SLURM jobs
         """
-        return value.isdigit() and 0 <= int(value) <= max_jobs
+        return str(value).isdigit() and 0 <= int(value) <= max_jobs
 
     def process_re_runs(
         self, phase: str, total_jobs_in_phase: int = 1, genome: Union[str, None] = None
@@ -219,9 +217,9 @@ class RunTrioTrain:
 
         if inputs is not None:
             # check if all elements in inputs are integers
-            if all([self.is_job_index(item, max_jobs=total_jobs_in_phase) for item in inputs]):
-                # check if all elements in inputs are SLURM job #s
-                if all([self.is_jobid(item) for item in inputs]):
+            if all([isinstance(item, int) for item in inputs]):
+                # check if all elements in inputs are not SLURM job ids
+                if all([not self.is_jobid(item) for item in inputs]):
                     # handle if the user provides region numbers,
                     if 0 not in inputs:
                         indexes = [x - 1 for x in inputs]
@@ -255,7 +253,7 @@ class RunTrioTrain:
 
                     self._jobIDs[i] = index
                 elif self.is_job_index(index, max_jobs=total_jobs_in_phase):
-                   self._jobIDs[index] = index 
+                    self._jobIDs[index] = index
                 else:
                     self.itr.logger.error(
                         f"{logger_msg}: invalid index value provided..."
