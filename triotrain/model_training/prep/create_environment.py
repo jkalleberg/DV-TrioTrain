@@ -280,7 +280,7 @@ class Environment:
         # Define the regrex pattern of expected output
         if self.demo_mode:
             if "chr" in self.demo_chr.lower():
-                self.mode = f"DEMO] - [TRIO{self.trio_num}] - [{self.demo_chr}"
+                self.mode = f"DEMO] - [TRIO{self.trio_num}] - [{self.demo_chr.upper()}"
             else:
                 self.mode = f"DEMO] - [TRIO{self.trio_num}] - [CHR{self.demo_chr}"
         elif self.trio_num is None:

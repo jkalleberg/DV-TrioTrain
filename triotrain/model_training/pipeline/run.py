@@ -71,7 +71,7 @@ class RunTrioTrain:
 
         if self.itr.demo_mode:
             if "chr" in self.itr.demo_chromosome.lower():
-                self.logger_msg = f"DEMO] - [TRIO{self.itr.current_trio_num}] - [{self.itr.demo_chromosome}"
+                self.logger_msg = f"DEMO] - [TRIO{self.itr.current_trio_num}] - [{self.itr.demo_chromosome.upper()}"
             else:
                 self.logger_msg = f"DEMO] - [TRIO{self.itr.current_trio_num}] - [CHR{self.itr.demo_chromosome}"
             self._n_regions = 1
@@ -153,6 +153,38 @@ class RunTrioTrain:
                 jobids_list.insert(index, jobid)
             self.restart_jobs[key] = jobids_list
 
+    def is_jobid(self, value: Union[int, str]) -> bool:
+        """Determine if a user entered value is a SLURM job id, indicating a currently running job to save for building job dependencies.
+
+        Parameters
+        ----------
+        value : Union[int, str]
+            the value to be checked
+
+        Returns
+        -------
+        bool
+            if True, entry is a valid SLURM job ID
+        """
+        return len(value) in [8] and value.isdigit()
+
+    def is_job_index(
+        self, value: Union[int, str], max_jobs: int = 1
+    ) -> bool:
+        """Determine if a user entered value is list index, indicating a job to be re-run.
+
+        Parameters
+        ----------
+        value : Union[int, str]
+            the value to be checked
+
+        Returns
+        -------
+        bool
+            _description_
+        """
+        return value.isdigit() and 0 <= int(value) <= max_jobs
+
     def process_re_runs(
         self, phase: str, total_jobs_in_phase: int = 1, genome: Union[str, None] = None
     ) -> None:
@@ -187,9 +219,9 @@ class RunTrioTrain:
 
         if inputs is not None:
             # check if all elements in inputs are integers
-            if all([isinstance(item, int) for item in inputs]):
-                # check if all elements in inputs are SLURM job #s vs. region#/indexes
-                if all([item <= total_jobs_in_phase for item in inputs]):
+            if all([self.is_job_index(item, max_jobs=total_jobs_in_phase) for item in inputs]):
+                # check if all elements in inputs are SLURM job #s
+                if all([self.is_jobid(item) for item in inputs]):
                     # handle if the user provides region numbers,
                     if 0 not in inputs:
                         indexes = [x - 1 for x in inputs]
@@ -205,10 +237,7 @@ class RunTrioTrain:
 
         for i, index in enumerate(indexes):
             if index is not None:
-                
-                if self.overwrite and (
-                    isinstance(index, str) or index > total_jobs_in_phase
-                ):
+                if self.is_jobid(index):
                     if total_jobs_in_phase > 1:
                         _num = i + 1
                         if phase in ["make_examples", "beam_shuffle"]:
@@ -225,18 +254,23 @@ class RunTrioTrain:
                         )
 
                     self._jobIDs[i] = index
+                elif self.is_job_index(index, max_jobs=total_jobs_in_phase):
+                   self._jobIDs[index] = index 
                 else:
-                    if index > total_jobs_in_phase:
-                        self.itr.logger.error(f"{logger_msg}: invalid index value provided...")
-                        self.itr.logger.error(f"{logger_msg}: you entered '{index}'...")
-                        if total_jobs_in_phase == 1:
-                            self.itr.logger.error(f"{logger_msg}: did you mean to enter '0' or '{total_jobs_in_phase}'?")
-                        else:
-                            self.itr.logger.error(f"{logger_msg}: did you mean to enter a number between '0 - {total_jobs_in_phase-1}' or '1 - {total_jobs_in_phase}'?")
-                        print("Exiting...")
-                        exit(1)
-                        
-                    self._jobIDs[index] = index
+                    self.itr.logger.error(
+                        f"{logger_msg}: invalid index value provided..."
+                    )
+                    self.itr.logger.error(f"{logger_msg}: you entered '{index}'...")
+                    if total_jobs_in_phase == 1:
+                        self.itr.logger.error(
+                            f"{logger_msg}: did you mean to enter '0' or '{total_jobs_in_phase}'?"
+                        )
+                    else:
+                        self.itr.logger.error(
+                            f"{logger_msg}: did you mean to enter a number between '0 - {total_jobs_in_phase-1}' or '1 - {total_jobs_in_phase}'?"
+                        )
+                    print("Exiting...")
+                    exit(1)
             else:
                 self._jobIDs[i] = None
 
@@ -260,14 +294,6 @@ class RunTrioTrain:
                 return
             else:
                 self.re_running_jobs = True
-                # if len(self._jobIDs) == 1:
-                #     self.itr.logger.info(
-                #         f"{logger_msg}: attempting to re-submit the only SLURM job now..."
-                #     )
-                # else:
-                #     self.itr.logger.info(
-                #         f"{logger_msg}: attempting to re-submit all {total_jobs_in_phase} jobs now..."
-                #     )
 
     def count_jobs(self, genome: str = "Child") -> None:
         """
@@ -430,8 +456,9 @@ class RunTrioTrain:
                         overwrite=self.overwrite,
                         make_examples_job_nums=self._jobIDs,
                     )
-                    
+
                     if not self.re_running_jobs and not self.overwrite:
+                        make_examples.set_genome()
                         make_examples.find_all_outputs()
 
                         # skip ahead if all outputs exist already

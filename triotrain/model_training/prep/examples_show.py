@@ -213,7 +213,7 @@ class ShowExamples:
 
         if self.itr.demo_mode:
             if "chr" in self.demo_chromosome.lower():
-                self.logger_msg = f"[{self.itr._mode_string}] - [{self._phase}] - [{self.genome}] - [{self.itr.demo_chromosome}]"
+                self.logger_msg = f"[{self.itr._mode_string}] - [{self._phase}] - [{self.genome}] - [{self.itr.demo_chromosome.upper()}]"
             else:
                 self.logger_msg = f"DEMO] - [TRIO{self.current_trio_num}] - [CHR{self.demo_chromosome}"
             self.prefix = f"{self.genome}.chr{self.itr.demo_chromosome}"

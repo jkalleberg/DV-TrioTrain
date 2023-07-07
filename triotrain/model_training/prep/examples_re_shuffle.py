@@ -38,6 +38,7 @@ class ReShuffleExamples:
         default_factory=list
     )
     benchmarking_file: Union[WriteFiles, None] = None
+    genome: Union[str, None] = None
     overwrite: bool = False
     re_shuffle_job_num: List = field(default_factory=list)
     track_resources: bool = False
@@ -444,8 +445,11 @@ class ReShuffleExamples:
             merged_logger_msg = self.logger_msg
         else:
             merged_logger_msg = (
-                f"[{self.itr._mode_string}] - [{phase}] - [{self.genome}]"
+                f"[{self.itr._mode_string}] - [{phase}]"
             )
+        
+        if self.genome is not None:
+            merged_logger_msg = f"{merged_logger_msg} - [{self.genome}]"
 
         if phase == 'find_outputs':
             self.find_variable(msg=merged_logger_msg)

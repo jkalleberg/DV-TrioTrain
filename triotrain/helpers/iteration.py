@@ -67,7 +67,7 @@ class Iteration:
         if self.demo_mode and self.current_trio_num is not None:
             if "chr" in self.demo_chromosome.lower():
                 self._mode_string = (
-                    f"DEMO] - [TRIO{self.current_trio_num}] - [{self.demo_chromosome}"
+                    f"DEMO] - [TRIO{self.current_trio_num}] - [{self.demo_chromosome.upper()}"
                 )
             else:
                 self._mode_string = f"DEMO] - [TRIO{self.current_trio_num}] - [CHR{self.demo_chromosome}"

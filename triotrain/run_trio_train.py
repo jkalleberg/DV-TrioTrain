@@ -297,7 +297,7 @@ def run_trio_train(eval_genome="Child") -> None:
 
         ### Create Demo Runs ------------------------------------------###
         elif current_itr.demo_mode:
-            current_itr.logger.info(f"{logging_msg}: --demo_mode is active")
+            current_itr.logger.info(f"{logging_msg}: --demo-mode is active")
             RunTrioTrain(
                 itr=current_itr,
                 resource_file=args.resource_config,

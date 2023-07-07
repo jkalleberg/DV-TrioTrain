@@ -61,6 +61,13 @@ class MakeExamples:
     _total_regions: int = field(default=0, init=False, repr=False)
 
     def __post_init__(self) -> None:
+        if self.track_resources:
+            assert (
+                self.benchmarking_file is not None
+            ), "unable to proceed, missing a h.WriteFiles object to save SLURM job IDs"
+
+    def set_variables(self) -> None:
+        """Add variables from SLURM config to ENV"""
         if self.itr.env is None:
             return
         self.n_parts = self.slurm_resources[self._phase]["ntasks"]
@@ -70,19 +77,15 @@ class MakeExamples:
                 "N_Parts",
                 str(self.n_parts),
                 dryrun_mode=self.itr.dryrun_mode,
-                msg=f"[{self.itr._mode_string}] - [{self._phase}]",
+                msg=self.logger_msg,
             )
         if "TotalShards" not in self.itr.env.contents:
             self.itr.env.add_to(
                 "TotalShards",
                 str(self.total_shards),
                 dryrun_mode=self.itr.dryrun_mode,
-                msg=f"[{self.itr._mode_string}] - [{self._phase}]",
+                msg=self.logger_msg,
             )
-        if self.track_resources:
-            assert (
-                self.benchmarking_file is not None
-            ), "unable to proceed, missing a h.WriteFiles object to save SLURM job IDs"
 
     def set_genome(self) -> None:
         """Assign a genome label
@@ -111,8 +114,8 @@ class MakeExamples:
         self._beam_shuffle_dependencies = create_deps(self._total_regions)
         self.logger_msg = (
             f"[{self.itr._mode_string}] - [{self._phase}] - [{self.genome}]"
-            )
-        
+        )
+        self.set_variables()
 
     def set_region(self, current_region: Union[int, str, None] = None) -> None:
         """
@@ -122,7 +125,7 @@ class MakeExamples:
             self._print_msg = f"    echo SUCCESS: make_examples for demo-{self.genome}, part $t of {self.total_shards} &"
             self.current_region = self.itr.demo_chromosome
             if "chr" in self.itr.demo_chromosome.lower():
-                self.region_logger_msg = f" - [{self.itr.demo_chromosome}]"
+                self.region_logger_msg = f" - [{self.itr.demo_chromosome.upper()}]"
                 self.prefix = f"{self.genome}-{self.itr.demo_chromosome}"
                 self.job_label = f"{self.genome}{self.itr.current_trio_num}-{self.itr.demo_chromosome}"
             else:
@@ -143,15 +146,13 @@ class MakeExamples:
             self.job_label = (
                 f"{self.genome}{self.itr.current_trio_num}-region{self.current_region}"
             )
-        
+
         if self.itr.demo_mode:
             self.logger_msg = (
-            f"[{self.itr._mode_string}] - [{self._phase}] - [{self.genome}]"
+                f"[{self.itr._mode_string}] - [{self._phase}] - [{self.genome}]"
             )
         else:
-            self.logger_msg = (
-            f"[{self.itr._mode_string}] - [{self._phase}] - [{self.genome}]{self.region_logger_msg}"
-            )
+            self.logger_msg = f"[{self.itr._mode_string}] - [{self._phase}] - [{self.genome}]{self.region_logger_msg}"
 
     def find_restart_jobs(self) -> None:
         """Collect any SLURM job ids for running tests to avoid submitting duplicate jobs simultaneously"""
@@ -197,7 +198,7 @@ class MakeExamples:
 
                     if updated_jobs_list:
                         self.jobs_to_run = updated_jobs_list
-                        
+
                 if 0 < self._num_to_ignore < self._total_regions:
                     self.itr.logger.info(
                         f"{self.logger_msg}: ignoring {self._num_to_ignore}-of-{self._total_regions} SLURM jobs"
@@ -336,11 +337,14 @@ class MakeExamples:
         Determines if make_examples phase has completed successfully.
         """
         if phase is None:
-            logger_msg = (
+            log_msg = (
                 f"[{self.itr._mode_string}] - [{self._phase}] - [{self.genome}]"
             )
         else:
-            logger_msg = f"[{self.itr._mode_string}] - [{phase}] - [{self.genome}]"
+            log_msg = f"[{self.itr._mode_string}] - [{phase}] - [{self.genome}]"
+        
+        if not self.itr.demo_mode:
+            log_msg = f"{log_msg}{self.region_logger_msg}"
 
         # Define the regrex pattern of expected output
         if self.itr.demo_mode:
@@ -364,11 +368,9 @@ class MakeExamples:
         if find_all:
             expected_outputs = int(self.n_parts) * self._total_regions
             label = "the labeled.tfrecords"
-            log_msg = logger_msg
         else:
             expected_outputs = int(self.n_parts)
             label = "labeled.tfrecords"
-            log_msg = f"{logger_msg}{self.region_logger_msg}"
 
         # Confirm examples do not already exist
         (
@@ -441,11 +443,11 @@ class MakeExamples:
         if not self.overwrite:
             if resubmission:
                 self.itr.logger.info(
-                    f"{self.logger_msg}: --overwrite=False; re-submitting job because missing [{num_missing_files}] labeled.tfrecords"
+                    f"{self.logger_msg}: --overwrite=False; re-submitting job because missing {num_missing_files} labeled.tfrecords"
                 )
             else:
                 self.itr.logger.info(
-                    f"{self.logger_msg}: submitting job to create [{num_missing_files}] labeled.tfrecords"
+                    f"{self.logger_msg}: submitting job to create {num_missing_files} labeled.tfrecords"
                 )
 
         else:
@@ -556,6 +558,7 @@ class MakeExamples:
             benchmarking_file=self.benchmarking_file,
         )
 
+        re_shuffle.set_genome()
         re_shuffle.find_outputs(phase=phase, find_all=True)
 
         if re_shuffle._outputs_exist and find_beam_tfrecords:
@@ -602,7 +605,8 @@ class MakeExamples:
                 self._skipped_counter = self._num_to_ignore
                 if (
                     self._beam_shuffle_dependencies
-                    and check_if_all_same(self._beam_shuffle_dependencies, None) is False
+                    and check_if_all_same(self._beam_shuffle_dependencies, None)
+                    is False
                 ):
                     self.itr.logger.info(
                         f"{self.logger_msg}: beam_shuffle dependencies updated to {self._beam_shuffle_dependencies}"
@@ -612,8 +616,8 @@ class MakeExamples:
             else:
                 if self._num_to_run <= self._total_regions:
                     self.itr.logger.info(
-                            f"{self.logger_msg}: attempting to re-submit {self._num_to_run}-of-{self._total_regions} SLURM jobs to the queue",
-                        )
+                        f"{self.logger_msg}: attempting to re-submit {self._num_to_run}-of-{self._total_regions} SLURM jobs to the queue",
+                    )
                 else:
                     self.itr.logger.error(
                         f"{self.logger_msg}: max number of re-submission SLURM jobs is {self._total_regions} but {self._num_to_run} were provided.\nExiting... ",

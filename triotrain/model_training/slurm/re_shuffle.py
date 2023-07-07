@@ -170,10 +170,10 @@ class ReShuffle:
         if self.itr.demo_mode:
             if "chr" in self.itr.demo_chromosome.lower():
                 self.region_string = f"{self.itr.demo_chromosome}"
-                self.logger_msg = f"[{self.itr._mode_string}] - [{self._phase}] - [{self.re_shuffling.genome}]"
             else:
                 self.region_string = f"chr{self.itr.demo_chromosome}"
-                self.logger_msg = f"[{self.itr._mode_string}] - [{self._phase}] - [{self.re_shuffling.genome}]"
+            
+            self.logger_msg = f"[{self.itr._mode_string}] - [{self._phase}] - [{self.re_shuffling.genome}]"
         else:
             if current_region is None:
                 self.region_string = None

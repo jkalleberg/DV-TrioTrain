@@ -100,8 +100,8 @@ class BeamShuffleExamples:
         # There should be one pbtxt created per region
         self.total_pbtxt_outputs_expected = int(self._total_regions)
         self.logger_msg = (
-                f"[{self.itr._mode_string}] - [{self._phase}] - [{self.genome}]"
-            )
+            f"[{self.itr._mode_string}] - [{self._phase}] - [{self.genome}]"
+        )
 
     def set_region(self, current_region: Union[int, str, None] = None) -> None:
         """
@@ -112,7 +112,7 @@ class BeamShuffleExamples:
             if "chr" in self.itr.demo_chromosome.lower():
                 self.prefix = f"{self.genome}.{self.itr.demo_chromosome}"
                 self.job_label = f"{self.genome}{self.itr.current_trio_num}-{self.itr.demo_chromosome}"
-                self.region_logger_msg = f" - [{self.itr.demo_chromosome}]"
+                self.region_logger_msg = f" - [{self.itr.demo_chromosome.upper()}]"
             else:
                 self.prefix = f"{self.genome}.chr{self.itr.demo_chromosome}"
                 self.job_label = f"{self.genome}{self.itr.current_trio_num}-chr{self.itr.demo_chromosome}"
@@ -283,7 +283,7 @@ class BeamShuffleExamples:
                 self.itr.logger.debug(f"{self.logger_msg}: creating job file now... ")
 
         command_list = slurm_job._start_conda + [
-            f"conda run --no-capture-output -p ./miniconda_envs/beam_v2.30 python3 triotrain/model_training/prep/shuffle_tfrecords_beam.py --input_pattern_list={self.itr.examples_dir}/{self.prefix}.labeled.tfrecords-?????-of-000??.gz --output_pattern_prefix={self.itr.examples_dir}/{self.prefix}.labeled.shuffled --output_dataset_config_pbtxt={self.itr.examples_dir}/{self.prefix}.labeled.shuffled.dataset_config.pbtxt --output_dataset_name={self.genome} --runner=DirectRunner --direct_num_workers={self.n_parts} --direct_running_mode='in_memory'",
+            f"conda run --no-capture-output -p ./miniconda_envs/beam_v2.30 python3 triotrain/model_training/prep/shuffle_tfrecords_beam.py --input_pattern_list={self.itr.examples_dir}/{self.prefix}.labeled.tfrecords-?????-of-000??.gz --output_pattern_prefix={self.itr.examples_dir}/{self.prefix}.labeled.shuffled [--output_dataset_config_pbtxt={self.itr.examples_dir}/{self.prefix}.labeled.shuffled.dataset_config.pbtxt --output_dataset_name={self.genome} --runner=DirectRunner --direct_num_workerop[fs]={self.n_parts} --direct_running_mode='in_memory'",
         ]
         # --direct_running_mode='in_memory'
         # --direct_running_mode='multi_processing'
@@ -297,7 +297,9 @@ class BeamShuffleExamples:
         )
         return slurm_job
 
-    def find_beam_shuffled_examples(self, phase: str, find_all: bool = False) -> None:
+    def find_beam_shuffled_examples(
+        self, phase: Union[str, None] = None, find_all: bool = False
+    ) -> None:
         """
         Search for existing shuffled.tfrecords, based on expected output patterns.
 
@@ -322,11 +324,17 @@ class BeamShuffleExamples:
                 rf"{self.genome}\.labeled\.shuffled-\d+-of-\d+\.tfrecord\.gz"
             )
 
+        if phase is None:
+            log_msg = self.logger_msg
+        else:
+            log_msg = f"[{self.itr._mode_string}] - [{phase}] - [{self.genome}]"
+        
+        if not self.itr.demo_mode:
+            log_msg = f"{log_msg}{self.region_logger_msg}"
+
         if find_all:
-            logger_msg = f"[{self.itr._mode_string}] - [{phase}] - [{self.genome}]{self.region_logger_msg}"
             msg = "all labeled.shuffled.tfrecords"
         else:
-            logger_msg = f"[{self.itr._mode_string}] - [{phase}] - [{self.genome}]{self.region_logger_msg}"
             msg = "the labeled.shuffled.tfrecords"
 
         # Confirm examples do not already exist
@@ -338,7 +346,7 @@ class BeamShuffleExamples:
             shuff_examples_pattern,
             msg,
             self.itr.examples_dir,
-            logger_msg,
+            log_msg,
             self.itr.logger,
             debug_mode=self.itr.debug_mode,
             dryrun_mode=self.itr.dryrun_mode,
@@ -367,9 +375,9 @@ class BeamShuffleExamples:
 
         logger_msg = f"[{self.itr._mode_string}] - [{phase}] - [{self.genome}]"
         if find_all:
-            msg = "all the shuffled pbtxt files"
+            msg = "all the labeled.shuffled.pbtxt files"
         else:
-            msg = "the shuffled pbtxt files"
+            msg = "the labeled.shuffled.pbtxt file"
 
         # Confirm region#'s config does not already exist
         (
@@ -414,11 +422,11 @@ class BeamShuffleExamples:
             if resubmission:
                 if self._ignoring_make_examples:
                     self.itr.logger.info(
-                        f"{self.logger_msg}: --overwrite=False; re-submitting job because missing [{num_missing_files}] labeled.shuffled.tfrecords"
+                        f"{self.logger_msg}: --overwrite=False; re-submitting job because missing {num_missing_files} labeled.shuffled.tfrecords"
                     )
             else:
                 self.itr.logger.info(
-                    f"{self.logger_msg}: submitting job to create [{num_missing_files}] labeled.shuffled.tfrecords"
+                    f"{self.logger_msg}: submitting job to create {num_missing_files} labeled.shuffled.tfrecords"
                 )
         else:
             self.itr.logger.info(
@@ -533,15 +541,16 @@ class BeamShuffleExamples:
         Determine if shuffling outputs already exist
         """
         if phase is None:
-            logger_msg = (
-                f"[{self.itr._mode_string}] - [{self._phase}] - [{self.genome}]"
-            )
-            self.find_beam_shuffled_examples(phase=self._phase, find_all=find_all)
+            log_msg = f"[{self.itr._mode_string}] - [{self._phase}] - [{self.genome}]"
+            if not self.itr.demo_mode:
+                log_msg = f"{log_msg}{self.region_logger_msg}"
+            self.find_beam_shuffled_examples(find_all=find_all)
         else:
-            logger_msg = f"[{self.itr._mode_string}] - [{phase}] - [{self.genome}]"
+            log_msg = f"[{self.itr._mode_string}] - [{phase}] - [{self.genome}]"
+            if not self.itr.demo_mode:
+                log_msg = f"{log_msg}{self.region_logger_msg}"
             self.find_beam_shuffled_examples(phase=phase, find_all=find_all)
 
-        log_msg = f"{logger_msg}"
         if find_all:
             expected_shuffle_outputs = self.total_shuffle_outputs_expected1
             expected_config_outputs = self.total_pbtxt_outputs_expected
@@ -679,8 +688,7 @@ class BeamShuffleExamples:
                         f"{self.logger_msg}: max number of SLURM jobs for {msg}mission is {self._total_regions} but {self._num_to_run} were provided.\nExiting... ",
                     )
                     exit(1)
-
-                # self.set_genome()
+                
                 for r in self.jobs_to_run:
                     if skip_re_runs:
                         region_index = r
