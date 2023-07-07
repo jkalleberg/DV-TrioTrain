@@ -240,15 +240,15 @@ class RunTrioTrain:
                         _num = i + 1
                         if phase in ["make_examples", "beam_shuffle"]:
                             self.itr.logger.info(
-                                f"{logger_msg} - [region{_num}]: currently running SLURM job ID | {index}"
+                                f"{logger_msg} - [region{_num}]: currently running SLURM job ID | '{index}'"
                             )
                         if phase in ["call_variants", "compare_happy", "convert_happy"]:
                             self.itr.logger.info(
-                                f"{logger_msg} - [test{_num}]: currently running SLURM job ID | {index}"
+                                f"{logger_msg} - [test{_num}]: currently running SLURM job ID | '{index}'"
                             )
                     else:
                         self.itr.logger.info(
-                            f"{logger_msg}: currently running SLURM job ID | {index}"
+                            f"{logger_msg}: currently running SLURM job ID | '{index}'"
                         )
 
                     self._jobIDs[i] = index
