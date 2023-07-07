@@ -101,7 +101,7 @@ class TrainEval:
         )
 
         if not self._ignoring_re_shuffle:
-            self.itr.logger.info(f"{self.logger_msg}: re-shuffle was submitted...")
+            self.itr.logger.info(f"{self.logger_msg}: re-shuffle job(s) were submitted...")
             self._num_to_ignore = 0
             self._num_to_run = 1
             self._run_jobs = True
@@ -323,6 +323,9 @@ class TrainEval:
             self.handler_label,
             self.logger_msg,
         )
+
+        print("TRAIN_JOB_NUM:", self.train_job_num)
+        breakpoint()
 
         if slurm_job.check_sbatch_file():
             if (
