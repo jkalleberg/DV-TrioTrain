@@ -204,10 +204,11 @@ class MakeExamples:
                         f"{self.logger_msg}: ignoring {self._num_to_ignore}-of-{self._total_regions} SLURM jobs"
                     )
                 elif self._num_to_ignore == self._total_regions:
-                    self.itr.logger.info(
-                        f"{self.logger_msg}: there are no jobs to re-submit for '{self._phase}:{self.genome}'... SKIPPING AHEAD"
-                    )
-                    self._skip_phase = True
+                    if self._outputs_exist:
+                        self.itr.logger.info(
+                            f"{self.logger_msg}: there are no jobs to re-submit for '{self._phase}:{self.genome}'... SKIPPING AHEAD"
+                        )
+                        self._skip_phase = True
             else:
                 if self.itr.debug_mode:
                     self.itr.logger.debug(
