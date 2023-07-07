@@ -269,13 +269,13 @@ class BeamShuffleExamples:
         )
 
         if slurm_job.check_sbatch_file():
-            if self.make_examples_jobs and self.overwrite:
+            if (self.make_examples_jobs[index] is not None or self.shuffle_examples_job_nums[index] is not None) and self.overwrite:
                 self.itr.logger.info(
                     f"{self.logger_msg}: --overwrite=True; re-writing the existing SLURM job now... "
                 )
             else:
                 self.itr.logger.info(
-                    f"{self.logger_msg}: SLURM job file already exists... SKIPPING AHEAD"
+                    f"{self.logger_msg}: --overwrite=False; SLURM job file already exists... SKIPPING AHEAD"
                 )
                 return
         else:

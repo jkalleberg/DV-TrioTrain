@@ -291,16 +291,15 @@ class MakeExamples:
         )
 
         if slurm_job.check_sbatch_file():
-            if len(self.make_examples_job_nums) > 0:
-                if self.make_examples_job_nums[index] is not None and self.overwrite:
-                    self.itr.logger.info(
-                        f"{self.logger_msg}: --overwrite=True, re-writing the existing SLURM job now..."
-                    )
-                else:
-                    self.itr.logger.info(
-                        f"{self.logger_msg}: SLURM job file already exists... SKIPPING AHEAD"
-                    )
-                    return
+            if self.make_examples_job_nums[index] is not None and self.overwrite:
+                self.itr.logger.info(
+                    f"{self.logger_msg}: --overwrite=True, re-writing the existing SLURM job now..."
+                )
+            else:
+                self.itr.logger.info(
+                    f"{self.logger_msg}: --overwrite=False; SLURM job file already exists... SKIPPING AHEAD"
+                )
+                return
         else:
             if self.itr.debug_mode:
                 self.itr.logger.debug(f"{self.logger_msg}: creating job file now... ")

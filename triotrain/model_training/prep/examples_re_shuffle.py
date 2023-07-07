@@ -222,16 +222,13 @@ class ReShuffleExamples:
         )
 
         if slurm_job.check_sbatch_file():
-            if (
-                self.re_shuffle_job_num
-                and self.overwrite
-            ):
+            if (self.re_shuffle_job_num[0] is not None or not self._ignoring_beam_shuffle) and self.overwrite:
                 self.itr.logger.info(
                     f"{self.logger_msg}: --overwrite=True, re-writing the existing SLURM job now..."
                 )
             else:
                 self.itr.logger.info(
-                    f"{self.logger_msg}: SLURM job file already exists... SKIPPING AHEAD"
+                    f"{self.logger_msg}: --overwrite=False; SLURM job file already exists... SKIPPING AHEAD"
                 )
                 return
         else:
@@ -446,8 +443,8 @@ class ReShuffleExamples:
                 f"[{self.itr._mode_string}] - [{phase}]"
             )
         
-        if self.genome is not None:
-            merged_logger_msg = f"{merged_logger_msg} - [{self.genome}]"
+            if self.genome is not None:
+                merged_logger_msg = f"{merged_logger_msg} - [{self.genome}]"
 
         if phase == 'find_outputs':
             self.find_variable(msg=merged_logger_msg)
