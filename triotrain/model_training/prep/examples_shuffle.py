@@ -328,14 +328,14 @@ class BeamShuffleExamples:
             log_msg = self.logger_msg
         else:
             log_msg = f"[{self.itr._mode_string}] - [{phase}] - [{self.genome}]"
-        
-        if not self.itr.demo_mode:
-            log_msg = f"{log_msg}{self.region_logger_msg}"
+
+            if not self.itr.demo_mode:
+                log_msg = f"{log_msg}{self.region_logger_msg}"
 
         if find_all:
             msg = "all labeled.shuffled.tfrecords"
         else:
-            msg = "the labeled.shuffled.tfrecords"
+            msg = "labeled.shuffled.tfrecords"
 
         # Confirm examples do not already exist
         (
@@ -373,11 +373,18 @@ class BeamShuffleExamples:
                 rf"{self.genome}.labeled.shuffled.dataset_config.pbtxt"
             )
 
-        logger_msg = f"[{self.itr._mode_string}] - [{phase}] - [{self.genome}]"
-        if find_all:
-            msg = "all the labeled.shuffled.pbtxt files"
+        if phase is None:
+            log_msg = self.logger_msg
         else:
-            msg = "the labeled.shuffled.pbtxt file"
+            log_msg = f"[{self.itr._mode_string}] - [{phase}] - [{self.genome}]"
+
+            if not self.itr.demo_mode:
+                log_msg = f"{log_msg}{self.region_logger_msg}"
+
+        if find_all:
+            msg = "all labeled.shuffled.pbtxt files"
+        else:
+            msg = "labeled.shuffled.pbtxt file(s)"
 
         # Confirm region#'s config does not already exist
         (
@@ -388,7 +395,7 @@ class BeamShuffleExamples:
             shuffled_config_regex,
             msg,
             self.itr.examples_dir,
-            logger_msg,
+            log_msg,
             self.itr.logger,
             debug_mode=self.itr.debug_mode,
             dryrun_mode=self.itr.dryrun_mode,
@@ -688,7 +695,7 @@ class BeamShuffleExamples:
                         f"{self.logger_msg}: max number of SLURM jobs for {msg}mission is {self._total_regions} but {self._num_to_run} were provided.\nExiting... ",
                     )
                     exit(1)
-                
+
                 for r in self.jobs_to_run:
                     if skip_re_runs:
                         region_index = r
