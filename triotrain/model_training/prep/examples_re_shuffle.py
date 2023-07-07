@@ -276,7 +276,7 @@ class ReShuffleExamples:
 
         if self.merged_config.file_exists:
             self.itr.logger.info(
-                f"{msg}: found the [1] labeled.shuffled.merged.dataset_config.pbtxt file... SKIPPING AHEAD"
+                f"{msg}: found the 1 labeled.shuffled.merged.dataset_config.pbtxt file... SKIPPING AHEAD"
             )
         else:
             self.itr.logger.info(f"{msg}: missing the labeled.shuffled.merged.dataset_config.pbtxt file")

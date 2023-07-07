@@ -123,22 +123,22 @@ def check_expected_outputs(
     if outputs_found == outputs_expected:
         if outputs_expected == 1:
             logger.info(
-                f"{msg}: found the [{int(outputs_found):,}] expected {file_type}... SKIPPING AHEAD"
+                f"{msg}: found the {int(outputs_found):,} expected {file_type}... SKIPPING AHEAD"
             )
         else:
             logger.info(
-                f"{msg}: found all [{int(outputs_found):,}] expected {file_type}... SKIPPING AHEAD"
+                f"{msg}: found all {int(outputs_found):,} expected {file_type}... SKIPPING AHEAD"
             )
         missing_outputs = False
     else:
         if int(outputs_expected) > int(outputs_found):
             logger.info(
-                f"{msg}: missing [{int(int(outputs_expected) - int(outputs_found)):,}-of-{int(outputs_expected):,}] {file_type}"
+                f"{msg}: missing {int(int(outputs_expected) - int(outputs_found)):,}-of-{int(outputs_expected):,} {file_type}"
             )
             missing_outputs = True
         else:
             logger.info(
-                f"{msg}: found [{int(int(outputs_found)-int(outputs_expected)):,}] more {file_type} than expected"
+                f"{msg}: found {int(int(outputs_found)-int(outputs_expected)):,} more {file_type} than expected"
             )
             missing_outputs = False
 
