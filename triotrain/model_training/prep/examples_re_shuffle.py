@@ -221,8 +221,6 @@ class ReShuffleExamples:
             self.logger_msg,
         )
 
-        print("RESHUFF JOB NUM:", self.re_shuffle_job_num)
-        print("OVERWRITE?", self.overwrite)
         if slurm_job.check_sbatch_file():
             if (
                 self.re_shuffle_job_num
@@ -359,7 +357,7 @@ class ReShuffleExamples:
         
         if not self.overwrite:
             if resubmission:
-                if self._ignoring_make_examples:
+                if self._ignoring_beam_shuffle:
                     self.itr.logger.info(
                         f"{self.logger_msg}: --overwrite=False; re-submitting job because missing labeled.shuffled.merged outputs"
                     )
