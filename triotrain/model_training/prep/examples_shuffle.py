@@ -59,7 +59,7 @@ class BeamShuffleExamples:
         if self.track_resources:
             assert (
                 self.benchmarking_file is not None
-            ), "unable to proceed, missing a h.WriteFiles object to save SLURM job IDs"
+            ), "unable to proceed, missing a WriteFiles object to save SLURM job IDs"
 
     def set_genome(self) -> None:
         """
@@ -269,7 +269,10 @@ class BeamShuffleExamples:
         )
 
         if slurm_job.check_sbatch_file():
-            if (self.make_examples_jobs[index] is not None or self.shuffle_examples_job_nums[index] is not None) and self.overwrite:
+            if (
+                self.make_examples_jobs[index] is not None
+                or self.shuffle_examples_job_nums[index] is not None
+            ) and self.overwrite:
                 self.itr.logger.info(
                     f"{self.logger_msg}: --overwrite=True; re-writing the existing SLURM job now... "
                 )
@@ -700,9 +703,15 @@ class BeamShuffleExamples:
                     if skip_re_runs:
                         region_index = r
                     # handle issues that occur when missing make_examples outputs but 're-start' beam_shuffle
-                    elif find_not_NaN(self.jobs_to_run) != find_not_NaN(self.shuffle_examples_job_nums):
-                        unique_jobs_to_run = list(set(self.jobs_to_run + self.shuffle_examples_job_nums))
-                        new_jobs_list = [j for j in unique_jobs_to_run if j is not None] # remove 'None' values
+                    elif find_not_NaN(self.jobs_to_run) != find_not_NaN(
+                        self.shuffle_examples_job_nums
+                    ):
+                        unique_jobs_to_run = list(
+                            set(self.jobs_to_run + self.shuffle_examples_job_nums)
+                        )
+                        new_jobs_list = [
+                            j for j in unique_jobs_to_run if j is not None
+                        ]  # remove 'None' values
                         region_index = new_jobs_list[i]
                     else:
                         region_index = self.shuffle_examples_job_nums[r]

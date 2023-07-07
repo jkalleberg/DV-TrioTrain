@@ -69,7 +69,7 @@ class CompareHappy:
         if self.track_resources:
             assert (
                 self.benchmarking_file is not None
-            ), "missing a h.WriteFiles object to save SLURM job IDs"
+            ), "missing a WriteFiles object to save SLURM job IDs"
 
         self._convert_happy_dependencies = create_deps(self.itr.total_num_tests)
 
@@ -632,7 +632,7 @@ class CompareHappy:
 
             if self._outputs_exist:
                 return
-            
+
             for t in range(0, int(self.itr.total_num_tests)):
                 self.job_num = t + 1
                 # THIS HAS TO BE +1 to avoid labeling files Test0

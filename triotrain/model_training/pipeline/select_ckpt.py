@@ -58,7 +58,7 @@ class SelectCheckpoint:
         if self.track_resources:
             assert (
                 self.benchmarking_file is not None
-            ), "unable to proceed, missing a h.WriteFiles object to save SLURM job IDs"
+            ), "unable to proceed, missing a WriteFiles object to save SLURM job IDs"
 
         self._model_testing_dependency = create_deps(1)
 

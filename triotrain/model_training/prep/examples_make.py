@@ -64,7 +64,7 @@ class MakeExamples:
         if self.track_resources:
             assert (
                 self.benchmarking_file is not None
-            ), "unable to proceed, missing a h.WriteFiles object to save SLURM job IDs"
+            ), "unable to proceed, missing a WriteFiles object to save SLURM job IDs"
 
     def set_variables(self) -> None:
         """Add variables from SLURM config to ENV"""
@@ -338,12 +338,10 @@ class MakeExamples:
         Determines if make_examples phase has completed successfully.
         """
         if phase is None:
-            log_msg = (
-                f"[{self.itr._mode_string}] - [{self._phase}] - [{self.genome}]"
-            )
+            log_msg = f"[{self.itr._mode_string}] - [{self._phase}] - [{self.genome}]"
         else:
             log_msg = f"[{self.itr._mode_string}] - [{phase}] - [{self.genome}]"
-        
+
         if not self.itr.demo_mode:
             log_msg = f"{log_msg}{self.region_logger_msg}"
 

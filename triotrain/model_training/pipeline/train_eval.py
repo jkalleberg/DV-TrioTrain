@@ -15,8 +15,13 @@ from typing import List, Union
 from helpers.files import WriteFiles
 from helpers.iteration import Iteration
 from helpers.outputs import check_expected_outputs, check_if_output_exists
-from helpers.utils import (check_if_all_same, create_deps, find_NaN,
-                           find_not_NaN, generate_job_id)
+from helpers.utils import (
+    check_if_all_same,
+    create_deps,
+    find_NaN,
+    find_not_NaN,
+    generate_job_id,
+)
 from model_training.pipeline.select_ckpt import SelectCheckpoint
 from model_training.slurm.sbatch import SBATCH, SubmitSBATCH
 from regex import compile
@@ -60,7 +65,9 @@ class TrainEval:
         else:
             self._cpu_mem = None
 
-        self.logger_msg = f"[{self.itr._mode_string}] - [{self._phase}] - [{self.itr.train_genome}]"
+        self.logger_msg = (
+            f"[{self.itr._mode_string}] - [{self._phase}] - [{self.itr.train_genome}]"
+        )
         self.epochs = self.itr.env.contents["N_Epochs"]
         self.batches = self.itr.env.contents["BatchSize"]
         self._total_ntasks = self.slurm_resources["train_eval"]["ntasks"]
@@ -87,7 +94,7 @@ class TrainEval:
         if self.track_resources:
             assert (
                 self.benchmarking_file is not None
-            ), "unable to proceed, missing a h.WriteFiles object to save SLURM job IDs"
+            ), "unable to proceed, missing a WriteFiles object to save SLURM job IDs"
 
         self._select_ckpt_dependency = create_deps(1)
 
@@ -101,7 +108,9 @@ class TrainEval:
         )
 
         if not self._ignoring_re_shuffle:
-            self.itr.logger.info(f"{self.logger_msg}: re-shuffle job(s) were submitted...")
+            self.itr.logger.info(
+                f"{self.logger_msg}: re-shuffle job(s) were submitted..."
+            )
             self._num_to_ignore = 0
             self._num_to_run = 1
             self._run_jobs = True
@@ -581,7 +590,7 @@ class TrainEval:
         Combine all the steps required to submit a job to SLURM queue into one step
         """
         self.find_restart_jobs()
-        
+
         # determine if we are re-running the training
         if self._num_to_run == 0:
             self._skipped_counter = self._num_to_ignore
