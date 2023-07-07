@@ -696,14 +696,14 @@ class BeamShuffleExamples:
                     )
                     exit(1)
 
-                for r in self.jobs_to_run:
+                for i, r in enumerate(self.jobs_to_run):
                     if skip_re_runs:
                         region_index = r
                     # handle issues that occur when missing make_examples outputs but 're-start' beam_shuffle
                     elif find_not_NaN(self.jobs_to_run) != find_not_NaN(self.shuffle_examples_job_nums):
                         unique_jobs_to_run = list(set(self.jobs_to_run + self.shuffle_examples_job_nums))
                         new_jobs_list = [j for j in unique_jobs_to_run if j is not None] # remove 'None' values
-                        region_index = new_jobs_list[r]
+                        region_index = new_jobs_list[i]
                     else:
                         region_index = self.shuffle_examples_job_nums[r]
 
