@@ -411,7 +411,7 @@ class BeamShuffleExamples:
             self._skipped_counter += 1
             if resubmission:
                 self.itr.logger.info(
-                    f"{self.logger_msg}: --overwrite=False; skipping job because found all labeled.tfrecords"
+                    f"{self.logger_msg}: --overwrite=False; skipping job because found all labeled.shuffled.tfrecords"
                 )
             return
 
@@ -701,15 +701,6 @@ class BeamShuffleExamples:
                         region_index = r
                     else:
                         region_index = self.shuffle_examples_job_nums[r]
-                        if not self.overwrite:
-                            self.itr.logger.info(
-                                f"{self.logger_msg}: --overwrite=False, jobs will run ONLY if missing any output files",
-                            )
-
-                        else:
-                            self.itr.logger.info(
-                                f"{self.logger_msg}: --overwrite=True, any exiting results files will be re-written...",
-                            )
 
                     self.job_num = (
                         region_index + 1
