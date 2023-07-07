@@ -157,6 +157,7 @@ class MakeExamples:
     def find_restart_jobs(self) -> None:
         """Collect any SLURM job ids for running tests to avoid submitting duplicate jobs simultaneously"""
         if self.make_examples_job_nums:
+            self.find_outputs(find_all=True)
             num_job_ids = len(self.make_examples_job_nums)
             if num_job_ids == self._total_regions:
                 self.jobs_to_run = find_not_NaN(self.make_examples_job_nums)
@@ -400,7 +401,7 @@ class MakeExamples:
                     self._num_tfrecords_found,
                     expected_outputs,
                     log_msg,
-                    "labeled.tfrecord",
+                    "labeled.tfrecords",
                     self.itr.logger,
                 )
                 if missing_files:
