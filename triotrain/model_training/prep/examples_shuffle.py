@@ -61,6 +61,40 @@ class BeamShuffleExamples:
             assert (
                 self.benchmarking_file is not None
             ), "unable to proceed, missing a WriteFiles object to save SLURM job IDs"
+    
+    def set_region(self, current_region: Union[int, str, None] = None) -> None:
+        """
+        Define the current region
+        """
+        if self.itr.demo_mode:
+            self.current_region = self.itr.demo_chromosome
+            if "chr" in self.itr.demo_chromosome.lower():
+                self.prefix = f"{self.genome}.{self.itr.demo_chromosome}"
+                self.job_label = f"{self.genome}{self.itr.current_trio_num}-{self.itr.demo_chromosome}"
+                self.region_logger_msg = f" - [{self.itr.demo_chromosome.upper()}]"
+            else:
+                self.prefix = f"{self.genome}.chr{self.itr.demo_chromosome}"
+                self.job_label = f"{self.genome}{self.itr.current_trio_num}-chr{self.itr.demo_chromosome}"
+                self.region_logger_msg = f" - [CHR{self.itr.demo_chromosome}]"
+        elif current_region == 0 or current_region is None:
+            self.current_region = None
+            self.prefix = self.genome
+            self.job_label = f"{self.genome}{self.itr.current_trio_num}"
+            self.region_logger_msg = ""
+        else:
+            self.current_region = current_region
+            self.prefix = f"{self.genome}.region{self.current_region}"
+            self.job_label = (
+                f"{self.genome}{self.itr.current_trio_num}-region{self.current_region}"
+            )
+            self.region_logger_msg = f" - [region{self.current_region}]"
+
+        if self.itr.demo_mode:
+            self.logger_msg = (
+                f"[{self.itr._mode_string}] - [{self._phase}] - [{self.genome}]"
+            )
+        else:
+            self.logger_msg = f"[{self.itr._mode_string}] - [{self._phase}] - [{self.genome}]{self.region_logger_msg}"
 
     def set_genome(self) -> None:
         """
@@ -100,49 +134,20 @@ class BeamShuffleExamples:
 
         # There should be one pbtxt created per region
         self.total_pbtxt_outputs_expected = int(self._total_regions)
+
+        self._re_shuffle_dependencies = create_deps(self._total_regions)
         self.logger_msg = (
             f"[{self.itr._mode_string}] - [{self._phase}] - [{self.genome}]"
         )
 
-    def set_region(self, current_region: Union[int, str, None] = None) -> None:
-        """
-        Define the current region
-        """
-        if self.itr.demo_mode:
-            self.current_region = self.itr.demo_chromosome
-            if "chr" in self.itr.demo_chromosome.lower():
-                self.prefix = f"{self.genome}.{self.itr.demo_chromosome}"
-                self.job_label = f"{self.genome}{self.itr.current_trio_num}-{self.itr.demo_chromosome}"
-                self.region_logger_msg = f" - [{self.itr.demo_chromosome.upper()}]"
-            else:
-                self.prefix = f"{self.genome}.chr{self.itr.demo_chromosome}"
-                self.job_label = f"{self.genome}{self.itr.current_trio_num}-chr{self.itr.demo_chromosome}"
-                self.region_logger_msg = f" - [CHR{self.itr.demo_chromosome}]"
-        elif current_region == 0:
-            self.current_region = None
-            self.prefix = self.genome
-            self.job_label = f"{self.genome}{self.itr.current_trio_num}"
-            self.region_logger_msg = ""
-        else:
-            self.current_region = current_region
-            self.prefix = f"{self.genome}.region{self.current_region}"
-            self.job_label = (
-                f"{self.genome}{self.itr.current_trio_num}-region{self.current_region}"
-            )
-            self.region_logger_msg = f" - [region{self.current_region}]"
-
-        if self.itr.demo_mode:
-            self.logger_msg = (
-                f"[{self.itr._mode_string}] - [{self._phase}] - [{self.genome}]"
-            )
-        else:
-            self.logger_msg = f"[{self.itr._mode_string}] - [{self._phase}] - [{self.genome}]{self.region_logger_msg}"
+        self.set_region()
 
     def find_restart_jobs(self) -> None:
         """
         Collect any SLURM job ids for running tests to avoid submitting a job while it's already running.
         """
         self._ignoring_make_examples = check_if_all_same(self.make_examples_jobs, None)
+        self._ignoring_restart_jobs = check_if_all_same(self.shuffle_examples_job_nums, None)
 
         if not self._ignoring_make_examples:
             self.jobs_to_run = find_not_NaN(self.make_examples_jobs)
@@ -150,14 +155,13 @@ class BeamShuffleExamples:
             self._run_jobs = True
             self._num_to_ignore = len(find_NaN(self.make_examples_jobs))
 
-        elif self.shuffle_examples_job_nums:
+        elif not self._ignoring_make_examples:
             num_job_ids = len(self.shuffle_examples_job_nums)
             if num_job_ids == self._total_regions:
                 self.jobs_to_run = find_not_NaN(self.shuffle_examples_job_nums)
                 self._num_to_run = len(self.jobs_to_run)
                 self._run_jobs = True
                 self._num_to_ignore = len(find_NaN(self.shuffle_examples_job_nums))
-                self._re_shuffle_dependencies = create_deps(self._total_regions)
         
         else:
             self.jobs_to_run = None
@@ -166,12 +170,13 @@ class BeamShuffleExamples:
                 self.itr.logger.debug(
                     f"{self.logger_msg}: running job ids were NOT provided"
                 )
-
-
+        
         if self._num_to_run == self._total_regions:
-            if self.jobs_to_run:
+            if self.jobs_to_run and not self._ignoring_restart_jobs: 
                 updated_jobs_list = []
+
                 for index in self.jobs_to_run:
+
                     if index is not None:
                         if is_jobid(self.shuffle_examples_job_nums[index]):
                             self._num_to_run -= 1

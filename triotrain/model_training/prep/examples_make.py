@@ -420,10 +420,10 @@ class MakeExamples:
               the number created depends on
               the number of CPUs available from SLURM.
         """
-        print("OUTPUTS EXIST?", self._outputs_exist, "& NOT OVERWRITE?", not self.overwrite)
-        print("or")
-        print("OUTPUTS EXIST?", self._outputs_exist, "& IGNORING RESTART JOBS:", self._ignoring_restart_jobs)
-        breakpoint()
+        # print("OUTPUTS EXIST?", self._outputs_exist, "& NOT OVERWRITE?", not self.overwrite)
+        # print("or")
+        # print("OUTPUTS EXIST?", self._outputs_exist, "& IGNORING RESTART JOBS:", self._ignoring_restart_jobs)
+        # breakpoint()
         if (self._outputs_exist and self.overwrite is False) or (self._outputs_exist and self._ignoring_restart_jobs):
             self._skipped_counter += 1
             if resubmission:

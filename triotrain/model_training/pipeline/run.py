@@ -463,6 +463,7 @@ class RunTrioTrain:
                 if self.itr.current_genome_dependencies[index] is None:
                     phase_skipped_counter = 0
                     self.current_phase = "make_examples"
+
                     # identify any jobs to be re-run
                     if self._n_regions is not None:
                         self.process_re_runs(
@@ -473,7 +474,6 @@ class RunTrioTrain:
                     else:
                         self.process_re_runs(self.current_phase, genome=genome)
 
-                    print("JOBIDS1:", self._jobIDs)
                     make_examples = MakeExamples(
                         itr=self.itr,
                         slurm_resources=self.resource_dict,
@@ -494,10 +494,6 @@ class RunTrioTrain:
                         and make_examples._outputs_exist is False
                     ):
                         self.check_next_phase(total_jobs=self._n_regions, genome=genome)
-                    
-                    print("JOBIDS2:", self._jobIDs)
-                    print("STOPPING HERE!")
-                    breakpoint()
 
                     # if not self.re_running_jobs and not self.overwrite:
                     #     make_examples.set_genome()
@@ -512,7 +508,7 @@ class RunTrioTrain:
 
                     # make + submit any make_examples jobs
                     examples_job_nums = make_examples.run()
-                    print("NOW HERE")
+                    print("ENDING MAKE_EXAMPLES")
                     breakpoint()
 
                     # Determine if any 'make_examples' jobs were submitted
@@ -526,14 +522,15 @@ class RunTrioTrain:
                             phase_skipped_counter += 1
 
                     ### ------ SHUFFLE EXAMPLES ------ ###
+                    self.current_phase = "beam_shuffle"
                     if self._n_regions is not None:
                         self.process_re_runs(
-                            "beam_shuffle",
+                            self.current_phase,
                             total_jobs_in_phase=self._n_regions,
                             genome=genome,
                         )
                     else:
-                        self.process_re_runs("beam_shuffle", genome=genome)
+                        self.process_re_runs(self.current_phase, genome=genome)
 
                     # submit with no dependencies
                     if no_dependencies_required and examples_job_nums is None:
@@ -560,7 +557,11 @@ class RunTrioTrain:
                             make_examples_jobs=examples_job_nums,
                         )
 
+                    shuffle_examples.set_genome()
+                    breakpoint()
+                    shuffle_examples.find_outputs(phase=self.current_phase, find_all=True)
                     beam_job_nums = shuffle_examples.run()
+                    print("ENDING BEAM_SHUFFLE")
                     breakpoint()
 
                     if beam_job_nums is None:
