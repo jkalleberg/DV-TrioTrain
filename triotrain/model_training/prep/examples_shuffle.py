@@ -46,6 +46,8 @@ class BeamShuffleExamples:
 
     # internal, imutable values
     _existing_config: bool = field(default=False, init=False, repr=False)
+    _ignoring_make_examples: Union[bool, None] = field(default=None, init=False, repr=False)
+    _ignoring_restart_jobs: Union[bool, None] = field(default=None, init=False, repr=False) 
     _outputs_exist: bool = field(default=False, init=False, repr=False)
     _phase: str = field(default="beam_shuffle", init=False, repr=False)
     _re_shuffle_dependencies: Union[List[Union[str, None]], None] = field(
@@ -155,7 +157,7 @@ class BeamShuffleExamples:
             self._run_jobs = True
             self._num_to_ignore = len(find_NaN(self.make_examples_jobs))
 
-        elif not self._ignoring_make_examples:
+        elif not self._ignoring_restart_jobs:
             num_job_ids = len(self.shuffle_examples_job_nums)
             if num_job_ids == self._total_regions:
                 self.jobs_to_run = find_not_NaN(self.shuffle_examples_job_nums)
@@ -270,7 +272,7 @@ class BeamShuffleExamples:
             self.job_name,
             self.model_label,
             self.handler_label,
-            f"{self.logger_msg}",
+            self.logger_msg,
             self.logger_msg,
         )
 
@@ -466,7 +468,7 @@ class BeamShuffleExamples:
             f"{self.job_name}.sh",
             self.handler_label,
             self.itr.logger,
-            f"{self.logger_msg}",
+            self.logger_msg,
         )
 
         if self.make_examples_jobs is not None and len(self.make_examples_jobs) == int(
@@ -515,6 +517,10 @@ class BeamShuffleExamples:
         """
         Check if the SLURM job file was submitted to the SLURM queue successfully
         """
+        self.logger_msg = (
+            f"[{self.itr._mode_string}] - [{self._phase}] - [{self.genome}]"
+        )
+        
         if self.itr.debug_mode:
             self._total_regions = 5
 

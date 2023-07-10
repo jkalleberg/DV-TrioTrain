@@ -558,8 +558,16 @@ class RunTrioTrain:
                         )
 
                     shuffle_examples.set_genome()
-                    breakpoint()
                     shuffle_examples.find_outputs(phase=self.current_phase, find_all=True)
+                    
+                    if (
+                        not self.re_running_jobs
+                        and shuffle_examples._outputs_exist is False
+                    ):
+                        self.check_next_phase(total_jobs=self._n_regions, genome=genome)
+                    
+                    print("HI THERE!")
+                    breakpoint()
                     beam_job_nums = shuffle_examples.run()
                     print("ENDING BEAM_SHUFFLE")
                     breakpoint()

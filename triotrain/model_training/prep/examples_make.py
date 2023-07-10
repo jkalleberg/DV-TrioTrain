@@ -510,6 +510,10 @@ class MakeExamples:
         """
         Check if the SLURM job file was submitted to the SLURM queue successfully
         """
+        self.logger_msg = (
+            f"[{self.itr._mode_string}] - [{self._phase}] - [{self.genome}]"
+        )
+        
         if self.itr.debug_mode:
             self._total_regions = 5
 
