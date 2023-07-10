@@ -1,3 +1,6 @@
+from typing import Union
+
+
 def is_jobid(value: Union[int, str]) -> bool:
     """Determine if a user entered value is a SLURM job id, indicating a currently running job to save for building job dependencies.
 
