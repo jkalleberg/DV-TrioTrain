@@ -371,9 +371,14 @@ class ReShuffleExamples:
                     f"{self.logger_msg}: submitting job to create the labeled.shuffled.merged outputs"
                 )
         else:
-            self.itr.logger.info(
-                f"{self.logger_msg}: --overwrite=True; re-submitting job because replacing existing labeled.shuffled.merged outputs"
-            )
+            if self._outputs_exist:
+                self.itr.logger.info(
+                    f"{self.logger_msg}: --overwrite=True; re-submitting job because replacing existing labeled.shuffled.merged outputs"
+                )
+            else:
+                self.itr.logger.info(
+                    f"{self.logger_msg}: submitting job to create labeled.shuffled.merged outputs"
+                )
 
         submit_slurm_job = SubmitSBATCH(
             self.itr.job_dir,

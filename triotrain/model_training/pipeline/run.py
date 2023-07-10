@@ -8,11 +8,12 @@ usage:
 from dataclasses import dataclass, field
 from json import load
 from sys import exit
-from typing import TextIO, Union
+from typing import TextIO, Union, List
 
 # Custom helper modules
 from helpers.files import WriteFiles
 from helpers.iteration import Iteration
+from helpers.jobs import is_job_index, is_jobid
 from helpers.outputs import check_expected_outputs
 from helpers.utils import check_if_all_same
 from model_training.pipeline.select_ckpt import SelectCheckpoint
@@ -58,6 +59,7 @@ class RunTrioTrain:
     _jobIDs: list = field(default_factory=list, init=False, repr=False)
     _jobs_found: int = field(default=0, init=False, repr=False)
     _n_regions: Union[int, None] = field(default=None, init=False, repr=False)
+    _phase_jobs: Union[List[str], List[int], None] = field(default=None, init=False, repr=False)
 
     def __post_init__(self) -> None:
         assert (
@@ -153,9 +155,7 @@ class RunTrioTrain:
                 jobids_list.insert(index, jobid)
             self.restart_jobs[key] = jobids_list
 
-    
-
-    def process_re_runs(
+    def check_restart(
         self, phase: str, total_jobs_in_phase: int = 1, genome: Union[str, None] = None
     ) -> None:
         """
@@ -163,9 +163,11 @@ class RunTrioTrain:
         """
         self.re_running_jobs = None
         if genome is None:
-            logger_msg = f"[{self.itr._mode_string}] - [{phase}]"
+            self._phase_logger_msg = f"[{self.itr._mode_string}] - [{phase}]"
         else:
-            logger_msg = f"[{self.itr._mode_string}] - [{phase}] - [{genome}]"
+            self._phase_logger_msg = (
+                f"[{self.itr._mode_string}] - [{phase}] - [{genome}]"
+            )
 
         if not self.restart_jobs:
             return
@@ -173,99 +175,114 @@ class RunTrioTrain:
         self._jobIDs = [None] * total_jobs_in_phase
         if genome is not None and f"{phase}:{genome}" in self.restart_jobs.keys():
             self.itr.logger.info(
-                f"{logger_msg}: re-starting jobs were provided for '{phase}:{genome}'"
+                f"{self._phase_logger_msg}: re-starting jobs were provided for '{phase}:{genome}'"
             )
-            inputs = self.restart_jobs[f"{phase}:{genome}"]
+            self._phase_jobs = self.restart_jobs[f"{phase}:{genome}"]
             self.re_running_jobs = True
         elif phase in self.restart_jobs.keys():
             self.itr.logger.info(
-                f"{logger_msg}: re-starting jobs were provided for '{phase}'"
+                f"{self._phase_logger_msg}: re-starting jobs were provided for '{phase}'"
             )
-            inputs = self.restart_jobs[phase]
+            self._phase_jobs = self.restart_jobs[phase]
             self.re_running_jobs = True
         else:
-            inputs = None
+            self._phase_jobs = None
             self.re_running_jobs = False
 
-        if inputs is not None:
-            # check if all elements in inputs are integers
-            if all([isinstance(item, int) for item in inputs]):
-                # check if all elements in inputs are not SLURM job ids
-                if all([not self.is_jobid(item) for item in inputs]):
+    def process_re_runs(
+        self, phase: str, total_jobs_in_phase: int = 1, genome: Union[str, None] = None
+    ) -> None:
+        """
+        Determine if any jobs need to be re-submitted to the queue
+        """
+        self.check_restart(
+            phase=phase, total_jobs_in_phase=total_jobs_in_phase, genome=genome
+        )
+        if self._phase_jobs:
+            # check if all elements in self._phase_jobs are integers
+            if all([isinstance(item, int) for item in self._phase_jobs]):
+                # check if all elements in self._phase_jobss are not SLURM job ids
+                if all([not is_jobid(item) for item in self._phase_jobs]):
                     # handle if the user provides region numbers,
-                    if 0 not in inputs:
-                        indexes = [x - 1 for x in inputs]
+                    if 0 not in self._phase_jobs:
+                        indexes = [x - 1 for x in self._phase_jobs]
                     # rather than a list of indexes
                     else:
-                        indexes = inputs
+                        indexes = self._phase_jobs
                 else:
-                    indexes = inputs
+                    indexes = self._phase_jobs
             else:
-                indexes = inputs
+                indexes = self._phase_jobs
         else:
             indexes = [None] * total_jobs_in_phase
 
+        print("JOBIDS HERE:", self._jobIDs)
+        breakpoint()
         for i, index in enumerate(indexes):
-            if index is not None:
-                if self.is_jobid(index):
-                    if total_jobs_in_phase > 1:
-                        _num = i + 1
-                        if phase in ["make_examples", "beam_shuffle"]:
-                            self.itr.logger.info(
-                                f"{logger_msg} - [region{_num}]: currently running SLURM job ID | '{index}'"
-                            )
-                        if phase in ["call_variants", "compare_happy", "convert_happy"]:
-                            self.itr.logger.info(
-                                f"{logger_msg} - [test{_num}]: currently running SLURM job ID | '{index}'"
-                            )
-                    else:
+            if index is None:
+                continue
+            elif is_jobid(index):
+                if total_jobs_in_phase > 1:
+                    _num = i + 1
+                    if phase in ["make_examples", "beam_shuffle"]:
                         self.itr.logger.info(
-                            f"{logger_msg}: currently running SLURM job ID | '{index}'"
+                            f"{self._phase_logger_msg} - [region{_num}]: currently running SLURM job ID | '{index}'"
                         )
+                    if phase in ["call_variants", "compare_happy", "convert_happy"]:
+                        self.itr.logger.info(
+                            f"{self._phase_logger_msg} - [test{_num}]: currently running SLURM job ID | '{index}'"
+                        )
+                else:
+                    self.itr.logger.info(
+                        f"{self._phase_logger_msg}: currently running SLURM job ID | '{index}'"
+                    )
 
-                    self._jobIDs[i] = index
-                elif self.is_job_index(index, max_jobs=total_jobs_in_phase):
-                    self._jobIDs[index] = index
+                self._jobIDs[i] = index
+            elif is_job_index(index, max_jobs=total_jobs_in_phase):
+                self._jobIDs[index] = index
+            else:
+                self.itr.logger.error(
+                    f"{self._phase_logger_msg}: invalid index value provided..."
+                )
+                if index >= total_jobs_in_phase:
+                    self.itr.logger.error(
+                        f"{self._phase_logger_msg}: you entered '{index + 1}'..."
+                    )
                 else:
                     self.itr.logger.error(
-                        f"{logger_msg}: invalid index value provided..."
+                        f"{self._phase_logger_msg}: you entered '{index}'..."
                     )
-                    if index >= total_jobs_in_phase:
-                        self.itr.logger.error(f"{logger_msg}: you entered '{index + 1}'...")
-                    else:
-                        self.itr.logger.error(f"{logger_msg}: you entered '{index}'...")
-                    
-                    if total_jobs_in_phase == 1:
-                        self.itr.logger.error(
-                            f"{logger_msg}: did you mean to enter '0' or '{total_jobs_in_phase}'?"
-                        )
-                    else:
-                        self.itr.logger.error(
-                            f"{logger_msg}: did you mean to enter a number between '0 - {total_jobs_in_phase-1}' or '1 - {total_jobs_in_phase}'?"
-                        )
-                    print("Exiting...")
-                    exit(1)
-            else:
-                self._jobIDs[i] = None
 
-        if len(self._jobIDs) != total_jobs_in_phase:
+                if total_jobs_in_phase == 1:
+                    self.itr.logger.error(
+                        f"{self._phase_logger_msg}: did you mean to enter '0' or '{total_jobs_in_phase}'?"
+                    )
+                else:
+                    self.itr.logger.error(
+                        f"{self._phase_logger_msg}: did you mean to enter a number between '0 - {total_jobs_in_phase-1}' or '1 - {total_jobs_in_phase}'?"
+                    )
+                print("Exiting...")
+                exit(1)
+
+        if len(self._jobIDs) == 0:
+            self.re_running_jobs = False
+        elif len(self._jobIDs) != total_jobs_in_phase:
             self.itr.logger.error(
-                f"{logger_msg}: incorrect format used for --running-jobids"
+                f"{self._phase_logger_msg}: incorrect format used for --running-jobids"
             )
             if total_jobs_in_phase == 1:
                 self.itr.logger.error(
-                    f"{logger_msg}: expected a list with {total_jobs_in_phase} value reprenting [a jobID, an index, or 'None'] but only {len(self._jobIDs)} were provided.\nExiting..."
+                    f"{self._phase_logger_msg}: expected a list with {total_jobs_in_phase} value reprenting [a jobID, an index, or 'None'] but only {len(self._jobIDs)} were provided.\nExiting..."
                 )
             else:
                 self.itr.logger.error(
-                    f"{logger_msg}: expected a list containing {total_jobs_in_phase} values reprenting [jobIDs, indexes, or 'None'] but only {len(self._jobIDs)} were provided.\nExiting..."
+                    f"{self._phase_logger_msg}: expected a list containing {total_jobs_in_phase} values reprenting [jobIDs, indexes, or 'None'] but only {len(self._jobIDs)} were provided.\nExiting..."
                 )
             exit(1)
         else:
             skip_rerunning_jobs = check_if_all_same(self._jobIDs, None)
             if skip_rerunning_jobs:
                 self.re_running_jobs = False
-                return
             else:
                 self.re_running_jobs = True
 
@@ -352,6 +369,42 @@ class RunTrioTrain:
                 self.itr.logger.info(
                     f"[{self.itr._mode_string}] - [check_jobs] - [{self.genome}]: creating + submiting SLURM files"
                 )
+    
+    def find_next_phase(self) -> None:
+        """Determine which phase comes next"""
+        if self.current_phase == "make_examples":
+            self.next_phase = "beam_shuffle"
+        elif self.current_phase == "beam_shuffle":
+            self.next_phase = "re_shuffle"
+        elif self.current_phase == "re_shuffle":
+            self.next_phase = "train_eval"
+        elif self.current_phase == "train_eval":
+            self.next_phase = "select_ckpt"
+        elif self.current_phase == "select_ckpt":
+            self.next_phase = "call_variants"
+        elif self.current_phase == "call_variants":
+            self.next_phase = "convert_happy"
+
+    def check_next_phase(self, total_jobs:int, genome: Union[str, None] = None) -> None:
+        self.itr.logger.info(
+                    f"[{self.itr._mode_string}] - [check_next_phase]: checking for --restart-jobs errors...")
+        self.find_next_phase()
+        self.process_re_runs(phase=self.next_phase,
+                             total_jobs_in_phase=total_jobs,
+                             genome=genome,
+                             )
+        if self.re_running_jobs:
+            self.itr.logger.error(
+                f"[{self.itr._mode_string}] - [check_next_phase]: attempting to re-start '{self.next_phase}' without '{self.current_phase}' outputs")
+            self.itr.logger.error(
+                f"[{self.itr._mode_string}] - [check_next_phase]: edit '--restart-jobs' to include either a list of running SLURM job IDs for '{self.current_phase}', or ")
+            if genome:
+                self.itr.logger.error(
+                    f"[{self.itr._mode_string}] - [check_next_phase]: edit '--restart-jobs' to include \'{{\"{self.current_phase}:{genome}\": {self._phase_jobs}, \"{self.next_phase}:{genome}\": {self._phase_jobs}}}\'\nExiting...") 
+            else:
+                self.itr.logger.error(
+                    f"[{self.itr._mode_string}] - [check_next_phase]: edit '--restart-jobs' to include \'{{\"{self.current_phase}\": {self._phase_jobs}, \"{self.next_phase}\": {self._phase_jobs}}}\'\nExiting...")
+            exit(1)
 
     def data_prep_jobs(self) -> None:
         """
@@ -409,16 +462,18 @@ class RunTrioTrain:
             if self.itr.current_genome_num is not None:
                 if self.itr.current_genome_dependencies[index] is None:
                     phase_skipped_counter = 0
+                    self.current_phase = "make_examples"
                     # identify any jobs to be re-run
                     if self._n_regions is not None:
                         self.process_re_runs(
-                            "make_examples",
+                            self.current_phase,
                             total_jobs_in_phase=self._n_regions,
                             genome=genome,
                         )
                     else:
-                        self.process_re_runs("make_examples", genome=genome)
+                        self.process_re_runs(self.current_phase, genome=genome)
 
+                    print("JOBIDS1:", self._jobIDs)
                     make_examples = MakeExamples(
                         itr=self.itr,
                         slurm_resources=self.resource_dict,
@@ -431,19 +486,33 @@ class RunTrioTrain:
                         make_examples_job_nums=self._jobIDs,
                     )
 
-                    if not self.re_running_jobs and not self.overwrite:
-                        make_examples.set_genome()
-                        make_examples.find_all_outputs()
+                    make_examples.set_genome()
+                    make_examples.find_outputs(self.current_phase, find_all=True)
 
-                        # skip ahead if all outputs exist already
-                        if make_examples._outputs_exist and not self.restart_jobs:
-                            self.itr.logger.info(
-                                f"------------ SKIPPING [{self.itr._mode_string}] - [data_prep_jobs] - [{genome}] ------------"
-                            )
-                            continue
+                    if (
+                        not self.re_running_jobs
+                        and make_examples._outputs_exist is False
+                    ):
+                        self.check_next_phase(total_jobs=self._n_regions, genome=genome)
+                    
+                    print("JOBIDS2:", self._jobIDs)
+                    print("STOPPING HERE!")
+                    breakpoint()
+
+                    # if not self.re_running_jobs and not self.overwrite:
+                    #     make_examples.set_genome()
+                    #     make_examples.find_all_outputs()
+
+                    #     # skip ahead if all outputs exist already
+                    #     if make_examples._outputs_exist and not self.restart_jobs:
+                    #         self.itr.logger.info(
+                    #             f"------------ SKIPPING [{self.itr._mode_string}] - [data_prep_jobs] - [{genome}] ------------"
+                    #         )
+                    #         continue
 
                     # make + submit any make_examples jobs
                     examples_job_nums = make_examples.run()
+                    print("NOW HERE")
                     breakpoint()
 
                     # Determine if any 'make_examples' jobs were submitted
@@ -540,6 +609,7 @@ class RunTrioTrain:
                             )
 
                         output = re_shuffle.run()
+                        breakpoint()
 
                         if output is not None:
                             self.itr = output

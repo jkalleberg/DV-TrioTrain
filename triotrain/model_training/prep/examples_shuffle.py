@@ -19,6 +19,7 @@ from helpers.utils import (
     find_not_NaN,
     generate_job_id,
 )
+from helpers.jobs import is_job_index, is_jobid
 from model_training.slurm.sbatch import SBATCH, SubmitSBATCH
 
 
@@ -144,74 +145,74 @@ class BeamShuffleExamples:
         self._ignoring_make_examples = check_if_all_same(self.make_examples_jobs, None)
 
         if not self._ignoring_make_examples:
-            self._num_to_ignore = len(find_NaN(self.make_examples_jobs))
             self.jobs_to_run = find_not_NaN(self.make_examples_jobs)
             self._num_to_run = len(self.jobs_to_run)
             self._run_jobs = True
+            self._num_to_ignore = len(find_NaN(self.make_examples_jobs))
 
         elif self.shuffle_examples_job_nums:
             num_job_ids = len(self.shuffle_examples_job_nums)
             if num_job_ids == self._total_regions:
                 self.jobs_to_run = find_not_NaN(self.shuffle_examples_job_nums)
                 self._num_to_run = len(self.jobs_to_run)
+                self._run_jobs = True
                 self._num_to_ignore = len(find_NaN(self.shuffle_examples_job_nums))
                 self._re_shuffle_dependencies = create_deps(self._total_regions)
-
-                if self.jobs_to_run:
-                    self._run_jobs = True
-                    for index in self.jobs_to_run:
-                        if index is not None:
-                            if (
-                                isinstance(self.shuffle_examples_job_nums[index], str)
-                                or self.shuffle_examples_job_nums[index]
-                                > self._total_regions
-                                or self.shuffle_examples_job_nums[index] is None
-                            ):
-                                if len(str(self.shuffle_examples_job_nums[index])) != 8:
-                                    self.itr.logger.error(
-                                        f"{self.logger_msg}: invalid input for SLURM job ID | {self.shuffle_examples_job_nums[index]}"
-                                    )
-                                    self.itr.logger.error(
-                                        f"{self.logger_msg}: an 8-digit value must be provided for any number greater than {self._total_regions}.\nExiting..."
-                                    )
-                                    exit(1)
-
-                                self._num_to_run -= 1
-                                self._num_to_ignore += 1
-                                self._skipped_counter += 1
-                                self._re_shuffle_dependencies[index] = str(
-                                    self.shuffle_examples_job_nums[index]
-                                )
-                else:
-                    self._run_jobs = False
-
-                if 0 < self._num_to_ignore < self._total_regions:
-                    self.itr.logger.info(
-                        f"{self.logger_msg}: ignoring {self._num_to_ignore}-of-{self._total_regions} SLURM jobs"
-                    )
-                else:
-                    self.itr.logger.info(
-                        f"{self.logger_msg}: there are no jobs to re-submit for '{self._phase}:{self.genome}'... SKIPPING AHEAD"
-                    )
-                    self._skip_phase = True
-            else:
-                if self.itr.debug_mode:
-                    self.itr.logger.debug(
-                        f"{self.logger_msg}: --running-jobids triggered reprocessing {num_job_ids} job"
-                    )
-                self.itr.logger.error(
-                    f"{self.logger_msg}: incorrect format for 'shuffle_examples_job_nums'"
-                )
-                self.itr.logger.error(
-                    f"{self.logger_msg}: expected a list of {self._total_regions} SLURM jobs (or 'None' as a place holder)"
-                )
-                self._run_jobs = None
+        
         else:
+            self.jobs_to_run = None
             self._run_jobs = True
             if self.itr.debug_mode:
                 self.itr.logger.debug(
                     f"{self.logger_msg}: running job ids were NOT provided"
                 )
+
+
+        if self._num_to_run == self._total_regions:
+            if self.jobs_to_run:
+                updated_jobs_list = []
+                for index in self.jobs_to_run:
+                    if index is not None:
+                        if is_jobid(self.shuffle_examples_job_nums[index]):
+                            self._num_to_run -= 1
+                            self._num_to_ignore += 1
+                            self._skipped_counter += 1
+                            self._re_shuffle_dependencies[index] = str(
+                                self.shuffle_examples_job_nums[index]
+                                )
+                            if self.itr.debug_mode:
+                                self.itr.logger.debug(
+                                    f"{self.logger_msg}: beam_shuffling dependencies updated to {self._beam_shuffle_dependencies}"
+                                )
+                        elif is_job_index(self.shuffle_examples_job_nums[index]):
+                            updated_jobs_list.append(index)
+                
+                if updated_jobs_list:
+                    self.jobs_to_run = updated_jobs_list
+            
+            if self._num_to_ignore == self._total_regions: 
+                self.itr.logger.info(
+                    f"{self.logger_msg}: there are no jobs to re-submit for '{self._phase}:{self.genome}'... SKIPPING AHEAD"
+                )
+                self._skip_phase = True
+            elif 0 < self._num_to_ignore < self._total_regions:
+                self.itr.logger.info(
+                    f"{self.logger_msg}: ignoring {self._num_to_ignore}-of-{self._total_regions} SLURM jobs"
+                )
+                
+        else:
+            if self.itr.debug_mode:
+                self.itr.logger.debug(
+                    f"{self.logger_msg}: --running-jobids triggered reprocessing {num_job_ids} job"
+                )
+            self.itr.logger.error(
+                f"{self.logger_msg}: incorrect format for 'shuffle_examples_job_nums'"
+            )
+            self.itr.logger.error(
+                f"{self.logger_msg}: expected a list of {self._total_regions} SLURM jobs (or 'None' as a place holder)"
+            )
+            self._run_jobs = None
+        
 
     def benchmark(self) -> None:
         """
@@ -269,10 +270,17 @@ class BeamShuffleExamples:
         )
 
         if slurm_job.check_sbatch_file():
-            if (
-                self.make_examples_jobs[index] is not None
-                or self.shuffle_examples_job_nums[index] is not None
-            ) and self.overwrite:
+            if index < len(self.make_examples_jobs):
+                prior_jobs = self.make_examples_jobs[index] is not None
+            else:
+                prior_jobs = False
+            
+            if index < len(self.shuffle_examples_job_nums):
+                resub_jobs = self.shuffle_examples_job_nums[index] is not None
+            else:
+                resub_jobs = False
+            
+            if (prior_jobs or resub_jobs) and self.overwrite:
                 self.itr.logger.info(
                     f"{self.logger_msg}: --overwrite=True; re-writing the existing SLURM job now... "
                 )
@@ -439,9 +447,14 @@ class BeamShuffleExamples:
                     f"{self.logger_msg}: submitting job to create {num_missing_files} labeled.shuffled.tfrecords"
                 )
         else:
-            self.itr.logger.info(
-                f"{self.logger_msg}: --overwrite=True; re-submitting job because replacing existing labeled.shuffled.tfrecords"
-            )
+            if self._outputs_exist:
+                self.itr.logger.info(
+                    f"{self.logger_msg}: --overwrite=True; re-submitting job because replacing existing labeled.shuffled.tfrecords"
+                )
+            else:
+                self.itr.logger.info(
+                    f"{self.logger_msg}: submitting job to create {num_missing_files} labeled.shuffled.tfrecords"
+                )
 
         slurm_job = SubmitSBATCH(
             self.itr.job_dir,
@@ -662,9 +675,7 @@ class BeamShuffleExamples:
             return
 
         # Determine if we are re-running some of the regions for make_examples
-        if (
-            self.make_examples_jobs or not self._ignoring_make_examples
-        ) and self._run_jobs is not None:
+        if (not self._ignoring_make_examples or self.shuffle_examples_job_nums) and self._run_jobs is not None:
             if self._num_to_run == 0:
                 self._skipped_counter = self._num_to_ignore
                 if (
@@ -683,6 +694,7 @@ class BeamShuffleExamples:
                     )
 
                 skip_re_runs = check_if_all_same(self.shuffle_examples_job_nums, None)
+
                 if skip_re_runs:
                     msg = "sub"
                 else:
@@ -722,7 +734,7 @@ class BeamShuffleExamples:
 
                     self.set_region(current_region=self.job_num)
                     self.find_outputs()
-                    if skip_re_runs:
+                    if skip_re_runs or not self._outputs_exist:
                         self.submit_job(
                             dependency_index=region_index,
                             resubmission=False,
