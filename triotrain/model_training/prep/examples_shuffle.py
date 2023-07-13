@@ -642,13 +642,14 @@ class BeamShuffleExamples:
         else:
             missing_shuffled_files = False
 
+        
         if phase is None:
             self.find_beam_shuffled_pbtxt(phase=self._phase, find_all=find_all)
         else:
             self.find_beam_shuffled_pbtxt(phase=phase, find_all=find_all)
-
+        
         if self.overwrite and (
-            self.make_examples_jobs or not self._ignoring_make_examples
+            self.make_examples_jobs or not check_if_all_same(self.make_examples_jobs, None)
         ):
             self._outputs_exist = False
         else:

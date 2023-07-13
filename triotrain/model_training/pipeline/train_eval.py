@@ -333,9 +333,6 @@ class TrainEval:
             self.logger_msg,
         )
 
-        print("TRAIN_JOB_NUM:", self.train_job_num)
-        breakpoint()
-
         if slurm_job.check_sbatch_file():
             if (
                 self.train_job_num
