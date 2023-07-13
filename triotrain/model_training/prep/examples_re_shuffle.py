@@ -529,8 +529,6 @@ class ReShuffleExamples:
                         f"{self.logger_msg}: max number of SLURM jobs for {msg}mission is 1 but {self._num_to_run} were provided.\nExiting... ",
                     )
                     exit(1)
-
-                self.find_outputs(find_all=True)
                 self.submit_job(resubmission=True)
 
         # or running it for the first time

@@ -294,14 +294,7 @@ class RunTrioTrain:
                 print("Exiting...")
                 exit(1)
 
-        print("RE_RUNNING_JOBS:", self.re_running_jobs)
-        print("JOB IDS:", self._jobIDs)
-        print("NUM OF JOB IDS:", len(self._jobIDs))
-        print("TOTAL JOBS IN PHASE:", total_jobs_in_phase)
-        breakpoint()
         if self._phase_jobs:
-            # if len(self._jobIDs) == 0:
-            #     self.re_running_jobs = False
             if self._jobIDs and len(self._jobIDs) != total_jobs_in_phase:
                 self.itr.logger.error(
                     f"{self._phase_logger_msg}: incorrect format used for --running-jobids"
@@ -425,17 +418,28 @@ class RunTrioTrain:
         self, total_jobs: int, genome: Union[str, None] = None
     ) -> None:
         self.find_next_phase()
-
-        self.process_re_runs(
+        
+        if "train_eval" in self.next_phase:
+            self.next_phase.replace(f":{genome}", "")
+            self.process_re_runs(
             phase=self.next_phase,
             total_jobs_in_phase=total_jobs,
-            genome=genome,
             restart=True,
         )
+        else:
+            self.process_re_runs(
+                phase=self.next_phase,
+                total_jobs_in_phase=total_jobs,
+                genome=genome,
+                restart=True,
+            )
 
         if genome:
             current_phase_str = f"{self.current_phase}:{genome}"
-            next_phase_str = f"{self.next_phase}:{genome}"
+            if "train_eval" in self.next_phase:
+                next_phase_str = self.next_phase
+            else:
+                next_phase_str = f"{self.next_phase}:{genome}"
         else:
             current_phase_str = self.current_phase
             next_phase_str = self.next_phase
@@ -469,10 +473,6 @@ class RunTrioTrain:
                 elif self.current_phase == "train_eval":
                     self.re_training.find_outputs(phase="check_next_phase")
                     outputs_found = self.re_training._outputs_exist
-
-                print("JOBS LIST:", jobs_list)
-                print("OUTPUTS FOUND:", outputs_found)
-                breakpoint()
 
                 if outputs_found:
                     self.itr.logger.info(
