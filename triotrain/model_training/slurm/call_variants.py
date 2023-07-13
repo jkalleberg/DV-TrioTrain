@@ -16,9 +16,6 @@ from typing import Union
 
 from spython.main import Client
 
-
-
-
 def collect_args() -> argparse.Namespace:
     """
     Process command line argument to execute script.

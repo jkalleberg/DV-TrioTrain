@@ -11,6 +11,7 @@ from typing import List, Union
 
 from helpers.files import WriteFiles
 from helpers.iteration import Iteration
+from helpers.jobs import is_job_index, is_jobid
 from helpers.outputs import check_expected_outputs, check_if_output_exists
 from helpers.utils import (
     check_if_all_same,
@@ -19,7 +20,6 @@ from helpers.utils import (
     find_not_NaN,
     generate_job_id,
 )
-from helpers.jobs import is_job_index, is_jobid
 from model_training.slurm.sbatch import SBATCH, SubmitSBATCH
 
 
@@ -46,8 +46,12 @@ class BeamShuffleExamples:
 
     # internal, imutable values
     _existing_config: bool = field(default=False, init=False, repr=False)
-    _ignoring_make_examples: Union[bool, None] = field(default=None, init=False, repr=False)
-    _ignoring_restart_jobs: Union[bool, None] = field(default=None, init=False, repr=False) 
+    _ignoring_make_examples: Union[bool, None] = field(
+        default=None, init=False, repr=False
+    )
+    _ignoring_restart_jobs: Union[bool, None] = field(
+        default=None, init=False, repr=False
+    )
     _outputs_exist: bool = field(default=False, init=False, repr=False)
     _phase: str = field(default="beam_shuffle", init=False, repr=False)
     _re_shuffle_dependencies: Union[List[Union[str, None]], None] = field(
@@ -63,7 +67,7 @@ class BeamShuffleExamples:
             assert (
                 self.benchmarking_file is not None
             ), "unable to proceed, missing a WriteFiles object to save SLURM job IDs"
-    
+
     def set_region(self, current_region: Union[int, str, None] = None) -> None:
         """
         Define the current region
@@ -149,7 +153,9 @@ class BeamShuffleExamples:
         Collect any SLURM job ids for running tests to avoid submitting a job while it's already running.
         """
         self._ignoring_make_examples = check_if_all_same(self.make_examples_jobs, None)
-        self._ignoring_restart_jobs = check_if_all_same(self.shuffle_examples_job_nums, None)
+        self._ignoring_restart_jobs = check_if_all_same(
+            self.shuffle_examples_job_nums, None
+        )
 
         if not self._ignoring_make_examples:
             self.jobs_to_run = find_not_NaN(self.make_examples_jobs)
@@ -164,21 +170,22 @@ class BeamShuffleExamples:
                 self._num_to_run = len(self.jobs_to_run)
                 self._run_jobs = True
                 self._num_to_ignore = len(find_NaN(self.shuffle_examples_job_nums))
-        
+
         else:
             self.jobs_to_run = None
+            self._num_to_run = 0
             self._run_jobs = True
+            self._num_to_ignore = self._total_regions
             if self.itr.debug_mode:
                 self.itr.logger.debug(
                     f"{self.logger_msg}: running job ids were NOT provided"
                 )
-        
+
         if self._num_to_run == self._total_regions:
-            if self.jobs_to_run and not self._ignoring_restart_jobs: 
+            if self.jobs_to_run and not self._ignoring_restart_jobs:
                 updated_jobs_list = []
 
                 for index in self.jobs_to_run:
-
                     if index is not None:
                         if is_jobid(self.shuffle_examples_job_nums[index]):
                             self._num_to_run -= 1
@@ -186,18 +193,18 @@ class BeamShuffleExamples:
                             self._skipped_counter += 1
                             self._re_shuffle_dependencies[index] = str(
                                 self.shuffle_examples_job_nums[index]
-                                )
+                            )
                             if self.itr.debug_mode:
                                 self.itr.logger.debug(
                                     f"{self.logger_msg}: beam_shuffling dependencies updated to {self._beam_shuffle_dependencies}"
                                 )
                         elif is_job_index(self.shuffle_examples_job_nums[index]):
                             updated_jobs_list.append(index)
-                
+
                 if updated_jobs_list:
                     self.jobs_to_run = updated_jobs_list
-            
-            if self._num_to_ignore == self._total_regions: 
+
+            if self._num_to_ignore == self._total_regions:
                 self.itr.logger.info(
                     f"{self.logger_msg}: there are no jobs to re-submit for '{self._phase}:{self.genome}'... SKIPPING AHEAD"
                 )
@@ -206,7 +213,8 @@ class BeamShuffleExamples:
                 self.itr.logger.info(
                     f"{self.logger_msg}: ignoring {self._num_to_ignore}-of-{self._total_regions} SLURM jobs"
                 )
-                
+        elif self._ignoring_make_examples:
+            self._run_jobs = False
         else:
             if self.itr.debug_mode:
                 self.itr.logger.debug(
@@ -219,7 +227,6 @@ class BeamShuffleExamples:
                 f"{self.logger_msg}: expected a list of {self._total_regions} SLURM jobs (or 'None' as a place holder)"
             )
             self._run_jobs = None
-        
 
     def benchmark(self) -> None:
         """
@@ -281,12 +288,12 @@ class BeamShuffleExamples:
                 prior_jobs = self.make_examples_jobs[index] is not None
             else:
                 prior_jobs = False
-            
+
             if index < len(self.shuffle_examples_job_nums):
                 resub_jobs = self.shuffle_examples_job_nums[index] is not None
             else:
                 resub_jobs = False
-            
+
             if (prior_jobs or resub_jobs) and self.overwrite:
                 self.itr.logger.info(
                     f"{self.logger_msg}: --overwrite=True; re-writing the existing SLURM job now... "
@@ -520,7 +527,7 @@ class BeamShuffleExamples:
         self.logger_msg = (
             f"[{self.itr._mode_string}] - [{self._phase}] - [{self.genome}]"
         )
-        
+
         if self.itr.debug_mode:
             self._total_regions = 5
 
@@ -686,7 +693,9 @@ class BeamShuffleExamples:
             return
 
         # Determine if we are re-running some of the regions for make_examples
-        if (not self._ignoring_make_examples or self.shuffle_examples_job_nums) and self._run_jobs is not None:
+        if (
+            not self._ignoring_make_examples or self.shuffle_examples_job_nums
+        ) and self._run_jobs is not None:
             if self._num_to_run == 0:
                 self._skipped_counter = self._num_to_ignore
                 if (
@@ -737,14 +746,19 @@ class BeamShuffleExamples:
                         ]  # remove 'None' values
                         region_index = new_jobs_list[i]
                     else:
-                        region_index = self.shuffle_examples_job_nums[r]
+                        region_input = self.shuffle_examples_job_nums[r]
+                        if is_jobid(region_input):
+                            region_index = r
+                        elif is_job_index(region_input):
+                            region_index = region_input
 
                     self.job_num = (
-                        region_index + 1
+                        int(region_index) + 1
                     )  # THIS HAS TO BE +1 to avoid starting with a region0
 
                     self.set_region(current_region=self.job_num)
                     self.find_outputs()
+
                     if skip_re_runs or not self._outputs_exist:
                         self.submit_job(
                             dependency_index=region_index,
