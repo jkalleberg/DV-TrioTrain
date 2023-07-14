@@ -94,7 +94,7 @@ class TrainEval:
         if self.track_resources:
             assert (
                 self.benchmarking_file is not None
-            ), "unable to proceed, missing a WriteFiles object to save SLURM job IDs"
+            ), "unable to proceed, missing a WriteFiles object to save SLURM job numbers"
 
         self._select_ckpt_dependency = create_deps(1)
 
@@ -114,11 +114,9 @@ class TrainEval:
         elif self.train_job_num[0] is not None:
             num_job_ids = len(self.train_job_num)
             if num_job_ids == 1:
-                
                 jobs_to_run = find_not_NaN(self.train_job_num)
                 self._num_to_run = len(jobs_to_run)
                 self._num_to_ignore = len(find_NaN(self.train_job_num))
-                self._select_ckpt_dependency = create_deps(1)
 
                 if jobs_to_run:
                     updated_jobs_list = []
@@ -127,9 +125,9 @@ class TrainEval:
                             if is_jobid(self.train_job_num[index]):
                                 self._num_to_run -= 1
                                 self._num_to_ignore += 1
-                                self._select_ckpt_dependency = [str(
-                                    self.train_job_num[index]
-                                )]
+                                self._select_ckpt_dependency = [
+                                    str(self.train_job_num[index])
+                                ]
                                 if self.itr.debug_mode:
                                     self.itr.logger.debug(
                                         f"{self.logger_msg}: select_ckpt dependency updated to {self.train_job_num}'"
@@ -150,7 +148,7 @@ class TrainEval:
                         f"{self.logger_msg}: --running-jobids triggered reprocessing {num_job_ids} job"
                     )
                 self.itr.logger.error(
-                    f"{self.logger_msg}: incorrect format for 'train_job_num'"
+                    f"{self.logger_msg}: incorrect format for 'train_job' SLURM job number"
                 )
                 self.itr.logger.error(
                     f"{self.logger_msg}: expected a list of 1 SLURM jobs (or 'None' as a place holder)"
@@ -215,7 +213,7 @@ class TrainEval:
 
     def benchmark(self) -> None:
         """
-        Save the SLURM job IDs to a file for future resource usage metrics.
+        Save the SLURM job numbers to a file for future resource usage metrics.
         """
         headers = ["AnalysisName", "RunName", "Parent", "Phase", "JobList"]
         deps_string = ",".join(filter(None, self._select_ckpt_dependency))
@@ -336,6 +334,7 @@ class TrainEval:
                 self.itr.logger.debug(f"{self.logger_msg}: creating file job now... ")
 
         self.process_mem()
+
         # define model starting points
         ##----- non-baseline initial weights ------##
         if self.itr.current_genome_num is not None and self.itr.current_genome_num > 0:
@@ -377,27 +376,6 @@ class TrainEval:
                     f"srun -l --gres=gpu:1 --ntasks={self._ntasks_per_gpu} {self._srun_mem} bash ./scripts/run/train_model.sh {self.itr.train_genome} >& \"{self.itr.log_dir}/train-{self.itr.train_genome}-{'${NUM_STEPS}'}steps.log\"",
                 ]
             )
-        #     self._starting_path = self.itr.env.contents[
-        #         f"{self.itr.train_genome}StartCkptPath"
-        #     ]
-        #     if f"{self.itr.train_genome}StartCkptName" in self.itr.env.contents:
-        #         self._starting_ckpt = self.itr.env.contents[
-        #             f"{self.itr.train_genome}StartCkptName"
-        #         ]
-        #     else:
-        #         self._starting_ckpt = f"${self.itr.train_genome}StartCkptName"
-
-        #     training_command_list = slurm_job._start_conda + [
-        #         "export SLURM_EXPORT_ENV=ALL",
-        #         f"export NUM_STEPS=$((({self.epochs}*{self.itr.train_genome}_Examples)/{self.batches}))",
-        #         f"srun -l --gres=gpu:1 --ntasks=1 --mem={self._per_gpu_mem} conda run --no-capture-output -p miniconda_envs/beam_v2.30 python3 scripts/model_training/slurm_train_model.py --env-file {self.itr.env.env_file} --train-genome {self.itr.train_genome} --use-custom-model --custom-checkpoint {self._starting_path}/{self._starting_ckpt} >& \"{self.itr.log_dir}/train-{self.itr.train_genome}-{'${NUM_STEPS}'}steps.log\"",
-        #     ]
-        # else:
-        #     training_command_list = slurm_job._start_conda + [
-        #         "export SLURM_EXPORT_ENV=ALL",
-        #         f"export NUM_STEPS=$((({self.epochs}*{self.itr.train_genome}_Examples)/{self.batches}))",
-        #         f"srun -l --gres=gpu:1 --ntasks=1 --mem={self._per_gpu_mem} conda run --no-capture-output -p miniconda_envs/beam_v2.30 python3 scripts/model_training/slurm_train_model.py --env-file {self.itr.env.env_file} --train-genome {self.itr.train_genome} >& \"{self.itr.log_dir}/train-{self.itr.train_genome}-{'${NUM_STEPS}'}steps.log\"",
-        #     ]
 
         slurm_job.create_slurm_job(
             self.handler_label,
@@ -420,10 +398,6 @@ class TrainEval:
             evaluation_command_list = [
                 f"srun -l --gres=gpu:1 --ntasks={self._ntasks_per_gpu} {self._srun_mem} bash ./scripts/run/eval_model.sh {self.itr.eval_genome} >& \"{self.itr.log_dir}/train-{self.itr.train_genome}-eval-{self.itr.eval_genome}-{'${NUM_STEPS}'}steps.log\""
             ]
-
-        # evaluation_command_list = [
-        #     f"srun -l --gres=gpu:1 --ntasks=1 --mem={self._per_gpu_mem} conda run --no-capture-output -p miniconda_envs/beam_v2.30 python3 scripts/model_training/slurm_eval_model.py --env-file {self.itr.env.env_file} --train-genome {self.itr.train_genome} >& \"{self.itr.log_dir}/train-{self.itr.train_genome}-eval-{self.itr.eval_genome}-{'${NUM_STEPS}'}steps.log\""
-        # ]
 
         group_srun_commands = f"{slurm_job._line_list[-1]} &"
         slurm_job._line_list[-1] = group_srun_commands
@@ -504,7 +478,7 @@ class TrainEval:
 
         if not self.overwrite:
             if resubmission:
-                # if self._ignoring_beam_shuffle:
+                if self._ignoring_re_shuffle:
                     self.itr.logger.info(
                         f"{self.logger_msg}: --overwrite=False; re-submitting job because missing model checkpoint files"
                     )
@@ -614,10 +588,6 @@ class TrainEval:
                 self.itr.logger.info(
                     f"{self.logger_msg}: re_shuffle jobs were submitted...",
                 )
-
-            skip_re_runs = check_if_all_same(self.train_job_num, None)
-
-            if skip_re_runs:
                 msg = "sub"
                 restart = False
             else:
@@ -626,8 +596,8 @@ class TrainEval:
 
             if self._num_to_run == 1:
                 self.itr.logger.info(
-                        f"{self.logger_msg}: attempting to {msg}mit {self._num_to_run}-of-1 SLURM job",
-                    )
+                    f"{self.logger_msg}: attempting to {msg}mit {self._num_to_run}-of-1 SLURM job",
+                )
             else:
                 self.itr.logger.error(
                     f"{self.logger_msg}: there should only be one train_eval_job, but {self._num_to_run} were provided.\nExiting... ",

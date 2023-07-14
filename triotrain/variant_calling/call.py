@@ -58,7 +58,7 @@ class CallVariants:
         if self.track_resources:
             assert (
                 self.benchmarking_file is not None
-            ), "missing a WriteFiles() object to save SLURM job IDs"
+            ), "missing a WriteFiles() object to save SLURM job numbers"
 
         self._select_ckpt_job = [self.itr.current_genome_dependencies[3]]
         self._compare_dependencies = create_deps(num=self.itr.total_num_tests)
@@ -136,7 +136,7 @@ class CallVariants:
                             ):
                                 if len(str(self.call_variants_job_nums[index])) != 8:
                                     self.itr.logger.error(
-                                        f"{self.logger_msg}: invalid input for SLURM job ID | {self.call_variants_job_nums[index]}"
+                                        f"{self.logger_msg}: invalid input for SLURM job number | {self.call_variants_job_nums[index]}"
                                     )
                                     self.itr.logger.error(
                                         f"{self.logger_msg}: an 8-digit value must be provided for any number greater than {self.itr.total_num_tests}.\nExiting..."
@@ -166,7 +166,7 @@ class CallVariants:
                     self.itr.logger.debug(
                         f"{self.logger_msg}: --running-jobids triggered reprocessing {num_job_ids} job"
                     )
-                
+
                 self.itr.logger.error(
                     f"{self.logger_msg}: incorrect format for 'call_variants_job_nums'"
                 )
@@ -375,7 +375,7 @@ class CallVariants:
 
     def benchmark(self) -> None:
         """
-        Saves the SLURM job IDs to a file for future resource usage metrics.
+        Saves the SLURM job numbers to a file for future resource usage metrics.
         """
         headers = ["AnalysisName", "RunName", "Parent", "Phase", "JobList"]
         if self._compare_dependencies is None:

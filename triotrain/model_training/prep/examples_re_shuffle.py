@@ -59,7 +59,7 @@ class ReShuffleExamples:
         if self.track_resources:
             assert (
                 self.benchmarking_file is not None
-            ), "unable to proceed, missing a WriteFiles object to save SLURM job IDs"
+            ), "unable to proceed, missing a WriteFiles object to save SLURM job numbers"
 
     def set_genome(self) -> None:
         """
@@ -115,7 +115,6 @@ class ReShuffleExamples:
                 jobs_to_run = find_not_NaN(self.re_shuffle_job_num)
                 self._num_to_run = len(jobs_to_run)
                 self._num_to_ignore = len(find_NaN(self.re_shuffle_job_num))
-                self._re_shuffle_dependencies = create_deps(1)
 
                 if jobs_to_run:
                     updated_jobs_list = []
@@ -149,7 +148,7 @@ class ReShuffleExamples:
                         f"{self.logger_msg}: --running-jobids triggered reprocessing {num_job_ids} job"
                     )
                 self.itr.logger.error(
-                    f"{self.logger_msg}: incorrect format for 're_shuffle' SLURM job ID"
+                    f"{self.logger_msg}: incorrect format for 're_shuffle' SLURM job number"
                 )
                 self.itr.logger.error(
                     f"{self.logger_msg}: expected a list of 1 SLURM jobs (or 'None' as a place holder)"
@@ -162,7 +161,7 @@ class ReShuffleExamples:
 
     def benchmark(self) -> None:
         """
-        Save the SLURM job IDs to a file for future resource usage metrics
+        Save the SLURM job numbers to a file for future resource usage metrics
         """
         headers = ["AnalysisName", "RunName", "Parent", "Phase", "JobList"]
 
@@ -384,7 +383,9 @@ class ReShuffleExamples:
         else:
             slurm_job.build_command(prior_job_number=None)
 
-        slurm_job.display_command(display_mode=self.itr.dryrun_mode, debug_mode=self.itr.debug_mode)
+        slurm_job.display_command(
+            display_mode=self.itr.dryrun_mode, debug_mode=self.itr.debug_mode
+        )
 
         if self.itr.dryrun_mode:
             self._train_dependency = generate_job_id()
@@ -396,13 +397,9 @@ class ReShuffleExamples:
 
             if slurm_job.status == 0:
                 self._train_dependency = slurm_job.job_number
-                self.itr.current_genome_dependencies[
-                    self.index
-                ] = slurm_job.job_number
+                self.itr.current_genome_dependencies[self.index] = slurm_job.job_number
                 if self.index > 0:
-                    self.itr.next_genome_dependencies[
-                        self.index
-                    ] = slurm_job.job_number
+                    self.itr.next_genome_dependencies[self.index] = slurm_job.job_number
             else:
                 self.itr.logger.error(f"{self.logger_msg}: unable to submit SLURM job")
 
@@ -505,7 +502,7 @@ class ReShuffleExamples:
                     self.itr.logger.info(
                         f"{self.logger_msg}: beam_shuffle jobs were submitted...",
                     )
-                
+
                 skip_re_runs = check_if_all_same(self.re_shuffle_job_num, None)
 
                 if skip_re_runs:
@@ -522,7 +519,7 @@ class ReShuffleExamples:
                         f"{self.logger_msg}: max number of SLURM jobs for {msg}mission is 1 but {self._num_to_run} were provided.\nExiting... ",
                     )
                     exit(1)
-                
+
                 self.submit_job(resubmission=True)
 
         # or running it for the first time

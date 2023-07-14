@@ -253,7 +253,7 @@ def collect_args() -> argparse.ArgumentParser:
     restart.add_argument(
         "--restart-jobs",
         dest="restart_jobs",
-        help=f"provide a JSON dictionary containing phase names as keys, and a list of SLURM job IDs as values\nyour choice of phases:\n{_phases_string}\n(default: %(default)s)",
+        help=f"provide a JSON dictionary containing phase names as keys, and a list of SLURM job numbers as values\nyour choice of phases:\n{_phases_string}\n(default: %(default)s)",
         type=json.loads,
         default=None,
         metavar='{"phase": [jobid1, jobid2, jobid3]}',
@@ -439,7 +439,7 @@ def check_args(args: argparse.Namespace, logger: Logger, default_channels: str) 
                 # ignore genome when checking for typos
                 if ":" in k:
                     k = k.split(":")[0]
-                    
+
                 close_matches = list()
                 if k not in args._phases:
                     for p in args._phases:
@@ -447,12 +447,14 @@ def check_args(args: argparse.Namespace, logger: Logger, default_channels: str) 
                         if match_found:
                             close_matches.append(match_found[0])
                     phase_dict[k] = close_matches
-            
+
             if phase_dict:
-                for k,l in phase_dict.items():
+                for k, l in phase_dict.items():
                     if isinstance(l, list):
                         options_str = "', or '".join(l)
-                        logger.info(f"invalid phase entered: '{k}', did you mean to enter '{options_str}'?\nExiting...")
+                        logger.info(
+                            f"invalid phase entered: '{k}', did you mean to enter '{options_str}'?\nExiting..."
+                        )
                         exit(1)
 
         if args.channel_info == default_channels:

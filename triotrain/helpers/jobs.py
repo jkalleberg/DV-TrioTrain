@@ -12,7 +12,7 @@ def is_jobid(value: Union[int, str]) -> bool:
     Returns
     -------
     bool
-        if True, entry is a valid SLURM job ID
+        if True, entry is a valid SLURM job number
     """
     return len(str(value)) in [8] and str(value).isdigit()
 

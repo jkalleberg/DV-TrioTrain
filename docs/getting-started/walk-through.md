@@ -793,7 +793,7 @@ There are (6) types of output files from running the demo:
     Baseline-v1.4.0,Human_tutorial,Father,beam_shuffle,27669523
     Baseline-v1.4.0,Human_tutorial,Father,make_examples,27669524
     Baseline-v1.4.0,Human_tutorial,Father,beam_shuffle,27669525
-    # The JobList column will differ based on SLURM job IDs
+    # The JobList column will differ based on SLURM job numbers
     ```
 
 After confirming all (7) jobs complete successfully, run the following at the command line:

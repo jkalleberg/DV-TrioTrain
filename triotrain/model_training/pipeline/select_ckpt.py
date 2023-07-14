@@ -20,6 +20,7 @@ from helpers.utils import (
     find_not_NaN,
     generate_job_id,
 )
+from helpers.jobs import is_job_index, is_jobid
 from model_training.slurm.sbatch import SBATCH, SubmitSBATCH
 from regex import compile
 
@@ -58,7 +59,7 @@ class SelectCheckpoint:
         if self.track_resources:
             assert (
                 self.benchmarking_file is not None
-            ), "unable to proceed, missing a WriteFiles object to save SLURM job IDs"
+            ), "unable to proceed, missing a WriteFiles object to save SLURM job numbers"
 
         self._model_testing_dependency = create_deps(1)
 
@@ -70,30 +71,22 @@ class SelectCheckpoint:
         self._ignoring_training = check_if_all_same(self.train_eval_job_num, None)
 
         if not self._ignoring_training:
-            self.itr.logger.info(f"{self.logger_msg}: training was submitted...")
             self._num_to_ignore = 0
             self._num_to_run = 1
 
         elif self.select_ckpt_job_num[0] is not None:
-            if self.overwrite and self._outputs_exist:
-                self.itr.logger.info(
-                    f"{self.logger_msg}: --overwrite=True, any exiting results files will be re-written..."
-                )
             num_job_ids = len(self.select_ckpt_job_num)
             if num_job_ids == 1:
                 jobs_to_run = find_not_NaN(self.select_ckpt_job_num)
                 jobs_to_ignore = find_NaN(self.select_ckpt_job_num)
                 self._num_to_run = len(jobs_to_run)
                 self._num_to_ignore = len(jobs_to_ignore)
-                self._model_testing_dependency = create_deps(1)
+
                 if jobs_to_run:
+                    updated_jobs_list = []
                     for index in jobs_to_run:
                         if index is not None:
-                            if (
-                                isinstance(self.select_ckpt_job_num[index], str)
-                                or self.select_ckpt_job_num[index] > 1
-                                or self.select_ckpt_job_num[index] is None
-                            ):
+                            if is_jobid(self.train_eval_job_num[index]):
                                 self._num_to_run -= 1
                                 self._num_to_ignore += 1
                                 self._model_testing_dependency[0] = str(
@@ -103,6 +96,11 @@ class SelectCheckpoint:
                                     self.itr.logger.debug(
                                         f"{self.logger_msg}: model_testing dependency updated to '{self.select_ckpt_job_num}'"
                                     )
+                            elif is_job_index(self.train_eval_job_num[index]):
+                                updated_jobs_list.append(index)
+
+                    if updated_jobs_list:
+                        self.jobs_to_run = updated_jobs_list
 
                 if self._num_to_ignore == 1:
                     self.itr.logger.info(
@@ -114,7 +112,7 @@ class SelectCheckpoint:
                         f"{self.logger_msg}: --running-jobids triggered reprocessing {num_job_ids} job"
                     )
                 self.itr.logger.error(
-                    f"{self.logger_msg}: incorrect format for 'train_job_num'"
+                    f"{self.logger_msg}: incorrect format for 'train_eval' SLURM job number"
                 )
                 self.itr.logger.error(
                     f"{self.logger_msg}: expected a list of 1 SLURM jobs (or 'None' as a place holder)"
@@ -163,7 +161,7 @@ class SelectCheckpoint:
 
     def benchmark(self) -> None:
         """
-        Save the SLURM job IDs to a file for future resource usage metrics.
+        Save the SLURM job numbers to a file for future resource usage metrics.
         """
         headers = ["AnalysisName", "RunName", "Parent", "Phase", "JobList"]
         deps_string = ",".join(filter(None, self._model_testing_dependency))
@@ -217,7 +215,7 @@ class SelectCheckpoint:
                 )
             else:
                 self.itr.logger.info(
-                    f"{self.logger_msg}: SLURM job file already exists... SKIPPING AHEAD"
+                    f"{self.logger_msg}:  --overwrite=False; SLURM job file already exists... SKIPPING AHEAD"
                 )
                 return
         else:
@@ -344,18 +342,47 @@ class SelectCheckpoint:
             dryrun_mode=self.itr.dryrun_mode,
         )
 
-    def submit_job(self) -> None:
+    def submit_job(self, resubmission: bool = False) -> None:
         """
         Submit SLURM jobs to queue.
         """
-        if self.itr.current_genome_dependencies[3] is None:
-            slurm_job = self.make_job()
-            if slurm_job is not None:
-                if self.itr.dryrun_mode:
-                    slurm_job.display_job()
-                else:
-                    slurm_job.write_job()
+        if not self.overwrite and self._outputs_exist:
+            self._skipped_counter += 1
+            if resubmission:
+                self.itr.logger.info(
+                    f"{self.logger_msg}: --overwrite=False; skipping job because found best checkpoint file"
+                )
+            return
 
+        slurm_job = self.make_job()
+
+        if slurm_job is not None:
+            if self.itr.dryrun_mode:
+                slurm_job.display_job()
+            else:
+                slurm_job.write_job()
+
+        if not self.overwrite:
+            if resubmission:
+                if self._ignoring_training:
+                    self.itr.logger.info(
+                        f"{self.logger_msg}: --overwrite=False; re-submitting job because missing best checkpoint file"
+                    )
+            else:
+                self.itr.logger.info(
+                    f"{self.logger_msg}: submitting job to find the best checkpoint"
+                )
+        else:
+            if self._outputs_exist:
+                self.itr.logger.info(
+                    f"{self.logger_msg}: --overwrite=True; re-submitting job because replacing existing best checkpoint"
+                )
+            else:
+                self.itr.logger.info(
+                    f"{self.logger_msg}: submitting job to find the best checkpoint"
+                )
+
+        if self.itr.current_genome_dependencies[3] is None:
             # submit the training eval job to queue
             slurm_job = SubmitSBATCH(
                 self.itr.job_dir,
@@ -429,11 +456,11 @@ class SelectCheckpoint:
                 and self.itr.current_genome_num != 0
             ):
                 self.itr.logger.info(
-                    f"{self.logger_msg}: prior iteration [#{int(self.itr.current_genome_num) - 1}] select-ckpt's SLURM job ID is 'None', so no extra dependencies are required"
+                    f"{self.logger_msg}: no additional dependencies are required because missing a select_ckpt job number for prior iteration"
                 )
         else:
             self.itr.logger.info(
-                f"{self.logger_msg}: prior iteration select-ckpt job number | {self.itr.current_genome_dependencies[2]}"
+                f"{self.logger_msg}: prior iteration select-ckpt job number | '{self.itr.current_genome_dependencies[2]}'"
             )
 
         self.find_restart_jobs()
@@ -451,32 +478,28 @@ class SelectCheckpoint:
             else:
                 self._model_testing_dependency[0] = None
         else:
-            self.find_outputs()
+            if not self._ignoring_training:
+                self.itr.logger.info(
+                    f"{self.logger_msg}: train_eval jobs were submitted...",
+                )
+                msg = "sub"
+                restart = False
+            else:
+                msg = "re-sub"
+                restart = True
 
             if self._num_to_run == 1:
-                if self.overwrite:
-                    self.itr.logger.info(
-                        f"{self.logger_msg}: re-submitting {self._num_to_run}-of-1 SLURM jobs",
-                    )
-                    if self._outputs_exist:
-                        self.itr.logger.info(
-                            f"{self.logger_msg}: --overwrite=True, any exiting results files will be re-written..."
-                        )
-                else:
-                    self.itr.logger.info(
-                        f"{self.logger_msg}: submitting {self._num_to_run}-of-1 SLURM jobs",
-                    )
+                self.itr.logger.info(
+                    f"{self.logger_msg}: attempting to {msg}mit {self._num_to_run}-of-1 SLURM job",
+                )
             else:
                 self.itr.logger.error(
-                    f"{self.logger_msg}: there should only be one train_eval_job, but {self._num_to_run} were provided.\nExiting... ",
+                    f"{self.logger_msg}: there should only be one select_ckpt job, but {self._num_to_run} were provided.\nExiting... ",
                 )
                 exit(1)
 
-            self.submit_job()
-
-        # # or running it for the first time
-        # else:
-        #     self.submit_job()
+            self.find_outputs()
+            self.submit_job(resubmission=restart)
 
         self.check_submission()
         return self.itr

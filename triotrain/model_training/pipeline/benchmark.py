@@ -302,7 +302,7 @@ class Benchmark:
 
     def process_csv_file(self) -> None:
         """
-        Open up the csv file, create a new list of the phases contained in the csv file and a second list containing the SLURM job IDs.
+        Open up the csv file, create a new list of the phases contained in the csv file and a second list containing the SLURM job numbers.
         """
         self.open_file()
         for key, value in self._slurm_jobs.items():

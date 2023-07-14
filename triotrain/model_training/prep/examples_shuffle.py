@@ -65,7 +65,7 @@ class BeamShuffleExamples:
         if self.track_resources:
             assert (
                 self.benchmarking_file is not None
-            ), "unable to proceed, missing a WriteFiles object to save SLURM job IDs"
+            ), "unable to proceed, missing a WriteFiles object to save SLURM job numbers"
 
     def set_region(self, current_region: Union[int, str, None] = None) -> None:
         """
@@ -125,8 +125,6 @@ class BeamShuffleExamples:
             self.genome = self.itr.eval_genome
             self.genome_index = 1
             self.trio_dependency = self.itr.current_genome_dependencies[1]
-
-        self._re_shuffle_dependencies = create_deps(self._total_regions)
 
         # The final remainder region (e.g. #168) could have plenty of examples to be shuffled and would also be sharded during beam shuffling
         self.total_shuffle_outputs_expected1 = int((self._total_regions) * self.n_parts)
@@ -223,7 +221,7 @@ class BeamShuffleExamples:
 
     def benchmark(self) -> None:
         """
-        Save the SLURM job IDs to a file for future resource usage metrics.
+        Save the SLURM job numbers to a file for future resource usage metrics.
         """
         headers = ["AnalysisName", "RunName", "Parent", "Phase", "JobList"]
 

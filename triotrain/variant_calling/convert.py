@@ -60,7 +60,7 @@ class ConvertHappy:
         if self.track_resources:
             assert (
                 self.benchmarking_file is not None
-            ), "missing a WriteFiles object to save SLURM job IDs"
+            ), "missing a WriteFiles object to save SLURM job numbers"
 
         self._final_jobs = create_deps(self.itr.total_num_tests)
         if self.itr.train_genome is None:
@@ -125,7 +125,7 @@ class ConvertHappy:
                             ):
                                 if len(str(self.convert_happy_job_nums[index])) != 8:
                                     self.itr.logger.error(
-                                        f"{self.logger_msg}: invalid input for SLURM job ID | {self.convert_happy_job_nums[index]}"
+                                        f"{self.logger_msg}: invalid input for SLURM job number | {self.convert_happy_job_nums[index]}"
                                     )
                                     self.itr.logger.error(
                                         f"{self.logger_msg}: an 8-digit value must be provided for any number greater than {self.itr.total_num_tests}.\nExiting..."
@@ -142,8 +142,6 @@ class ConvertHappy:
                                     self.itr.logger.debug(
                                         f"{self.logger_msg}: final job numbers updated to {self._final_jobs}"
                                     )
-                else:
-                    self._run_jobs = False
 
                 if 0 < self._num_to_ignore < self.itr.total_num_tests:
                     self.itr.logger.info(
@@ -162,9 +160,7 @@ class ConvertHappy:
                 self.itr.logger.error(
                     f"{self.logger_msg}: expected a list of {self.itr.total_num_tests} SLURM jobs (or 'None' as a place holder)"
                 )
-                self._run_jobs = None
         else:
-            self._run_jobs = True
             if self.itr.debug_mode:
                 self.itr.logger.debug(
                     f"{self.logger_msg}: running job ids were NOT provided"
@@ -192,7 +188,7 @@ class ConvertHappy:
 
     def benchmark(self) -> None:
         """
-        Saves the SLURM job IDs to a file for future resource usage metrics.
+        Saves the SLURM job numbers to a file for future resource usage metrics.
         """
         headers = ["AnalysisName", "RunName", "Parent", "Phase", "JobList"]
         if self._final_jobs is None:
@@ -510,9 +506,8 @@ class ConvertHappy:
             logging_msg = f"[{self.itr._mode_string}] - [{phase_to_check}]"
         else:
             logging_msg = f"[{self.itr._mode_string}] - [{phase_to_check}] - [{self.itr.train_genome}]"
-        self.itr.logger.info(
-            f"{logging_msg}: double checking for output files now...")
-        
+        self.itr.logger.info(f"{logging_msg}: double checking for output files now...")
+
         new_jobs_to_run = []
 
         if self._outputs_found is None:
@@ -554,9 +549,7 @@ class ConvertHappy:
             self.submit_job()
 
         # Determine if we should avoid certain tests because they are currently running
-        elif (
-            self.convert_happy_job_nums or not self._ignoring_compare_happy
-        ) and self._run_jobs is not None:
+        elif self.convert_happy_job_nums or not self._ignoring_compare_happy:
             if self._num_to_run == 0:
                 self._skipped_counter = self._num_to_ignore
                 if (

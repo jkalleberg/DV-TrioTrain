@@ -32,7 +32,7 @@ class MakeExamples:
     Returns
     -------
     List[Union[str, None]] or None
-        if None, no SLURM jobs were submitted; or collect a list of submitted SLURM job IDs
+        if None, no SLURM jobs were submitted; or collect a list of submitted SLURM job numbers
     """
 
     # required values
@@ -64,7 +64,7 @@ class MakeExamples:
         if self.track_resources:
             assert (
                 self.benchmarking_file is not None
-            ), "unable to proceed, missing a WriteFiles object to save SLURM job IDs"
+            ), "unable to proceed, missing a WriteFiles object to save SLURM job numbers"
 
     def set_variables(self) -> None:
         """Add variables from SLURM config to ENV"""
@@ -86,7 +86,7 @@ class MakeExamples:
                 dryrun_mode=self.itr.dryrun_mode,
                 msg=self.logger_msg,
             )
-    
+
     def set_region(self, current_region: Union[int, str, None] = None) -> None:
         """
         Define the current region
@@ -98,7 +98,7 @@ class MakeExamples:
         """
         if self.itr.demo_mode:
             self.current_region = self.itr.demo_chromosome
-            
+
             if "chr" in self.itr.demo_chromosome.lower():
                 self.region_logger_msg = f" - [{self.itr.demo_chromosome.upper()}]"
                 self.prefix = f"{self.genome}-{self.itr.demo_chromosome}"
@@ -107,7 +107,7 @@ class MakeExamples:
                 self.region_logger_msg = f" - [chr{self.itr.demo_chromosome}]"
                 self.prefix = f"{self.genome}-chr{self.itr.demo_chromosome}"
                 self.job_label = f"{self.genome}{self.itr.current_trio_num}-chr{self.itr.demo_chromosome}"
-            
+
             self._print_msg = f"    echo SUCCESS: make_examples for demo-{self.genome}, part $t of {self.total_shards} &"
 
         elif current_region == 0 or current_region is None:
@@ -134,8 +134,7 @@ class MakeExamples:
             self.logger_msg = f"[{self.itr._mode_string}] - [{self._phase}] - [{self.genome}]{self.region_logger_msg}"
 
     def set_genome(self) -> None:
-        """Assign a genome label
-        """
+        """Assign a genome label"""
         if self.itr.demo_mode:
             self.genome = self.itr.train_genome
             self._total_regions = 1
@@ -161,8 +160,10 @@ class MakeExamples:
 
     def find_restart_jobs(self) -> None:
         """Collect any SLURM job ids for running tests to avoid submitting duplicate jobs simultaneously"""
-        self._ignoring_restart_jobs = check_if_all_same(self.make_examples_job_nums, None)
-        
+        self._ignoring_restart_jobs = check_if_all_same(
+            self.make_examples_job_nums, None
+        )
+
         if not self._ignoring_restart_jobs:
             num_job_ids = len(self.make_examples_job_nums)
             if num_job_ids == self._total_regions:
@@ -173,7 +174,7 @@ class MakeExamples:
 
                 if self.jobs_to_run:
                     updated_jobs_list = []
-                    
+
                     for index in self.jobs_to_run:
                         if index is not None:
                             if is_jobid(self.make_examples_job_nums[index]):
@@ -196,13 +197,13 @@ class MakeExamples:
                 if self._num_to_ignore == self._total_regions:
                     self.itr.logger.info(
                         f"{self.logger_msg}: there are no jobs to re-submit for '{self._phase}:{self.genome}'... SKIPPING AHEAD"
-                    ) 
+                    )
                     self._skip_phase = True
                 elif 0 < self._num_to_ignore < self._total_regions:
                     self.itr.logger.info(
                         f"{self.logger_msg}: ignoring {self._num_to_ignore}-of-{self._total_regions} SLURM jobs"
                     )
-                    
+
             else:
                 if self.itr.debug_mode:
                     self.itr.logger.debug(
@@ -221,7 +222,7 @@ class MakeExamples:
                 )
 
     def benchmark(self) -> None:
-        """Save the SLURM job IDs to a file for future resource usage metrics"""
+        """Save the SLURM job numbers to a file for future resource usage metrics"""
         headers = ["AnalysisName", "RunName", "Parent", "Phase", "JobList"]
 
         if self.track_resources:
@@ -261,7 +262,7 @@ class MakeExamples:
         Parameters
         ----------
         index : int, optional
-            defines where a SLURM job ID is stored in a list; by default 0
+            defines where a SLURM job number is stored in a list; by default 0
 
         Returns
         -------
@@ -407,7 +408,9 @@ class MakeExamples:
         """
         Submit SLURM jobs to queue.
         """
-        if (self._outputs_exist and self.overwrite is False) or (self._outputs_exist and self._ignoring_restart_jobs):
+        if (self._outputs_exist and self.overwrite is False) or (
+            self._outputs_exist and self._ignoring_restart_jobs
+        ):
             self._skipped_counter += 1
             if resubmission:
                 self.itr.logger.info(
@@ -496,7 +499,7 @@ class MakeExamples:
         self.logger_msg = (
             f"[{self.itr._mode_string}] - [{self._phase}] - [{self.genome}]"
         )
-        
+
         if self.itr.debug_mode:
             self._total_regions = 5
 
@@ -613,7 +616,7 @@ class MakeExamples:
                     msg = "sub"
                 else:
                     msg = "re-sub"
-                
+
                 if self._num_to_run <= self._total_regions:
                     self.itr.logger.info(
                         f"{self.logger_msg}: attempting to {msg}mit {self._num_to_run}-of-{self._total_regions} SLURM jobs to the queue",
@@ -623,7 +626,7 @@ class MakeExamples:
                         f"{self.logger_msg}: max number of {msg}mission SLURM jobs is {self._total_regions} but {self._num_to_run} were provided.\nExiting... ",
                     )
                     exit(1)
-                
+
                 for r in self.jobs_to_run:
                     region_index = self.make_examples_job_nums[r]
                     self.job_num = (

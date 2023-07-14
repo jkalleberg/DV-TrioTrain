@@ -69,7 +69,7 @@ class CompareHappy:
         if self.track_resources:
             assert (
                 self.benchmarking_file is not None
-            ), "missing a WriteFiles object to save SLURM job IDs"
+            ), "missing a WriteFiles object to save SLURM job numbers"
 
         self._convert_happy_dependencies = create_deps(self.itr.total_num_tests)
 
@@ -133,7 +133,7 @@ class CompareHappy:
                             ):
                                 if len(str(self.compare_happy_job_nums[index])) != 8:
                                     self.itr.logger.error(
-                                        f"{self.logger_msg}: invalid input for SLURM job ID | {self.compare_happy_job_nums[index]}"
+                                        f"{self.logger_msg}: invalid input for SLURM job number | {self.compare_happy_job_nums[index]}"
                                     )
                                     self.itr.logger.error(
                                         f"{self.logger_msg}: an 8-digit value must be provided for any number greater than {self.itr.total_num_tests}.\nExiting..."
@@ -204,7 +204,7 @@ class CompareHappy:
 
     def benchmark(self) -> None:
         """
-        Saves the SLURM job IDs to a file for future resource usage metrics.
+        Saves the SLURM job numbers to a file for future resource usage metrics.
         """
         headers = ["AnalysisName", "RunName", "Parent", "Phase", "JobList"]
         if self._convert_happy_dependencies is None:
