@@ -335,8 +335,6 @@ def run_trio_train(eval_genome="Child") -> None:
             pipeline.current_genome_deps = pipeline.next_genome_deps
             pipeline.next_genome_deps = create_deps()
 
-        # breakpoint()
-
     ### ---------------------------- ###
     Wrapper(__file__, "end").wrap_script(timestamp())
 

@@ -30,4 +30,4 @@ def is_job_index(value: Union[int, str], max_jobs: int = 1) -> bool:
     bool
         if True, entry can be used to index a list of SLURM jobs
     """
-    return str(value).isdigit() and 0 <= int(value) < max_jobs
+    return str(value).isdigit() and 0 <= int(value) <= max_jobs

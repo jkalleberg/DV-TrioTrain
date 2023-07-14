@@ -107,9 +107,6 @@ class TrainEval:
             self.itr.current_genome_dependencies[0:2], None
         )
 
-        print("TRAIN JOB NUM:", self.train_job_num)
-        breakpoint()
-
         if not self._ignoring_re_shuffle:
             self._num_to_ignore = 0
             self._num_to_run = 1

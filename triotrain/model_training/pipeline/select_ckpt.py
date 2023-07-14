@@ -68,7 +68,10 @@ class SelectCheckpoint:
         Collect any SLURM job ids for running tests to avoid
         submitting a job while it's already running
         """
-        self._ignoring_training = check_if_all_same(self.train_eval_job_num, None)
+        if self.train_eval_job_num is None:
+            self._ignoring_training = True
+        else:
+            self._ignoring_training = check_if_all_same(self.train_eval_job_num, None)
 
         if not self._ignoring_training:
             self._num_to_ignore = 0
@@ -118,6 +121,7 @@ class SelectCheckpoint:
                     f"{self.logger_msg}: expected a list of 1 SLURM jobs (or 'None' as a place holder)"
                 )
         else:
+            self._num_to_run = 1
             if self.itr.debug_mode:
                 self.itr.logger.debug(
                     f"{self.logger_msg}: running job ids were NOT provided"

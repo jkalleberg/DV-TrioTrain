@@ -448,7 +448,7 @@ class RunTrioTrain:
             for e, j in enumerate(self._phase_jobs):
                 if is_jobid(j):
                     _job_num = e + 1
-                elif is_job_index(j):
+                elif is_job_index(j, max_jobs=total_jobs):
                     _job_num = (
                         j + 1
                     )  # THIS HAS TO BE +1 to avoid starting with a region0
@@ -590,8 +590,7 @@ class RunTrioTrain:
                     if self._phase_jobs and self.restart_jobs:
                         examples_job_nums = self.make_examples.run()
                     elif (
-                        not self.restart_jobs
-                        and not self._phase_jobs
+                        not self._phase_jobs
                         and self.make_examples._outputs_exist is False
                     ):
                         examples_job_nums = self.make_examples.run()
@@ -652,15 +651,14 @@ class RunTrioTrain:
                     self.shuffle_examples.find_outputs(
                         phase=self.current_phase, find_all=True
                     )
-
+                    
                     if self.restart_jobs and self._phase_jobs is None:
                         self.check_next_phase(total_jobs=self._n_regions, genome=genome)
-
+                    
                     if self._phase_jobs and self.restart_jobs:
                         beam_job_nums = self.shuffle_examples.run()
                     elif (
-                        not self.restart_jobs
-                        and not self._phase_jobs
+                        not self._phase_jobs
                         and self.shuffle_examples._outputs_exist is False
                     ):
                         beam_job_nums = self.shuffle_examples.run()
@@ -730,8 +728,7 @@ class RunTrioTrain:
                         if self._phase_jobs and self.restart_jobs:
                             output = self.re_shuffle.run()
                         elif (
-                            not self.restart_jobs
-                            and not self._phase_jobs
+                            not self._phase_jobs
                             and self.re_shuffle._outputs_exist is False
                         ):
                             output = self.re_shuffle.run()
@@ -795,7 +792,7 @@ class RunTrioTrain:
             self.eval_mode = True
             self.__post_init__()
 
-    def re_training_jobs(self, next_genome: Union[str, None] = None) -> None:
+    def re_training_jobs(self) -> None:
         """
         Make and submit model training jobs
         """
@@ -829,10 +826,11 @@ class RunTrioTrain:
         if self._phase_jobs and self.restart_jobs:
             train_job_num = self.re_training.run()
         elif (
-            not self.restart_jobs
-            and not self._phase_jobs
+            not self._phase_jobs
             and self.re_training._outputs_exist is False
         ):
+            train_job_num = self.re_training.run()
+        elif not self._phase_jobs and self.re_training._outputs_exist and self.overwrite:
             train_job_num = self.re_training.run()
         else:
             train_job_num = None
@@ -869,7 +867,7 @@ class RunTrioTrain:
             self.check_next_phase(total_jobs=1)
 
         self.itr = self.select_ckpt.run()
-        print("SELECT_CKPT")
+        print("ENDING SELECT_CKPT")
         breakpoint()
         # else:
         #     self.itr.logger.info(
@@ -1041,7 +1039,7 @@ class RunTrioTrain:
             self.test_model_jobs()
         elif self.itr.current_genome_num != 0:
             self.data_prep_jobs()
-            self.re_training_jobs(self.next_genome)
+            self.re_training_jobs()
             self.test_model_jobs()
 
     def run(self) -> None:

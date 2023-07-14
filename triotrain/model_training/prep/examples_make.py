@@ -11,6 +11,7 @@ from typing import Dict, List, Union
 
 from helpers.files import WriteFiles
 from helpers.iteration import Iteration
+from helpers.jobs import is_job_index, is_jobid
 from helpers.outputs import check_expected_outputs, check_if_output_exists
 from helpers.utils import (
     check_if_all_same,
@@ -19,7 +20,6 @@ from helpers.utils import (
     find_not_NaN,
     generate_job_id,
 )
-from helpers.jobs import is_job_index, is_jobid
 from model_training.prep.examples_re_shuffle import ReShuffleExamples
 from model_training.prep.examples_shuffle import BeamShuffleExamples
 from model_training.slurm.sbatch import SBATCH, SubmitSBATCH
@@ -188,7 +188,10 @@ class MakeExamples:
                                     self.itr.logger.debug(
                                         f"{self.logger_msg}: beam_shuffling dependencies updated to '{self._beam_shuffle_dependencies}'"
                                     )
-                            elif is_job_index(self.make_examples_job_nums[index]):
+                            elif is_job_index(
+                                self.make_examples_job_nums[index],
+                                max_jobs=self._total_regions,
+                            ):
                                 updated_jobs_list.append(index)
 
                     if updated_jobs_list:

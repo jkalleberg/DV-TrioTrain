@@ -131,7 +131,7 @@ class ReShuffleExamples:
                                     self.itr.logger.debug(
                                         f"{self.logger_msg}: re_shuffling dependencies updated to '{self._re_shuffle_dependencies}'"
                                     )
-                            elif is_job_index(self.make_examples_job_nums[index]):
+                            elif is_job_index(self.make_examples_job_nums[index], max_jobs=self._total_regions):
                                 updated_jobs_list.append(index)
 
                     if updated_jobs_list:

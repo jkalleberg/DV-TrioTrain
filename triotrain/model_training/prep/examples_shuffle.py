@@ -192,28 +192,31 @@ class BeamShuffleExamples:
                                 self.itr.logger.debug(
                                     f"{self.logger_msg}: beam_shuffling dependencies updated to '{self._beam_shuffle_dependencies}'"
                                 )
-                        elif is_job_index(self.shuffle_examples_job_nums[index]):
+                        elif is_job_index(
+                            self.shuffle_examples_job_nums[index],
+                            max_jobs=self._total_regions,
+                        ):
                             updated_jobs_list.append(index)
 
                 if updated_jobs_list:
                     self.jobs_to_run = updated_jobs_list
 
-            if self._num_to_ignore == self._total_regions:
-                self.itr.logger.info(
-                    f"{self.logger_msg}: there are no jobs to re-submit for '{self._phase}:{self.genome}'... SKIPPING AHEAD"
-                )
-                self._skip_phase = True
-            elif 0 < self._num_to_ignore < self._total_regions:
-                self.itr.logger.info(
-                    f"{self.logger_msg}: ignoring {self._num_to_ignore}-of-{self._total_regions} SLURM jobs"
-                )
+        elif self._num_to_ignore == self._total_regions:
+            self.itr.logger.info(
+                f"{self.logger_msg}: there are no jobs to re-submit for '{self._phase}:{self.genome}'... SKIPPING AHEAD"
+            )
+            self._skip_phase = True
+        elif 0 < self._num_to_ignore < self._total_regions:
+            self.itr.logger.info(
+                f"{self.logger_msg}: ignoring {self._num_to_ignore}-of-{self._total_regions} SLURM jobs"
+            )
         else:
             if self.itr.debug_mode:
                 self.itr.logger.debug(
                     f"{self.logger_msg}: --running-jobids triggered reprocessing {num_job_ids} job"
                 )
             self.itr.logger.error(
-                f"{self.logger_msg}: incorrect format for 'shuffle_examples_job_nums'"
+                f"{self.logger_msg}: incorrect format for 'shuffle_examples' SLURM job numbers"
             )
             self.itr.logger.error(
                 f"{self.logger_msg}: expected a list of {self._total_regions} SLURM jobs (or 'None' as a place holder)"
@@ -638,20 +641,14 @@ class BeamShuffleExamples:
         else:
             self.find_beam_shuffled_pbtxt(phase=phase, find_all=find_all)
 
-        # if self.overwrite and (
-        #     self.make_examples_jobs
-        #     or not check_if_all_same(self.make_examples_jobs, None)
-        # ):
-        #     self._outputs_exist = False
-        # else:
         if self._existing_config and self._num_config_found is not None:
             missing_config_file = check_expected_outputs(
-                    self._num_config_found,
-                    expected_config_outputs,
-                    log_msg,
-                    file_type2,
-                    self.itr.logger,
-                )
+                self._num_config_found,
+                expected_config_outputs,
+                log_msg,
+                file_type2,
+                self.itr.logger,
+            )
         else:
             missing_config_file = True
 
@@ -739,7 +736,7 @@ class BeamShuffleExamples:
                         region_input = self.shuffle_examples_job_nums[r]
                         if is_jobid(region_input):
                             region_index = r
-                        elif is_job_index(region_input):
+                        elif is_job_index(region_input, max_jobs=self._total_regions):
                             region_index = region_input
 
                     self.job_num = (
@@ -747,9 +744,15 @@ class BeamShuffleExamples:
                     )  # THIS HAS TO BE +1 to avoid starting with a region0
 
                     self.set_region(current_region=self.job_num)
-                    self.find_outputs()
+                    # self.find_outputs()
 
-                    if skip_re_runs or not self._outputs_exist:
+                    if not check_if_all_same(self.make_examples_jobs, None):
+                        self.submit_job(
+                            dependency_index=region_index,
+                            resubmission=True,
+                            total_jobs=self._num_to_run,
+                        )
+                    elif skip_re_runs or not self._outputs_exist:
                         self.submit_job(
                             dependency_index=region_index,
                             resubmission=False,
