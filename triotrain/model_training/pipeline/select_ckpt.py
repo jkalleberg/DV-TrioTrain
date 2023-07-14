@@ -140,7 +140,7 @@ class SelectCheckpoint:
 
         if self.ckpt_selected:
             if self.overwrite and (
-                self.select_ckpt_job_num or not self._ignoring_training
+                self.train_eval_job_num or not self._ignoring_training
             ):
                 self._outputs_exist = False
             else:

@@ -638,34 +638,34 @@ class BeamShuffleExamples:
         else:
             self.find_beam_shuffled_pbtxt(phase=phase, find_all=find_all)
 
-        if self.overwrite and (
-            self.make_examples_jobs
-            or not check_if_all_same(self.make_examples_jobs, None)
-        ):
-            self._outputs_exist = False
-        else:
-            if self._existing_config and self._num_config_found is not None:
-                missing_config_file = check_expected_outputs(
+        # if self.overwrite and (
+        #     self.make_examples_jobs
+        #     or not check_if_all_same(self.make_examples_jobs, None)
+        # ):
+        #     self._outputs_exist = False
+        # else:
+        if self._existing_config and self._num_config_found is not None:
+            missing_config_file = check_expected_outputs(
                     self._num_config_found,
                     expected_config_outputs,
                     log_msg,
                     file_type2,
                     self.itr.logger,
                 )
-            else:
-                missing_config_file = True
+        else:
+            missing_config_file = True
 
-            if missing_shuffled_files or missing_config_file:
-                self._outputs_exist = False
-            else:
-                self._outputs_exist = True
+        if missing_shuffled_files or missing_config_file:
+            self._outputs_exist = False
+        else:
+            self._outputs_exist = True
 
-            if self.itr.debug_mode:
-                self._total_regions = 5
+        if self.itr.debug_mode:
+            self._total_regions = 5
 
-            assert (
-                self._total_regions is not None
-            ), f"unable to proceed; expected a value for total_regions, and None was provided"
+        assert (
+            self._total_regions is not None
+        ), f"unable to proceed; expected a value for total_regions, and None was provided"
 
     def run(self) -> Union[List[Union[str, None]], None]:
         """

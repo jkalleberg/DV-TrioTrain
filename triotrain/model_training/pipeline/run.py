@@ -308,12 +308,6 @@ class RunTrioTrain:
                         f"{self._phase_logger_msg}: expected a list containing {total_jobs_in_phase} values reprenting [jobIDs, indexes, or 'None'] but only {len(self._jobIDs)} were provided.\nExiting..."
                     )
                 exit(1)
-            # else:
-            #     skip_rerunning_jobs = check_if_all_same(self._jobIDs, None)
-            #     if skip_rerunning_jobs:
-            #         self.re_running_jobs = False
-            #     else:
-            #         self.re_running_jobs = True
 
     def count_jobs(self, genome: str = "Child") -> None:
         """
@@ -451,11 +445,13 @@ class RunTrioTrain:
             n_jobs = len(self._phase_jobs)
             jobs_list = [None for n in range(0, total_jobs)]
 
-            for e,j in enumerate(self._phase_jobs):
+            for e, j in enumerate(self._phase_jobs):
                 if is_jobid(j):
                     _job_num = e + 1
                 elif is_job_index(j):
-                    _job_num = j + 1  # THIS HAS TO BE +1 to avoid starting with a region0
+                    _job_num = (
+                        j + 1
+                    )  # THIS HAS TO BE +1 to avoid starting with a region0
 
                 if self.current_phase == "make_examples":
                     self.make_examples.set_region(current_region=_job_num)
@@ -476,7 +472,7 @@ class RunTrioTrain:
                 elif self.current_phase == "train_eval":
                     self.re_training.find_outputs(phase="check_next_phase")
                     outputs_found = self.re_training._outputs_exist
-                
+
                 elif self.current_phase == "select_ckpt":
                     self.select_ckpt.find_outputs(phase="check_next_phase")
                     outputs_found = self.select_ckpt._outputs_exist
@@ -576,7 +572,15 @@ class RunTrioTrain:
                         overwrite=self.overwrite,
                         make_examples_job_nums=self._jobIDs,
                     )
+                    self.make_examples.find_all_outputs()
 
+                    # skip ahead if all outputs exist already
+                    if self.make_examples._outputs_exist and not self.restart_jobs:
+                        self.itr.logger.info(
+                            f"------------ SKIPPING [{self.itr._mode_string}] - [data_prep_jobs] - [{genome}] ------------"
+                        )
+                        continue
+                
                     self.make_examples.set_genome()
                     self.make_examples.find_outputs(self.current_phase, find_all=True)
 
@@ -585,12 +589,6 @@ class RunTrioTrain:
 
                     if self._phase_jobs and self.restart_jobs:
                         examples_job_nums = self.make_examples.run()
-                    # skip ahead if all outputs exist already
-                    elif self.make_examples._outputs_exist and not self.restart_jobs:
-                        self.itr.logger.info(
-                            f"------------ SKIPPING [{self.itr._mode_string}] - [data_prep_jobs] - [{genome}] ------------"
-                        )
-                        continue
                     elif (
                         not self.restart_jobs
                         and not self._phase_jobs
@@ -655,8 +653,17 @@ class RunTrioTrain:
                         phase=self.current_phase, find_all=True
                     )
 
+                    print("FOUND OUTPUTS:", self.shuffle_examples._outputs_exist)
+
                     if self.restart_jobs and self._phase_jobs is None:
                         self.check_next_phase(total_jobs=self._n_regions, genome=genome)
+                    
+                    
+                    print("NOT PHASE JOBS:", not self._phase_jobs)
+                    print("RESTART JOBS:", self.restart_jobs)
+                    print("FOUND OUTPUTS:", self.shuffle_examples._outputs_exist)
+                    print("OVERWRITE:", self.overwrite)
+                    breakpoint()
 
                     if self._phase_jobs and self.restart_jobs:
                         beam_job_nums = self.shuffle_examples.run()
@@ -665,6 +672,8 @@ class RunTrioTrain:
                         and not self._phase_jobs
                         and self.shuffle_examples._outputs_exist is False
                     ):
+                        beam_job_nums = self.shuffle_examples.run()
+                    elif not self._phase_jobs and self.shuffle_examples._outputs_exist and self.overwrite:
                         beam_job_nums = self.shuffle_examples.run()
                     else:
                         beam_job_nums = None
@@ -829,7 +838,7 @@ class RunTrioTrain:
         elif (
             not self.restart_jobs
             and not self._phase_jobs
-            and self.re_shuffle._outputs_exist is False
+            and self.re_training._outputs_exist is False
         ):
             train_job_num = self.re_training.run()
         else:
@@ -865,7 +874,7 @@ class RunTrioTrain:
 
         if self.restart_jobs and self._phase_jobs is None:
             self.check_next_phase(total_jobs=1)
-        
+
         self.itr = self.select_ckpt.run()
         print("SELECT_CKPT")
         breakpoint()

@@ -107,11 +107,14 @@ class TrainEval:
             self.itr.current_genome_dependencies[0:2], None
         )
 
+        print("TRAIN JOB NUM:", self.train_job_num)
+        breakpoint()
+
         if not self._ignoring_re_shuffle:
             self._num_to_ignore = 0
             self._num_to_run = 1
 
-        elif self.train_job_num[0] is not None:
+        elif self.train_job_num and self.train_job_num[0] is not None:
             num_job_ids = len(self.train_job_num)
             if num_job_ids == 1:
                 jobs_to_run = find_not_NaN(self.train_job_num)
@@ -588,6 +591,8 @@ class TrainEval:
                 self.itr.logger.info(
                     f"{self.logger_msg}: re_shuffle jobs were submitted...",
                 )
+            
+            if not self._outputs_exist:
                 msg = "sub"
                 restart = False
             else:
