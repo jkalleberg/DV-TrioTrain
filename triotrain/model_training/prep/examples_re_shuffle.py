@@ -466,7 +466,7 @@ class ReShuffleExamples:
                 )
 
                 if self.overwrite and (
-                    self.re_shuffle_job_num or not self._ignoring_beam_shuffle
+                    self.beam_shuffling_jobs or not check_if_all_same(self.beam_shuffling_jobs, None)
                 ):
                     self._outputs_exist = False
                 else:
