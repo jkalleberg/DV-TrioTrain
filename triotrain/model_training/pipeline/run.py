@@ -653,17 +653,8 @@ class RunTrioTrain:
                         phase=self.current_phase, find_all=True
                     )
 
-                    print("FOUND OUTPUTS:", self.shuffle_examples._outputs_exist)
-
                     if self.restart_jobs and self._phase_jobs is None:
                         self.check_next_phase(total_jobs=self._n_regions, genome=genome)
-                    
-                    
-                    print("NOT PHASE JOBS:", not self._phase_jobs)
-                    print("RESTART JOBS:", self.restart_jobs)
-                    print("FOUND OUTPUTS:", self.shuffle_examples._outputs_exist)
-                    print("OVERWRITE:", self.overwrite)
-                    breakpoint()
 
                     if self._phase_jobs and self.restart_jobs:
                         beam_job_nums = self.shuffle_examples.run()
