@@ -735,6 +735,8 @@ class RunTrioTrain:
                             and self.re_shuffle._outputs_exist is False
                         ):
                             output = self.re_shuffle.run()
+                        elif not self._phase_jobs and self.re_shuffle._outputs_exist and self.overwrite:
+                            output = self.re_shuffle.run()
                         else:
                             output = None
 
@@ -755,7 +757,7 @@ class RunTrioTrain:
 
                         if phase_skipped_counter == 3:
                             self.itr.logger.info(
-                                f"------------ SKIPPING [{self.itr._mode_string}] - [data_prep_jobs] - [{self.logger_msg}] ------------"
+                                f"------------ SKIPPING [{self.itr._mode_string}] - [data_prep_jobs] - [{genome}] ------------"
                             )
                     else:
                         if self.itr.demo_mode and self.show_regions_file is not None:
@@ -783,10 +785,10 @@ class RunTrioTrain:
                             )
                 else:
                     self.itr.logger.info(
-                        f"[{self.itr._mode_string}] - [data_prep_jobs] - [{self.logger_msg}]: jobs are currently running... SKIPPING AHEAD"
+                        f"[{self.itr._mode_string}] - [data_prep_jobs] - [{genome}]: jobs are currently running... SKIPPING AHEAD"
                     )
                     self.itr.logger.info(
-                        f"------------ SKIPPING [{self.itr._mode_string}] - [data_prep_jobs] - [{self.logger_msg}] ------------"
+                        f"------------ SKIPPING [{self.itr._mode_string}] - [data_prep_jobs] - [{genome}] ------------"
                     )
             # -- switch from parent to child -- #
             self.train_mode = False
