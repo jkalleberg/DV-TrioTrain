@@ -206,7 +206,7 @@ class RunTrioTrain:
             self.re_running_jobs = True
         else:
             self.itr.logger.info(
-                f"{self._phase_logger_msg}: re-starting jobs were NOT provided for '{phase}:{genome}'"
+                f"{self._phase_logger_msg}: re-starting jobs were NOT provided for '{phase}'"
             )
             self._phase_jobs = None
             self.re_running_jobs = False
@@ -451,8 +451,11 @@ class RunTrioTrain:
             n_jobs = len(self._phase_jobs)
             jobs_list = [None for n in range(0, total_jobs)]
 
-            for j in self._phase_jobs:
-                _job_num = j + 1  # THIS HAS TO BE +1 to avoid starting with a region0
+            for e,j in enumerate(self._phase_jobs):
+                if is_jobid(j):
+                    _job_num = e + 1
+                elif is_job_index(j):
+                    _job_num = j + 1  # THIS HAS TO BE +1 to avoid starting with a region0
 
                 if self.current_phase == "make_examples":
                     self.make_examples.set_region(current_region=_job_num)
@@ -473,6 +476,10 @@ class RunTrioTrain:
                 elif self.current_phase == "train_eval":
                     self.re_training.find_outputs(phase="check_next_phase")
                     outputs_found = self.re_training._outputs_exist
+                
+                elif self.current_phase == "select_ckpt":
+                    self.select_ckpt.find_outputs(phase="check_next_phase")
+                    outputs_found = self.select_ckpt._outputs_exist
 
                 if outputs_found:
                     continue
@@ -845,7 +852,7 @@ class RunTrioTrain:
         self.current_phase = "select_ckpt"
         self.process_re_runs(self.current_phase)
 
-        select_ckpt = SelectCheckpoint(
+        self.select_ckpt = SelectCheckpoint(
             itr=self.itr,
             slurm_resources=self.resource_dict,
             model_label=self.model_label,
@@ -855,7 +862,11 @@ class RunTrioTrain:
             benchmarking_file=self.benchmarking_file,
             overwrite=self.overwrite,
         )
-        self.itr = select_ckpt.run()
+
+        if self.restart_jobs and self._phase_jobs is None:
+            self.check_next_phase(total_jobs=1)
+        
+        self.itr = self.select_ckpt.run()
         print("SELECT_CKPT")
         breakpoint()
         # else:

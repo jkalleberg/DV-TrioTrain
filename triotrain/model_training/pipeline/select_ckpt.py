@@ -12,6 +12,7 @@ from typing import List, Union
 from helpers.environment import Env
 from helpers.files import WriteFiles
 from helpers.iteration import Iteration
+from helpers.jobs import is_job_index, is_jobid
 from helpers.outputs import check_expected_outputs, check_if_output_exists
 from helpers.utils import (
     check_if_all_same,
@@ -20,7 +21,6 @@ from helpers.utils import (
     find_not_NaN,
     generate_job_id,
 )
-from helpers.jobs import is_job_index, is_jobid
 from model_training.slurm.sbatch import SBATCH, SubmitSBATCH
 from regex import compile
 
@@ -215,7 +215,7 @@ class SelectCheckpoint:
                 )
             else:
                 self.itr.logger.info(
-                    f"{self.logger_msg}:  --overwrite=False; SLURM job file already exists... SKIPPING AHEAD"
+                    f"{self.logger_msg}: --overwrite=False; SLURM job file already exists... SKIPPING AHEAD"
                 )
                 return
         else:
@@ -480,7 +480,7 @@ class SelectCheckpoint:
         else:
             if not self._ignoring_training:
                 self.itr.logger.info(
-                    f"{self.logger_msg}: train_eval jobs were submitted...",
+                    f"{self.logger_msg}: train_eval job was submitted...",
                 )
                 msg = "sub"
                 restart = False
