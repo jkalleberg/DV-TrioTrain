@@ -11,6 +11,7 @@ from typing import List, Union
 
 from helpers.files import WriteFiles
 from helpers.iteration import Iteration
+from helpers.jobs import is_job_index, is_jobid
 from helpers.outputs import check_expected_outputs, check_if_output_exists
 from helpers.utils import (
     check_if_all_same,
@@ -49,7 +50,6 @@ class ReShuffleExamples:
     _num_to_ignore: int = field(default=0, init=False, repr=False)
     _outputs_exist: bool = field(default=False, init=False, repr=False)
     _phase: str = field(default="re_shuffle", init=False, repr=False)
-    _run_jobs: Union[bool, None] = field(default=None, init=False, repr=False)
     _skipped_counter: int = field(default=0, init=False, repr=False)
     _skip_phase: bool = field(default=False, init=False, repr=False)
     _train_dependency: Union[str, None] = field(default=None, init=False, repr=False)
@@ -99,16 +99,18 @@ class ReShuffleExamples:
         Collect any SLURM job ids for running tests to avoid submitting a job while it's already running.
         """
         self._ignoring_beam_shuffle = check_if_all_same(self.beam_shuffling_jobs, None)
+
         if not self._ignoring_beam_shuffle:
             self._num_to_ignore = len(find_NaN(self.beam_shuffling_jobs))
+
             if len(find_not_NaN(self.beam_shuffling_jobs)) > 0:
                 self._num_to_run = 1
             else:
                 self._num_to_run = 0
-            self._run_jobs = True
 
         elif self.re_shuffle_job_num:
             num_job_ids = len(self.re_shuffle_job_num)
+
             if num_job_ids == 1:
                 jobs_to_run = find_not_NaN(self.re_shuffle_job_num)
                 self._num_to_run = len(jobs_to_run)
@@ -116,23 +118,11 @@ class ReShuffleExamples:
                 self._re_shuffle_dependencies = create_deps(1)
 
                 if jobs_to_run:
-                    self._run_jobs = True
+                    updated_jobs_list = []
+
                     for index in jobs_to_run:
                         if index is not None:
-                            if (
-                                isinstance(self.re_shuffle_job_num[index], str)
-                                or self.re_shuffle_job_num[index] > 1
-                                or self.re_shuffle_job_num[index] is None
-                            ):
-                                if len(str(self.re_shuffle_job_num[index])) != 8:
-                                    self.itr.logger.error(
-                                        f"{self.logger_msg}: invalid input for SLURM job ID | {self.re_shuffle_job_num[index]}"
-                                    )
-                                    self.itr.logger.error(
-                                        f"{self.logger_msg}: an 8-digit value must be provided for any number greater than one.\nExiting..."
-                                    )
-                                    exit(1)
-
+                            if is_jobid(self.re_shuffle_job_num[index]):
                                 self._num_to_run -= 1
                                 self._num_to_ignore += 1
                                 self._re_shuffle_dependencies[index] = str(
@@ -140,10 +130,13 @@ class ReShuffleExamples:
                                 )
                                 if self.itr.debug_mode:
                                     self.itr.logger.debug(
-                                        f"{self.logger_msg}: re_shuffling dependencies updated to {self._re_shuffle_dependencies}"
+                                        f"{self.logger_msg}: re_shuffling dependencies updated to '{self._re_shuffle_dependencies}'"
                                     )
-                else:
-                    self._run_jobs = False
+                            elif is_job_index(self.make_examples_job_nums[index]):
+                                updated_jobs_list.append(index)
+
+                    if updated_jobs_list:
+                        self.jobs_to_run = updated_jobs_list
 
                 if self._num_to_ignore == 1:
                     self.itr.logger.info(
@@ -156,14 +149,12 @@ class ReShuffleExamples:
                         f"{self.logger_msg}: --running-jobids triggered reprocessing {num_job_ids} job"
                     )
                 self.itr.logger.error(
-                    f"{self.logger_msg}: incorrect format for 're_shuffle_job_num'"
+                    f"{self.logger_msg}: incorrect format for 're_shuffle' SLURM job ID"
                 )
                 self.itr.logger.error(
                     f"{self.logger_msg}: expected a list of 1 SLURM jobs (or 'None' as a place holder)"
                 )
-                self._run_jobs = None
         else:
-            self._run_jobs = True
             if self.itr.debug_mode:
                 self.itr.logger.debug(
                     f"{self.logger_msg}: running job ids were NOT provided"
@@ -380,7 +371,7 @@ class ReShuffleExamples:
                     f"{self.logger_msg}: submitting job to create labeled.shuffled.merged outputs"
                 )
 
-        submit_slurm_job = SubmitSBATCH(
+        slurm_job = SubmitSBATCH(
             self.itr.job_dir,
             f"{self.job_name}.sh",
             self.handler_label,
@@ -389,29 +380,29 @@ class ReShuffleExamples:
         )
 
         if self.beam_shuffling_jobs is not None:
-            submit_slurm_job.build_command(prior_job_number=self.beam_shuffling_jobs)
+            slurm_job.build_command(prior_job_number=self.beam_shuffling_jobs)
         else:
-            submit_slurm_job.build_command(prior_job_number=None)
+            slurm_job.build_command(prior_job_number=None)
+
+        slurm_job.display_command(display_mode=self.itr.dryrun_mode, debug_mode=self.itr.debug_mode)
 
         if self.itr.dryrun_mode:
-            submit_slurm_job.display_command(display_mode=self.itr.dryrun_mode)
             self._train_dependency = generate_job_id()
             self.itr.current_genome_dependencies[self.index] = self._train_dependency
             if self.index > 0:
                 self.itr.next_genome_dependencies[self.index] = generate_job_id()
         else:
-            submit_slurm_job.display_command(debug_mode=self.itr.debug_mode)
-            submit_slurm_job.get_status(debug_mode=self.itr.debug_mode)
+            slurm_job.get_status(debug_mode=self.itr.debug_mode)
 
-            if submit_slurm_job.status == 0:
-                self._train_dependency = submit_slurm_job.job_number
+            if slurm_job.status == 0:
+                self._train_dependency = slurm_job.job_number
                 self.itr.current_genome_dependencies[
                     self.index
-                ] = submit_slurm_job.job_number
+                ] = slurm_job.job_number
                 if self.index > 0:
                     self.itr.next_genome_dependencies[
                         self.index
-                    ] = submit_slurm_job.job_number
+                    ] = slurm_job.job_number
             else:
                 self.itr.logger.error(f"{self.logger_msg}: unable to submit SLURM job")
 
@@ -505,19 +496,21 @@ class ReShuffleExamples:
                 self._skipped_counter = self._num_to_ignore
                 if self._train_dependency and self._train_dependency[0] is not None:
                     self.itr.logger.info(
-                        f"{self.logger_msg}: train dependency updated to {self._train_dependency}"
+                        f"{self.logger_msg}: train dependency updated to '{self._train_dependency}'"
                     )
                 else:
                     self._train_dependency = None
             else:
-                skip_re_runs = check_if_all_same(self.re_shuffle_job_num, None)
-
-                if skip_re_runs or self._ignoring_beam_shuffle:
-                    msg = "sub"
-                else:
+                if not self._ignoring_beam_shuffle:
                     self.itr.logger.info(
                         f"{self.logger_msg}: beam_shuffle jobs were submitted...",
                     )
+                
+                skip_re_runs = check_if_all_same(self.re_shuffle_job_num, None)
+
+                if skip_re_runs:
+                    msg = "sub"
+                else:
                     msg = "re-sub"
 
                 if self._num_to_run == 1:
@@ -529,6 +522,7 @@ class ReShuffleExamples:
                         f"{self.logger_msg}: max number of SLURM jobs for {msg}mission is 1 but {self._num_to_run} were provided.\nExiting... ",
                     )
                     exit(1)
+                
                 self.submit_job(resubmission=True)
 
         # or running it for the first time

@@ -475,9 +475,6 @@ class RunTrioTrain:
                     outputs_found = self.re_training._outputs_exist
 
                 if outputs_found:
-                    self.itr.logger.info(
-                        f"[{self.itr._mode_string}] - [check_next_phase]: found existing outputs from '{current_phase_str}'...SKIPPING AHEAD"
-                    )
                     continue
 
                 else:
@@ -782,7 +779,9 @@ class RunTrioTrain:
         Make and submit model training jobs
         """
         phase_skipped_counter = 0
-        self.process_re_runs("train_eval")
+        ### ------ RE-TRAIN + EVAL ------ ###
+        self.current_phase = "train_eval"
+        self.process_re_runs(self.current_phase)
 
         self.re_training = TrainEval(
             itr=self.itr,
@@ -793,18 +792,28 @@ class RunTrioTrain:
             benchmarking_file=self.benchmarking_file,
             overwrite=self.overwrite,
         )
+        
+        self.re_training.find_all_outputs("find_outputs")
 
-        if not self.re_running_jobs:
-            self.re_training.find_all_outputs("find_outputs")
+        # skip ahead if all outputs exist already
+        if self.re_training._outputs_exist:
+            self.itr.logger.info(
+                f"------------ SKIPPING [{self.itr._mode_string}] - [re_training_jobs] - [{self.logger_msg}] ------------"
+            )
+            return
 
-            # skip ahead if all outputs exist already
-            if self.re_training._outputs_exist:
-                self.itr.logger.info(
-                    f"------------ SKIPPING [{self.itr._mode_string}] - [re_training_jobs] - [{self.logger_msg}] ------------"
-                )
-                return
+        if self.restart_jobs and self._phase_jobs is None:
+            self.check_next_phase(total_jobs=1)
 
-        train_job_num = self.re_training.run()
+        if self._phase_jobs and self.restart_jobs:
+            train_job_num = self.re_training.run()
+        elif not self.restart_jobs and not self._phase_jobs and self.re_shuffle._outputs_exist is False:
+            train_job_num = self.re_training.run()
+        else: 
+            train_job_num = None
+
+        print("ENDING TRAIN_EVAL")
+        breakpoint()
 
         # Determine if a 'train_eval' job was submitted
         if train_job_num is not None:
@@ -815,8 +824,10 @@ class RunTrioTrain:
         if no_dependencies_required:
             phase_skipped_counter += 1
 
-        if next_genome is not None:
-            self.process_re_runs("select_ckpt")
+        ### ------ SELECT CKPT ------ ###
+        # if next_genome is not None:
+        self.current_phase = "select_ckpt"
+        self.process_re_runs(self.current_phase)
 
         select_ckpt = SelectCheckpoint(
             itr=self.itr,
@@ -829,6 +840,7 @@ class RunTrioTrain:
             overwrite=self.overwrite,
         )
         self.itr = select_ckpt.run()
+        print("SELECT_CKPT")
         breakpoint()
         # else:
         #     self.itr.logger.info(

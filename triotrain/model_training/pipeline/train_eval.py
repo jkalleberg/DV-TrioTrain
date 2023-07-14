@@ -22,6 +22,7 @@ from helpers.utils import (
     find_not_NaN,
     generate_job_id,
 )
+from helpers.jobs import is_job_index, is_jobid
 from model_training.pipeline.select_ckpt import SelectCheckpoint
 from model_training.slurm.sbatch import SBATCH, SubmitSBATCH
 from regex import compile
@@ -50,7 +51,6 @@ class TrainEval:
     _gpu_mem: Union[str, int, None] = field(default=None, init=False, repr=False)
     _per_gpu_mem: Union[str, int, None] = field(default=None, init=False, repr=False)
     _phase: str = field(default="train_eval", init=False, repr=False)
-    _run_jobs: Union[bool, None] = field(default=None, init=False, repr=False)
     _select_ckpt_dependency: List = field(default_factory=list, repr=False, init=False)
     _skipped_counter: int = field(default=0, init=False, repr=False)
 
@@ -108,51 +108,37 @@ class TrainEval:
         )
 
         if not self._ignoring_re_shuffle:
-            self.itr.logger.info(
-                f"{self.logger_msg}: re-shuffle job(s) were submitted..."
-            )
             self._num_to_ignore = 0
             self._num_to_run = 1
-            self._run_jobs = True
 
         elif self.train_job_num[0] is not None:
-            if self.overwrite and self._outputs_exist:
-                self.itr.logger.info(
-                    f"{self.logger_msg}: --overwrite=True, any exiting results files will be re-written..."
-                )
             num_job_ids = len(self.train_job_num)
             if num_job_ids == 1:
+                
                 jobs_to_run = find_not_NaN(self.train_job_num)
                 self._num_to_run = len(jobs_to_run)
                 self._num_to_ignore = len(find_NaN(self.train_job_num))
                 self._select_ckpt_dependency = create_deps(1)
 
                 if jobs_to_run:
-                    self._run_jobs = True
+                    updated_jobs_list = []
                     for index in jobs_to_run:
                         if index is not None:
-                            if (
-                                isinstance(self.train_job_num[index], str)
-                                or self.train_job_num[index] > 1
-                                or self.train_job_num[index] is None
-                            ):
-                                if len(str(self.train_job_num[index])) != 8:
-                                    self.itr.logger.error(
-                                        f"{self.logger_msg}: invalid input for SLURM job ID | {self.train_job_num[index]}"
-                                    )
-                                    self.itr.logger.error(
-                                        f"{self.logger_msg}: an 8-digit value must be provided for any number greater than one.\nExiting..."
-                                    )
-                                    exit(1)
+                            if is_jobid(self.train_job_num[index]):
                                 self._num_to_run -= 1
                                 self._num_to_ignore += 1
-                                self._select_ckpt_dependency = [
-                                    str(self.train_job_num[index])
-                                ]
+                                self._select_ckpt_dependency = [str(
+                                    self.train_job_num[index]
+                                )]
                                 if self.itr.debug_mode:
                                     self.itr.logger.debug(
-                                        f"{self.logger_msg}: select_ckpt dependency updated to {self.train_job_num}"
+                                        f"{self.logger_msg}: select_ckpt dependency updated to {self.train_job_num}'"
                                     )
+                            elif is_job_index(self.train_job_num[index]):
+                                updated_jobs_list.append(index)
+
+                    if updated_jobs_list:
+                        self.jobs_to_run = updated_jobs_list
 
                 if self._num_to_ignore == 1:
                     self.itr.logger.info(
@@ -170,10 +156,8 @@ class TrainEval:
                     f"{self.logger_msg}: expected a list of 1 SLURM jobs (or 'None' as a place holder)"
                 )
                 self._num_to_run = 0
-                self._run_jobs = None
         else:
             self._num_to_run = 1
-            self._run_jobs = True
             if self.itr.debug_mode:
                 self.itr.logger.debug(
                     f"{self.logger_msg}: running job ids were NOT provided"
@@ -344,7 +328,7 @@ class TrainEval:
                 )
             else:
                 self.itr.logger.info(
-                    f"{self.logger_msg}: SLURM job file already exists... SKIPPING AHEAD"
+                    f"{self.logger_msg}:  --overwrite=False; SLURM job file already exists... SKIPPING AHEAD"
                 )
                 return
         else:
@@ -498,13 +482,18 @@ class TrainEval:
         else:
             self.existing_best_ckpt = False
 
-    def submit_job(self) -> None:
+    def submit_job(self, resubmission: bool = False) -> None:
         """
         Submit SLURM jobs to queue.
         """
-        if self._outputs_exist:
+        if not self.overwrite and self._outputs_exist:
             self._skipped_counter += 1
+            if resubmission:
+                self.itr.logger.info(
+                    f"{self.logger_msg}: --overwrite=False; skipping job because found all model checkpoint files"
+                )
             return
+
         slurm_job = self.make_job()
 
         if slurm_job is not None:
@@ -512,6 +501,26 @@ class TrainEval:
                 slurm_job.display_job()
             else:
                 slurm_job.write_job()
+
+        if not self.overwrite:
+            if resubmission:
+                # if self._ignoring_beam_shuffle:
+                    self.itr.logger.info(
+                        f"{self.logger_msg}: --overwrite=False; re-submitting job because missing model checkpoint files"
+                    )
+            else:
+                self.itr.logger.info(
+                    f"{self.logger_msg}: submitting job to create the model checkpoint files"
+                )
+        else:
+            if self._outputs_exist:
+                self.itr.logger.info(
+                    f"{self.logger_msg}: --overwrite=True; re-submitting job because replacing existing model checkpoint files"
+                )
+            else:
+                self.itr.logger.info(
+                    f"{self.logger_msg}: submitting job to create the model checkpoint files"
+                )
 
         # identify any iteration dependencies
         # current_genome_dependencies[3] is the SLURM
@@ -601,18 +610,23 @@ class TrainEval:
             else:
                 self._select_ckpt_dependency[0] = None
         else:
+            if not self._ignoring_re_shuffle:
+                self.itr.logger.info(
+                    f"{self.logger_msg}: re_shuffle jobs were submitted...",
+                )
+
+            skip_re_runs = check_if_all_same(self.train_job_num, None)
+
+            if skip_re_runs:
+                msg = "sub"
+                restart = False
+            else:
+                msg = "re-sub"
+                restart = True
+
             if self._num_to_run == 1:
-                if self.overwrite:
-                    self.itr.logger.info(
-                        f"{self.logger_msg}: re-submitting {self._num_to_run}-of-1 SLURM job",
-                    )
-                    if self._outputs_exist:
-                        self.itr.logger.info(
-                            f"{self.logger_msg}: --overwrite=True, any exiting results files will be re-written..."
-                        )
-                else:
-                    self.itr.logger.info(
-                        f"{self.logger_msg}: submitting {self._num_to_run}-of-1 SLURM job",
+                self.itr.logger.info(
+                        f"{self.logger_msg}: attempting to {msg}mit {self._num_to_run}-of-1 SLURM job",
                     )
             else:
                 self.itr.logger.error(
@@ -620,7 +634,7 @@ class TrainEval:
                 )
                 exit(1)
             self.find_outputs()
-            self.submit_job()
+            self.submit_job(resubmission=restart)
 
         self.check_submission()
         return self._select_ckpt_dependency

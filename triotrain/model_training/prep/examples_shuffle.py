@@ -57,7 +57,6 @@ class BeamShuffleExamples:
     _re_shuffle_dependencies: Union[List[Union[str, None]], None] = field(
         default_factory=list, init=False, repr=False
     )
-    _run_jobs: Union[bool, None] = field(default=None, init=False, repr=False)
     _skipped_counter: int = field(default=0, init=False, repr=False)
     _skip_phase: bool = field(default=False, init=False, repr=False)
     _total_regions: int = field(default=0, init=False, repr=False)
@@ -160,7 +159,6 @@ class BeamShuffleExamples:
         if not self._ignoring_make_examples:
             self.jobs_to_run = find_not_NaN(self.make_examples_jobs)
             self._num_to_run = len(self.jobs_to_run)
-            self._run_jobs = True
             self._num_to_ignore = len(find_NaN(self.make_examples_jobs))
 
         elif not self._ignoring_restart_jobs:
@@ -168,13 +166,11 @@ class BeamShuffleExamples:
             if num_job_ids == self._total_regions:
                 self.jobs_to_run = find_not_NaN(self.shuffle_examples_job_nums)
                 self._num_to_run = len(self.jobs_to_run)
-                self._run_jobs = True
                 self._num_to_ignore = len(find_NaN(self.shuffle_examples_job_nums))
 
         else:
             self.jobs_to_run = None
             self._num_to_run = 0
-            self._run_jobs = True
             self._num_to_ignore = self._total_regions
             if self.itr.debug_mode:
                 self.itr.logger.debug(
@@ -196,7 +192,7 @@ class BeamShuffleExamples:
                             )
                             if self.itr.debug_mode:
                                 self.itr.logger.debug(
-                                    f"{self.logger_msg}: beam_shuffling dependencies updated to {self._beam_shuffle_dependencies}"
+                                    f"{self.logger_msg}: beam_shuffling dependencies updated to '{self._beam_shuffle_dependencies}'"
                                 )
                         elif is_job_index(self.shuffle_examples_job_nums[index]):
                             updated_jobs_list.append(index)
@@ -213,8 +209,6 @@ class BeamShuffleExamples:
                 self.itr.logger.info(
                     f"{self.logger_msg}: ignoring {self._num_to_ignore}-of-{self._total_regions} SLURM jobs"
                 )
-        elif self._ignoring_make_examples:
-            self._run_jobs = False
         else:
             if self.itr.debug_mode:
                 self.itr.logger.debug(
@@ -226,7 +220,6 @@ class BeamShuffleExamples:
             self.itr.logger.error(
                 f"{self.logger_msg}: expected a list of {self._total_regions} SLURM jobs (or 'None' as a place holder)"
             )
-            self._run_jobs = None
 
     def benchmark(self) -> None:
         """
@@ -642,14 +635,14 @@ class BeamShuffleExamples:
         else:
             missing_shuffled_files = False
 
-        
         if phase is None:
             self.find_beam_shuffled_pbtxt(phase=self._phase, find_all=find_all)
         else:
             self.find_beam_shuffled_pbtxt(phase=phase, find_all=find_all)
-        
+
         if self.overwrite and (
-            self.make_examples_jobs or not check_if_all_same(self.make_examples_jobs, None)
+            self.make_examples_jobs
+            or not check_if_all_same(self.make_examples_jobs, None)
         ):
             self._outputs_exist = False
         else:
@@ -694,9 +687,7 @@ class BeamShuffleExamples:
             return
 
         # Determine if we are re-running some of the regions for make_examples
-        if (
-            not self._ignoring_make_examples or self.shuffle_examples_job_nums
-        ) and self._run_jobs is not None:
+        if not self._ignoring_make_examples or self.shuffle_examples_job_nums:
             if self._num_to_run == 0:
                 self._skipped_counter = self._num_to_ignore
                 if (
@@ -704,7 +695,7 @@ class BeamShuffleExamples:
                     and check_if_all_same(self._re_shuffle_dependencies, None) is False
                 ):
                     self.itr.logger.info(
-                        f"{self.logger_msg}: re_shuffle dependencies updated to {self._re_shuffle_dependencies}"
+                        f"{self.logger_msg}: re_shuffle dependencies updated to '{self._re_shuffle_dependencies}'"
                     )
                 else:
                     self._re_shuffle_dependencies = None

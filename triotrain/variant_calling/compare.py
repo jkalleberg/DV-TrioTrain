@@ -114,7 +114,6 @@ class CompareHappy:
                 self.jobs_to_run = list(range(0, self.itr.total_num_tests))
 
             self._num_to_run = len(self.jobs_to_run)
-            self._run_jobs = True
 
         elif self.compare_happy_job_nums:
             num_job_ids = len(self.compare_happy_job_nums)
@@ -124,7 +123,6 @@ class CompareHappy:
                 self._num_to_ignore = len(find_NaN(self.compare_happy_job_nums))
 
                 if self.jobs_to_run:
-                    self._run_jobs = True
                     for index in self.jobs_to_run:
                         if index is not None:
                             if (
@@ -148,8 +146,6 @@ class CompareHappy:
                                     self._convert_happy_dependencies[index] = str(
                                         self.compare_happy_job_nums[index]
                                     )
-                else:
-                    self._run_jobs = False
 
                 if 0 < self._num_to_ignore < self.itr.total_num_tests:
                     self.itr.logger.info(
@@ -171,9 +167,7 @@ class CompareHappy:
                 self.itr.logger.error(
                     f"{self.logger_msg}: expected a list of {self.itr.total_num_tests} SLURM jobs (or 'None' as a place holder)"
                 )
-                self._run_jobs = None
         else:
-            self._run_jobs = True
             if self.itr.debug_mode:
                 self.itr.logger.debug(
                     f"{self.logger_msg}: running job ids were NOT provided"
@@ -547,9 +541,7 @@ class CompareHappy:
             self.submit_job()
 
         # determine if we should avoid certain tests because they are currently running
-        elif (
-            self.compare_happy_job_nums or not self._ignoring_call_variants
-        ) and self._run_jobs is not None:
+        elif self.compare_happy_job_nums or not self._ignoring_call_variants:
             if self._num_to_run == 0:
                 self._skipped_counter = self._num_to_ignore
                 if (

@@ -73,7 +73,6 @@ class SelectCheckpoint:
             self.itr.logger.info(f"{self.logger_msg}: training was submitted...")
             self._num_to_ignore = 0
             self._num_to_run = 1
-            self._run_jobs = True
 
         elif self.select_ckpt_job_num[0] is not None:
             if self.overwrite and self._outputs_exist:
@@ -88,7 +87,6 @@ class SelectCheckpoint:
                 self._num_to_ignore = len(jobs_to_ignore)
                 self._model_testing_dependency = create_deps(1)
                 if jobs_to_run:
-                    self._run_jobs = True
                     for index in jobs_to_run:
                         if index is not None:
                             if (
@@ -103,7 +101,7 @@ class SelectCheckpoint:
                                 )
                                 if self.itr.debug_mode:
                                     self.itr.logger.debug(
-                                        f"{self.logger_msg}: model_testing dependency updated to {self.select_ckpt_job_num}"
+                                        f"{self.logger_msg}: model_testing dependency updated to '{self.select_ckpt_job_num}'"
                                     )
 
                 if self._num_to_ignore == 1:
@@ -121,9 +119,7 @@ class SelectCheckpoint:
                 self.itr.logger.error(
                     f"{self.logger_msg}: expected a list of 1 SLURM jobs (or 'None' as a place holder)"
                 )
-                self._run_jobs = None
         else:
-            self._run_jobs = True
             if self.itr.debug_mode:
                 self.itr.logger.debug(
                     f"{self.logger_msg}: running job ids were NOT provided"
@@ -442,7 +438,6 @@ class SelectCheckpoint:
 
         self.find_restart_jobs()
 
-        # if (self.select_ckpt_job_num or not self._ignoring_training) and self._run_jobs is not None:
         # determine if we are re-running select-ckpt
         if self._num_to_run == 0:
             self._skipped_counter = self._num_to_ignore
@@ -451,7 +446,7 @@ class SelectCheckpoint:
                 and self._model_testing_dependency[0] is not None
             ):
                 self.itr.logger.info(
-                    f"{self.logger_msg}: call_variants dependency updated to {self._model_testing_dependency}"
+                    f"{self.logger_msg}: call_variants dependency updated to '{self._model_testing_dependency}'"
                 )
             else:
                 self._model_testing_dependency[0] = None

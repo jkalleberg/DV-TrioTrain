@@ -106,7 +106,6 @@ class ConvertHappy:
             else:
                 self._jobs_to_run = list(range(0, self.itr.total_num_tests))
             self._num_to_run = len(self._jobs_to_run)
-            self._run_jobs = True
 
         elif self.convert_happy_job_nums:
             num_job_ids = len(self.convert_happy_job_nums)
@@ -116,7 +115,6 @@ class ConvertHappy:
                 self._num_to_ignore = len(find_NaN(self.convert_happy_job_nums))
 
                 if self._jobs_to_run:
-                    self._run_jobs = True
                     for index in self._jobs_to_run:
                         if index is not None:
                             if (

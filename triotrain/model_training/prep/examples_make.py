@@ -56,7 +56,6 @@ class MakeExamples:
     _num_to_ignore: int = field(default=0, init=False, repr=False)
     _phase: str = field(default="make_examples", init=False, repr=False)
     _print_msg: Union[str, None] = field(default=None, init=False, repr=False)
-    _run_jobs: Union[bool, None] = field(default=None, init=False, repr=False)
     _skipped_counter: int = field(default=0, init=False, repr=False)
     _skip_phase: bool = field(default=False, init=False, repr=False)
     _total_regions: int = field(default=0, init=False, repr=False)
@@ -170,7 +169,6 @@ class MakeExamples:
                 self.jobs_to_run = find_not_NaN(self.make_examples_job_nums)
                 self.jobs_to_ignore = find_NaN(self.make_examples_job_nums)
                 self._num_to_run = len(self.jobs_to_run)
-                self._run_jobs = True
                 self._num_to_ignore = len(self.jobs_to_ignore)
 
                 if self.jobs_to_run:
@@ -187,7 +185,7 @@ class MakeExamples:
                                 )
                                 if self.itr.debug_mode:
                                     self.itr.logger.debug(
-                                        f"{self.logger_msg}: beam_shuffling dependencies updated to {self._beam_shuffle_dependencies}"
+                                        f"{self.logger_msg}: beam_shuffling dependencies updated to '{self._beam_shuffle_dependencies}'"
                                     )
                             elif is_job_index(self.make_examples_job_nums[index]):
                                 updated_jobs_list.append(index)
@@ -196,10 +194,6 @@ class MakeExamples:
                         self.jobs_to_run = updated_jobs_list
 
                 if self._num_to_ignore == self._total_regions:
-                    # self.find_outputs(find_all=True)
-                    # print("OUTPUTS EXIST?", self._outputs_exist)
-                    # breakpoint()
-                    # if self._outputs_exist:
                     self.itr.logger.info(
                         f"{self.logger_msg}: there are no jobs to re-submit for '{self._phase}:{self.genome}'... SKIPPING AHEAD"
                     ) 
@@ -220,9 +214,7 @@ class MakeExamples:
                 self.itr.logger.error(
                     f"{self.logger_msg}: expected a list of {self._total_regions} SLURM jobs (or 'None' as a place holder)"
                 )
-                self._run_jobs = None
         else:
-            self._run_jobs = True
             if self.itr.debug_mode:
                 self.itr.logger.debug(
                     f"{self.logger_msg}: running job ids were NOT provided"
@@ -414,16 +406,7 @@ class MakeExamples:
     ) -> None:
         """
         Submit SLURM jobs to queue.
-
-        Note: Do NOT want to define default # of
-              expected number of outputs, as
-              the number created depends on
-              the number of CPUs available from SLURM.
         """
-        # print("OUTPUTS EXIST?", self._outputs_exist, "& NOT OVERWRITE?", not self.overwrite)
-        # print("or")
-        # print("OUTPUTS EXIST?", self._outputs_exist, "& IGNORING RESTART JOBS:", self._ignoring_restart_jobs)
-        # breakpoint()
         if (self._outputs_exist and self.overwrite is False) or (self._outputs_exist and self._ignoring_restart_jobs):
             self._skipped_counter += 1
             if resubmission:
@@ -610,7 +593,7 @@ class MakeExamples:
             return
 
         # Determine if we are re-submitting some of the regions for make_examples:
-        if not self._ignoring_restart_jobs and self._run_jobs is not None:
+        if not self._ignoring_restart_jobs:
             if self._num_to_run == 0:
                 self._skipped_counter = self._num_to_ignore
                 if (
@@ -619,7 +602,7 @@ class MakeExamples:
                     is False
                 ):
                     self.itr.logger.info(
-                        f"{self.logger_msg}: beam_shuffle dependencies updated to {self._beam_shuffle_dependencies}"
+                        f"{self.logger_msg}: beam_shuffle dependencies updated to '{self._beam_shuffle_dependencies}'"
                     )
                 else:
                     self._beam_shuffle_dependencies = None

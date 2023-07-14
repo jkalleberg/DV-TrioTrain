@@ -113,16 +113,19 @@ class CallVariants:
             else:
                 self.jobs_to_run = select_ckpt_run
             self._num_to_run = len(self.jobs_to_run)
-            self._run_jobs = True
 
         elif self.call_variants_job_nums:
+            print("CALL VARIANTS JOBS:", self.call_variants_job_nums)
             num_job_ids = len(self.call_variants_job_nums)
+            print("NUM JOB IDS:", num_job_ids)
+            print("NUM TESTS:", self.itr.total_num_tests)
+            print(num_job_ids == self.itr.total_num_tests)
+            breakpoint()
             if num_job_ids == self.itr.total_num_tests:
                 self.jobs_to_run = find_not_NaN(self.call_variants_job_nums)
                 self._num_to_run = len(self.jobs_to_run)
                 self._num_to_ignore = len(find_NaN(self.call_variants_job_nums))
                 if self.jobs_to_run:
-                    self._run_jobs = True
                     for index in self.jobs_to_run:
                         if index is not None:
                             if (
@@ -148,8 +151,6 @@ class CallVariants:
                                     self._compare_dependencies[index] = str(
                                         self.call_variants_job_nums[index]
                                     )
-                else:
-                    self._run_jobs = False
 
                 if 0 < self._num_to_ignore < self.itr.total_num_tests:
                     self.itr.logger.info(
@@ -165,15 +166,14 @@ class CallVariants:
                     self.itr.logger.debug(
                         f"{self.logger_msg}: --running-jobids triggered reprocessing {num_job_ids} job"
                     )
+                
                 self.itr.logger.error(
                     f"{self.logger_msg}: incorrect format for 'call_variants_job_nums'"
                 )
                 self.itr.logger.error(
                     f"{self.logger_msg}: expected a list of {self.itr.total_num_tests} SLURM jobs (or 'None' as a place holder)"
                 )
-                self._run_jobs = None
         else:
-            self._run_jobs = True
             if self.itr.debug_mode:
                 self.itr.logger.debug(
                     f"{self.logger_msg}: running job ids were NOT provided"
@@ -812,9 +812,7 @@ class CallVariants:
             self.submit_job()
 
         # Determine if we are re-running some of the test genomes with call variants
-        elif (
-            self.call_variants_job_nums or not self._ignoring_select_ckpt
-        ) and self._run_jobs is not None:
+        elif self.call_variants_job_nums or not self._ignoring_select_ckpt:
             if self._num_to_run == 0:
                 self._skipped_counter = self._num_to_ignore
                 if (
