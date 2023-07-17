@@ -664,6 +664,8 @@ class RunTrioTrain:
                         beam_job_nums = self.shuffle_examples.run()
                     elif not self._phase_jobs and self.shuffle_examples._outputs_exist and self.overwrite:
                         beam_job_nums = self.shuffle_examples.run()
+                    elif not self._phase_jobs and self.shuffle_examples._outputs_exist and no_dependencies_required is False:
+                        beam_job_nums = self.shuffle_examples.run()
                     else:
                         beam_job_nums = None
 

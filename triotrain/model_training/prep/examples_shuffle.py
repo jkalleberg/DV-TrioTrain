@@ -182,14 +182,16 @@ class BeamShuffleExamples:
                 for index in self.jobs_to_run:
                     if index is not None:
                         if is_jobid(self.shuffle_examples_job_nums[index]):
+                            print("STOP!")
+                            breakpoint()
                             self._num_to_run -= 1
                             self._num_to_ignore += 1
                             self._skipped_counter += 1
                             self._re_shuffle_dependencies[index] = str(
                                 self.shuffle_examples_job_nums[index]
                             )
-                            if self.itr.debug_mode:
-                                self.itr.logger.debug(
+                            # if self.itr.debug_mode:
+                            self.itr.logger.debug(
                                     f"{self.logger_msg}: beam_shuffling dependencies updated to '{self._beam_shuffle_dependencies}'"
                                 )
                         elif is_job_index(
@@ -744,7 +746,7 @@ class BeamShuffleExamples:
                     )  # THIS HAS TO BE +1 to avoid starting with a region0
 
                     self.set_region(current_region=self.job_num)
-                    # self.find_outputs()
+                    self.find_outputs()
 
                     if not check_if_all_same(self.make_examples_jobs, None):
                         self.submit_job(
