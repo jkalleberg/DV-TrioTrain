@@ -180,8 +180,12 @@ class MergeSelect:
             self.current_run = int(self.next_run - 1)
         else:
             run_path = str(self.ckpt_file.parent.parent.parent.stem)
-            run_num = findall(r"[0-9]+", run_path)[0]
-            self.current_run = int(run_num)
+            run_num = findall(r"[0-9]+", run_path)
+            if run_num:
+                self.current_run = int(run_num[0])
+            else:
+                self.current_run = None
+            
 
         vars_list = [
             "RunName",
@@ -210,7 +214,7 @@ class MergeSelect:
         """
         assert (
             self.slurm_log_file.exists()
-        ), f"Input file provided [{self.slurm_log_file.name}] does not exist"
+        ), f"required input file does not exist | '{self.slurm_log_file.name}'"
         self.logging_file = open(str(self.slurm_log_file), mode="r")
 
     def count_log_lines(self, train_mode=True) -> None:
@@ -231,7 +235,12 @@ class MergeSelect:
             pattern = compile(r"Terminating eval after(.*)$")
             # NOTE: (.*)$ regex prints to the end of the line
 
-        self.find_log_file()
+        try:
+            self.find_log_file()
+        except AssertionError as e:
+            self.logger.error(e)
+            print("Exiting...")
+            exit(1)
 
         for line in self.logging_file:
             match = search(pattern, line)
@@ -270,14 +279,20 @@ class MergeSelect:
         """
         assert (
             self.ckpt_file.exists()
-        ), f"Input file provided [{self.ckpt_file.name}] does not exist"
+        ), f"required input file does not exist | '{self.ckpt_file.name}'"
         self.model_ckpt = open(str(self.ckpt_file), mode="r")
 
     def select_ckpt_name(self) -> None:
         """
         Identify which checkpoint was selected as "Best" during re-training and create new Env Variables for current iteration.
         """
-        self.find_ckpt_file()
+        try:
+            self.find_ckpt_file()
+        except AssertionError as e:
+            self.logger.error(e)
+            print("Exiting...")
+            exit(1)
+        
         pattern = compile(r"model.ckpt-\d+")
 
         match = None
@@ -298,13 +313,13 @@ class MergeSelect:
                 f"{self.run_name}-run{self.current_run}:{self.current_genome}"
             )
             self.logger.info(
-                f"Identified the testing checkpoint for '{current_model_name}': [{self.checkpoint}]",
+                f"Identified the testing checkpoint for '{current_model_name}' | '{self.checkpoint}'",
             )
 
         if self.next_run is not None:
             next_model_name = f"{self.run_name}-run{self.next_run}:{self.next_genome}"
             self.logger.info(
-                f"Identified a new starting checkpoint for '{next_model_name}': [{self.checkpoint}]",
+                f"Identified a new starting checkpoint for '{next_model_name}' | '{self.checkpoint}'",
             )
 
     def record_results(self) -> None:
@@ -341,6 +356,8 @@ class MergeSelect:
                     )
             else:
                 analysis_name = self.env.env_path.name.split("-")[0]
+                print("ENV PATH:", self.env.env_path)
+                breakpoint()
                 next_env_file = f"envs/{analysis_name}-run{self.next_run}.env"
                 next_env = Env(next_env_file, self.logger, dryrun_mode=self.dryrun_mode)
 

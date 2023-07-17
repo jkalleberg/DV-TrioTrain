@@ -598,8 +598,8 @@ class RunTrioTrain:
                     else:
                         examples_job_nums = None
 
-                    print("ENDING MAKE_EXAMPLES")
-                    breakpoint()
+                    # print("ENDING MAKE_EXAMPLES")
+                    # breakpoint()
 
                     # Determine if any 'make_examples' jobs were submitted
                     if examples_job_nums is None:
@@ -670,8 +670,8 @@ class RunTrioTrain:
                     else:
                         beam_job_nums = None
 
-                    print("ENDING BEAM_SHUFFLE")
-                    breakpoint()
+                    # print("ENDING BEAM_SHUFFLE")
+                    # breakpoint()
 
                     if beam_job_nums is None:
                         no_dependencies_required = True
@@ -742,8 +742,8 @@ class RunTrioTrain:
                         else:
                             output = None
 
-                        print("ENDING RE_SHUFFLE")
-                        breakpoint()
+                        # print("ENDING RE_SHUFFLE")
+                        # breakpoint()
 
                         if output is not None:
                             self.itr = output
@@ -849,8 +849,8 @@ class RunTrioTrain:
         else:
             train_job_num = None
 
-        print("ENDING TRAIN_EVAL")
-        breakpoint()
+        # print("ENDING TRAIN_EVAL")
+        # breakpoint()
 
         # Determine if a 'train_eval' job was submitted
         if train_job_num is not None:
@@ -881,8 +881,9 @@ class RunTrioTrain:
             self.check_next_phase(total_jobs=1)
 
         self.itr = self.select_ckpt.run()
-        print("ENDING SELECT_CKPT")
-        breakpoint()
+        # print("ENDING SELECT_CKPT")
+        # breakpoint()
+        
         # else:
         #     self.itr.logger.info(
         #         f"[{self.itr._mode_string}] - [re_training_jobs] - [{self.logger_msg}]: next checkpoint will not be identified since there is no 'next_genome'"
