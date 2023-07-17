@@ -822,14 +822,20 @@ class RunTrioTrain:
         # skip ahead if all outputs exist already
         if self.re_training._outputs_exist:
             self.itr.logger.info(
-                f"------------ SKIPPING [{self.itr._mode_string}] - [re_training_jobs] - [{self.logger_msg}] ------------"
+                f"------------ SKIPPING [{self.itr._mode_string}] - [re_training_jobs] ------------"
             )
             return
 
         if self.restart_jobs and self._phase_jobs is None:
             self.check_next_phase(total_jobs=1)
-            print("RESTART KEYS:", self.restart_jobs.keys())
-            breakpoint()
+            matches = [k for k in self.restart_jobs.keys() if any(p in k for p in self._data_prep_phases)]
+            restart_dataprep = any(matches)
+            
+            if restart_dataprep and self.overwrite is False:
+                self.itr.logger.warning(f"[{self.itr._mode_string}] - [re_training_jobs]: '--restart-jobs' includes data_prep phase(s) | {matches}")
+                self.itr.logger.error(f"[{self.itr._mode_string}] - [re_training_jobs]: However, train_eval is attempting to ignore upstream job(s)")
+                self.itr.logger.error(f"[{self.itr._mode_string}] - [re_training_jobs]: To ensure proper SLURM depenencies for train_eval, either:\n\t1. remove '--restart-jobs' flag, or\n\t2. add the '--overwrite' flag\nExiting...")
+                exit(1)
 
         if self._phase_jobs and self.restart_jobs:
             train_job_num = self.re_training.run()
