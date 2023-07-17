@@ -318,9 +318,7 @@ class TrainEval:
         if slurm_job.check_sbatch_file():
             if (
                 self.train_job_num
-                and self.train_job_num[0] is not None
-                and self.overwrite
-            ):
+                and self.train_job_num[0] is not None and self.overwrite) or (not self._ignoring_re_shuffle and self.overwrite):
                 self.itr.logger.info(
                     f"{self.logger_msg}: --overwrite=True, re-writing the existing SLURM job now..."
                 )
