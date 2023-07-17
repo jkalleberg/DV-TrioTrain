@@ -497,6 +497,7 @@ class RunTrioTrain:
         """
         Make and submit data prep jobs
         """
+        self._data_prep_phases = ["make_examples", "beam_shuffle", "re_shuffle"]
         for index, use_training_genome in enumerate([True, False]):
             if use_training_genome:
                 genome = self.itr.train_genome
@@ -549,7 +550,7 @@ class RunTrioTrain:
             if self.itr.current_genome_num is not None:
                 if self.itr.current_genome_dependencies[index] is None:
                     phase_skipped_counter = 0
-                    self.current_phase = "make_examples"
+                    self.current_phase = self._data_prep_phases[0]
 
                     # identify any jobs to be re-run
                     if self._n_regions is not None:
@@ -612,7 +613,7 @@ class RunTrioTrain:
                         phase_skipped_counter += 1
 
                     ### ------ SHUFFLE EXAMPLES ------ ###
-                    self.current_phase = "beam_shuffle"
+                    self.current_phase = self._data_prep_phases[1]
                     if self._n_regions is not None:
                         self.process_re_runs(
                             self.current_phase,
@@ -683,7 +684,7 @@ class RunTrioTrain:
                         phase_skipped_counter += 1
 
                     ### ------ RE-SHUFFLE EXAMPLES ------ ###
-                    self.current_phase = "re_shuffle"
+                    self.current_phase = self._data_prep_phases[2]
                     self.process_re_runs(
                         self.current_phase,
                         total_jobs_in_phase=1,
@@ -800,9 +801,10 @@ class RunTrioTrain:
         """
         Make and submit model training jobs
         """
+        self._re_training_phases = ["train_eval", "select_ckpt"]
         phase_skipped_counter = 0
         ### ------ RE-TRAIN + EVAL ------ ###
-        self.current_phase = "train_eval"
+        self.current_phase = self._re_training_phases[0]
         self.process_re_runs(self.current_phase)
 
         self.re_training = TrainEval(
@@ -826,6 +828,8 @@ class RunTrioTrain:
 
         if self.restart_jobs and self._phase_jobs is None:
             self.check_next_phase(total_jobs=1)
+            print("RESTART KEYS:", self.restart_jobs.keys())
+            breakpoint()
 
         if self._phase_jobs and self.restart_jobs:
             train_job_num = self.re_training.run()
@@ -853,7 +857,7 @@ class RunTrioTrain:
 
         ### ------ SELECT CKPT ------ ###
         # if next_genome is not None:
-        self.current_phase = "select_ckpt"
+        self.current_phase = self._re_training_phases[1]
         self.process_re_runs(self.current_phase)
 
         self.select_ckpt = SelectCheckpoint(
