@@ -184,10 +184,6 @@ class MakeExamples:
                                 self._beam_shuffle_dependencies[index] = str(
                                     self.make_examples_job_nums[index]
                                 )
-                                if self.itr.debug_mode:
-                                    self.itr.logger.debug(
-                                        f"{self.logger_msg}: beam_shuffling dependencies updated to '{self._beam_shuffle_dependencies}'"
-                                    )
                             elif is_job_index(
                                 self.make_examples_job_nums[index],
                                 max_jobs=self._total_regions,
@@ -608,7 +604,7 @@ class MakeExamples:
                     is False
                 ):
                     self.itr.logger.info(
-                        f"{self.logger_msg}: beam_shuffle dependencies updated to '{self._beam_shuffle_dependencies}'"
+                        f"{self.logger_msg}: beam_shuffle dependencies updated | '{self._beam_shuffle_dependencies}'"
                     )
                 else:
                     self._beam_shuffle_dependencies = None

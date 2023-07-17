@@ -124,13 +124,12 @@ class ReShuffleExamples:
                             if is_jobid(self.re_shuffle_job_num[index]):
                                 self._num_to_run -= 1
                                 self._num_to_ignore += 1
-                                self._re_shuffle_dependencies[index] = str(
+                                self._train_dependency[index] = str(
                                     self.re_shuffle_job_num[index]
                                 )
-                                if self.itr.debug_mode:
-                                    self.itr.logger.debug(
-                                        f"{self.logger_msg}: re_shuffling dependencies updated to '{self._re_shuffle_dependencies}'"
-                                    )
+                                self.itr.logger.debug(
+                                    f"{self.logger_msg}: train_eval dependency updated | '{self.re_shuffle_job_num}'"
+                                )
                             elif is_job_index(self.make_examples_job_nums[index], max_jobs=self._total_regions):
                                 updated_jobs_list.append(index)
 

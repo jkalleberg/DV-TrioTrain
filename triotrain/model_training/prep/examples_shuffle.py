@@ -175,25 +175,19 @@ class BeamShuffleExamples:
                     f"{self.logger_msg}: running job ids were NOT provided"
                 )
 
-        if self._num_to_run == self._total_regions:
+        if self._num_to_run <= self._total_regions:
             if self.jobs_to_run and not self._ignoring_restart_jobs:
                 updated_jobs_list = []
 
                 for index in self.jobs_to_run:
                     if index is not None:
                         if is_jobid(self.shuffle_examples_job_nums[index]):
-                            print("STOP!")
-                            breakpoint()
                             self._num_to_run -= 1
                             self._num_to_ignore += 1
                             self._skipped_counter += 1
                             self._re_shuffle_dependencies[index] = str(
                                 self.shuffle_examples_job_nums[index]
                             )
-                            # if self.itr.debug_mode:
-                            self.itr.logger.debug(
-                                    f"{self.logger_msg}: beam_shuffling dependencies updated to '{self._beam_shuffle_dependencies}'"
-                                )
                         elif is_job_index(
                             self.shuffle_examples_job_nums[index],
                             max_jobs=self._total_regions,
@@ -692,7 +686,7 @@ class BeamShuffleExamples:
                     and check_if_all_same(self._re_shuffle_dependencies, None) is False
                 ):
                     self.itr.logger.info(
-                        f"{self.logger_msg}: re_shuffle dependencies updated to '{self._re_shuffle_dependencies}'"
+                        f"{self.logger_msg}: re_shuffle dependencies updated | '{self._re_shuffle_dependencies}'"
                     )
                 else:
                     self._re_shuffle_dependencies = None

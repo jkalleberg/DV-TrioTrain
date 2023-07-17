@@ -820,7 +820,7 @@ class CallVariants:
                     and check_if_all_same(self._compare_dependencies, None) is False
                 ):
                     self.itr.logger.info(
-                        f"{self.logger_msg}: compare_happy dependencies updated to {self._compare_dependencies}"
+                        f"{self.logger_msg}: compare_happy dependencies updated | '{self._compare_dependencies}'"
                     )
                 else:
                     self._compare_dependencies = [None]

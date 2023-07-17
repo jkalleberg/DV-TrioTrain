@@ -736,6 +736,8 @@ class RunTrioTrain:
                             output = self.re_shuffle.run()
                         elif not self._phase_jobs and self.re_shuffle._outputs_exist and self.overwrite:
                             output = self.re_shuffle.run()
+                        elif not self._phase_jobs and self.re_shuffle._outputs_exist and no_dependencies_required is False:
+                            output = self.re_shuffle.run()
                         else:
                             output = None
 

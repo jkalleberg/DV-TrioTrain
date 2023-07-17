@@ -550,7 +550,7 @@ class CompareHappy:
                     is False
                 ):
                     self.itr.logger.info(
-                        f"{self.logger_msg}: convert_happy dependencies updated to {self._convert_happy_dependencies}"
+                        f"{self.logger_msg}: convert_happy dependencies updated | '{self._convert_happy_dependencies}'"
                     )
                 else:
                     self._convert_happy_dependencies = [None]
