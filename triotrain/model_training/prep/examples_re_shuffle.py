@@ -119,19 +119,12 @@ class ReShuffleExamples:
                 if jobs_to_run:
                     updated_jobs_list = []
 
-                    for index in jobs_to_run:
-                        if index is not None:
-                            if is_jobid(self.re_shuffle_job_num[index]):
-                                self._num_to_run -= 1
-                                self._num_to_ignore += 1
-                                self._train_dependency[index] = str(
-                                    self.re_shuffle_job_num[index]
-                                )
-                                self.itr.logger.debug(
-                                    f"{self.logger_msg}: train_eval dependency updated | '{self.re_shuffle_job_num}'"
-                                )
-                            elif is_job_index(self.make_examples_job_nums[index], max_jobs=self._total_regions):
-                                updated_jobs_list.append(index)
+                    if is_jobid(self.re_shuffle_job_num[0]):
+                        self._num_to_run -= 1
+                        self._num_to_ignore += 1
+                        self._train_dependency = self.re_shuffle_job_num
+                    elif is_job_index(self.re_shuffle_job_num[0], max_jobs=self._total_regions):
+                        updated_jobs_list.append(0)
 
                     if updated_jobs_list:
                         self.jobs_to_run = updated_jobs_list
@@ -388,17 +381,11 @@ class ReShuffleExamples:
 
         if self.itr.dryrun_mode:
             self._train_dependency = generate_job_id()
-            self.itr.current_genome_dependencies[self.index] = self._train_dependency
-            if self.index > 0:
-                self.itr.next_genome_dependencies[self.index] = generate_job_id()
         else:
             slurm_job.get_status(debug_mode=self.itr.debug_mode)
 
             if slurm_job.status == 0:
                 self._train_dependency = slurm_job.job_number
-                self.itr.current_genome_dependencies[self.index] = slurm_job.job_number
-                if self.index > 0:
-                    self.itr.next_genome_dependencies[self.index] = slurm_job.job_number
             else:
                 self.itr.logger.error(f"{self.logger_msg}: unable to submit SLURM job")
 
@@ -409,11 +396,11 @@ class ReShuffleExamples:
         if self._train_dependency is not None:
             if self.itr.dryrun_mode:
                 print(
-                    f"============================================================\n[DRY_RUN] - {self.logger_msg} Job Number: ['{self._train_dependency}']\n============================================================"
+                    f"============================================================\n[DRY_RUN] - {self.logger_msg} Job Number: {self._train_dependency}\n============================================================"
                 )
             else:
                 print(
-                    f"============================================================\n{self.logger_msg} Job Number: ['{self._train_dependency}']\n============================================================"
+                    f"============================================================\n{self.logger_msg} Job Number: {self._train_dependency}\n============================================================"
                 )
 
         elif self._skipped_counter == 1:
@@ -492,7 +479,7 @@ class ReShuffleExamples:
                 self._skipped_counter = self._num_to_ignore
                 if self._train_dependency and self._train_dependency[0] is not None:
                     self.itr.logger.info(
-                        f"{self.logger_msg}: train dependency updated to '{self._train_dependency}'"
+                        f"{self.logger_msg}: train dependency updated | '{self._train_dependency[0]}'"
                     )
                 else:
                     self._train_dependency = None
@@ -528,6 +515,9 @@ class ReShuffleExamples:
             self.find_outputs(find_all=True)
             self.submit_job()
 
+        if self._train_dependency:
+            self.itr.current_genome_dependencies[self.index] = self._train_dependency[0]
+        
         self.check_submission()
 
         if self._train_dependency is None:

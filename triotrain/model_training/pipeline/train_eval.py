@@ -128,10 +128,6 @@ class TrainEval:
                                 self._select_ckpt_dependency = [
                                     str(self.train_job_num[index])
                                 ]
-                                if self.itr.debug_mode:
-                                    self.itr.logger.debug(
-                                        f"{self.logger_msg}: select_ckpt dependency updated to {self.train_job_num}'"
-                                    )
                             elif is_job_index(self.train_job_num[index]):
                                 updated_jobs_list.append(index)
 
@@ -577,7 +573,7 @@ class TrainEval:
                 and self._select_ckpt_dependency[0] is not None
             ):
                 self.itr.logger.info(
-                    f"{self.logger_msg}: select_ckpt dependency updated to {self._select_ckpt_dependency}"
+                    f"{self.logger_msg}: select_ckpt dependency updated | {self._select_ckpt_dependency}"
                 )
             else:
                 self._select_ckpt_dependency[0] = None
