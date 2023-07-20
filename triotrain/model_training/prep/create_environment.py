@@ -187,10 +187,10 @@ def check_args(args: argparse.Namespace, logger: Logger):
             str_args += f"{key}={val} | "
 
         logger.debug(str_args)
-        logger.debug(f"using DeepVariant version | {environ.get('BIN_VERSION_DV')}")
+        logger.debug(f"[{_phase}]- using DeepVariant version | {environ.get('BIN_VERSION_DV')}")
 
     if args.dry_run:
-        logger.info(f"[{_phase}] - [DRY_RUN] - display environment file contents only")
+        logger.info(f"[DRY_RUN] - [{_phase}] - display environment file contents only")
 
     try:
         assert (
@@ -292,7 +292,10 @@ class Environment:
         else:
             self.mode = f"TRIO{self.trio_num}"
 
-        self.logging_msg = f"[{self.mode}] - [{self._phase}]"
+        if self.dryrun_mode:
+            self.logging_msg = f"[DRY_RUN] - [{self.mode}] - [{self._phase}]"
+        else:
+            self.logging_msg = f"[{self.mode}] - [{self._phase}]" 
 
         # set defaults for channels...
         self.use_insert_size = True
@@ -437,7 +440,7 @@ class Environment:
         env_dir = self.output_dir / self.analysis_name / "envs" 
         if not env_dir.exists():
             if self.dryrun_mode:
-                self.logger.info(f"[DRY_RUN] - {self.logging_msg}: env directory would be created | '{env_dir}'")
+                self.logger.info(f"{self.logging_msg}: env directory would be created | '{env_dir}'")
             else:
                 self.logger.info(f"{self.logging_msg}: creating env directory | '{env_dir}'") 
                 env_dir.mkdir(parents=True)
@@ -452,28 +455,15 @@ class Environment:
         if env_file.file_exists:
             self.file_made = False
             if self.update:
-                msg = "updating"
+                msg = "update"
             else:
-                msg = "using existing"
+                msg = "use existing"
         else:
             self.file_made = True
-            msg = "creating"
+            msg = "create"
 
-        if self.demo_mode:
-            if self.dryrun_mode:
-                self.logger.info(f"[DRY_RUN] - {self.logging_msg}: pretending to create demo env file | '{env_path}'")
-            else:
-                self.logger.info(f"{self.logging_msg}: {msg} demo env file | '{env_path}'")
-        elif self.debug_mode and self.dryrun_mode:
-            self.logger.debug(
-                f"[DRY_RUN] - {self.logging_msg}: --debug set; env file would be created | '{env_path}'"
-            )
-        elif self.debug_mode:
-            self.logger.debug(f"{self.logging_msg}: --debug set")
-        elif self.dryrun_mode:
-            self.logger.info(
-                f"[DRY_RUN] - {self.logging_msg}: env file would be created | '{env_path}'"
-            )
+        if self.dryrun_mode:
+            self.logger.info(f"{self.logging_msg}: pretending to {msg} env file | '{env_path}'")
         else:
             self.logger.info(f"{self.logging_msg}: {msg} env file | '{env_path}'")
 
@@ -488,8 +478,7 @@ class Environment:
 
         if not self.demo_mode:
             if self.dryrun_mode:
-                self.logger.info(
-                    f"[DRY_RUN] - {self.logging_msg}: {msg} environment file {self.trio_num + 1}-of-{self.num_of_iterations}"
+                self.logger.info(f"{self.logging_msg}: {msg} environment file {self.trio_num + 1}-of-{self.num_of_iterations}"
                 )
             else:
 
@@ -927,8 +916,7 @@ class Environment:
         if self.dryrun_mode:
             for var in vars_list:
                 if not Path(str(self.env.contents[var])).is_dir():
-                    self.logger.info(
-                        f"[DRY_RUN] - {self.logging_msg}: directory would be created | '{var}'"
+                    self.logger.info(f"{self.logging_msg}: directory would be created | '{var}'"
                     )
             return
         else:
@@ -991,8 +979,7 @@ class Environment:
         """
         if self.dryrun_mode and self.update is False:
             if self.env.env_path.exists() is False:
-                self.logger.info(
-                    f"[DRY_RUN] - {self.logging_msg}: no file(s) created, as expected"
+                self.logger.info(f"{self.logging_msg}: no file(s) created, as expected"
                 )
         else:
             assert (

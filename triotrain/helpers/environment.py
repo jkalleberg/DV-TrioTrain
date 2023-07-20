@@ -143,11 +143,10 @@ class Env:
 
         # Either save the variable within the Env object,
         # Or write it to the .env file
+        self.logger.info(f"{logger_msg}{description}")
         if dryrun_mode:
-            self.logger.info(f"[DRY_RUN] - {logger_msg}{description}")
             self.contents[key] = value
-        else:
-            self.logger.info(f"{logger_msg}{description}")
+        else:            
             set_key(self.env_path, str(key), str(value), export=True)
             self.contents = dotenv_values(self.env_path)
 
@@ -187,7 +186,7 @@ class Env:
         self.test_contents(*variables)
         if self.debug_mode:
             self.logger.debug(
-                f"[{Path(self.env_file).name}] configured {self.var_count} variables"
+                f"configured {self.var_count} variables from env file | '{Path(self.env_file).name}'"
             )
         return_list: List[Text] = []
         for var in variables:
@@ -195,7 +194,7 @@ class Env:
                 return_list.append(str(self.contents[f"{var}"]))
             else:
                 raise KeyError(
-                    f"Unable to load '{var}', because missing from '{self.env_file}'"
+                    f"unable to load '{var}', because missing from '{self.env_file}'"
                 )
 
         return return_list

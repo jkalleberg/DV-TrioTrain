@@ -5,12 +5,10 @@ from model_training.pipeline.setup import Setup
 from helpers.environment import Env
 from sys import exit
 
-def initalize_weights(setup: Setup, itr: Iteration):
+def initalize_weights(setup: Setup, itr: Iteration, logging_msg: str):
     """
     Determine what weights to use to initalize model
     """
-    logging_msg = f"[{itr._mode_string}] - [initalize]"
-
     if itr.args.first_genome is None:
         path = "TestCkptPath"
         file = "TestCkptName"
@@ -113,10 +111,6 @@ def initalize_weights(setup: Setup, itr: Iteration):
             )
 
             if weights_file.is_file():
-                itr.logger.info(
-                    f"{logging_msg}: warm-starting with the following checkpoint | '{current_starting_point}'"
-                )
-
                 itr.env.add_to(
                     path,
                     str(current_starting_point.parent),
@@ -193,7 +187,7 @@ def initalize_weights(setup: Setup, itr: Iteration):
                         itr.logger.warning(f"{logging_msg}: {e}")
                 else:
                     itr.logger.info(
-                        f"[DRY_RUN] - {logging_msg}: unable to update next trio env file"
+                        f"{logging_msg}: unable to update next trio env file"
                     )
             elif setup.meta.itr_num+1 == setup.meta.num_of_iterations:
                 

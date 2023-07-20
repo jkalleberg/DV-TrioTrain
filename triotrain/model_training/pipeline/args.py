@@ -466,7 +466,7 @@ def check_args(args: argparse.Namespace, logger: Logger, default_channels: str) 
             logger.info("option --custom-ckpt is set")
             if "wgs_af" in args.custom_ckpt and use_default_channels:
                 logger.info(
-                    f"channel_info was not provided, defaults will identified soon..."
+                    f"option --channel-info is missing, defaults will identified soon..."
                 )
             elif "pretrained_models" in args.custom_ckpt:
                 args.channel_info = f"{args.custom_ckpt}.example_info.json"

@@ -66,23 +66,26 @@ class Iteration:
 
         if self.demo_mode and self.current_trio_num is not None:
             if "chr" in self.demo_chromosome.lower():
-                self._mode_string = (
-                    f"DEMO] - [TRIO{self.current_trio_num}] - [{self.demo_chromosome.upper()}"
-                )
+                _mode = f"DEMO] - [TRIO{self.current_trio_num}] - [{self.demo_chromosome.upper()}"
             else:
-                self._mode_string = f"DEMO] - [TRIO{self.current_trio_num}] - [CHR{self.demo_chromosome}"
+                _mode = f"DEMO] - [TRIO{self.current_trio_num}] - [CHR{self.demo_chromosome}"
         elif self.current_genome_num == 0 and self.train_genome is None:
-            self._mode_string = f"Baseline-v{self._version}"
+            _mode = f"Baseline-v{self._version}"
         elif (
             self.current_genome_num != 0
             and self.current_trio_num is not None
             and self.train_genome is not None
         ):
-            self._mode_string = f"TRIO{self.current_trio_num}"
+            _mode = f"TRIO{self.current_trio_num}"
         elif self.current_trio_num is None and self.train_genome is None:
-            self._mode_string = f"Benchmark"
+            _mode = f"Benchmark"
         else:
-            self._mode_string = f"TRIO{self.current_trio_num}"
+            _mode = f"TRIO{self.current_trio_num}"
+
+        if self.dryrun_mode:
+            self._mode_string = f"[DRY_RUN] - [{_mode}]"
+        else:
+            self._mode_string = f"[{_mode}]"
 
         # Do not load any variables from a file
         if self.env is None:
@@ -132,25 +135,19 @@ class Iteration:
                 self.logger.error("ADD LOGIC FOR ANY SPECIES BESIDES COW AND HUMANS!")
                 sys.exit(1)
 
-        if self.dryrun_mode:
-            if not self.env.env_path.exists():
-                self.logger.info(
-                    f"[DRY_RUN] - [{self._mode_string}] - [setup]: env file does not exist, as expected | '{self.env.env_file}'"
-                )
-
         if self.debug_mode:
             self.logger.debug(
-                f"[{self._mode_string}] - [setup]: current_genome_num | {self.current_genome_num}"
+                f"{self._mode_string}: current_genome_num | {self.current_genome_num}"
             )
             self.logger.debug(
-                f"[{self._mode_string}] - [setup]: train_genome | {self.train_genome}"
+                f"{self._mode_string}: train_genome | {self.train_genome}"
             )
             self.logger.debug(
-                f"[{self._mode_string}] - [setup]: current_trio_num | {self.current_trio_num}"
+                f"{self._mode_string}: current_trio_num | {self.current_trio_num}"
             )
             examples = self.env.contents["ExamplesDir"]
             self.logger.debug(
-                f"[{self._mode_string}] - [setup]: examples_dir | {examples}"
+                f"{self._mode_string}: examples_dir | {examples}"
             )
 
         if self.demo_mode and self.current_trio_num is not None:

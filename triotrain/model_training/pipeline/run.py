@@ -72,6 +72,10 @@ class RunTrioTrain:
             self.genome = self.itr.train_genome
         else:
             self.genome = self.itr.eval_genome
+        
+        if self.itr.dryrun_mode:
+            self.logger_msg = f"[DRY_RUN]"
+
 
         if self.itr.demo_mode:
             if "chr" in self.itr.demo_chromosome.lower():
@@ -169,10 +173,10 @@ class RunTrioTrain:
         """
         self.re_running_jobs = None
         if genome is None:
-            self._phase_logger_msg = f"[{self.itr._mode_string}] - [{phase}]"
+            self._phase_logger_msg = f"{self.itr._mode_string} - [{phase}]"
         else:
             self._phase_logger_msg = (
-                f"[{self.itr._mode_string}] - [{phase}] - [{genome}]"
+                f"{self.itr._mode_string} - [{phase}] - [{genome}]"
             )
 
         if restart:
@@ -362,7 +366,7 @@ class RunTrioTrain:
         # Determine if missing all slurm job files
         if self._jobs_found == 0:
             self.itr.logger.info(
-                f"[{self.itr._mode_string}] - [check_jobs] - [{genome}]: missing SLURM sbatch jobs"
+                f"{self.itr._mode_string} - [check_jobs] - [{genome}]: missing SLURM sbatch jobs"
             )
             missing_job_files = True
         else:
@@ -370,7 +374,7 @@ class RunTrioTrain:
             missing_job_files = check_expected_outputs(
                 self._jobs_found,
                 self.expected_jobs,
-                f"[{self.itr._mode_string}] - [check_jobs] - [{genome}]",
+                f"{self.itr._mode_string} - [check_jobs] - [{genome}]",
                 "SLURM sbatch jobs",
                 self.itr.logger,
             )
@@ -378,19 +382,19 @@ class RunTrioTrain:
         if missing_job_files:
             if self.itr.debug_mode and not self.itr.dryrun_mode:
                 self.itr.logger.info(
-                    f"[{self.itr._mode_string}] - [check_jobs] - [{genome}]: creating + submiting SLURM files with --debug set"
+                    f"{self.itr._mode_string} - [check_jobs] - [{genome}]: creating + submiting SLURM files with --debug set"
                 )
             elif not self.itr.debug_mode and self.itr.dryrun_mode:
                 self.itr.logger.info(
-                    f"[{self.itr._mode_string}] - [check_jobs] - [{genome}]: creating + submiting SLURM files with --dry-run set"
+                    f"{self.itr._mode_string} - [check_jobs] - [{genome}]: creating + submiting SLURM files with --dry-run set"
                 )
             elif self.itr.debug_mode and self.itr.dryrun_mode:
                 self.itr.logger.info(
-                    f"[{self.itr._mode_string}] - [check_jobs] - [{genome}]: creating + submiting SLURM files with --debug and --dry-run set"
+                    f"{self.itr._mode_string} - [check_jobs] - [{genome}]: creating + submiting SLURM files with --debug and --dry-run set"
                 )
             else:
                 self.itr.logger.info(
-                    f"[{self.itr._mode_string}] - [check_jobs] - [{self.genome}]: creating + submiting SLURM files"
+                    f"{self.itr._mode_string} - [check_jobs] - [{self.genome}]: creating + submiting SLURM files"
                 )
 
     def find_next_phase(self) -> None:
@@ -440,7 +444,7 @@ class RunTrioTrain:
 
         if self.re_running_jobs and self._phase_jobs is not None:
             self.itr.logger.info(
-                f"[{self.itr._mode_string}] - [check_next_phase]: checking for --restart-jobs errors..."
+                f"{self.itr._mode_string} - [check_next_phase]: checking for --restart-jobs errors..."
             )
             n_jobs = len(self._phase_jobs)
             jobs_list = [None for n in range(0, total_jobs)]
@@ -464,9 +468,6 @@ class RunTrioTrain:
                     outputs_found = self.shuffle_examples._outputs_exist
 
                 elif self.current_phase == "re_shuffle":
-                    self.re_shuffle.find_outputs(
-                        phase="check_next_phase", find_all=True
-                    )
                     outputs_found = self.re_shuffle._outputs_exist
 
                 elif self.current_phase == "train_eval":
@@ -485,11 +486,11 @@ class RunTrioTrain:
 
             if not check_if_all_same(jobs_list, None):
                 self.itr.logger.error(
-                    f"[{self.itr._mode_string}] - [check_next_phase]: attempting to re-start '{next_phase_str}' without '{current_phase_str}' outputs"
+                    f"{self.itr._mode_string} - [check_next_phase]: attempting to re-start '{next_phase_str}' without '{current_phase_str}' outputs"
                 )
 
                 self.itr.logger.error(
-                    f"[{self.itr._mode_string}] - [check_next_phase]: either remove the '--restart-jobs' flag, or edit to include '{current_phase_str}'\nValid options include:\n\t1. Running SLURM job numbers\n\t\tNOTE: when including running SLURM job numbers, the list for '{current_phase_str}' MUST have a length={total_jobs}; however, 'None' values can be used to skip any completed jobs.\n\t\tExample: '{{\"{current_phase_str}\": {jobs_list}, \"{next_phase_str}\": {self._phase_jobs}}}'\n\t2. Index value(s) the {n_jobs}-of-{total_jobs} SLURM jobs re-submit to the queue.\n\t\tNOTE: including '0' triggers 0-based indexing, while excluding '0' assumes 1-based indexes were provided.\n\t\tExample: '{{\"{current_phase_str}\": {self._phase_jobs}, \"{next_phase_str}\": {self._phase_jobs}}}')\n\t3. A mix of both SLURM job numbers and index values. "
+                    f"{self.itr._mode_string} - [check_next_phase]: either remove the '--restart-jobs' flag, or edit to include '{current_phase_str}'\nValid options include:\n\t1. Running SLURM job numbers\n\t\tNOTE: when including running SLURM job numbers, the list for '{current_phase_str}' MUST have a length={total_jobs}; however, 'None' values can be used to skip any completed jobs.\n\t\tExample: '{{\"{current_phase_str}\": {jobs_list}, \"{next_phase_str}\": {self._phase_jobs}}}'\n\t2. Index value(s) the {n_jobs}-of-{total_jobs} SLURM jobs re-submit to the queue.\n\t\tNOTE: including '0' triggers 0-based indexing, while excluding '0' assumes 1-based indexes were provided.\n\t\tExample: '{{\"{current_phase_str}\": {self._phase_jobs}, \"{next_phase_str}\": {self._phase_jobs}}}')\n\t3. A mix of both SLURM job numbers and index values. "
                 )
                 exit(1)
 
@@ -511,7 +512,7 @@ class RunTrioTrain:
                 and self.itr.demo_mode is False
             ):
                 self.itr.logger.info(
-                    f"[{self.itr._mode_string}] - [setup]: --use-regions-shuffle is set"
+                    f"{self.itr._mode_string} - [setup]: --use-regions-shuffle is set"
                 )
                 regions = MakeRegions(
                     self.itr,
@@ -531,7 +532,7 @@ class RunTrioTrain:
                     self.itr = current_itr
                 else:
                     self.itr.logger.error(
-                        f"[{self.itr._mode_string}] - [setup]: expected regions to be created, but they were not"
+                        f"{self.itr._mode_string} - [setup]: expected regions to be created, but they were not"
                     )
 
             # Update the internal variable
@@ -545,6 +546,9 @@ class RunTrioTrain:
             if genome is not None:
                 self.count_jobs(genome=genome)
                 self.check_jobs(genome=genome)
+            
+            print("STOPPING NOW!")
+            breakpoint()
 
             ### ------ MAKE EXAMPLES ------ ###
             if self.itr.current_genome_num is not None:
@@ -578,28 +582,32 @@ class RunTrioTrain:
                     # skip ahead if all outputs exist already
                     if self.make_examples._outputs_exist and not self.restart_jobs:
                         self.itr.logger.info(
-                            f"------------ SKIPPING [{self.itr._mode_string}] - [data_prep_jobs] - [{genome}] ------------"
+                            f"------------ SKIPPING {self.itr._mode_string} - [data_prep_jobs] - [{genome}] ------------"
                         )
                         continue
-                
+
                     self.make_examples.set_genome()
-                    self.make_examples.find_outputs(self.current_phase, find_all=True)
+                    self.make_examples.find_outputs("find_outputs", find_all=True)
+
+                    print("STOP!")
+                    breakpoint()
 
                     if self.restart_jobs and self._phase_jobs is None:
                         self.check_next_phase(total_jobs=self._n_regions, genome=genome)
 
-                    if self._phase_jobs and self.restart_jobs:
-                        examples_job_nums = self.make_examples.run()
-                    elif (
-                        not self._phase_jobs
-                        and self.make_examples._outputs_exist is False
-                    ):
-                        examples_job_nums = self.make_examples.run()
-                    else:
-                        examples_job_nums = None
+                    # if self._phase_jobs and self.restart_jobs:
+                    #     examples_job_nums = self.make_examples.run()
+                    # elif (
+                    #     not self._phase_jobs
+                    #     and self.make_examples._outputs_exist is False
+                    # ):
+                    #     examples_job_nums = self.make_examples.run()
+                    # else:
+                    #     examples_job_nums = None
 
-                    # print("ENDING MAKE_EXAMPLES")
-                    # breakpoint()
+                    examples_job_nums = self.make_examples.run()
+                    print("ENDING MAKE_EXAMPLES")
+                    breakpoint()
 
                     # Determine if any 'make_examples' jobs were submitted
                     if examples_job_nums is None:
@@ -650,28 +658,37 @@ class RunTrioTrain:
 
                     self.shuffle_examples.set_genome()
                     self.shuffle_examples.find_outputs(
-                        phase=self.current_phase, find_all=True
+                        phase="find_outputs", find_all=True
                     )
-                    
-                    if self.restart_jobs and self._phase_jobs is None:
-                        self.check_next_phase(total_jobs=self._n_regions, genome=genome)
-                    
-                    if self._phase_jobs and self.restart_jobs:
-                        beam_job_nums = self.shuffle_examples.run()
-                    elif (
-                        not self._phase_jobs
-                        and self.shuffle_examples._outputs_exist is False
-                    ):
-                        beam_job_nums = self.shuffle_examples.run()
-                    elif not self._phase_jobs and self.shuffle_examples._outputs_exist and self.overwrite:
-                        beam_job_nums = self.shuffle_examples.run()
-                    elif not self._phase_jobs and self.shuffle_examples._outputs_exist and no_dependencies_required is False:
-                        beam_job_nums = self.shuffle_examples.run()
-                    else:
-                        beam_job_nums = None
 
-                    # print("ENDING BEAM_SHUFFLE")
-                    # breakpoint()
+                    # if self.restart_jobs and self._phase_jobs is None:
+                    #     self.check_next_phase(total_jobs=self._n_regions, genome=genome)
+
+                    # if self._phase_jobs and self.restart_jobs:
+                    #     beam_job_nums = self.shuffle_examples.run()
+                    # elif (
+                    #     not self._phase_jobs
+                    #     and self.shuffle_examples._outputs_exist is False
+                    # ):
+                    #     beam_job_nums = self.shuffle_examples.run()
+                    # elif (
+                    #     not self._phase_jobs
+                    #     and self.shuffle_examples._outputs_exist
+                    #     and self.overwrite
+                    # ):
+                    #     beam_job_nums = self.shuffle_examples.run()
+                    # elif (
+                    #     not self._phase_jobs
+                    #     and self.shuffle_examples._outputs_exist
+                    #     and no_dependencies_required is False
+                    # ):
+                    #     beam_job_nums = self.shuffle_examples.run()
+                    # else:
+                    #     beam_job_nums = None
+
+                    beam_job_nums = self.shuffle_examples.run()
+                    print("ENDING BEAM_SHUFFLE")
+                    breakpoint()
 
                     if beam_job_nums is None:
                         no_dependencies_required = True
@@ -722,28 +739,40 @@ class RunTrioTrain:
 
                         self.re_shuffle.set_genome()
                         self.re_shuffle.find_outputs(
-                            phase=self.current_phase, find_all=True
+                            phase="find_outputs", find_all=True
                         )
 
                         if self.restart_jobs and self._phase_jobs is None:
                             self.check_next_phase(total_jobs=1, genome=genome)
 
-                        if self._phase_jobs and self.restart_jobs:
-                            output = self.re_shuffle.run()
-                        elif (
-                            not self._phase_jobs
-                            and self.re_shuffle._outputs_exist is False
-                        ):
-                            output = self.re_shuffle.run()
-                        elif not self._phase_jobs and self.re_shuffle._outputs_exist and self.overwrite:
-                            output = self.re_shuffle.run()
-                        elif not self._phase_jobs and self.re_shuffle._outputs_exist and no_dependencies_required is False:
-                            output = self.re_shuffle.run()
-                        else:
-                            output = None
+                        output = self.re_shuffle.run()
 
-                        # print("ENDING RE_SHUFFLE")
-                        # breakpoint()
+                        # if self.restart_jobs and self._phase_jobs:
+                        #     output = self.re_shuffle.run()
+                        # elif (
+                        #     not self._phase_jobs
+                        #     and self.re_shuffle._outputs_exist is False
+                        # ):
+                        #     output = self.re_shuffle.run()
+                        # elif (
+                        #     not self._phase_jobs
+                        #     and self.re_shuffle._outputs_exist
+                        #     and self.overwrite
+                        # ):
+                        #     output = self.re_shuffle.run()
+                        # elif (
+                        #     not self._phase_jobs
+                        #     and self.re_shuffle._outputs_exist
+                        #     and no_dependencies_required is False
+                        # ):
+                        #     output = self.re_shuffle.run()
+                        # else:
+                        #     print("BROKEN HERE!")
+                        #     breakpoint()
+                        #     output = None
+
+                        print("ENDING RE_SHUFFLE")
+                        breakpoint()
 
                         if output is not None:
                             self.itr = output
@@ -759,7 +788,7 @@ class RunTrioTrain:
 
                         if phase_skipped_counter == 3:
                             self.itr.logger.info(
-                                f"------------ SKIPPING [{self.itr._mode_string}] - [data_prep_jobs] - [{genome}] ------------"
+                                f"------------ SKIPPING {self.itr._mode_string} - [data_prep_jobs] - [{genome}] ------------"
                             )
                     else:
                         if self.itr.demo_mode and self.show_regions_file is not None:
@@ -787,10 +816,10 @@ class RunTrioTrain:
                             )
                 else:
                     self.itr.logger.info(
-                        f"[{self.itr._mode_string}] - [data_prep_jobs] - [{genome}]: jobs are currently running... SKIPPING AHEAD"
+                        f"{self.itr._mode_string} - [data_prep_jobs] - [{genome}]: jobs are currently running... SKIPPING AHEAD"
                     )
                     self.itr.logger.info(
-                        f"------------ SKIPPING [{self.itr._mode_string}] - [data_prep_jobs] - [{genome}] ------------"
+                        f"------------ SKIPPING {self.itr._mode_string} - [data_prep_jobs] - [{genome}] ------------"
                     )
             # -- switch from parent to child -- #
             self.train_mode = False
@@ -819,38 +848,48 @@ class RunTrioTrain:
 
         self.re_training.find_all_outputs("find_outputs")
 
-        # skip ahead if all outputs exist already
-        if self.re_training._outputs_exist:
-            self.itr.logger.info(
-                f"------------ SKIPPING [{self.itr._mode_string}] - [re_training_jobs] ------------"
-            )
-            return
-
         if self.restart_jobs and self._phase_jobs is None:
             self.check_next_phase(total_jobs=1)
-            matches = [k for k in self.restart_jobs.keys() if any(p in k for p in self._data_prep_phases)]
+            matches = [
+                k
+                for k in self.restart_jobs.keys()
+                if any(p in k for p in self._data_prep_phases)
+            ]
             restart_dataprep = any(matches)
-            
+
             if restart_dataprep and self.overwrite is False:
-                self.itr.logger.warning(f"[{self.itr._mode_string}] - [re_training_jobs]: '--restart-jobs' includes data_prep phase(s) | {matches}")
-                self.itr.logger.error(f"[{self.itr._mode_string}] - [re_training_jobs]: However, train_eval is attempting to ignore upstream job(s)")
-                self.itr.logger.error(f"[{self.itr._mode_string}] - [re_training_jobs]: To ensure proper SLURM depenencies for train_eval, either:\n\t1. remove '--restart-jobs' flag, or\n\t2. add the '--overwrite' flag\nExiting...")
+                self.itr.logger.warning(
+                    f"{self.itr._mode_string} - [re_training_jobs]: '--restart-jobs' includes data_prep phase(s) | {matches}"
+                )
+                self.itr.logger.error(
+                    f"{self.itr._mode_string} - [re_training_jobs]: However, train_eval is attempting to ignore upstream job(s)"
+                )
+                self.itr.logger.error(
+                    f"{self.itr._mode_string} - [re_training_jobs]: To ensure proper SLURM depenencies for train_eval, either:\n\t1. remove '--restart-jobs' flag, or\n\t2. add the '--overwrite' flag\nExiting..."
+                )
                 exit(1)
 
         if self._phase_jobs and self.restart_jobs:
             train_job_num = self.re_training.run()
+        elif not self._phase_jobs and self.re_training._outputs_exist is False:
+            train_job_num = self.re_training.run()
         elif (
-            not self._phase_jobs
-            and self.re_training._outputs_exist is False
+            not self._phase_jobs and self.re_training._outputs_exist and self.overwrite
         ):
             train_job_num = self.re_training.run()
-        elif not self._phase_jobs and self.re_training._outputs_exist and self.overwrite:
-            train_job_num = self.re_training.run()
+        # elif not self._phase_jobs and self.re_training._outputs_exist and no_dependencies_required is False:
+        #     train_job_num = self.re_training.run()
         else:
             train_job_num = None
+            # skip ahead if all outputs exist already
+            if self.re_training._outputs_exist:
+                self.itr.logger.info(
+                    f"------------ SKIPPING {self.itr._mode_string} - [re_training_jobs] ------------"
+                )
+                return
 
-        # print("ENDING TRAIN_EVAL")
-        # breakpoint()
+        print("ENDING TRAIN_EVAL")
+        breakpoint()
 
         # Determine if a 'train_eval' job was submitted
         if train_job_num is not None:
@@ -881,12 +920,12 @@ class RunTrioTrain:
             self.check_next_phase(total_jobs=1)
 
         self.itr = self.select_ckpt.run()
-        # print("ENDING SELECT_CKPT")
-        # breakpoint()
-        
+        print("ENDING SELECT_CKPT")
+        breakpoint()
+
         # else:
         #     self.itr.logger.info(
-        #         f"[{self.itr._mode_string}] - [re_training_jobs] - [{self.logger_msg}]: next checkpoint will not be identified since there is no 'next_genome'"
+        #         f"{self.itr._mode_string} - [re_training_jobs] - [{self.logger_msg}]: next checkpoint will not be identified since there is no 'next_genome'"
         #     )
 
         # Determine if a 'select-ckpt' job was submitted
@@ -898,7 +937,7 @@ class RunTrioTrain:
 
         if phase_skipped_counter == 2:
             self.itr.logger.info(
-                f"------------ SKIPPING [{self.itr._mode_string}] - [re_training_jobs] - [{self.logger_msg}] ------------"
+                f"------------ SKIPPING {self.itr._mode_string} - [re_training_jobs] - [{self.logger_msg}] ------------"
             )
 
     def test_model_jobs(self, useDT: bool = False) -> None:
@@ -941,7 +980,7 @@ class RunTrioTrain:
                 # skip ahead if all outputs exist already
                 if test_model._outputs_exist:
                     self.itr.logger.info(
-                        f"------------ SKIPPING [{self.itr._mode_string}] - [test_model] - [{self.logger_msg}] ------------"
+                        f"------------ SKIPPING {self.itr._mode_string} - [test_model] - [{self.logger_msg}] ------------"
                     )
                     return
 
@@ -1029,7 +1068,7 @@ class RunTrioTrain:
 
         if phase_skipped_counter == 3:
             self.itr.logger.info(
-                f"------------ SKIPPING [{self.itr._mode_string}] - [test_model] - [{self.logger_msg}] ------------"
+                f"------------ SKIPPING {self.itr._mode_string} - [test_model] - [{self.logger_msg}] ------------"
             )
 
     def make_and_submit_jobs(

@@ -112,7 +112,7 @@ def run_trio_train(eval_genome="Child") -> None:
             end = pipeline.args.terminate
     else:
         end = begining + 1
-
+    
     # Define the baseline environment
     new_env = pipeline.process_env(begining)
 
@@ -194,7 +194,10 @@ def run_trio_train(eval_genome="Child") -> None:
                 next_genome=pipeline.next_genome,
             )
 
-        logging_msg = f"[{current_itr._mode_string}] - [setup]"
+        if pipeline.current_genome is not None:
+            logging_msg = f"{current_itr._mode_string} - [setup] - [{pipeline.current_genome}]"
+        else:
+            logging_msg = f"{current_itr._mode_string} - [setup]"
 
         if current_itr.env is None:
             return
@@ -202,7 +205,7 @@ def run_trio_train(eval_genome="Child") -> None:
         current_itr.env.add_to(
             "TotalTests",
             str(pipeline.meta.num_tests),
-            dryrun_mode=pipeline.args.dry_run,
+            dryrun_mode=current_itr.dryrun_mode,
             msg=logging_msg,
         )
 
@@ -235,6 +238,9 @@ def run_trio_train(eval_genome="Child") -> None:
             logger.info(
                 f"{logging_msg}: model includes the {pipeline.meta.additional_channels} channel(s)"
             )
+        
+        if current_itr.demo_mode:
+            current_itr.logger.info(f"{logging_msg}: --demo-mode is active")
 
         # If tracking resources used from SLURM jobs,
         # inialize a file to store metrics
@@ -243,14 +249,15 @@ def run_trio_train(eval_genome="Child") -> None:
                 path_to_file=str(current_itr.results_dir),
                 file=f"{current_itr.model_label}.SLURM.job_numbers.csv",
                 logger=logger,
-                logger_msg=f"{logging_msg}",
+                logger_msg=logging_msg,
                 debug_mode=pipeline.args.debug,
                 dryrun_mode=pipeline.args.dry_run,
             )
         else:
             output_file = None
 
-        initalize_weights(setup=pipeline, itr=current_itr)
+        # Determine which model checkpoint to use as initial weights
+        initalize_weights(setup=pipeline, itr=current_itr, logging_msg=logging_msg)
 
         ### Create GIAB Benchmarkinging Runs --------------------------###
         if current_itr.args.first_genome is None:
@@ -297,7 +304,6 @@ def run_trio_train(eval_genome="Child") -> None:
 
         ### Create Demo Runs ------------------------------------------###
         elif current_itr.demo_mode:
-            current_itr.logger.info(f"{logging_msg}: --demo-mode is active")
             RunTrioTrain(
                 itr=current_itr,
                 resource_file=args.resource_config,

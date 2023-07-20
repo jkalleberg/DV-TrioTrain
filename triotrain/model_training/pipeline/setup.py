@@ -190,14 +190,9 @@ class Setup:
                     f"============================================================\nStarting GIAB Benchmarking Iteration {self.meta.itr_num+1}-of-{self.meta.num_of_iterations} @ {timestamp()}\n============================================================"
                 ) 
             elif self.demo_mode:
-                if "chr" in self.args.demo_chr.lower():
-                    print(
-                        f"============================================================\nStarting Demo {self.args.demo_chr.upper()} Iteration {self.meta.itr_num+1}-of-{self.meta.num_of_iterations} @ {timestamp()}\nINFO: Current [Genome={self.current_genome}; Trio={self.current_trio_num}]\nINFO: Next [Genome={self.next_genome}; Trio={self.next_trio_num}]\n============================================================"
+                print(
+                    f"============================================================\nStarting DEMO Iteration {self.meta.itr_num+1}-of-{self.meta.num_of_iterations} @ {timestamp()}\nINFO: Current [Genome={self.current_genome}; Trio={self.current_trio_num}]\nINFO: Next [Genome={self.next_genome}; Trio={self.next_trio_num}]\n============================================================"
                     ) 
-                else:
-                    print(
-                        f"============================================================\nStarting Demo CHR{self.args.demo_chr} Iteration {self.meta.itr_num+1}-of-{self.meta.num_of_iterations} @ {timestamp()}\nINFO: Current [Genome={self.current_genome}; Trio={self.current_trio_num}]\nINFO: Next [Genome={self.next_genome}; Trio={self.next_trio_num}]\n============================================================"
-                    )
             elif self.demo_mode is False:
                 if self.meta.itr_num == 0:
                     print(
