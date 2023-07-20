@@ -425,25 +425,19 @@ class MakeExamples:
 
         num_missing_files = int(self.n_parts) - int(self._num_tfrecords_found)  # type: ignore
 
-        if not self.overwrite:
-            if resubmission:
-                self.itr.logger.info(
-                    f"{self.logger_msg}: --overwrite=False; re-submitting job because missing {num_missing_files} labeled.tfrecords"
-                )
-            else:
-                self.itr.logger.info(
-                    f"{self.logger_msg}: submitting job to create {num_missing_files} labeled.tfrecords"
+        if not self.overwrite and resubmission:
+            self.itr.logger.info(
+                f"{self.logger_msg}: --overwrite=False; re-submitting job because missing {num_missing_files} labeled.tfrecords"
                 )
 
+        elif self.overwrite and self._outputs_exist:
+            self.itr.logger.info(
+                f"{self.logger_msg}: --overwrite=True; re-submitting job because replacing existing labeled.tfrecords"
+            )
         else:
-            if self._outputs_exist:
-                self.itr.logger.info(
-                    f"{self.logger_msg}: --overwrite=True; re-submitting job because replacing existing labeled.tfrecords"
-                )
-            else:
-                self.itr.logger.info(
-                    f"{self.logger_msg}: submitting job to create {num_missing_files} labeled.tfrecords"
-                )
+            self.itr.logger.info(
+                f"{self.logger_msg}: submitting job to create {num_missing_files} labeled.tfrecords"
+            )
 
         slurm_job = SubmitSBATCH(
             self.itr.job_dir,
@@ -629,6 +623,7 @@ class MakeExamples:
                     )  # THIS HAS TO BE +1 to avoid starting with a region0
 
                     self.set_region(current_region=self.job_num)
+                    
                     self.find_outputs()
                     if skip_re_runs or not self._outputs_exist:
                         self.submit_job(
@@ -653,7 +648,8 @@ class MakeExamples:
                     r + 1
                 )  # THIS HAS TO BE +1 to avoid starting with a region0
                 self.set_region(current_region=self.job_num)
-                self.find_outputs()
+                if not self.itr.demo_mode:
+                    self.find_outputs()
                 self.submit_job(
                     dependency_index=r, total_jobs=int(self._total_regions)
                 )  # THIS HAS TO BE r because indexing of the list of job ids starts with 3

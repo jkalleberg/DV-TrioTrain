@@ -205,7 +205,7 @@ class SBATCH:
         """
         if self._num_lines is not None:
             self.itr.logger.info(
-                f"[DRY_RUN] - {self.logger_msg}: file contents for '{self._jobfile.name}'\n-------------------------------------"
+                f"{self.logger_msg}: file contents for '{self._jobfile.name}'\n-------------------------------------"
             )
             print(*self.all_lines, sep="\n")
             print("------------------------------------")
@@ -306,11 +306,10 @@ class SubmitSBATCH:
         Prints the sbatch command used to submit a job.
         """
         if display_mode:
-            self.logger.info(
-                f"[DRY_RUN] - {self.logger_msg}: command used | {' '.join(self.cmd)}"
+            self.logger.info(f"{self.logger_msg}: command used | {' '.join(self.cmd)}"
             )
             self.logger.info(
-                f"[DRY_RUN] - {self.logger_msg}: pretending to submit SLURM job {current_job}-of-{total_jobs}"
+                f"{self.logger_msg}: pretending to submit SLURM job {current_job}-of-{total_jobs}"
             )
         elif debug_mode:
             self.logger.debug(

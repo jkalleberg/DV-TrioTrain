@@ -575,8 +575,6 @@ class RunTrioTrain:
                         make_examples_job_nums=self._jobIDs,
                     )
                     self.make_examples.find_all_outputs()
-                    print("STOP!")
-                    breakpoint()
 
                     # skip ahead if all outputs exist already
                     if self.make_examples._outputs_exist and not self.restart_jobs:
@@ -586,12 +584,13 @@ class RunTrioTrain:
                         continue
 
                     self.make_examples.set_genome()
-                    self.make_examples.find_outputs("find_outputs", find_all=True)
-
-                    
+                    self.make_examples.find_outputs(self.current_phase, find_all=True)
 
                     if self.restart_jobs and self._phase_jobs is None:
                         self.check_next_phase(total_jobs=self._n_regions, genome=genome)
+                    
+                    print("STOP!")
+                    breakpoint()
 
                     # if self._phase_jobs and self.restart_jobs:
                     #     examples_job_nums = self.make_examples.run()
