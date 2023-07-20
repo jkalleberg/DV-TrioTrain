@@ -274,7 +274,7 @@ class ReShuffleExamples:
                     f"{msg}: missing the labeled.shuffled.merged.dataset_config.pbtxt file | '{self.merged_config.file_path}'"
                 )
             else:
-                self.itr.logger.debug(
+                self.itr.logger.info(
                     f"{msg}: missing the labeled.shuffled.merged.dataset_config.pbtxt file")
 
     def find_variable(self, msg: str) -> None:
