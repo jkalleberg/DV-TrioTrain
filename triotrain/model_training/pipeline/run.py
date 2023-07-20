@@ -458,8 +458,8 @@ class RunTrioTrain:
                     )  # THIS HAS TO BE +1 to avoid starting with a region0
 
                 if self.current_phase == "make_examples":
-                    self.make_examples.set_region(current_region=_job_num)
-                    self.make_examples.find_outputs(phase="check_next_phase")
+                    # self.make_examples.set_region(current_region=_job_num)
+                    # self.make_examples.find_outputs(phase="check_next_phase")
                     outputs_found = self.make_examples._outputs_exist
 
                 elif self.current_phase == "beam_shuffle":
@@ -512,7 +512,7 @@ class RunTrioTrain:
                 and self.itr.demo_mode is False
             ):
                 self.itr.logger.info(
-                    f"{self.itr._mode_string} - [setup]: --use-regions-shuffle is set"
+                    f"{self.itr._mode_string} - [region_shuffling] - [{genome}]: --use-regions-shuffle is set"
                 )
                 regions = MakeRegions(
                     self.itr,
@@ -532,7 +532,7 @@ class RunTrioTrain:
                     self.itr = current_itr
                 else:
                     self.itr.logger.error(
-                        f"{self.itr._mode_string} - [setup]: expected regions to be created, but they were not"
+                        f"{self.itr._mode_string} - [region_shuffling] - [{genome}]: expected regions to be created, but they were not"
                     )
 
             # Update the internal variable

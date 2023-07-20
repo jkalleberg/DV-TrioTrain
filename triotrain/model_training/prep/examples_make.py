@@ -54,6 +54,7 @@ class MakeExamples:
     )
     _num_tfrecords_found: Union[int, None] = field(default=None, init=False, repr=False)
     _num_to_ignore: int = field(default=0, init=False, repr=False)
+    _outputs_exist: bool = field(default=False, init=False, repr=False)
     _phase: str = field(default="make_examples", init=False, repr=False)
     _print_msg: Union[str, None] = field(default=None, init=False, repr=False)
     _skipped_counter: int = field(default=0, init=False, repr=False)
@@ -163,60 +164,59 @@ class MakeExamples:
         )
 
         if not self._ignoring_restart_jobs:
-            num_job_ids = len(self.make_examples_job_nums)
-            if num_job_ids == self._total_regions:
-                self.jobs_to_run = find_not_NaN(self.make_examples_job_nums)
-                self.jobs_to_ignore = find_NaN(self.make_examples_job_nums)
-                self._num_to_run = len(self.jobs_to_run)
-                self._num_to_ignore = len(self.jobs_to_ignore)
-
-                if self.jobs_to_run:
-                    updated_jobs_list = []
-
-                    for index in self.jobs_to_run:
-                        if index is not None:
-                            if is_jobid(self.make_examples_job_nums[index]):
-                                self._num_to_run -= 1
-                                self._num_to_ignore += 1
-                                self._skipped_counter += 1
-                                self._beam_shuffle_dependencies[index] = str(
-                                    self.make_examples_job_nums[index]
-                                )
-                            elif is_job_index(
-                                self.make_examples_job_nums[index],
-                                max_jobs=self._total_regions,
-                            ):
-                                updated_jobs_list.append(index)
-
-                    if updated_jobs_list:
-                        self.jobs_to_run = updated_jobs_list
-
-                if self._num_to_ignore == self._total_regions:
-                    self.itr.logger.info(
-                        f"{self.logger_msg}: there are no jobs to re-submit for '{self._phase}:{self.genome}'... SKIPPING AHEAD"
-                    )
-                    self._skip_phase = True
-                elif 0 < self._num_to_ignore < self._total_regions:
-                    self.itr.logger.info(
-                        f"{self.logger_msg}: ignoring {self._num_to_ignore}-of-{self._total_regions} SLURM jobs"
-                    )
-
-            else:
-                if self.itr.debug_mode:
-                    self.itr.logger.debug(
-                        f"{self.logger_msg}: --running-jobids triggered reprocessing {num_job_ids} job"
-                    )
-                self.itr.logger.error(
-                    f"{self.logger_msg}: incorrect format for 'make_examples_job_nums'"
-                )
-                self.itr.logger.error(
-                    f"{self.logger_msg}: expected a list of {self._total_regions} SLURM jobs (or 'None' as a place holder)"
-                )
+            self._jobs_to_run = find_not_NaN(self.make_examples_job_nums)
+            self._num_to_run = len(self._jobs_to_run)
+            self._num_to_ignore = len(find_NaN(self.make_examples_job_nums))
         else:
+            self._jobs_to_run = None
+            self._num_to_run = 0
+            self._num_to_ignore = self._total_regions
             if self.itr.debug_mode:
                 self.itr.logger.debug(
                     f"{self.logger_msg}: running job ids were NOT provided"
                 )
+
+        if self._num_to_run <= self._total_regions:
+            if self._jobs_to_run and not self._ignoring_restart_jobs:
+                updated_jobs_list = []
+
+                for index in self._jobs_to_run:
+                    if is_jobid(self.make_examples_job_nums[index]):
+                        self._num_to_run -= 1
+                        self._num_to_ignore += 1
+                        self._skipped_counter += 1
+                        self._beam_shuffle_dependencies[index] = str(
+                            self.make_examples_job_nums[index]
+                        )
+                    elif is_job_index(
+                        self.make_examples_job_nums[index], max_jobs=self._total_regions
+                    ):
+                        updated_jobs_list.append(index)
+
+                if updated_jobs_list:
+                    self._jobs_to_run = updated_jobs_list
+
+        elif self._num_to_ignore == self._total_regions:
+            self.itr.logger.info(
+                f"{self.logger_msg}: there are no jobs to re-submit for '{self._phase}:{self.genome}'... SKIPPING AHEAD"
+            )
+            self._skip_phase = True
+        elif 0 < self._num_to_ignore < self._total_regions:
+            self.itr.logger.info(
+                f"{self.logger_msg}: ignoring {self._num_to_ignore}-of-{self._total_regions} SLURM jobs"
+            )
+
+        else:
+            if self.itr.debug_mode:
+                self.itr.logger.debug(
+                    f"{self.logger_msg}: --running-jobids triggered reprocessing {self._num_to_run} jobs"
+                )
+            self.itr.logger.error(
+                f"{self.logger_msg}: incorrect format for 'make_examples_job_nums'"
+            )
+            self.itr.logger.error(
+                f"{self.logger_msg}: expected a list of {self._total_regions} SLURM jobs (or 'None' as a place holder)"
+            )
 
     def benchmark(self) -> None:
         """Save the SLURM job numbers to a file for future resource usage metrics"""
@@ -381,7 +381,7 @@ class MakeExamples:
                 expected_outputs,
                 log_msg,
                 "labeled.tfrecords",
-                    self.itr.logger,
+                self.itr.logger,
             )
             if missing_files:
                 self._outputs_exist = False
@@ -606,7 +606,7 @@ class MakeExamples:
                     )
                     exit(1)
 
-                for r in self.jobs_to_run:
+                for r in self._jobs_to_run:
                     region_index = self.make_examples_job_nums[r]
                     self.job_num = (
                         region_index + 1
@@ -629,9 +629,9 @@ class MakeExamples:
 
         # run all regions for the first time
         else:
-            if self._skip_phase:
+            if self._skip_phase or self._outputs_exist:
                 return self._beam_shuffle_dependencies
-
+            
             for r in range(0, int(self._total_regions)):
                 self.job_num = (
                     r + 1
