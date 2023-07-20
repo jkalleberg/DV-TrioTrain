@@ -83,14 +83,13 @@ def run_trio_train(eval_genome="Child") -> None:
     # Process any running jobs
     if pipeline.args.restart_jobs:
         num_running_phases = 0
-        print("--------- running jobs were provided ---------")
+        logger.info("--------- running jobs were provided ---------")
         for k, v in pipeline.args.restart_jobs.items():
             num_running_phases += 1
             num_jobs = len(v)
-            print(
-                f"phase{num_running_phases}: you provided [{num_jobs}] jobs | '{k}'={v}"
+            logger.info(f"phase{num_running_phases} | '{k}'={v}"
             )
-        print("----------------------------------------------")
+        logger.info("----------------------------------------------")
 
     if pipeline.args.begin is not None:
         begining = pipeline.args.begin

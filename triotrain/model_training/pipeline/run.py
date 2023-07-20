@@ -173,15 +173,15 @@ class RunTrioTrain:
         """
         self.re_running_jobs = None
         if genome is None:
-            self._phase_logger_msg = f"{self.itr._mode_string} - [{phase}]"
+            self._phase_logger_msg = f"{self.itr._mode_string} - [check_jobs]"
         else:
             self._phase_logger_msg = (
-                f"{self.itr._mode_string} - [{phase}] - [{genome}]"
+                f"{self.itr._mode_string} - [check_jobs] - [{genome}]"
             )
 
         if restart:
             self._phase_logger_msg = str(self._phase_logger_msg).replace(
-                phase, "check_next_phase"
+                "check_jobs", "check_next_phase"
             )
 
         if not self.restart_jobs:
@@ -192,7 +192,7 @@ class RunTrioTrain:
         if genome is not None:
             if f"{phase}:{genome}" in self.restart_jobs.keys():
                 self.itr.logger.info(
-                    f"{self._phase_logger_msg}: re-starting jobs were provided for '{phase}:{genome}'"
+                    f"{self._phase_logger_msg}: found re-starting jobs for '{phase}:{genome}'"
                 )
                 self._phase_jobs = self.restart_jobs[f"{phase}:{genome}"]
                 self.re_running_jobs = True
@@ -200,17 +200,17 @@ class RunTrioTrain:
                 self._phase_jobs = None
                 self.re_running_jobs = False
                 self.itr.logger.info(
-                    f"{self._phase_logger_msg}: re-starting jobs were NOT provided for '{phase}:{genome}'"
+                    f"{self._phase_logger_msg}: missing re-starting jobs for '{phase}:{genome}'"
                 )
         elif phase in self.restart_jobs.keys():
             self.itr.logger.info(
-                f"{self._phase_logger_msg}: re-starting jobs were provided for '{phase}'"
+                f"{self._phase_logger_msg}: found re-starting jobs for '{phase}'"
             )
             self._phase_jobs = self.restart_jobs[phase]
             self.re_running_jobs = True
         else:
             self.itr.logger.info(
-                f"{self._phase_logger_msg}: re-starting jobs were NOT provided for '{phase}'"
+                f"{self._phase_logger_msg}: missing re-starting jobs for '{phase}'"
             )
             self._phase_jobs = None
             self.re_running_jobs = False
@@ -574,7 +574,7 @@ class RunTrioTrain:
                         overwrite=self.overwrite,
                         make_examples_job_nums=self._jobIDs,
                     )
-                    self.make_examples.find_all_outputs()
+                    self.make_examples.find_all_outputs(phase="find_all_outputs")
 
                     # skip ahead if all outputs exist already
                     if self.make_examples._outputs_exist and not self.restart_jobs:
@@ -583,14 +583,11 @@ class RunTrioTrain:
                         )
                         continue
 
-                    self.make_examples.set_genome()
-                    self.make_examples.find_outputs(self.current_phase, find_all=True)
+                    # self.make_examples.set_genome()
+                    # self.make_examples.find_outputs(self.current_phase, find_all=True)
 
                     if self.restart_jobs and self._phase_jobs is None:
                         self.check_next_phase(total_jobs=self._n_regions, genome=genome)
-                    
-                    print("STOP!")
-                    breakpoint()
 
                     # if self._phase_jobs and self.restart_jobs:
                     #     examples_job_nums = self.make_examples.run()

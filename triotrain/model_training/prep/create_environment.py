@@ -656,7 +656,7 @@ class Environment:
 
         if self._checkpoint_path is not None and self.checkpoint_name is not None:
             self.logger.info(
-                f"{self.logging_msg}: warm-starting with the following checkpoint | '{self._checkpoint_path}/{self.checkpoint_name}'"
+                f"{self.logging_msg}: warm-starting checkpoint | '{self._checkpoint_path}/{self.checkpoint_name}'"
             )
 
     def add_empty_variable(self, key: str) -> None:
