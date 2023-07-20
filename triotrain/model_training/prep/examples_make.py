@@ -196,16 +196,15 @@ class MakeExamples:
                 if updated_jobs_list:
                     self._jobs_to_run = updated_jobs_list
 
-        elif self._num_to_ignore == self._total_regions:
+        if 0 < self._num_to_ignore < self._total_regions:
+            self.itr.logger.info(
+                f"{self.logger_msg}: ignoring {self._num_to_ignore}-of-{self._total_regions} SLURM jobs"
+            )
+        elif self._num_to_ignore == self._total_regions and not self._ignoring_restart_jobs:
             self.itr.logger.info(
                 f"{self.logger_msg}: there are no jobs to re-submit for '{self._phase}:{self.genome}'... SKIPPING AHEAD"
             )
             self._skip_phase = True
-        elif 0 < self._num_to_ignore < self._total_regions:
-            self.itr.logger.info(
-                f"{self.logger_msg}: ignoring {self._num_to_ignore}-of-{self._total_regions} SLURM jobs"
-            )
-
         else:
             if self.itr.debug_mode:
                 self.itr.logger.debug(

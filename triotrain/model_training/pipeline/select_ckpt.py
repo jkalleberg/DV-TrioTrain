@@ -105,7 +105,7 @@ class SelectCheckpoint:
                 if updated_jobs_list:
                     self.jobs_to_run = updated_jobs_list
 
-        elif self._num_to_ignore == 1:
+        elif self._num_to_ignore == 1 and not self._ignoring_restart_jobs:
             self.itr.logger.info(
                 f"{self.logger_msg}: there are no jobs to re-submit for '{self._phase}'... SKIPPING AHEAD"
             )
