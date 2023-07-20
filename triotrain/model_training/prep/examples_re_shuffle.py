@@ -510,9 +510,6 @@ class ReShuffleExamples:
                     )
                     exit(1)
 
-                print("HERE!")
-                print("OUTPUTS EXIST:", self._outputs_exist)
-                breakpoint()
                 self.submit_job(resubmission=True)
 
         # or running it for the first time
@@ -520,8 +517,6 @@ class ReShuffleExamples:
             if self._skip_phase:
                 return
             self.find_outputs(find_all=True)
-            print("NO HERE!")
-            breakpoint()
             self.submit_job()
 
         if self._train_dependency:

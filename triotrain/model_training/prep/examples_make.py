@@ -176,7 +176,7 @@ class MakeExamples:
                     f"{self.logger_msg}: running job ids were NOT provided"
                 )
 
-        if self._num_to_run <= self._total_regions:
+        if 0 < self._num_to_run <= self._total_regions:
             if self._jobs_to_run and not self._ignoring_restart_jobs:
                 updated_jobs_list = []
 
@@ -613,7 +613,8 @@ class MakeExamples:
                     )  # THIS HAS TO BE +1 to avoid starting with a region0
 
                     self.set_region(current_region=self.job_num)
-                    self.find_outputs()
+                    if not self.itr.demo_mode:
+                        self.find_outputs()
                     if skip_re_runs or not self._outputs_exist:
                         self.submit_job(
                             dependency_index=region_index,

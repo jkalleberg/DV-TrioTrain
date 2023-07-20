@@ -171,7 +171,7 @@ class BeamShuffleExamples:
                     f"{self.logger_msg}: running job ids were NOT provided"
                 )
 
-        if self._num_to_run <= self._total_regions:
+        if 0 < self._num_to_run <= self._total_regions:
             if self._jobs_to_run and not self._ignoring_restart_jobs:
                 updated_jobs_list = []
 
@@ -734,7 +734,8 @@ class BeamShuffleExamples:
                     )  # THIS HAS TO BE +1 to avoid starting with a region0
 
                     self.set_region(current_region=self.job_num)
-                    self.find_outputs()
+                    if not self.itr.demo_mode:
+                        self.find_outputs()
 
                     if not check_if_all_same(self.make_examples_jobs, None):
                         self.submit_job(
