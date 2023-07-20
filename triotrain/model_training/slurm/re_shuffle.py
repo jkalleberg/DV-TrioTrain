@@ -172,18 +172,18 @@ class ReShuffle:
                 self.region_string = f"{self.itr.demo_chromosome}"
             else:
                 self.region_string = f"chr{self.itr.demo_chromosome}"
-            
-            self.logger_msg = f"[{self.itr._mode_string}] - [{self._phase}] - [{self.re_shuffling.genome}]"
+
+            self.logger_msg = f"{self.itr._mode_string} - [{self._phase}] - [{self.re_shuffling.genome}]"
         else:
             if current_region is None:
                 self.region_string = None
-                self.logger_msg = f"[{self.itr._mode_string}] - [{self._phase}] - [{self.re_shuffling.genome}]"
+                self.logger_msg = f"{self.itr._mode_string} - [{self._phase}] - [{self.re_shuffling.genome}]"
             else:
                 self.region_string = f"region{current_region}"
-                self.logger_msg = f"[{self.itr._mode_string}] - [{self._phase}] - [{self.re_shuffling.genome}] - [{self.region_string}]"
+                self.logger_msg = f"{self.itr._mode_string} - [{self._phase}] - [{self.re_shuffling.genome}] - [{self.region_string}]"
 
         self.merged_msg = (
-            f"[{self.itr._mode_string}] - [merge] - [{self.re_shuffling.genome}]"
+            f"{self.itr._mode_string} - [merge] - [{self.re_shuffling.genome}]"
         )
 
     def merge_shuffled_tfrecords_shards(self) -> None:
@@ -207,7 +207,7 @@ class ReShuffle:
                 ), f"failed to merge the shuffled tfrecords shards for [{self.re_shuffling.genome}-{self.region_string}] into a single file"
                 self._num_merged_regions += 1
                 self.itr.logger.info(
-                    f"[{self.itr._mode_string}] - [merge] - [{self.re_shuffling.genome}] - [region {self._num_merged_regions}-of-{self._total_regions}]: merging beam-shuffled shards into a single file",
+                    f"{self.itr._mode_string} - [merge] - [{self.re_shuffling.genome}] - [region {self._num_merged_regions}-of-{self._total_regions}]: merging beam-shuffled shards into a single file",
                 )
             except AssertionError as error_msg:
                 self.itr.logger.error(f"{error_msg}\nExiting... ")

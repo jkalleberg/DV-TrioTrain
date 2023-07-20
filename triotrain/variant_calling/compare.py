@@ -56,9 +56,11 @@ class CompareHappy:
         if self.itr.env is None:
             return
         if self.itr.train_genome is None:
-            self.logger_msg = f"[{self.itr._mode_string}] - [{self._phase}]"
+            self.logger_msg = f"{self.itr._mode_string} - [{self._phase}]"
         else:
-            self.logger_msg = f"[{self.itr._mode_string}] - [{self._phase}] - [{self.itr.train_genome}]"
+            self.logger_msg = (
+                f"{self.itr._mode_string} - [{self._phase}] - [{self.itr.train_genome}]"
+            )
         self.n_parts = self.slurm_resources[self._phase]["ntasks"]
 
         if "N_Parts" not in self.itr.env.contents:
@@ -345,10 +347,10 @@ class CompareHappy:
             logging_msg = self.logger_msg
         else:
             if self.itr.train_genome is None:
-                logging_msg = f"[{self.itr._mode_string}] - [{phase}]"
+                logging_msg = f"{self.itr._mode_string} - [{phase}]"
             else:
                 logging_msg = (
-                    f"[{self.itr._mode_string}] - [{phase}] - [{self.itr.train_genome}]"
+                    f"{self.itr._mode_string} - [{phase}] - [{self.itr.train_genome}]"
                 )
 
         # Define the regrex pattern of expected output

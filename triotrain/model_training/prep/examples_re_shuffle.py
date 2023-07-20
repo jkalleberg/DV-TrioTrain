@@ -77,7 +77,7 @@ class ReShuffleExamples:
             self.trio_dependency = self.itr.current_genome_dependencies[1]
 
         self.logger_msg = (
-            f"[{self.itr._mode_string}] - [{self._phase}] - [{self.genome}]"
+            f"{self.itr._mode_string} - [{self._phase}] - [{self.genome}]"
         )
 
         if self.itr.demo_mode:
@@ -99,57 +99,66 @@ class ReShuffleExamples:
         Collect any SLURM job ids for running tests to avoid submitting a job while it's already running.
         """
         self._ignoring_beam_shuffle = check_if_all_same(self.beam_shuffling_jobs, None)
+        self._ignoring_restart_jobs = check_if_all_same(
+            self.re_shuffle_job_num, None
+        )
 
         if not self._ignoring_beam_shuffle:
-            self._num_to_ignore = len(find_NaN(self.beam_shuffling_jobs))
-
-            if len(find_not_NaN(self.beam_shuffling_jobs)) > 0:
+            self._jobs_to_run = find_not_NaN(self.beam_shuffling_jobs)
+            if len(self._jobs_to_run) > 0:
                 self._num_to_run = 1
+                self._num_to_ignore = 0
             else:
                 self._num_to_run = 0
+                self._num_to_ignore = 1
 
-        elif self.re_shuffle_job_num:
-            num_job_ids = len(self.re_shuffle_job_num)
+        elif not self._ignoring_restart_jobs:
+            self._jobs_to_run = find_not_NaN(self.re_shuffle_job_num)
+            self._num_to_run = len(self._jobs_to_run)
+            self._num_to_ignore = len(find_NaN(self.re_shuffle_job_num))
 
-            if num_job_ids == 1:
-                jobs_to_run = find_not_NaN(self.re_shuffle_job_num)
-                self._num_to_run = len(jobs_to_run)
-                self._num_to_ignore = len(find_NaN(self.re_shuffle_job_num))
-
-                if jobs_to_run:
-                    updated_jobs_list = []
-
-                    if is_jobid(self.re_shuffle_job_num[0]):
-                        self._num_to_run -= 1
-                        self._num_to_ignore += 1
-                        self._train_dependency = self.re_shuffle_job_num
-                    elif is_job_index(self.re_shuffle_job_num[0], max_jobs=self._total_regions):
-                        updated_jobs_list.append(0)
-
-                    if updated_jobs_list:
-                        self.jobs_to_run = updated_jobs_list
-
-                if self._num_to_ignore == 1:
-                    self.itr.logger.info(
-                        f"{self.logger_msg}: there are no jobs to re-submit for '{self._phase}:{self.genome}'... SKIPPING AHEAD"
-                    )
-                    self._skip_phase = True
-            else:
-                if self.itr.debug_mode:
-                    self.itr.logger.debug(
-                        f"{self.logger_msg}: --running-jobids triggered reprocessing {num_job_ids} job"
-                    )
-                self.itr.logger.error(
-                    f"{self.logger_msg}: incorrect format for 're_shuffle' SLURM job number"
-                )
-                self.itr.logger.error(
-                    f"{self.logger_msg}: expected a list of 1 SLURM jobs (or 'None' as a place holder)"
-                )
         else:
+            self._jobs_to_run = None
+            self._num_to_run = 0
+            self._num_to_ignore = 1
             if self.itr.debug_mode:
                 self.itr.logger.debug(
                     f"{self.logger_msg}: running job ids were NOT provided"
                 )
+        
+        print("NUM TO RUN:", self._num_to_run)
+        breakpoint()
+
+        if self._num_to_run == 1:
+            if not self._ignoring_restart_jobs:
+                updated_jobs_list = []
+
+                if is_jobid(self.re_shuffle_job_num[0]):
+                    self._num_to_run -= 1
+                    self._num_to_ignore += 1
+                    self._train_dependency = self.re_shuffle_job_num[0]
+                elif is_job_index(self.re_shuffle_job_num[0], max_jobs=self._total_regions):
+                    updated_jobs_list.append(0)
+
+                if updated_jobs_list:
+                    self.jobs_to_run = updated_jobs_list
+
+        elif self._num_to_ignore == 1:
+                self.itr.logger.info(
+                    f"{self.logger_msg}: there are no jobs to re-submit for '{self._phase}:{self.genome}'... SKIPPING AHEAD"
+                )
+                self._skip_phase = True
+        else:
+            if self.itr.debug_mode:
+                self.itr.logger.debug(
+                    f"{self.logger_msg}: --running-jobids triggered reprocessing {self._num_to_run} jobs"
+                    )
+            self.itr.logger.error(
+                f"{self.logger_msg}: incorrect format for 're_shuffle' SLURM job number"
+            )
+            self.itr.logger.error(
+                f"{self.logger_msg}: expected a list of 1 SLURM jobs (or 'None' as a place holder)"
+            )
 
     def benchmark(self) -> None:
         """
@@ -260,9 +269,13 @@ class ReShuffleExamples:
                 f"{msg}: found the 1 labeled.shuffled.merged.dataset_config.pbtxt file... SKIPPING AHEAD"
             )
         else:
-            self.itr.logger.info(
-                f"{msg}: missing the labeled.shuffled.merged.dataset_config.pbtxt file | '{self.merged_config.file_path}'"
-            )
+            if self.itr.debug_mode:
+                self.itr.logger.debug(
+                    f"{msg}: missing the labeled.shuffled.merged.dataset_config.pbtxt file | '{self.merged_config.file_path}'"
+                )
+            else:
+                self.itr.logger.debug(
+                    f"{msg}: missing the labeled.shuffled.merged.dataset_config.pbtxt file")
 
     def find_variable(self, msg: str) -> None:
         """
@@ -426,7 +439,7 @@ class ReShuffleExamples:
         if phase is None:
             merged_logger_msg = self.logger_msg
         else:
-            merged_logger_msg = f"[{self.itr._mode_string}] - [{phase}]"
+            merged_logger_msg = f"{self.itr._mode_string} - [{phase}]"
 
             if self.genome is not None:
                 merged_logger_msg = f"{merged_logger_msg} - [{self.genome}]"
@@ -442,7 +455,7 @@ class ReShuffleExamples:
                 self._outputs_exist = True
         else:
             if self._total_regions is not None:
-                if find_all and self._total_regions is not None:
+                if self._total_regions is not None:
                     self._expepected_outputs = self._total_regions
                 else:
                     self._expepected_outputs = 1
@@ -451,13 +464,8 @@ class ReShuffleExamples:
                     msg=merged_logger_msg, expected_outputs=self._expepected_outputs
                 )
 
-                if self.overwrite and (
-                    self.beam_shuffling_jobs or not check_if_all_same(self.beam_shuffling_jobs, None)
-                ):
-                    self._outputs_exist = False
-                else:
-                    if self._merged_tfrecords_exist and self._merged_config_exists:
-                        self._outputs_exist = True
+                if self._merged_tfrecords_exist and self._merged_config_exists:
+                    self._outputs_exist = True
 
     def run(self) -> Union[Iteration, None]:
         """
@@ -473,13 +481,13 @@ class ReShuffleExamples:
             )
             return
 
-        # Determine if we are re-running the training
+        # Determine if we are re-running re-shuffle
         if self.re_shuffle_job_num or not self._ignoring_beam_shuffle:
             if self._num_to_run == 0:
                 self._skipped_counter = self._num_to_ignore
-                if self._train_dependency and self._train_dependency[0] is not None:
+                if self._train_dependency:
                     self.itr.logger.info(
-                        f"{self.logger_msg}: train dependency updated | '{self._train_dependency[0]}'"
+                        f"{self.logger_msg}: train dependency updated | '{self._train_dependency}'"
                     )
                 else:
                     self._train_dependency = None
@@ -491,7 +499,7 @@ class ReShuffleExamples:
 
                 skip_re_runs = check_if_all_same(self.re_shuffle_job_num, None)
 
-                if skip_re_runs:
+                if skip_re_runs and self._ignoring_beam_shuffle:
                     msg = "sub"
                 else:
                     msg = "re-sub"
@@ -506,6 +514,9 @@ class ReShuffleExamples:
                     )
                     exit(1)
 
+                print("HERE!")
+                print("OUTPUTS EXIST:", self._outputs_exist)
+                breakpoint()
                 self.submit_job(resubmission=True)
 
         # or running it for the first time
@@ -513,10 +524,12 @@ class ReShuffleExamples:
             if self._skip_phase:
                 return
             self.find_outputs(find_all=True)
+            print("NO HERE!")
+            breakpoint()
             self.submit_job()
 
         if self._train_dependency:
-            self.itr.current_genome_dependencies[self.index] = self._train_dependency[0]
+            self.itr.current_genome_dependencies[self.index] = self._train_dependency
         
         self.check_submission()
 

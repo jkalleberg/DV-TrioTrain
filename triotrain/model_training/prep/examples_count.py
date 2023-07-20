@@ -48,7 +48,7 @@ class CountExamples:
         """
         if self.itr.demo_mode:
             self.current_region = self.itr.demo_chromosome
-            
+
             if "chr" in self.itr.demo_chromosome.lower():
                 self.region_string = self.itr.demo_chromosome
                 self.logger_msg = self.genome
@@ -62,10 +62,10 @@ class CountExamples:
             self.logger_msg = (
                 f"{self.genome}] - [region{region}-of-{self._total_regions}"
             )
-            
+
         self.prefix = f"{self.genome}-{self.region_string}"
         self.itr.logger.info(
-            f"[{self.itr._mode_string}] - [{self._phase}] - [{self.logger_msg}]: counting examples made now... "
+            f"{self.itr._mode_string} - [{self._phase}] - [{self.logger_msg}]: counting examples made now... "
         )
 
     def search_log_files(self) -> None:
@@ -102,19 +102,19 @@ class CountExamples:
                     examples_found = None
                     self._n_examples += 0
                     self.itr.logger.error(
-                        f"[{self.itr._mode_string}] - [{self._phase}] - [{self.logger_msg}]: no examples were found"
+                        f"{self.itr._mode_string} - [{self._phase}] - [{self.logger_msg}]: no examples were found"
                     )
                 else:
                     self._n_examples += int(examples_found)
                     self.itr.logger.info(
-                        f"[{self.itr._mode_string}] - [{self._phase}] - [{self.logger_msg}]: running total number of examples | '{int(self._n_examples):,}'"
+                        f"{self.itr._mode_string} - [{self._phase}] - [{self.logger_msg}]: running total number of examples | '{int(self._n_examples):,}'"
                     )
             else:
                 if examples_found == "":
                     examples_found = None
                     self._n_examples += 0
                     self.itr.logger.error(
-                        f"[{self.itr._mode_string}] - [{self._phase}] - [{self.logger_msg}]: no examples were found"
+                        f"{self.itr._mode_string} - [{self._phase}] - [{self.logger_msg}]: no examples were found"
                     )
 
         else:
@@ -152,10 +152,10 @@ class CountExamples:
         if self._n_examples is not None:
             if self.itr.demo_mode:
                 self.itr.logger.info(
-                    f"[{self.itr._mode_string}] - [{self._phase}] - [{self.logger_msg}]: found {int(self._n_examples):,} examples"
+                    f"{self.itr._mode_string} - [{self._phase}] - [{self.logger_msg}]: found {int(self._n_examples):,} examples"
                 )
             else:
                 self.itr.logger.info(
-                    f"[{self.itr._mode_string}] - [{self._phase}] - [{self.genome}]: found {int(self._n_examples):,} examples"
+                    f"{self.itr._mode_string} - [{self._phase}] - [{self.genome}]: found {int(self._n_examples):,} examples"
                 )
         return self._n_examples

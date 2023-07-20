@@ -96,10 +96,10 @@ class BeamShuffleExamples:
 
         if self.itr.demo_mode:
             self.logger_msg = (
-                f"[{self.itr._mode_string}] - [{self._phase}] - [{self.genome}]"
+                f"{self.itr._mode_string} - [{self._phase}] - [{self.genome}]"
             )
         else:
-            self.logger_msg = f"[{self.itr._mode_string}] - [{self._phase}] - [{self.genome}]{self.region_logger_msg}"
+            self.logger_msg = f"{self.itr._mode_string} - [{self._phase}] - [{self.genome}]{self.region_logger_msg}"
 
     def set_genome(self) -> None:
         """
@@ -139,9 +139,7 @@ class BeamShuffleExamples:
         self.total_pbtxt_outputs_expected = int(self._total_regions)
 
         self._re_shuffle_dependencies = create_deps(self._total_regions)
-        self.logger_msg = (
-            f"[{self.itr._mode_string}] - [{self._phase}] - [{self.genome}]"
-        )
+        self.logger_msg = f"{self.itr._mode_string} - [{self._phase}] - [{self.genome}]"
 
         self.set_region()
 
@@ -155,19 +153,17 @@ class BeamShuffleExamples:
         )
 
         if not self._ignoring_make_examples:
-            self.jobs_to_run = find_not_NaN(self.make_examples_jobs)
-            self._num_to_run = len(self.jobs_to_run)
+            self._jobs_to_run = find_not_NaN(self.make_examples_jobs)
+            self._num_to_run = len(self._jobs_to_run)
             self._num_to_ignore = len(find_NaN(self.make_examples_jobs))
 
         elif not self._ignoring_restart_jobs:
-            num_job_ids = len(self.shuffle_examples_job_nums)
-            if num_job_ids == self._total_regions:
-                self.jobs_to_run = find_not_NaN(self.shuffle_examples_job_nums)
-                self._num_to_run = len(self.jobs_to_run)
-                self._num_to_ignore = len(find_NaN(self.shuffle_examples_job_nums))
+            self._jobs_to_run = find_not_NaN(self.shuffle_examples_job_nums)
+            self._num_to_run = len(self._jobs_to_run)
+            self._num_to_ignore = len(find_NaN(self.shuffle_examples_job_nums))
 
         else:
-            self.jobs_to_run = None
+            self._jobs_to_run = None
             self._num_to_run = 0
             self._num_to_ignore = self._total_regions
             if self.itr.debug_mode:
@@ -176,10 +172,10 @@ class BeamShuffleExamples:
                 )
 
         if self._num_to_run <= self._total_regions:
-            if self.jobs_to_run and not self._ignoring_restart_jobs:
+            if self._jobs_to_run and not self._ignoring_restart_jobs:
                 updated_jobs_list = []
 
-                for index in self.jobs_to_run:
+                for index in self._jobs_to_run:
                     if index is not None:
                         if is_jobid(self.shuffle_examples_job_nums[index]):
                             self._num_to_run -= 1
@@ -195,7 +191,7 @@ class BeamShuffleExamples:
                             updated_jobs_list.append(index)
 
                 if updated_jobs_list:
-                    self.jobs_to_run = updated_jobs_list
+                    self._jobs_to_run = updated_jobs_list
 
         elif self._num_to_ignore == self._total_regions:
             self.itr.logger.info(
@@ -209,7 +205,7 @@ class BeamShuffleExamples:
         else:
             if self.itr.debug_mode:
                 self.itr.logger.debug(
-                    f"{self.logger_msg}: --running-jobids triggered reprocessing {num_job_ids} job"
+                    f"{self.logger_msg}: --running-jobids triggered reprocessing {num_job_ids} jobs"
                 )
             self.itr.logger.error(
                 f"{self.logger_msg}: incorrect format for 'shuffle_examples' SLURM job numbers"
@@ -342,7 +338,7 @@ class BeamShuffleExamples:
         if phase is None:
             log_msg = self.logger_msg
         else:
-            log_msg = f"[{self.itr._mode_string}] - [{phase}] - [{self.genome}]"
+            log_msg = f"{self.itr._mode_string} - [{phase}] - [{self.genome}]"
 
             if not self.itr.demo_mode:
                 log_msg = f"{log_msg}{self.region_logger_msg}"
@@ -391,7 +387,7 @@ class BeamShuffleExamples:
         if phase is None:
             log_msg = self.logger_msg
         else:
-            log_msg = f"[{self.itr._mode_string}] - [{phase}] - [{self.genome}]"
+            log_msg = f"{self.itr._mode_string} - [{phase}] - [{self.genome}]"
 
             if not self.itr.demo_mode:
                 log_msg = f"{log_msg}{self.region_logger_msg}"
@@ -514,9 +510,7 @@ class BeamShuffleExamples:
         """
         Check if the SLURM job file was submitted to the SLURM queue successfully
         """
-        self.logger_msg = (
-            f"[{self.itr._mode_string}] - [{self._phase}] - [{self.genome}]"
-        )
+        self.logger_msg = f"{self.itr._mode_string} - [{self._phase}] - [{self.genome}]"
 
         if self.itr.debug_mode:
             self._total_regions = 5
@@ -572,12 +566,12 @@ class BeamShuffleExamples:
         Determine if shuffling outputs already exist
         """
         if phase is None:
-            log_msg = f"[{self.itr._mode_string}] - [{self._phase}] - [{self.genome}]"
+            log_msg = f"{self.itr._mode_string} - [{self._phase}] - [{self.genome}]"
             if not self.itr.demo_mode:
                 log_msg = f"{log_msg}{self.region_logger_msg}"
             self.find_beam_shuffled_examples(find_all=find_all)
         else:
-            log_msg = f"[{self.itr._mode_string}] - [{phase}] - [{self.genome}]"
+            log_msg = f"{self.itr._mode_string} - [{phase}] - [{self.genome}]"
             if not self.itr.demo_mode:
                 log_msg = f"{log_msg}{self.region_logger_msg}"
             self.find_beam_shuffled_examples(phase=phase, find_all=find_all)
@@ -610,7 +604,7 @@ class BeamShuffleExamples:
         if find_all:
             if missing_shuffled_files1:
                 self.itr.logger.info(
-                    f"{log_msg}: double-checking for the final region producing very few examples...",
+                    f"{log_msg}: double-checking if last region produced very few examples...",
                 )
                 missing_shuffled_files2 = check_expected_outputs(
                     self._num_shuff_tfrecords_found,
@@ -714,18 +708,18 @@ class BeamShuffleExamples:
                     )
                     exit(1)
 
-                for i, r in enumerate(self.jobs_to_run):
+                for i, r in enumerate(self._jobs_to_run):
                     if skip_re_runs:
                         region_index = r
                     # handle issues that occur when missing make_examples outputs but 're-start' beam_shuffle
-                    elif find_not_NaN(self.jobs_to_run) != find_not_NaN(
+                    elif find_not_NaN(self._jobs_to_run) != find_not_NaN(
                         self.shuffle_examples_job_nums
                     ):
-                        unique_jobs_to_run = list(
-                            set(self.jobs_to_run + self.shuffle_examples_job_nums)
+                        unique__jobs_to_run = list(
+                            set(self._jobs_to_run + self.shuffle_examples_job_nums)
                         )
                         new_jobs_list = [
-                            j for j in unique_jobs_to_run if j is not None
+                            j for j in unique__jobs_to_run if j is not None
                         ]  # remove 'None' values
                         region_index = new_jobs_list[i]
                     else:

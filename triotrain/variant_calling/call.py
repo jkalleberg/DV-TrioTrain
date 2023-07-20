@@ -63,9 +63,11 @@ class CallVariants:
         self._select_ckpt_job = [self.itr.current_genome_dependencies[3]]
         self._compare_dependencies = create_deps(num=self.itr.total_num_tests)
         if self.itr.train_genome is None:
-            self.logger_msg = f"[{self.itr._mode_string}] - [{self._phase}]"
+            self.logger_msg = f"{self.itr._mode_string} - [{self._phase}]"
         else:
-            self.logger_msg = f"[{self.itr._mode_string}] - [{self._phase}] - [{self.itr.train_genome}]"
+            self.logger_msg = (
+                f"{self.itr._mode_string} - [{self._phase}] - [{self.itr.train_genome}]"
+            )
 
     def set_genome(self) -> None:
         """
@@ -558,10 +560,10 @@ class CallVariants:
             logging_msg = self.logger_msg
         else:
             if self.itr.train_genome is None:
-                logging_msg = f"[{self.itr._mode_string}] - [{phase}]"
+                logging_msg = f"{self.itr._mode_string} - [{phase}]"
             else:
                 logging_msg = (
-                    f"[{self.itr._mode_string}] - [{phase}] - [{self.itr.train_genome}]"
+                    f"{self.itr._mode_string} - [{phase}] - [{self.itr.train_genome}]"
                 )
 
         if find_all:

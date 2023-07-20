@@ -545,10 +545,7 @@ class RunTrioTrain:
             self.set_job_expectations()
             if genome is not None:
                 self.count_jobs(genome=genome)
-                self.check_jobs(genome=genome)
-            
-            print("STOPPING NOW!")
-            breakpoint()
+                self.check_jobs(genome=genome) 
 
             ### ------ MAKE EXAMPLES ------ ###
             if self.itr.current_genome_num is not None:
@@ -578,6 +575,8 @@ class RunTrioTrain:
                         make_examples_job_nums=self._jobIDs,
                     )
                     self.make_examples.find_all_outputs()
+                    print("STOP!")
+                    breakpoint()
 
                     # skip ahead if all outputs exist already
                     if self.make_examples._outputs_exist and not self.restart_jobs:
@@ -589,8 +588,7 @@ class RunTrioTrain:
                     self.make_examples.set_genome()
                     self.make_examples.find_outputs("find_outputs", find_all=True)
 
-                    print("STOP!")
-                    breakpoint()
+                    
 
                     if self.restart_jobs and self._phase_jobs is None:
                         self.check_next_phase(total_jobs=self._n_regions, genome=genome)

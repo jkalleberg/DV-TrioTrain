@@ -64,9 +64,11 @@ class ConvertHappy:
 
         self._final_jobs = create_deps(self.itr.total_num_tests)
         if self.itr.train_genome is None:
-            self.logger_msg = f"[{self.itr._mode_string}] - [{self._phase}]"
+            self.logger_msg = f"{self.itr._mode_string} - [{self._phase}]"
         else:
-            self.logger_msg = f"[{self.itr._mode_string}] - [{self._phase}] - [{self.itr.train_genome}]"
+            self.logger_msg = (
+                f"{self.itr._mode_string} - [{self._phase}] - [{self.itr.train_genome}]"
+            )
 
     def set_genome(self) -> None:
         """
@@ -294,10 +296,10 @@ class ConvertHappy:
             logging_msg = self.logger_msg
         else:
             if self.itr.train_genome is None:
-                logging_msg = f"[{self.itr._mode_string}] - [{phase}]"
+                logging_msg = f"{self.itr._mode_string} - [{phase}]"
             else:
                 logging_msg = (
-                    f"[{self.itr._mode_string}] - [{phase}] - [{self.itr.train_genome}]"
+                    f"{self.itr._mode_string} - [{phase}] - [{self.itr.train_genome}]"
                 )
 
         # Count how many outputs were made when converting Hap.py VCFs into Metrics Values
@@ -503,9 +505,9 @@ class ConvertHappy:
         Check if we have a converted-metrics file, but are missing the total.metrics file, and re-run convert-happy
         """
         if self.itr.train_genome is None:
-            logging_msg = f"[{self.itr._mode_string}] - [{phase_to_check}]"
+            logging_msg = f"{self.itr._mode_string} - [{phase_to_check}]"
         else:
-            logging_msg = f"[{self.itr._mode_string}] - [{phase_to_check}] - [{self.itr.train_genome}]"
+            logging_msg = f"{self.itr._mode_string} - [{phase_to_check}] - [{self.itr.train_genome}]"
         self.itr.logger.info(f"{logging_msg}: double checking for output files now...")
 
         new_jobs_to_run = []

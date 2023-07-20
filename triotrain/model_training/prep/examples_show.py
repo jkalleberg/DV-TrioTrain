@@ -15,14 +15,13 @@ example:
 # Load python libs
 import argparse
 import json
-from sys import exit
 from dataclasses import dataclass, field
 from logging import Logger
 from os import environ, getcwd, path
 from pathlib import Path
+from sys import exit
 from typing import List, Union
 
-from regex import Pattern, findall
 from helpers.files import WriteFiles
 from helpers.iteration import Iteration
 from helpers.outputs import check_expected_outputs, check_if_output_exists
@@ -33,11 +32,13 @@ from helpers.utils import (
     find_not_NaN,
     generate_job_id,
 )
-from model_training.slurm.sbatch import SBATCH, SubmitSBATCH
 from model_training.prep.examples_make import MakeExamples
 from model_training.prep.examples_shuffle import BeamShuffleExamples
+from model_training.slurm.sbatch import SBATCH, SubmitSBATCH
+from regex import Pattern, findall
 
-def collect_args()-> argparse.Namespace:
+
+def collect_args() -> argparse.Namespace:
     """
     Process the command line arguments.
     """
@@ -213,7 +214,7 @@ class ShowExamples:
 
         if self.itr.demo_mode:
             if "chr" in self.demo_chromosome.lower():
-                self.logger_msg = f"[{self.itr._mode_string}] - [{self._phase}] - [{self.genome}] - [{self.itr.demo_chromosome.upper()}]"
+                self.logger_msg = f"{self.itr._mode_string} - [{self._phase}] - [{self.genome}] - [{self.itr.demo_chromosome.upper()}]"
             else:
                 self.logger_msg = f"DEMO] - [TRIO{self.current_trio_num}] - [CHR{self.demo_chromosome}"
             self.prefix = f"{self.genome}.chr{self.itr.demo_chromosome}"
@@ -221,7 +222,7 @@ class ShowExamples:
             self.error_label = f"demo-{self.prefix}"
         else:
             self.logger_msg = (
-                f"[{self.itr._mode_string}] - [{self._phase}] - [{self.genome}]"
+                f"{self.itr._mode_string} - [{self._phase}] - [{self.genome}]"
             )
             self.prefix = f"{self.genome}"
             self.job_label = f"{self.genome}{self.itr.current_trio_num}"
@@ -535,9 +536,9 @@ def __init__():
     Command line execution of these functions
     """
     from helpers.environment import Env
-    from helpers.wrapper import timestamp, Wrapper
-    from helpers.utils import get_logger
     from helpers.files import TestFile
+    from helpers.utils import get_logger
+    from helpers.wrapper import Wrapper, timestamp
 
     # Collect command line arguments
     args = collect_args()
@@ -568,9 +569,7 @@ def __init__():
 
     if args.demo_mode:
         model_label = f"Demo.{args.genome}.CHR{args.demo_chr}"
-        prefix = (
-            f"[DEMO] - [TRIO{itr_num}] - [show_examples]"
-        )
+        prefix = f"[DEMO] - [TRIO{itr_num}] - [show_examples]"
     else:
         model_label = f"{args.genome}"
         prefix = f"[{args.genome}] - [show_examples]"

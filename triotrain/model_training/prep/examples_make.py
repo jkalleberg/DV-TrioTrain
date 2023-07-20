@@ -128,10 +128,10 @@ class MakeExamples:
 
         if self.itr.demo_mode or self.current_region is None:
             self.logger_msg = (
-                f"[{self.itr._mode_string}] - [{self._phase}] - [{self.genome}]"
+                f"{self.itr._mode_string} - [{self._phase}] - [{self.genome}]"
             )
         else:
-            self.logger_msg = f"[{self.itr._mode_string}] - [{self._phase}] - [{self.genome}]{self.region_logger_msg}"
+            self.logger_msg = f"{self.itr._mode_string} - [{self._phase}] - [{self.genome}]{self.region_logger_msg}"
 
     def set_genome(self) -> None:
         """Assign a genome label"""
@@ -152,9 +152,7 @@ class MakeExamples:
             self._total_regions = self.itr.eval_num_regions
 
         self._beam_shuffle_dependencies = create_deps(self._total_regions)
-        self.logger_msg = (
-            f"[{self.itr._mode_string}] - [{self._phase}] - [{self.genome}]"
-        )
+        self.logger_msg = f"{self.itr._mode_string} - [{self._phase}] - [{self.genome}]"
         self.set_variables()
         self.set_region()
 
@@ -329,9 +327,9 @@ class MakeExamples:
         Determines if make_examples phase has completed successfully.
         """
         if phase is None:
-            log_msg = f"[{self.itr._mode_string}] - [{self._phase}] - [{self.genome}]"
+            log_msg = f"{self.itr._mode_string} - [{self._phase}] - [{self.genome}]"
         else:
-            log_msg = f"[{self.itr._mode_string}] - [{phase}] - [{self.genome}]"
+            log_msg = f"{self.itr._mode_string} - [{phase}] - [{self.genome}]"
 
         if not self.itr.demo_mode:
             log_msg = f"{log_msg}{self.region_logger_msg}"
@@ -495,9 +493,7 @@ class MakeExamples:
         """
         Check if the SLURM job file was submitted to the SLURM queue successfully
         """
-        self.logger_msg = (
-            f"[{self.itr._mode_string}] - [{self._phase}] - [{self.genome}]"
-        )
+        self.logger_msg = f"{self.itr._mode_string} - [{self._phase}] - [{self.genome}]"
 
         if self.itr.debug_mode:
             self._total_regions = 5

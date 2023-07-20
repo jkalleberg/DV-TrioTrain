@@ -54,7 +54,7 @@ class SelectCheckpoint:
 
     def __post_init__(self) -> None:
         self.logger_msg = (
-            f"[{self.itr._mode_string}] - [{self._phase}] - [{self.itr.train_genome}]"
+            f"{self.itr._mode_string} - [{self._phase}] - [{self.itr.train_genome}]"
         )
         if self.track_resources:
             assert (
@@ -68,64 +68,58 @@ class SelectCheckpoint:
         Collect any SLURM job ids for running tests to avoid
         submitting a job while it's already running
         """
-        if self.train_eval_job_num is None:
-            self._ignoring_training = True
-        else:
-            self._ignoring_training = check_if_all_same(self.train_eval_job_num, None)
+        self._ignoring_training = check_if_all_same(self.train_eval_job_num, None)
+        self._ignoring_restart_jobs = check_if_all_same(self.select_ckpt_job_num, None)
 
         if not self._ignoring_training:
+            self._jobs_to_run = [0]
             self._num_to_ignore = 0
             self._num_to_run = 1
 
-        elif self.select_ckpt_job_num[0] is not None:
-            num_job_ids = len(self.select_ckpt_job_num)
-            if num_job_ids == 1:
-                jobs_to_run = find_not_NaN(self.select_ckpt_job_num)
-                jobs_to_ignore = find_NaN(self.select_ckpt_job_num)
-                self._num_to_run = len(jobs_to_run)
-                self._num_to_ignore = len(jobs_to_ignore)
+        elif not self._ignoring_restart_jobs:
+            self._jobs_to_run = find_not_NaN(self.select_ckpt_job_num)
+            self._num_to_run = len(self._jobs_to_run)
+            self._num_to_ignore = len(find_NaN(self.select_ckpt_job_num))
 
-                if jobs_to_run:
-                    updated_jobs_list = []
-                    for index in jobs_to_run:
-                        if index is not None:
-                            if is_jobid(self.train_eval_job_num[index]):
-                                self._num_to_run -= 1
-                                self._num_to_ignore += 1
-                                self._model_testing_dependency[0] = str(
-                                    self.select_ckpt_job_num[index]
-                                )
-                                if self.itr.debug_mode:
-                                    self.itr.logger.debug(
-                                        f"{self.logger_msg}: model_testing dependency updated to '{self.select_ckpt_job_num}'"
-                                    )
-                            elif is_job_index(self.train_eval_job_num[index]):
-                                updated_jobs_list.append(index)
-
-                    if updated_jobs_list:
-                        self.jobs_to_run = updated_jobs_list
-
-                if self._num_to_ignore == 1:
-                    self.itr.logger.info(
-                        f"{self.logger_msg}: there are no jobs to re-submit for '{self._phase}'... SKIPPING AHEAD"
-                    )
-            else:
-                if self.itr.debug_mode:
-                    self.itr.logger.debug(
-                        f"{self.logger_msg}: --running-jobids triggered reprocessing {num_job_ids} job"
-                    )
-                self.itr.logger.error(
-                    f"{self.logger_msg}: incorrect format for 'train_eval' SLURM job number"
-                )
-                self.itr.logger.error(
-                    f"{self.logger_msg}: expected a list of 1 SLURM jobs (or 'None' as a place holder)"
-                )
         else:
-            self._num_to_run = 1
+            self._num_to_run = 0
+            self._num_to_ignore = 1
             if self.itr.debug_mode:
                 self.itr.logger.debug(
                     f"{self.logger_msg}: running job ids were NOT provided"
                 )
+
+        if self._num_to_run == 1:
+            if not self._ignoring_restart_jobs:
+                updated_jobs_list = []
+                for index in self._jobs_to_run:
+                    if is_jobid(self.train_eval_job_num[index]):
+                        self._num_to_run -= 1
+                        self._num_to_ignore += 1
+                        self._model_testing_dependency[0] = str(
+                            self.select_ckpt_job_num[index]
+                        )
+                    elif is_job_index(self.train_eval_job_num[index]):
+                        updated_jobs_list.append(index)
+
+                if updated_jobs_list:
+                    self.jobs_to_run = updated_jobs_list
+
+        elif self._num_to_ignore == 1:
+            self.itr.logger.info(
+                f"{self.logger_msg}: there are no jobs to re-submit for '{self._phase}'... SKIPPING AHEAD"
+            )
+        else:
+            if self.itr.debug_mode:
+                self.itr.logger.debug(
+                    f"{self.logger_msg}: --running-jobids triggered reprocessing {self._num_to_run} jobs"
+                )
+            self.itr.logger.error(
+                f"{self.logger_msg}: incorrect format for 'train_eval' SLURM job number"
+            )
+            self.itr.logger.error(
+                f"{self.logger_msg}: expected a list of 1 SLURM jobs (or 'None' as a place holder)"
+            )
 
     def find_outputs(
         self, number_outputs_expected: int = 3, phase: Union[str, None] = None
@@ -137,29 +131,24 @@ class SelectCheckpoint:
             logging_msg = self.logger_msg
         else:
             logging_msg = (
-                f"[{self.itr._mode_string}] - [{phase}] - [{self.itr.train_genome}]"
+                f"{self.itr._mode_string} - [{phase}] - [{self.itr.train_genome}]"
             )
 
         self.find_selected_ckpt_vars(phase=phase)
 
         if self.ckpt_selected:
-            if self.overwrite and (
-                self.train_eval_job_num or not self._ignoring_training
-            ):
+            self.find_selected_ckpt_files(phase=phase)
+            missing_files = check_expected_outputs(
+                self.num_model_files_found,
+                number_outputs_expected,
+                logging_msg,
+                "new model weights files",
+                self.itr.logger,
+            )
+            if missing_files:
                 self._outputs_exist = False
             else:
-                self.find_selected_ckpt_files(phase=phase)
-                missing_files = check_expected_outputs(
-                    self.num_model_files_found,
-                    number_outputs_expected,
-                    logging_msg,
-                    "new model weights files",
-                    self.itr.logger,
-                )
-                if missing_files:
-                    self._outputs_exist = False
-                else:
-                    self._outputs_exist = True
+                self._outputs_exist = True
         else:
             self._outputs_exist = False
 
@@ -213,7 +202,7 @@ class SelectCheckpoint:
                 self.select_ckpt_job_num
                 and self.select_ckpt_job_num[0] is not None
                 and self.overwrite
-            ):
+            ) or (not self._ignoring_training and self.overwrite):
                 self.itr.logger.info(
                     f"{self.logger_msg}: --overwrite=True, re-writing the existing SLURM job now..."
                 )
@@ -265,7 +254,7 @@ class SelectCheckpoint:
             logger_msg = self.logger_msg
         else:
             logger_msg = (
-                f"[{self.itr._mode_string}] - [{phase}] - [{self.itr.train_genome}]"
+                f"{self.itr._mode_string} - [{phase}] - [{self.itr.train_genome}]"
             )
 
         # confirm if select-ckpt job has already finished correctly
@@ -327,7 +316,7 @@ class SelectCheckpoint:
         if phase is None:
             logger_msg = self.logger_msg
         else:
-            logger_msg = f"[{self.itr._mode_string}] - [{phase}]"
+            logger_msg = f"{self.itr._mode_string} - [{phase}]"
         # confirm model weights files are present
         model_weights_pattern = compile(f"{self.ckpt_name}.*")
 
@@ -470,40 +459,50 @@ class SelectCheckpoint:
         self.find_restart_jobs()
 
         # determine if we are re-running select-ckpt
-        if self._num_to_run == 0:
-            self._skipped_counter = self._num_to_ignore
-            if (
-                self._model_testing_dependency
-                and self._model_testing_dependency[0] is not None
-            ):
-                self.itr.logger.info(
-                    f"{self.logger_msg}: call_variants dependency updated to '{self._model_testing_dependency}'"
-                )
+        if self.select_ckpt_job_num or not self._ignoring_training:
+            if self._num_to_run == 0:
+                self._skipped_counter = self._num_to_ignore
+                if (
+                    self._model_testing_dependency
+                    and self._model_testing_dependency[0] is not None
+                ):
+                    self.itr.logger.info(
+                        f"{self.logger_msg}: call_variants dependency updated | '{self._model_testing_dependency}'"
+                    )
+                else:
+                    self._model_testing_dependency[0] = None
             else:
-                self._model_testing_dependency[0] = None
+                if not self._ignoring_training:
+                    self.itr.logger.info(
+                        f"{self.logger_msg}: train_eval job was submitted...",
+                    )
+
+                skip_re_runs = check_if_all_same(self.train_eval_job_num, None)
+
+                if skip_re_runs:
+                    msg = "sub"
+                else:
+                    msg = "re-sub"
+
+                if self._num_to_run == 1:
+                    self.itr.logger.info(
+                        f"{self.logger_msg}: attempting to {msg}mit {self._num_to_run}-of-1 SLURM jobs to the queue",
+                    )
+                else:
+                    self.itr.logger.error(
+                        f"{self.logger_msg}: max number of SLURM jobs for {msg}mission is 1 but {self._num_to_run} were provided.\nExiting... ",
+                    )
+                    exit(1)
+
+                self.find_outputs()
+                self.submit_job(resubmission=True)
+
+        # or running it for the first time
         else:
-            if not self._ignoring_training:
-                self.itr.logger.info(
-                    f"{self.logger_msg}: train_eval job was submitted...",
-                )
-                msg = "sub"
-                restart = False
-            else:
-                msg = "re-sub"
-                restart = True
-
-            if self._num_to_run == 1:
-                self.itr.logger.info(
-                    f"{self.logger_msg}: attempting to {msg}mit {self._num_to_run}-of-1 SLURM job",
-                )
-            else:
-                self.itr.logger.error(
-                    f"{self.logger_msg}: there should only be one select_ckpt job, but {self._num_to_run} were provided.\nExiting... ",
-                )
-                exit(1)
-
+            if self._skip_phase:
+                return
             self.find_outputs()
-            self.submit_job(resubmission=restart)
+            self.submit_job()
 
         self.check_submission()
         return self.itr

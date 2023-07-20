@@ -14,6 +14,7 @@ from typing import List, Union
 
 from helpers.files import WriteFiles
 from helpers.iteration import Iteration
+from helpers.jobs import is_job_index, is_jobid
 from helpers.outputs import check_expected_outputs, check_if_output_exists
 from helpers.utils import (
     check_if_all_same,
@@ -22,7 +23,6 @@ from helpers.utils import (
     find_not_NaN,
     generate_job_id,
 )
-from helpers.jobs import is_job_index, is_jobid
 from model_training.pipeline.select_ckpt import SelectCheckpoint
 from model_training.slurm.sbatch import SBATCH, SubmitSBATCH
 from regex import compile
@@ -66,7 +66,7 @@ class TrainEval:
             self._cpu_mem = None
 
         self.logger_msg = (
-            f"[{self.itr._mode_string}] - [{self._phase}] - [{self.itr.train_genome}]"
+            f"{self.itr._mode_string} - [{self._phase}] - [{self.itr.train_genome}]"
         )
         self.epochs = self.itr.env.contents["N_Epochs"]
         self.batches = self.itr.env.contents["BatchSize"]
@@ -106,56 +106,56 @@ class TrainEval:
         self._ignoring_re_shuffle = check_if_all_same(
             self.itr.current_genome_dependencies[0:2], None
         )
+        self._ignoring_restart_jobs = check_if_all_same(self.train_job_num, None)
 
         if not self._ignoring_re_shuffle:
+            self._jobs_to_run = [0]
             self._num_to_ignore = 0
             self._num_to_run = 1
 
-        elif self.train_job_num and self.train_job_num[0] is not None:
-            num_job_ids = len(self.train_job_num)
-            if num_job_ids == 1:
-                jobs_to_run = find_not_NaN(self.train_job_num)
-                self._num_to_run = len(jobs_to_run)
-                self._num_to_ignore = len(find_NaN(self.train_job_num))
+        elif not self._ignoring_restart_jobs:
+            self._jobs_to_run = find_not_NaN(self.train_job_num)
+            self._num_to_run = len(self._jobs_to_run)
+            self._num_to_ignore = len(find_NaN(self.train_job_num))
 
-                if jobs_to_run:
-                    updated_jobs_list = []
-                    for index in jobs_to_run:
-                        if index is not None:
-                            if is_jobid(self.train_job_num[index]):
-                                self._num_to_run -= 1
-                                self._num_to_ignore += 1
-                                self._select_ckpt_dependency = [
-                                    str(self.train_job_num[index])
-                                ]
-                            elif is_job_index(self.train_job_num[index]):
-                                updated_jobs_list.append(index)
-
-                    if updated_jobs_list:
-                        self.jobs_to_run = updated_jobs_list
-
-                if self._num_to_ignore == 1:
-                    self.itr.logger.info(
-                        f"{self.logger_msg}: there are no jobs to re-submit for '{self._phase}'... SKIPPING AHEAD"
-                    )
-            else:
-                if self.itr.debug_mode:
-                    self.itr.logger.debug(
-                        f"{self.logger_msg}: --running-jobids triggered reprocessing {num_job_ids} job"
-                    )
-                self.itr.logger.error(
-                    f"{self.logger_msg}: incorrect format for 'train_job' SLURM job number"
-                )
-                self.itr.logger.error(
-                    f"{self.logger_msg}: expected a list of 1 SLURM jobs (or 'None' as a place holder)"
-                )
-                self._num_to_run = 0
         else:
-            self._num_to_run = 1
+            self._num_to_run = 0
+            self._num_to_ignore = 1
             if self.itr.debug_mode:
                 self.itr.logger.debug(
                     f"{self.logger_msg}: running job ids were NOT provided"
                 )
+
+        if self._num_to_run == 1:
+            if not self._ignoring_restart_jobs:
+                updated_jobs_list = []
+                for index in self._jobs_to_run:
+                    if is_jobid(self.train_job_num[index]):
+                        self._num_to_run -= 1
+                        self._num_to_ignore += 1
+                        self._select_ckpt_dependency = [str(self.train_job_num[index])]
+                    elif is_job_index(self.train_job_num[index]):
+                        updated_jobs_list.append(index)
+
+                if updated_jobs_list:
+                    self._jobs_to_run = updated_jobs_list
+
+        elif self._num_to_ignore == 1:
+            self.itr.logger.info(
+                f"{self.logger_msg}: there are no jobs to re-submit for '{self._phase}'... SKIPPING AHEAD"
+            )
+        else:
+            if self.itr.debug_mode:
+                self.itr.logger.debug(
+                    f"{self.logger_msg}: --running-jobids triggered reprocessing {self._num_to_run} jobs"
+                )
+            self.itr.logger.error(
+                f"{self.logger_msg}: incorrect format for 'train_eval' SLURM job number"
+            )
+            self.itr.logger.error(
+                f"{self.logger_msg}: expected a list of 1 SLURM jobs (or 'None' as a place holder)"
+            )
+            self._num_to_run = 0
 
     def find_outputs(
         self, number_outputs_expected: int = 2, phase: Union[str, None] = None
@@ -164,26 +164,27 @@ class TrainEval:
         Determine if model_train and model_eval results already exist
         """
         if phase is None:
-            logging_msg = f"[{self.itr._mode_string}] - [{self._phase}]"
+            logging_msg = self.logger_msg
         else:
-            logging_msg = f"[{self.itr._mode_string}] - [{phase}]"
+            logging_msg = f"{self.itr._mode_string} - [{phase}]"
+
+            if self.itr.train_genome is not None:
+                logging_msg = f"{logging_msg} - [{self.itr.train_genome}]"
 
         self.find_training_outputs()
+
         if self.existing_best_ckpt:
-            if self.overwrite and (self.train_job_num or not self._ignoring_re_shuffle):
+            missing_files = check_expected_outputs(
+                self.best_ckpt_files_found,
+                number_outputs_expected,
+                logging_msg,
+                "best_checkpoint files",
+                self.itr.logger,
+            )
+            if missing_files is True:
                 self._outputs_exist = False
             else:
-                missing_files = check_expected_outputs(
-                    self.best_ckpt_files_found,
-                    number_outputs_expected,
-                    logging_msg,
-                    "best_checkpoint files",
-                    self.itr.logger,
-                )
-                if missing_files is True:
-                    self._outputs_exist = False
-                else:
-                    self._outputs_exist = True
+                self._outputs_exist = True
         else:
             self._outputs_exist = False
 
@@ -314,7 +315,9 @@ class TrainEval:
         if slurm_job.check_sbatch_file():
             if (
                 self.train_job_num
-                and self.train_job_num[0] is not None and self.overwrite) or (not self._ignoring_re_shuffle and self.overwrite):
+                and self.train_job_num[0] is not None
+                and self.overwrite
+            ) or (not self._ignoring_re_shuffle and self.overwrite):
                 self.itr.logger.info(
                     f"{self.logger_msg}: --overwrite=True, re-writing the existing SLURM job now..."
                 )
@@ -419,9 +422,9 @@ class TrainEval:
         Confirm that a best-ckpt does NOT already exist before re-training.
         """
         if phase is None:
-            logging_msg = f"[{self.itr._mode_string}] - [{self._phase}]"
+            logging_msg = f"{self.itr._mode_string} - [{self._phase}]"
         else:
-            logging_msg = f"[{self.itr._mode_string}] - [{phase}]"
+            logging_msg = f"{self.itr._mode_string} - [{phase}]"
 
         eval_path = Path(self.itr.train_dir) / f"eval_{self.itr.eval_genome}"
 
@@ -565,42 +568,51 @@ class TrainEval:
         """
         self.find_restart_jobs()
 
-        # determine if we are re-running the training
-        if self._num_to_run == 0:
-            self._skipped_counter = self._num_to_ignore
-            if (
-                self._select_ckpt_dependency
-                and self._select_ckpt_dependency[0] is not None
-            ):
-                self.itr.logger.info(
-                    f"{self.logger_msg}: select_ckpt dependency updated | {self._select_ckpt_dependency}"
-                )
+        # Determine if we are re-running training
+        if self.train_job_num or not self._ignoring_re_shuffle:
+            if self._num_to_run == 0:
+                self._skipped_counter = self._num_to_ignore
+                if (
+                    self._select_ckpt_dependency
+                    and self._select_ckpt_dependency[0] is not None
+                ):
+                    self.itr.logger.info(
+                        f"{self.logger_msg}: select_ckpt dependency updated | '{self._select_ckpt_dependency[0]}'"
+                    )
+                else:
+                    self._select_ckpt_dependency[0] = None
             else:
-                self._select_ckpt_dependency[0] = None
-        else:
-            if not self._ignoring_re_shuffle:
-                self.itr.logger.info(
-                    f"{self.logger_msg}: re_shuffle jobs were submitted...",
-                )
-            
-            if not self._outputs_exist:
-                msg = "sub"
-                restart = False
-            else:
-                msg = "re-sub"
-                restart = True
+                if not self._ignoring_re_shuffle:
+                    self.itr.logger.info(
+                        f"{self.logger_msg}: re_shuffle jobs were submitted...",
+                    )
 
-            if self._num_to_run == 1:
-                self.itr.logger.info(
-                    f"{self.logger_msg}: attempting to {msg}mit {self._num_to_run}-of-1 SLURM job",
-                )
-            else:
-                self.itr.logger.error(
-                    f"{self.logger_msg}: there should only be one train_eval_job, but {self._num_to_run} were provided.\nExiting... ",
-                )
-                exit(1)
+                skip_re_runs = check_if_all_same(self.train_job_num, None)
+
+                if skip_re_runs:
+                    msg = "sub"
+                else:
+                    msg = "re-sub"
+
+                if self._num_to_run == 1:
+                    self.itr.logger.info(
+                        f"{self.logger_msg}: attempting to {msg}mit {self._num_to_run}-of-1 SLURM jobs to the queue",
+                    )
+                else:
+                    self.itr.logger.error(
+                        f"{self.logger_msg}: max number of SLURM jobs for {msg}mission is 1 but {self._num_to_run} were provided.\nExiting... ",
+                    )
+                    exit(1)
+
+                self.find_outputs()
+                self.submit_job(resubmission=True)
+
+        # or running it for the first time
+        else:
+            if self._skip_phase:
+                return
             self.find_outputs()
-            self.submit_job(resubmission=restart)
+            self.submit_job()
 
         self.check_submission()
         return self._select_ckpt_dependency

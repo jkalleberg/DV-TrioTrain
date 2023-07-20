@@ -223,7 +223,7 @@ class MakeRegions:
             if not ref_dict_exists.file_exists:
                 try:
                     self.itr.logger.info(
-                        f"[{self.itr._mode_string}] - [{self._phase}]: missing the reference .dict file; creating one now...",
+                        f"{self.itr._mode_string} - [{self._phase}]: missing the reference .dict file; creating one now...",
                     )
                     # Creating a .dict file with Picard
                     picard = subprocess.run(
@@ -250,7 +250,7 @@ class MakeRegions:
                     self._input_exists = ref_dict_exists
                 else:
                     raise FileNotFoundError(
-                        f"[{self.itr._mode_string}] - [{self._phase}]: unable to find a dictionary file [{ref_dict_exists.file}] for the reference genome"
+                        f"{self.itr._mode_string} - [{self._phase}]: unable to find a dictionary file [{ref_dict_exists.file}] for the reference genome"
                     )
             else:
                 self._input = input_file
@@ -258,7 +258,7 @@ class MakeRegions:
         else:
             self._input_exists = False
             raise FileNotFoundError(
-                f"[{self.itr._mode_string}] - [{self._phase}]: unable to find the reference genome [{ref_genome_exists.file}]"
+                f"{self.itr._mode_string} - [{self._phase}]: unable to find the reference genome [{ref_genome_exists.file}]"
             )
 
     def check_output(self) -> None:
@@ -274,12 +274,12 @@ class MakeRegions:
         if self._region_dir.is_dir():
             if self.itr.debug_mode:
                 self.itr.logger.debug(
-                    f"[{self.itr._mode_string}] - [{self._phase}]: directory found | '{self._region_dir}'"
+                    f"{self.itr._mode_string} - [{self._phase}]: directory found | '{self._region_dir}'"
                 )
         else:
             if self.itr.debug_mode:
                 self.itr.logger.debug(
-                    f"[{self.itr._mode_string}] - [{self._phase}]: creating a new directory for region files"
+                    f"{self.itr._mode_string} - [{self._phase}]: creating a new directory for region files"
                 )
 
             if self.itr.dryrun_mode:
@@ -288,7 +288,7 @@ class MakeRegions:
                 self._region_dir.mkdir(parents=True, exist_ok=True)
                 assert (
                     self._region_dir.is_dir()
-                ), f"[{self.itr._mode_string}] - [{self._phase}]: output directory does not exist yet"
+                ), f"{self.itr._mode_string} - [{self._phase}]: output directory does not exist yet"
 
     def transform_dictionary(self) -> None:
         """
@@ -377,21 +377,23 @@ class MakeRegions:
             output_file_path,
             output_file_name,
             self.itr.logger,
-            logger_msg=f"[{self.itr._mode_string}] - [{self._phase}]: default call_variants",
+            logger_msg=f"{self.itr._mode_string} - [{self._phase}]: default call_variants",
         )
         output_file.check_missing()
 
         if not output_file.file_exists:
             if self.itr.debug_mode:
                 self.itr.logger.debug(
-                    f"[{self.itr._mode_string}] - [{self._phase}]: creating the default region file now..."
+                    f"{self.itr._mode_string} - [{self._phase}]: creating the default region file now..."
                 )
             self._autosome_BED_data.to_csv(
                 output_file.path / output_file.file, sep="\t", index=False, header=False
             )
         else:
             if self.itr.debug_mode:
-                self.itr.logger.debug(f"[{self.itr._mode_string}] - [{self._phase}]: found default region file | '{output_file.file_path}'")
+                self.itr.logger.debug(
+                    f"{self.itr._mode_string} - [{self._phase}]: found default region file | '{output_file.file_path}'"
+                )
 
     def set_genome(
         self,
@@ -411,11 +413,11 @@ class MakeRegions:
         if current_region is None or self._existing_regions is None:
             self._prefix = self._genome
             self._logger_msg = (
-                f"[{self.itr._mode_string}] - [{self._phase}] - [{self._genome}]"
+                f"{self.itr._mode_string} - [{self._phase}] - [{self._genome}]"
             )
         else:
             self._prefix = f"{self._genome}-region{current_region}"
-            self._logger_msg = f"[{self.itr._mode_string}] - [{self._phase}] - [{self._genome}] - [region{current_region}]"
+            self._logger_msg = f"{self.itr._mode_string} - [{self._phase}] - [{self._genome}] - [region{current_region}]"
 
     def update_iteration(self, add_to_env: bool = False) -> None:
         """
@@ -446,7 +448,7 @@ class MakeRegions:
             )
 
             self.itr.logger.info(
-                f"[{self.itr._mode_string}] - [{self._phase}] - [{self._genome}]: adding '{self._genome}_NumRegionFiles={new_parameters[self._parameter_name]}' to env file"
+                f"{self.itr._mode_string} - [{self._phase}] - [{self._genome}]: adding '{self._genome}_NumRegionFiles={new_parameters[self._parameter_name]}' to env file"
             )
 
     def find_regions(self) -> None:
@@ -600,7 +602,7 @@ class MakeRegions:
                 dryrun_mode=self.itr.dryrun_mode,
             )
             self.itr.logger.info(
-                f"[{self.itr._mode_string}] - [{self._phase}] - [{self._genome}]: adding '{self._genome}_TotalTruth={self._total_pass_variants}' to env file"
+                f"{self.itr._mode_string} - [{self._phase}] - [{self._genome}]: adding '{self._genome}_TotalTruth={self._total_pass_variants}' to env file"
             )
         else:
             self.itr.logger.error(
@@ -731,31 +733,31 @@ class MakeRegions:
                 regions_made = len(regions_in_chr) - 1
                 if regions_made == self._num_outputs:
                     self.itr.logger.info(
-                        f"[{self.itr._mode_string}] - [{self._phase}] - [{self._genome}] - [Chromosome {chrom}]: divided into {self._num_outputs} regions, with {int(remainder_bp):,} bp in the final region"
+                        f"{self.itr._mode_string} - [{self._phase}] - [{self._genome}] - [Chromosome {chrom}]: divided into {self._num_outputs} regions, with {int(remainder_bp):,} bp in the final region"
                     )
                 else:
                     self.itr.logger.info(
-                        f"[{self.itr._mode_string}] - [{self._phase}] - [{self._genome}] - [Chromosome {chrom}]: divided into {regions_made}-of-{self._num_outputs} regions, with {int(remainder_bp):,} bp in the final region"
+                        f"{self.itr._mode_string} - [{self._phase}] - [{self._genome}] - [Chromosome {chrom}]: divided into {regions_made}-of-{self._num_outputs} regions, with {int(remainder_bp):,} bp in the final region"
                     )
 
                     regions_missing_chr = self._num_outputs - regions_made
 
                     if regions_missing_chr == 1:
                         self.itr.logger.info(
-                            f"[{self.itr._mode_string}] - [{self._phase}] - [{self._genome}] - [Chromosome {chrom}]: final region file will lack variants from this chromosome, with {int(remainder_bp):,} bp in the final region"
+                            f"{self.itr._mode_string} - [{self._phase}] - [{self._genome}] - [Chromosome {chrom}]: final region file will lack variants from this chromosome, with {int(remainder_bp):,} bp in the final region"
                         )
 
                     elif regions_missing_chr > 0:
                         self.itr.logger.warning(
-                            f"[{self.itr._mode_string}] - [{self._phase}] - [{self._genome}] - [Chromosome {chrom}]: contains fewer variants than expected"
+                            f"{self.itr._mode_string} - [{self._phase}] - [{self._genome}] - [Chromosome {chrom}]: contains fewer variants than expected"
                         )
 
                     elif regions_missing_chr < 0:
                         self.itr.logger.warning(
-                            f"[{self.itr._mode_string}] - [{self._phase}] - [{self._genome}] - [Chromosome {chrom}]: contains more variants than expected"
+                            f"{self.itr._mode_string} - [{self._phase}] - [{self._genome}] - [Chromosome {chrom}]: contains more variants than expected"
                         )
                         self.itr.logger.error(
-                            f"[{self.itr._mode_string}] - [{self._phase}] - [{self._genome}] - [Chromosome {chrom}]: {abs(regions_missing_chr)} additional region file(s) are needed. Exiting... "
+                            f"{self.itr._mode_string} - [{self._phase}] - [{self._genome}] - [Chromosome {chrom}]: {abs(regions_missing_chr)} additional region file(s) are needed. Exiting... "
                         )
                         sys.exit(1)
 
