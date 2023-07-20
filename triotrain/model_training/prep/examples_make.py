@@ -376,25 +376,17 @@ class MakeExamples:
         )
 
         if self._existing_tfrecords and self._num_tfrecords_found is not None:
-            if (
-                self.overwrite
-                and self.make_examples_job_nums
-                and check_if_all_same(self.make_examples_job_nums, None) is False
-            ):
-                self._outputs_exist = False
-                self._num_tfrecords_found = 0
-            else:
-                missing_files = check_expected_outputs(
-                    self._num_tfrecords_found,
-                    expected_outputs,
-                    log_msg,
-                    "labeled.tfrecords",
+            missing_files = check_expected_outputs(
+                self._num_tfrecords_found,
+                expected_outputs,
+                log_msg,
+                "labeled.tfrecords",
                     self.itr.logger,
-                )
-                if missing_files:
-                    self._outputs_exist = False
-                else:
-                    self._outputs_exist = True
+            )
+            if missing_files:
+                self._outputs_exist = False
+            else:
+                self._outputs_exist = True
         else:
             self._outputs_exist = False
             self._num_tfrecords_found = 0
@@ -423,12 +415,10 @@ class MakeExamples:
             else:
                 slurm_job.write_job()
 
-        num_missing_files = int(self.n_parts) - int(self._num_tfrecords_found)  # type: ignore
-
         if not self.overwrite and resubmission:
             self.itr.logger.info(
-                f"{self.logger_msg}: --overwrite=False; re-submitting job because missing {num_missing_files} labeled.tfrecords"
-                )
+                f"{self.logger_msg}: --overwrite=False; re-submitting job because missing labeled.tfrecords"
+            )
 
         elif self.overwrite and self._outputs_exist:
             self.itr.logger.info(
@@ -436,7 +426,7 @@ class MakeExamples:
             )
         else:
             self.itr.logger.info(
-                f"{self.logger_msg}: submitting job to create {num_missing_files} labeled.tfrecords"
+                f"{self.logger_msg}: submitting job to create labeled.tfrecords"
             )
 
         slurm_job = SubmitSBATCH(
@@ -623,7 +613,6 @@ class MakeExamples:
                     )  # THIS HAS TO BE +1 to avoid starting with a region0
 
                     self.set_region(current_region=self.job_num)
-                    
                     self.find_outputs()
                     if skip_re_runs or not self._outputs_exist:
                         self.submit_job(
