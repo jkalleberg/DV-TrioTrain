@@ -605,8 +605,6 @@ class TrainEval:
 
         # or running it for the first time
         else:
-            if self._skip_phase:
-                return
             self.find_outputs()
             self.submit_job()
 

@@ -149,8 +149,6 @@ class ConvertHappy:
                     self.itr.logger.info(
                         f"{self.logger_msg}: ignoring {self._num_to_ignore}-of-{self.itr.total_num_tests} SLURM jobs"
                     )
-                else:
-                    self._skip_phase = True
             else:
                 if self.itr.debug_mode:
                     self.itr.logger.debug(
@@ -607,10 +605,6 @@ class ConvertHappy:
 
         # Determine if we are submitting all tests
         else:
-            # determine if jobs need to be submitted
-            if self._skip_phase:
-                return self._final_jobs
-
             self.find_outputs(find_all=True)
             self.double_check(phase_to_check=self._phase)
             self.double_check(phase_to_check="process_happy")

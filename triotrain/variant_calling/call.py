@@ -162,7 +162,6 @@ class CallVariants:
                     self.itr.logger.info(
                         f"{self.logger_msg}: there are no jobs to re-submit for '{self._phase}'... SKIPPING AHEAD"
                     )
-                    self._skip_phase = True
             else:
                 if self.itr.debug_mode:
                     self.itr.logger.debug(
@@ -754,9 +753,7 @@ class CallVariants:
                     f"============ {self.logger_msg} Job Numbers ============\n{self._compare_dependencies}\n============================================================"
                 )
         elif self._skipped_counter != 0:
-            if self._skip_phase:
-                return
-            elif self._skipped_counter == self.itr.total_num_tests:
+            if self._skipped_counter == self.itr.total_num_tests:
                 if (
                     self.itr.demo_mode
                     or "baseline" in self.model_label
@@ -867,9 +864,6 @@ class CallVariants:
 
         # Determine if we are submitting all tests
         else:
-            if self._skip_phase:
-                return
-
             self.load_variables()
             # determine if jobs need to be submitted
             self.find_outputs(find_all=True)

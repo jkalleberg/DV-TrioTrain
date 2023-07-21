@@ -157,7 +157,6 @@ class CompareHappy:
                     self.itr.logger.info(
                         f"{self.logger_msg}: there are no jobs to re-submit for '{self._phase}'... SKIPPING AHEAD"
                     )
-                    self._skip_phase = True
             else:
                 if self.itr.debug_mode:
                     self.itr.logger.debug(
@@ -482,9 +481,6 @@ class CompareHappy:
         """
         Checks if the SLURM job files were submitted to the SLURM queue successfully.
         """
-        if self._skip_phase:
-            return
-
         if (
             self._convert_happy_dependencies
             and len(self._convert_happy_dependencies) != self.itr.total_num_tests
@@ -608,9 +604,6 @@ class CompareHappy:
 
         # Determine if we are submitting all tests
         else:
-            if self._skip_phase:
-                return
-
             # determine if jobs need to be submitted
             self.find_outputs(find_all=True)
 
