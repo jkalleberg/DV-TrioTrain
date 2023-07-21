@@ -356,8 +356,11 @@ class ParseMetrics:
                 f"{self._run_name}-{self.genome}-evaluation-metrics.csv",
                 self.logger,
             )
-            file_missing = outfile.check_missing()
-            if file_missing:
+            outfile.check_missing()
+
+            if outfile.file_exists:
+                self.logger.info(f"{self._logger_msg}: CSV output already exists... SKIPPING AHEAD")
+            else:
                 # Write the sorted data to a CSV
                 self._sorted_data.to_csv(outfile.file_path, index=False)
                 if self._debug_mode:
@@ -366,6 +369,7 @@ class ParseMetrics:
                 assert (
                     outfile.file_path.exists()
                 ), f"{outfile.file} was not written correctly"
+                
         else:
             self.logger.info(
                 f"{self._logger_msg}: evaluation metrics contents, sorted by step number"
