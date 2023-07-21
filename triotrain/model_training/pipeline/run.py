@@ -578,7 +578,7 @@ class RunTrioTrain:
                     # skip ahead if all outputs exist already
                     if self.make_examples._outputs_exist and not self.restart_jobs:
                         self.itr.logger.info(
-                            f"------------ SKIPPING {self.itr._mode_string} - [data_prep_jobs] - [{genome}] ------------"
+                            f"============ SKIPPING {self.itr._mode_string} - [data_prep_jobs] - [{genome}] ============"
                         )
                         continue
 
@@ -725,7 +725,7 @@ class RunTrioTrain:
 
                         if phase_skipped_counter == 3:
                             self.itr.logger.info(
-                                f"------------ SKIPPING {self.itr._mode_string} - [data_prep_jobs] - [{genome}] ------------"
+                                f"============ SKIPPING {self.itr._mode_string} - [data_prep_jobs] - [{genome}] ============"
                             )
                     else:
                         if self.itr.demo_mode and self.show_regions_file is not None:
@@ -756,7 +756,7 @@ class RunTrioTrain:
                         f"{self.itr._mode_string} - [data_prep_jobs] - [{genome}]: jobs are currently running... SKIPPING AHEAD"
                     )
                     self.itr.logger.info(
-                        f"------------ SKIPPING {self.itr._mode_string} - [data_prep_jobs] - [{genome}] ------------"
+                        f"============ SKIPPING {self.itr._mode_string} - [data_prep_jobs] - [{genome}] ============"
                     )
             # -- switch from parent to child -- #
             self.train_mode = False
@@ -788,7 +788,7 @@ class RunTrioTrain:
         # skip ahead if all outputs exist already
         if self.re_training._outputs_exist and not self.restart_jobs:
             self.itr.logger.info(
-                    f"------------ SKIPPING {self.itr._mode_string} - [re_training_jobs] ------------"
+                    f"============ SKIPPING {self.itr._mode_string} - [re_training_jobs] ============"
                 )
             return
 
@@ -863,7 +863,7 @@ class RunTrioTrain:
 
         if phase_skipped_counter == 2:
             self.itr.logger.info(
-                f"------------ SKIPPING {self.itr._mode_string} - [re_training_jobs] - [{self.logger_msg}] ------------"
+                f"============ SKIPPING {self.itr._mode_string} - [re_training_jobs] - [{self.logger_msg}] ============"
             )
 
     def test_model_jobs(self, useDT: bool = False) -> None:
@@ -906,7 +906,7 @@ class RunTrioTrain:
                 # skip ahead if all outputs exist already
                 if test_model._outputs_exist:
                     self.itr.logger.info(
-                        f"------------ SKIPPING {self.itr._mode_string} - [test_model] - [{self.logger_msg}] ------------"
+                        f"============ SKIPPING {self.itr._mode_string} - [test_model] - [{self.logger_msg}] ============"
                     )
                     return
 
@@ -994,7 +994,7 @@ class RunTrioTrain:
 
         if phase_skipped_counter == 3:
             self.itr.logger.info(
-                f"------------ SKIPPING {self.itr._mode_string} - [test_model] - [{self.logger_msg}] ------------"
+                f"============ SKIPPING {self.itr._mode_string} - [test_model] - [{self.logger_msg}] ============"
             )
 
     def make_and_submit_jobs(
