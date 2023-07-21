@@ -63,12 +63,7 @@ class ConvertHappy:
             ), "missing a WriteFiles object to save SLURM job numbers"
 
         self._final_jobs = create_deps(self.itr.total_num_tests)
-        if self.itr.train_genome is None:
-            self.logger_msg = f"{self.itr._mode_string} - [{self._phase}]"
-        else:
-            self.logger_msg = (
-                f"{self.itr._mode_string} - [{self._phase}] - [{self.itr.train_genome}]"
-            )
+        self.logger_msg = f"{self.itr._mode_string} - [{self._phase}]"
 
     def set_genome(self) -> None:
         """
@@ -145,7 +140,9 @@ class ConvertHappy:
                                         f"{self.logger_msg}: final job numbers updated to {self._final_jobs}"
                                     )
 
-                if 0 < self._num_to_ignore < self.itr.total_num_tests:
+            if self._num_to_ignore == 0:
+                return
+            elif 0 < self._num_to_ignore < self.itr.total_num_tests:
                     self.itr.logger.info(
                         f"{self.logger_msg}: ignoring {self._num_to_ignore}-of-{self.itr.total_num_tests} SLURM jobs"
                     )
@@ -159,11 +156,6 @@ class ConvertHappy:
                 )
                 self.itr.logger.error(
                     f"{self.logger_msg}: expected a list of {self.itr.total_num_tests} SLURM jobs (or 'None' as a place holder)"
-                )
-        else:
-            if self.itr.debug_mode:
-                self.itr.logger.debug(
-                    f"{self.logger_msg}: running job ids were NOT provided"
                 )
 
     def set_test_genome(self, current_test_num: int = 0) -> None:
@@ -293,12 +285,9 @@ class ConvertHappy:
         if phase is None:
             logging_msg = self.logger_msg
         else:
-            if self.itr.train_genome is None:
-                logging_msg = f"{self.itr._mode_string} - [{phase}]"
-            else:
-                logging_msg = (
-                    f"{self.itr._mode_string} - [{phase}] - [{self.itr.train_genome}]"
-                )
+            logging_msg = (
+                f"{self.itr._mode_string} - [{phase}]"
+            )
 
         # Count how many outputs were made when converting Hap.py VCFs into Metrics Values
         # Define the regrex pattern of expected output
@@ -552,7 +541,7 @@ class ConvertHappy:
             else:
                 if not self._ignoring_compare_happy:
                     self.itr.logger.info(
-                        f"{self.logger_msg}: compare_happy was submitted...",
+                        f"{self.logger_msg}: compare_happy jobs were submitted...",
                     )
 
                 if self._num_to_run <= self.itr.total_num_tests:
@@ -571,10 +560,6 @@ class ConvertHappy:
                         self.itr.logger.info(
                             f"{self.logger_msg}: submitting {self._num_to_run}-of-{self.itr.total_num_tests} SLURM jobs",
                         )
-                elif self._num_to_run == 0:
-                    self.itr.logger.info(
-                        f"{self.logger_msg}: there are no jobs to re-submit for '{self._phase}'... SKIPPING AHEAD"
-                    )
                 else:
                     self.itr.logger.error(
                         f"{self.logger_msg}: max number of re-submission SLURM jobs is {self.itr.total_num_tests} but {self._num_to_run} were provided.\nExiting... ",

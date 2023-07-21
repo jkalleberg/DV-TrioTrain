@@ -149,30 +149,28 @@ class CompareHappy:
                                         self.compare_happy_job_nums[index]
                                     )
 
-                if 0 < self._num_to_ignore < self.itr.total_num_tests:
+        if self._num_to_ignore == 0:
+            return
+        elif 0 < self._num_to_ignore < self.itr.total_num_tests:
                     self.itr.logger.info(
                         f"{self.logger_msg}: ignoring {self._num_to_ignore}-of-{self.itr.total_num_tests} SLURM jobs"
                     )
-                else:
-                    self.itr.logger.info(
-                        f"{self.logger_msg}: there are no jobs to re-submit for '{self._phase}'... SKIPPING AHEAD"
-                    )
-            else:
-                if self.itr.debug_mode:
-                    self.itr.logger.debug(
-                        f"{self.logger_msg}: --running-jobids triggered reprocessing {num_job_ids} job"
-                    )
-                self.itr.logger.error(
-                    f"{self.logger_msg}: incorrect format for 'compare_happy_job_nums'"
-                )
-                self.itr.logger.error(
-                    f"{self.logger_msg}: expected a list of {self.itr.total_num_tests} SLURM jobs (or 'None' as a place holder)"
+        elif self._num_to_ignore == self.itr.total_num_tests:
+            if self.compare_happy_job_nums:
+                self.itr.logger.info(
+                    f"{self.logger_msg}: there are no jobs to re-submit for '{self._phase}'... SKIPPING AHEAD"
                 )
         else:
             if self.itr.debug_mode:
                 self.itr.logger.debug(
-                    f"{self.logger_msg}: running job ids were NOT provided"
+                    f"{self.logger_msg}: --running-jobids triggered reprocessing {num_job_ids} job"
                 )
+            self.itr.logger.error(
+                f"{self.logger_msg}: incorrect format for 'compare_happy_job_nums'"
+            )
+            self.itr.logger.error(
+                f"{self.logger_msg}: expected a list of {self.itr.total_num_tests} SLURM jobs (or 'None' as a place holder)"
+            )
 
     def set_test_genome(self, current_test_num: int = 0) -> None:
         """
@@ -545,7 +543,7 @@ class CompareHappy:
             else:
                 if not self._ignoring_call_variants:
                     self.itr.logger.info(
-                        f"{self.logger_msg}: call_variants was submitted...",
+                        f"{self.logger_msg}: call_variants jobs were submitted...",
                     )
 
                 if self._num_to_run <= self.itr.total_num_tests:
@@ -569,10 +567,6 @@ class CompareHappy:
                         self.itr.logger.info(
                             f"{self.logger_msg}: submitting {self._num_to_run}-of-{self.itr.total_num_tests} SLURM jobs",
                         )
-                elif self._num_to_run == 0:
-                    self.itr.logger.info(
-                        f"{self.logger_msg}: there are no jobs to re-submit for '{self._phase}'... SKIPPING AHEAD"
-                    )
                 else:
                     self.itr.logger.error(
                         f"{self.logger_msg}: max number of re-submission SLURM jobs is {self.itr.total_num_tests} but {self._num_to_run} were provided.\nExiting... ",

@@ -172,20 +172,27 @@ class RunTrioTrain:
         Determine if any jobs need to be re-submitted to the queue
         """
         self.re_running_jobs = None
+
         if phase == "train_eval" and restart:
             self._phase_logger_msg = (
-                f"{self.itr._mode_string} - [check_jobs] - [{self.itr.train_genome}]"
+                f"{self.itr._mode_string} - [check_restart] - [{genome}]"
             )
+            genome = None
+        elif phase in ["call_variants", "compare_happy", "convert_happy"]:
+            self._phase_logger_msg = (
+                f"{self.itr._mode_string} - [check_restart] - [{self.itr.train_genome}]"
+            )
+            genome = None
         elif genome is None:
-            self._phase_logger_msg = f"{self.itr._mode_string} - [check_jobs]"
+            self._phase_logger_msg = f"{self.itr._mode_string} - [check_restart]"
         else:
             self._phase_logger_msg = (
-                f"{self.itr._mode_string} - [check_jobs] - [{genome}]"
+                f"{self.itr._mode_string} - [check_restart] - [{genome}]"
             )
 
         if restart:
             self._phase_logger_msg = str(self._phase_logger_msg).replace(
-                "check_jobs", "check_next_phase"
+                "check_restart", "check_next_phase"
             )
 
         if not self.restart_jobs:
@@ -357,22 +364,12 @@ class RunTrioTrain:
         Confirm existing jobs match expectations.
 
         If not, trigger the creation of any missing jobs.
-
-            expected job files per genome:
-                1) make_examples
-                2) beam_shuffle
-                3) re_shuffle
-                4) train_eval
-                5) model_select
-                6) call_variants
-                7) model_compare
         """
         # Determine if missing all slurm job files
         if self._jobs_found == 0:
             self.itr.logger.info(
                 f"{self.itr._mode_string} - [check_jobs] - [{genome}]: missing SLURM sbatch jobs"
             )
-            missing_job_files = True
         else:
             # Determine if missing some job files
             missing_job_files = check_expected_outputs(
@@ -382,23 +379,9 @@ class RunTrioTrain:
                 "SLURM sbatch jobs",
                 self.itr.logger,
             )
-
-        if missing_job_files:
-            if self.itr.debug_mode and not self.itr.dryrun_mode:
+            if missing_job_files:
                 self.itr.logger.info(
-                    f"{self.itr._mode_string} - [check_jobs] - [{genome}]: creating + submiting SLURM files with --debug set"
-                )
-            elif not self.itr.debug_mode and self.itr.dryrun_mode:
-                self.itr.logger.info(
-                    f"{self.itr._mode_string} - [check_jobs] - [{genome}]: creating + submiting SLURM files with --dry-run set"
-                )
-            elif self.itr.debug_mode and self.itr.dryrun_mode:
-                self.itr.logger.info(
-                    f"{self.itr._mode_string} - [check_jobs] - [{genome}]: creating + submiting SLURM files with --debug and --dry-run set"
-                )
-            else:
-                self.itr.logger.info(
-                    f"{self.itr._mode_string} - [check_jobs] - [{self.genome}]: creating + submiting SLURM files"
+                    f"{self.itr._mode_string} - [check_jobs] - [{genome}]: missing SLURM sbatch jobs"
                 )
 
     def find_next_phase(self) -> None:
@@ -414,22 +397,15 @@ class RunTrioTrain:
         elif self.current_phase == "select_ckpt":
             self.next_phase = "call_variants"
         elif self.current_phase == "call_variants":
+            self.next_phase = "compare_happy"
+        elif self.current_phase == "compare_happy": 
             self.next_phase = "convert_happy"
 
     def check_next_phase(
         self, total_jobs: int, genome: Union[str, None] = None
     ) -> None:
         self.find_next_phase()
-
-        if "train_eval" in self.next_phase:
-            self.next_phase.replace(f":{genome}", "")
-            self.process_re_runs(
-                phase=self.next_phase,
-                total_jobs_in_phase=total_jobs,
-                restart=True,
-            )
-        else:
-            self.process_re_runs(
+        self.process_re_runs(
                 phase=self.next_phase,
                 total_jobs_in_phase=total_jobs,
                 genome=genome,
@@ -476,6 +452,12 @@ class RunTrioTrain:
 
                 elif self.current_phase == "select_ckpt":
                     outputs_found = self.select_ckpt._outputs_exist
+                
+                elif self.current_phase == "call_variants":
+                    outputs_found = self.test_model._outputs_exist
+                
+                elif self.current_phase == "compare_happy":
+                    outputs_found = self.compare_hap._outputs_exist
 
                 if outputs_found:
                     continue
@@ -870,8 +852,9 @@ class RunTrioTrain:
         """
         Make and submit model testing jobs
         """
-        # create the default regions_file for testing, if necessary
+        phase_skipped_counter = 0
 
+        # create the default regions_file for testing, if necessary
         regions = MakeRegions(
             self.itr,
             [self.max_examples],
@@ -882,14 +865,14 @@ class RunTrioTrain:
             output_file_name=f"{self.itr.args.species.lower()}_autosomes_withX.bed"
         )
 
-        phase_skipped_counter = 0
         if useDT:
             call_vars_job_nums = None
         else:
             ##--- MAKE + SUBMIT CALL_VARIANTS JOBS ---##
-            self.process_re_runs("call_variants", total_jobs_in_phase=self.num_tests)
+            self.current_phase = "call_variants"
+            self.process_re_runs(self.current_phase, total_jobs_in_phase=self.num_tests)
 
-            test_model = CallVariants(
+            self.test_model = CallVariants(
                 itr=self.itr,
                 slurm_resources=self.resource_dict,
                 model_label=self.model_label,
@@ -900,17 +883,24 @@ class RunTrioTrain:
                 overwrite=self.overwrite,
             )
 
-            if not self.re_running_jobs:
-                test_model.find_all_outputs(phase="test_model")
+            if self.itr.demo_mode:
+                self.test_model.find_outputs(find_all=True)
+            else:
+                self.test_model.find_all_outputs(phase="find_all_outputs")
 
-                # skip ahead if all outputs exist already
-                if test_model._outputs_exist:
-                    self.itr.logger.info(
-                        f"============ SKIPPING {self.itr._mode_string} - [test_model] - [{self.logger_msg}] ============"
-                    )
-                    return
+            if self.restart_jobs and self._phase_jobs is None:
+                self.check_next_phase(total_jobs=self.itr.total_num_tests, genome=self.itr.train_genome)
 
-            call_vars_job_nums = test_model.run()
+            if self.test_model._outputs_exist and not self.restart_jobs:
+                self.itr.logger.info(
+                    f"============ SKIPPING {self.itr._mode_string} - [test_model] ============"
+                )
+                return
+
+            call_vars_job_nums = self.test_model.run()
+        
+        print("ENDING CALL VARIANTS")
+        breakpoint()
 
         # Determine if any 'call_variants' jobs were submitted
         if call_vars_job_nums is None:
@@ -950,6 +940,8 @@ class RunTrioTrain:
             )
 
         compare_job_nums = compare_tests.run()
+        print("ENDING COMPARE HAPPY")
+        breakpoint()
 
         # Determine if any 'compare_happy' jobs were submitted
         if compare_job_nums is None:
