@@ -93,13 +93,13 @@ class SelectCheckpoint:
             if not self._ignoring_restart_jobs:
                 updated_jobs_list = []
                 for index in self._jobs_to_run:
-                    if is_jobid(self.train_eval_job_num[index]):
+                    if is_jobid(self.select_ckpt_job_num[index]):
                         self._num_to_run -= 1
                         self._num_to_ignore += 1
                         self._model_testing_dependency[0] = str(
                             self.select_ckpt_job_num[index]
                         )
-                    elif is_job_index(self.train_eval_job_num[index]):
+                    elif is_job_index(self.select_ckpt_job_num[index]):
                         updated_jobs_list.append(index)
 
                 if updated_jobs_list:
@@ -466,7 +466,7 @@ class SelectCheckpoint:
                     and self._model_testing_dependency[0] is not None
                 ):
                     self.itr.logger.info(
-                        f"{self.logger_msg}: call_variants dependency updated | '{self._model_testing_dependency}'"
+                        f"{self.logger_msg}: call_variants dependency updated | '{self._model_testing_dependency[0]}'"
                     )
                 else:
                     self._model_testing_dependency[0] = None
