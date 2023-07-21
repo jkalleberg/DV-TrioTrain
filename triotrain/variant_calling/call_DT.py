@@ -189,7 +189,7 @@ class DTVariantCaller:
                 self._resources = resource_dict[self._phase]
                 if self.args.dry_run:
                     self.logger.info(
-                        f"[DRY_RUN] - {self._logger_msg}: SLURM resources provided | {self._resources}"
+                        f"{self._logger_msg}: SLURM resources provided | {self._resources}"
                     )
             else:
                 self.logger.error(
@@ -227,10 +227,6 @@ class DTVariantCaller:
             self.logger.info(
                 f"{self._logger_msg}: metadata contains '{self._total_trios}' trios from '{self._total_lines}' input lines"
             )
-            # if self.args.dry_run:
-            #     self.logger.info(f"[DRY_RUN] - {self._logger_msg}: metatdata contents |")
-            #     for i, line in enumerate(self._data_list):
-            #         print(f"LINE{i}: {line}")
         else:
             self.logger.error(
                 f"{self._logger_msg}: unable to load metadata file | '{self._metadata_input}'"
@@ -453,7 +449,7 @@ class DTVariantCaller:
         if not self._pedigree.file_exists:
             if self.args.dry_run:
                 self.logger.info(
-                    f"[DRY_RUN] - {self._logger_msg}: missing the Trio pedigree file..."
+                    f"{self._logger_msg}: missing the Trio pedigree file..."
                 )
             self._pedigree.write_list(pedigree)
         else:
@@ -681,24 +677,13 @@ class DTVariantCaller:
 
         if call_vars_results is False:
             if self._job_nums and len(self._job_nums) == 1:
-                if self.args.dry_run:
-                    print(
-                        f"============ [DRY_RUN] - {self._logger_msg} Job Number - {self._job_nums} ============"
-                    )
-                else:
-                    print(
-                        f"============ {self._logger_msg} Job Number - {self._job_nums} ============"
+                print(
+                    f"============ {self._logger_msg} Job Number - {self._job_nums} ============"
                     )
             else:
-                if self.args.dry_run:
-                    print(
-                        f"============ [DRY_RUN] - {self._logger_msg} Job Numbers ============\n{self._job_nums}\n============================================================"
-                    )
-
-                else:
-                    print(
-                        f"============ {self._logger_msg} Job Numbers ============\n{self._job_nums}\n============================================================"
-                    )
+                print(
+                    f"============ {self._logger_msg} Job Numbers ============\n{self._job_nums}\n============================================================"
+                )
         elif self._skipped_counter != 0:
             if self._skipped_counter == self._total_trios:
                 self.logger.info(

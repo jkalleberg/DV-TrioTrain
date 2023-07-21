@@ -249,7 +249,7 @@ class MakeExamples:
                     )
                 else:
                     self.itr.logger.info(
-                        f"[DRY_RUN] - {self.logger_msg}: benchmarking is active"
+                        f"{self.logger_msg}: benchmarking is active"
                     )
 
     def make_job(self, index: int = 0) -> Union[SBATCH, None]:
@@ -485,23 +485,13 @@ class MakeExamples:
 
         if make_examples_results is False:
             if len(self._beam_shuffle_dependencies) == 1:
-                if self.itr.dryrun_mode:
-                    print(
-                        f"============ [DRY_RUN] - {self.logger_msg} Job Number - {self._beam_shuffle_dependencies} ============"
-                    )
-                else:
-                    print(
-                        f"============ {self.logger_msg} Job Number - {self._beam_shuffle_dependencies} ============"
-                    )
+                print(
+                    f"============ {self.logger_msg} Job Number - {self._beam_shuffle_dependencies} ============"
+                )
             else:
-                if self.itr.dryrun_mode:
-                    print(
-                        f"============ [DRY_RUN] - {self.logger_msg} Job Numbers ============\n{self._beam_shuffle_dependencies}\n============================================================"
-                    )
-                else:
-                    print(
-                        f"============ {self.logger_msg} Job Numbers ============\n{self._beam_shuffle_dependencies}\n============================================================"
-                    )
+                print(
+                    f"============ {self.logger_msg} Job Numbers ============\n{self._beam_shuffle_dependencies}\n============================================================"
+                )
 
             if self.track_resources and self.benchmarking_file is not None:
                 self.benchmark()

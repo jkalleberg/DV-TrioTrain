@@ -223,7 +223,7 @@ class ClearTmp:
         if keep.file_exists and not new.file_exists:
             if self.dryrun_mode:
                 self.logger.info(
-                    f"[DRY_RUN] - {logging_msg}: pretending to copy '{keep_file.name}'..."
+                    f"{logging_msg}: pretending to copy '{keep_file.name}'..."
                 )
             else:
                 self.logger.info(
@@ -315,10 +315,10 @@ class ClearTmp:
                 if self.num_files % 100 == 0:
                     if self.dryrun_mode:
                         self.logger.info(
-                            f"[DRY_RUN] - {self.logger_msg}: running total of files for removal | {int(self.num_files):,}-of-{int(self._total_files):,}"
+                            f"{self.logger_msg}: running total of files for removal | {int(self.num_files):,}-of-{int(self._total_files):,}"
                         )
                         self.logger.info(
-                            f"[DRY_RUN] - {self.logger_msg}: pretending to remove the following tmp file | '{file_found}'"
+                            f"{self.logger_msg}: pretending to remove the following tmp file | '{file_found}'"
                         )
 
                     elif not self.dryrun_mode and self.debug_mode:
@@ -345,7 +345,7 @@ class ClearTmp:
             self.num_sub_dirs += 1
             if self.dryrun_mode:
                 self.logger.info(
-                    f"[DRY_RUN] - {self.logger_msg}: pretending to remove the following tmp directory + contents | '{str(dir_path)}'"
+                    f"{self.logger_msg}: pretending to remove the following tmp directory + contents | '{str(dir_path)}'"
                 )
             else:
                 rmtree(dir_path)
@@ -356,7 +356,7 @@ class ClearTmp:
             self.num_sub_dirs += 1
             if self.dryrun_mode:
                 self.logger.info(
-                    f"[DRY_RUN] - {self.logger_msg}: pretending to remove the following empty tmp directory | '{str(dir_path)}'"
+                    f"{self.logger_msg}: pretending to remove the following empty tmp directory | '{str(dir_path)}'"
                 )
             else:
                 dir_path.rmdir()

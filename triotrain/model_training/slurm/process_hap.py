@@ -731,7 +731,7 @@ class Process:
         """
         if self.args.dry_run:
             self.logger.info(
-                f"[DRY_RUN] - {self._logger_msg}: metrics by type contents:"
+                f"{self._logger_msg}: metrics by type contents:"
             )
 
         file = WriteFiles(

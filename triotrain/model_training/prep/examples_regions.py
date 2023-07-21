@@ -820,11 +820,10 @@ class MakeRegions:
 
         if self.itr.dryrun_mode:
             self.itr.logger.info(
-                f"[DRY_RUN] - {self._logger_msg}: region file contents:"
-            )
-            print(f"------------- start of [{self._bed_filename}] -------------")
+                f"{self._logger_msg}: start of {self._bed_filename} -------------")
             print(*self._line_list, sep="\n")
-            print(f"-------------- end of [{self._bed_filename}] --------------")
+            self.itr.logger.info(
+                f"{self._logger_msg}: end of {self._bed_filename} ---------------")
         else:
             outpath = self._region_dir / self._bed_filename
             if outpath.is_file():

@@ -213,7 +213,7 @@ class ConvertHappy:
             self.benchmarking_file.add_rows(headers, data_dict=data)
         else:
             self.itr.logger.info(
-                f"[DRY_RUN] - {self.logger_msg}: benchmarking is active"
+                f"{self.logger_msg}: benchmarking is active"
             )
 
     def make_job(self, index: int = 0) -> Union[SBATCH, None]:
@@ -463,23 +463,13 @@ class ConvertHappy:
             convert_results = check_if_all_same(self._final_jobs, None)
             if convert_results is False:
                 if len(self._final_jobs) == 1:
-                    if self.itr.dryrun_mode:
-                        print(
-                            f"============ [DRY_RUN] - {self.logger_msg} - Job Number - {self._final_jobs} ============"
-                        )
-                    else:
-                        print(
-                            f"============ {self.logger_msg} - Job Number - {self._final_jobs} ============"
+                    print(
+                        f"============ {self.logger_msg} - Job Number - {self._final_jobs} ============"
                         )
                 elif len(self._final_jobs) > 1:
-                    if self.itr.dryrun_mode:
-                        print(
-                            f"============ [DRY_RUN] - {self.logger_msg} - Job Numbers ============\n{self._final_jobs}\n============================================================"
-                        )
-                    else:
-                        print(
-                            f"============ {self.logger_msg}- Job Numbers ============\n{self._final_jobs}\n============================================================"
-                        )
+                    print(
+                        f"============ {self.logger_msg}- Job Numbers ============\n{self._final_jobs}\n============================================================"
+                    )
                 else:
                     self.itr.logger.error(
                         f"{self.logger_msg}: expected SLURM jobs to be submitted, but they were not",

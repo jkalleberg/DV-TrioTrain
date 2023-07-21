@@ -231,7 +231,7 @@ class TrainEval:
             self.benchmarking_file.add_rows(headers, data_dict=data)
         else:
             self.itr.logger.info(
-                f"[DRY_RUN] - {self.logger_msg}: benchmarking is active"
+                f"{self.logger_msg}: benchmarking is active"
             )
 
     def process_mem(self) -> None:
@@ -534,14 +534,9 @@ class TrainEval:
         # look at job number list to see if all items are 'None'
         train_eval_results = check_if_all_same(self._select_ckpt_dependency, None)
         if train_eval_results is False:
-            if self.itr.dryrun_mode:
-                print(
-                    f"============ [DRY_RUN] - {self.logger_msg} Job Number - {self._select_ckpt_dependency} ============"
-                )
-            else:
-                print(
-                    f"============ {self.logger_msg} Job Number - {self._select_ckpt_dependency} ============"
-                )
+            print(
+                f"============ {self.logger_msg} Job Number - {self._select_ckpt_dependency} ============"
+            )
 
         elif (
             self._skipped_counter == 1

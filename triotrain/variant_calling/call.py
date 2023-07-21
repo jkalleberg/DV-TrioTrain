@@ -400,7 +400,7 @@ class CallVariants:
             self.benchmarking_file.add_rows(headers, data_dict=data)
         else:
             self.itr.logger.info(
-                f"[DRY_RUN] - {self.logger_msg}: benchmarking is active"
+                f"{self.logger_msg}: benchmarking is active"
             )
 
     def build_apptainer_command(self, normalize_reads: bool = False) -> None:
@@ -746,24 +746,13 @@ class CallVariants:
 
         if call_vars_results is False:
             if self._compare_dependencies and len(self._compare_dependencies) == 1:
-                if self.itr.dryrun_mode:
-                    print(
-                        f"============ [DRY_RUN] - {self.logger_msg} Job Number - {self._compare_dependencies} ============"
-                    )
-                else:
-                    print(
-                        f"============ {self.logger_msg} Job Number - {self._compare_dependencies} ============"
-                    )
+                print(
+                    f"============ {self.logger_msg} Job Number - {self._compare_dependencies} ============"
+                )
             else:
-                if self.itr.dryrun_mode:
-                    print(
-                        f"============ [DRY_RUN] - {self.logger_msg} Job Numbers ============\n{self._compare_dependencies}\n============================================================"
-                    )
-
-                else:
-                    print(
-                        f"============ {self.logger_msg} Job Numbers ============\n{self._compare_dependencies}\n============================================================"
-                    )
+                print(
+                    f"============ {self.logger_msg} Job Numbers ============\n{self._compare_dependencies}\n============================================================"
+                )
         elif self._skipped_counter != 0:
             if self._skip_phase:
                 return

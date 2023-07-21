@@ -479,24 +479,13 @@ class ShowExamples:
         show_examples_results = check_if_all_same(self._output_jobnum, None)
         if show_examples_results is False:
             if len(self._output_jobnum) == 1:
-                if self.itr.dryrun_mode:
-                    print(
-                        f"============ [DRY_RUN] - {self.logger_msg} -  Job Number - {self._output_jobnum} ============"
-                    )
-                else:
-                    print(
-                        f"============ {self.logger_msg} - Job Number - {self._output_jobnum} ============"
-                    )
+                print(
+                    f"============ {self.logger_msg} - Job Number - {self._output_jobnum} ============"
+                )
             else:
-                if self.itr.dryrun_mode:
-                    if self.itr.dryrun_mode:
-                        print(
-                            f"============ [DRY_RUN] - {self.logger_msg} - Job Numbers ============\n{self._output_jobnum}\n============================================================"
-                        )
-                else:
-                    print(
-                        f"============ {self.logger_msg} - Job Numbers ============\n{self._output_jobnum}\n============================================================"
-                    )
+                print(
+                    f"============ {self.logger_msg} - Job Numbers ============\n{self._output_jobnum}\n============================================================"
+                )
 
         elif self._skipped_counter != 0:
             self.itr.logger.info(

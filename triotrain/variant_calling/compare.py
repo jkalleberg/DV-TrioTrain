@@ -229,7 +229,7 @@ class CompareHappy:
             self.benchmarking_file.add_rows(headers, data_dict=data)
         else:
             self.itr.logger.info(
-                f"[DRY_RUN] - {self.logger_msg}: benchmarking is active"
+                f"{self.logger_msg}: benchmarking is active"
             )
 
     def make_job(self, index: int = 0) -> Union[SBATCH, None]:
@@ -500,23 +500,13 @@ class CompareHappy:
                 self._convert_happy_dependencies
                 and len(self._convert_happy_dependencies) == 1
             ):
-                if self.itr.dryrun_mode:
-                    print(
-                        f"============ [DRY_RUN] - {self.logger_msg} Job Number - {self._convert_happy_dependencies} ============"
-                    )
-                else:
-                    print(
-                        f"============ {self.logger_msg} Job Number - {self._convert_happy_dependencies} ============"
-                    )
+                print(
+                    f"============ {self.logger_msg} Job Number - {self._convert_happy_dependencies} ============"
+                )
             else:
-                if self.itr.dryrun_mode:
-                    print(
-                        f"============ [DRY_RUN] - {self.logger_msg} Job Numbers ============\n{self._convert_happy_dependencies}\n============================================================"
-                    )
-                else:
-                    print(
-                        f"============ {self.logger_msg} Job Numbers ============\n{self._convert_happy_dependencies}\n============================================================"
-                    )
+                print(
+                    f"============ {self.logger_msg} Job Numbers ============\n{self._convert_happy_dependencies}\n============================================================"
+                )
         else:
             self.itr.logger.error(
                 f"{self.logger_msg}: expected SLURM jobs to be submitted, but they were not",

@@ -110,7 +110,7 @@ class WriteFiles:
                 )
             else:
                 self.logger.info(
-                    f"[DRY_RUN] - {self.logger_msg}: pretending to write a list of lines | '{str(self.file_path)}'"
+                    f"{self.logger_msg}: pretending to write a list of lines | '{str(self.file_path)}'"
                 )
 
             print("---------------------------------------------")
@@ -177,7 +177,7 @@ class WriteFiles:
                 )
             else:
                 self.logger.info(
-                    f"[DRY_RUN] - {self.logger_msg}: pretending to write CSV file | '{str(self.file_path)}'"
+                    f"{self.logger_msg}: pretending to write CSV file | '{str(self.file_path)}'"
                 )
 
             print("---------------------------------------------")

@@ -177,7 +177,7 @@ class SelectCheckpoint:
                 self.benchmarking_file.add_rows(headers, data_dict=data)
             else:
                 self.itr.logger.info(
-                    f"[DRY_RUN] - {self.logger_msg} - [{self.itr.train_genome}]: benchmarking is active"
+                    f"{self.logger_msg} - [{self.itr.train_genome}]: benchmarking is active"
                 )
 
     def make_job(self) -> Union[SBATCH, None]:
@@ -420,14 +420,9 @@ class SelectCheckpoint:
         """
         select_ckpt_results = check_if_all_same(self._model_testing_dependency, None)
         if select_ckpt_results is False:
-            if self.itr.dryrun_mode:
-                print(
-                    f"============ [DRY_RUN] - {self.logger_msg} Job Number - {self._model_testing_dependency} ============"
-                )
-            else:
-                print(
-                    f"============ {self.logger_msg} Job Number - {self._model_testing_dependency} ============"
-                )
+            print(
+                f"============ {self.logger_msg} Job Number - {self._model_testing_dependency} ============"
+            )
         elif self._skipped_counter == 1:
             self._model_testing_dependency = [None]
         else:

@@ -186,7 +186,7 @@ class ReShuffleExamples:
                     )
                 else:
                     self.itr.logger.info(
-                        f"[DRY_RUN] - {self.logger_msg}: benchmarking is active"
+                        f"{self.logger_msg}: benchmarking is active"
                     )
 
     def make_job(self) -> Union[SBATCH, None]:
@@ -403,14 +403,9 @@ class ReShuffleExamples:
         check if the SLURM job file was submitted to the SLURM queue successfully
         """
         if self._train_dependency is not None:
-            if self.itr.dryrun_mode:
-                print(
-                    f"============================================================\n[DRY_RUN] - {self.logger_msg} Job Number: {self._train_dependency}\n============================================================"
-                )
-            else:
-                print(
-                    f"============================================================\n{self.logger_msg} Job Number: {self._train_dependency}\n============================================================"
-                )
+            print(
+                f"============================================================\n{self.logger_msg} Job Number: {self._train_dependency}\n============================================================"
+            )
 
         elif self._skipped_counter == 1:
             self._train_dependency = None
