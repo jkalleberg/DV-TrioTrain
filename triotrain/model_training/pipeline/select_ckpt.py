@@ -106,11 +106,10 @@ class SelectCheckpoint:
                     self.jobs_to_run = updated_jobs_list
 
         elif self._num_to_ignore == 1:
-            print("SELECT CKPT JOB:", self.select_ckpt_job_num)
-            breakpoint()
-            self.itr.logger.info(
-                f"{self.logger_msg}: there are no jobs to re-submit for '{self._phase}'... SKIPPING AHEAD"
-            )
+            if self.select_ckpt_job_num:
+                self.itr.logger.info(
+                    f"{self.logger_msg}: there are no jobs to re-submit for '{self._phase}'... SKIPPING AHEAD"
+                )
 
         else:
             if self.itr.debug_mode:
