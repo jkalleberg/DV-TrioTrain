@@ -138,11 +138,11 @@ class ReShuffleExamples:
                 if updated_jobs_list:
                     self.jobs_to_run = updated_jobs_list
 
-        elif self._num_to_ignore == 1 and not self._ignoring_restart_jobs:
-            self.itr.logger.info(
-                f"{self.logger_msg}: there are no jobs to re-submit for '{self._phase}:{self.genome}'... SKIPPING AHEAD"
-            )
-            self._skip_phase = True
+        elif self._num_to_ignore == 1:
+            if self.re_shuffle_job_num:
+                self.itr.logger.info(
+                        f"{self.logger_msg}: there are no jobs to re-submit for '{self._phase}:{self.genome}'... SKIPPING AHEAD"
+                    )
         else:
             if self.itr.debug_mode:
                 self.itr.logger.debug(
@@ -514,8 +514,6 @@ class ReShuffleExamples:
 
         # or running it for the first time
         else:
-            if self._skip_phase:
-                return
             self.find_outputs(find_all=True)
             self.submit_job()
 

@@ -196,7 +196,7 @@ class RunTrioTrain:
         if genome is not None:
             if f"{phase}:{genome}" in self.restart_jobs.keys():
                 self.itr.logger.info(
-                    f"{self._phase_logger_msg}: found re-starting jobs for '{phase}:{genome}'"
+                    f"{self._phase_logger_msg}: found jobs to re-submit for '{phase}:{genome}'"
                 )
                 self._phase_jobs = self.restart_jobs[f"{phase}:{genome}"]
                 self.re_running_jobs = True
@@ -204,17 +204,17 @@ class RunTrioTrain:
                 self._phase_jobs = None
                 self.re_running_jobs = False
                 self.itr.logger.info(
-                    f"{self._phase_logger_msg}: missing re-starting jobs for '{phase}:{genome}'"
+                    f"{self._phase_logger_msg}: there are no jobs to re-submit for '{phase}:{genome}'...  SKIPPING AHEAD"
                 )
         elif phase in self.restart_jobs.keys():
             self.itr.logger.info(
-                f"{self._phase_logger_msg}: found re-starting jobs for '{phase}'"
+                f"{self._phase_logger_msg}: found jobs to re-submit for '{phase}'"
             )
             self._phase_jobs = self.restart_jobs[phase]
             self.re_running_jobs = True
         else:
             self.itr.logger.info(
-                f"{self._phase_logger_msg}: missing re-starting jobs for '{phase}'"
+                f"{self._phase_logger_msg}: there are no jobs to re-submit for '{phase}'... SKIPPING AHEAD"
             )
             self._phase_jobs = None
             self.re_running_jobs = False
@@ -561,7 +561,7 @@ class RunTrioTrain:
                         )
                     else:
                         self.process_re_runs(self.current_phase, genome=genome)
-
+                
                     self.make_examples = MakeExamples(
                         itr=self.itr,
                         slurm_resources=self.resource_dict,

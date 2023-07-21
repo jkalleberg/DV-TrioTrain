@@ -157,7 +157,7 @@ class MakeExamples:
         self.set_variables()
         self.set_region()
 
-    def find_restart_jobs(self) -> None:
+    def find_restart_jobs(self, resubmission: bool = False) -> None:
         """Collect any SLURM job ids for running tests to avoid submitting duplicate jobs simultaneously"""
         self._ignoring_restart_jobs = check_if_all_same(
             self.make_examples_job_nums, None
@@ -200,11 +200,11 @@ class MakeExamples:
             self.itr.logger.info(
                 f"{self.logger_msg}: ignoring {self._num_to_ignore}-of-{self._total_regions} SLURM jobs"
             )
-        elif self._num_to_ignore == self._total_regions and not self._ignoring_restart_jobs:
-            self.itr.logger.info(
-                f"{self.logger_msg}: there are no jobs to re-submit for '{self._phase}:{self.genome}'... SKIPPING AHEAD"
-            )
-            self._skip_phase = True
+        elif self._num_to_ignore == self._total_regions:
+            if self.make_examples_job_nums:
+                self.itr.logger.info(
+                    f"{self.logger_msg}: there are no jobs to re-submit for '{self._phase}:{self.genome}'... SKIPPING AHEAD"
+                )
         else:
             if self.itr.debug_mode:
                 self.itr.logger.debug(
@@ -561,6 +561,14 @@ class MakeExamples:
         Combine all the steps for making examples for all regions into one step
         """
         self.set_genome()
+        skip_re_runs = check_if_all_same(self.make_examples_job_nums, None)
+
+        if skip_re_runs:
+            msg = "sub"
+            rerun = False
+        else:
+            msg = "re-sub"
+            rerun = True
         self.find_restart_jobs()
 
         if self.itr.debug_mode:
@@ -588,13 +596,6 @@ class MakeExamples:
                 else:
                     self._beam_shuffle_dependencies = None
             else:
-                skip_re_runs = check_if_all_same(self.make_examples_job_nums, None)
-
-                if skip_re_runs:
-                    msg = "sub"
-                else:
-                    msg = "re-sub"
-
                 if self._num_to_run <= self._total_regions:
                     self.itr.logger.info(
                         f"{self.logger_msg}: attempting to {msg}mit {self._num_to_run}-of-{self._total_regions} SLURM jobs to the queue",
@@ -629,9 +630,9 @@ class MakeExamples:
 
         # run all regions for the first time
         else:
-            if self._skip_phase or self._outputs_exist:
+            if self._outputs_exist:
                 return self._beam_shuffle_dependencies
-            
+
             for r in range(0, int(self._total_regions)):
                 self.job_num = (
                     r + 1

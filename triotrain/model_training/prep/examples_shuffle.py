@@ -58,7 +58,6 @@ class BeamShuffleExamples:
         default_factory=list, init=False, repr=False
     )
     _skipped_counter: int = field(default=0, init=False, repr=False)
-    _skip_phase: bool = field(default=False, init=False, repr=False)
     _total_regions: int = field(default=0, init=False, repr=False)
 
     def __post_init__(self) -> None:
@@ -197,15 +196,15 @@ class BeamShuffleExamples:
             self.itr.logger.info(
                 f"{self.logger_msg}: ignoring {self._num_to_ignore}-of-{self._total_regions} SLURM jobs"
             )
-        elif self._num_to_ignore == self._total_regions and not self._ignoring_restart_jobs:
-            self.itr.logger.info(
-                f"{self.logger_msg}: there are no jobs to re-submit for '{self._phase}:{self.genome}'... SKIPPING AHEAD"
-            )
-            self._skip_phase = True
+        elif self._num_to_ignore == self._total_regions:
+            if self.shuffle_examples_job_nums:
+                self.itr.logger.info(
+                        f"{self.logger_msg}: there are no jobs to re-submit for '{self._phase}:{self.genome}'... SKIPPING AHEAD"
+                    )
         else:
             if self.itr.debug_mode:
                 self.itr.logger.debug(
-                    f"{self.logger_msg}: --running-jobids triggered reprocessing {num_job_ids} jobs"
+                    f"{self.logger_msg}: --running-jobids triggered reprocessing {self._num_to_run} jobs"
                 )
             self.itr.logger.error(
                 f"{self.logger_msg}: incorrect format for 'shuffle_examples' SLURM job numbers"
@@ -758,12 +757,9 @@ class BeamShuffleExamples:
 
         # run all regions for the first time
         else:
-            if self._skip_phase:
-                return
-
             self.find_outputs(find_all=True)
             if self._outputs_exist:
-                return
+                return self._re_shuffle_dependencies
 
             self.set_genome()
             for r in range(0, int(self._total_regions)):
