@@ -285,9 +285,12 @@ class ConvertHappy:
         if phase is None:
             logging_msg = self.logger_msg
         else:
-            logging_msg = (
-                f"{self.itr._mode_string} - [{phase}]"
-            )
+            if self.itr.train_genome is None:
+                logging_msg = f"{self.itr._mode_string} - [{phase}]"
+            else:
+                logging_msg = (
+                    f"{self.itr._mode_string} - [{phase}] - [{self.itr.train_genome}]"
+                )
 
         # Count how many outputs were made when converting Hap.py VCFs into Metrics Values
         # Define the regrex pattern of expected output

@@ -173,14 +173,9 @@ class RunTrioTrain:
         """
         self.re_running_jobs = None
 
-        if phase == "train_eval" and restart:
+        if phase in ["train_eval", "select_ckpt", "call_variants", "compare_happy", "convert_happy"]:
             self._phase_logger_msg = (
                 f"{self.itr._mode_string} - [check_restart] - [{genome}]"
-            )
-            genome = None
-        elif phase in ["call_variants", "compare_happy", "convert_happy"]:
-            self._phase_logger_msg = (
-                f"{self.itr._mode_string} - [check_restart] - [{self.itr.train_genome}]"
             )
             genome = None
         elif genome is None:
@@ -753,7 +748,7 @@ class RunTrioTrain:
         phase_skipped_counter = 0
         ### ------ RE-TRAIN + EVAL ------ ###
         self.current_phase = self._re_training_phases[0]
-        self.process_re_runs(self.current_phase)
+        self.process_re_runs(self.current_phase, genome=self.itr.train_genome)
 
         self.re_training = TrainEval(
             itr=self.itr,
@@ -775,7 +770,7 @@ class RunTrioTrain:
             return
 
         elif self.restart_jobs and self._phase_jobs is None:
-            self.check_next_phase(total_jobs=1)
+            self.check_next_phase(total_jobs=1, genome=self.itr.train_genome)
             matches = [
                 k
                 for k in self.restart_jobs.keys()
@@ -811,7 +806,7 @@ class RunTrioTrain:
         ### ------ SELECT CKPT ------ ###
         # if next_genome is not None:
         self.current_phase = self._re_training_phases[1]
-        self.process_re_runs(self.current_phase)
+        self.process_re_runs(self.current_phase, genome=self.itr.train_genome)
 
         self.select_ckpt = SelectCheckpoint(
             itr=self.itr,
@@ -825,7 +820,7 @@ class RunTrioTrain:
         )
 
         if self.restart_jobs and self._phase_jobs is None:
-            self.check_next_phase(total_jobs=1)
+            self.check_next_phase(total_jobs=1, genome=self.itr.train_genome)
 
         self.itr = self.select_ckpt.run()
         print("ENDING SELECT_CKPT")
@@ -870,7 +865,7 @@ class RunTrioTrain:
         else:
             ##--- MAKE + SUBMIT CALL_VARIANTS JOBS ---##
             self.current_phase = "call_variants"
-            self.process_re_runs(self.current_phase, total_jobs_in_phase=self.num_tests)
+            self.process_re_runs(self.current_phase, total_jobs_in_phase=self.num_tests, genome=self.itr.train_genome)
 
             self.test_model = CallVariants(
                 itr=self.itr,
@@ -915,7 +910,7 @@ class RunTrioTrain:
             return
 
         ##--- MAKE + SUBMIT COMPARE_HAPPY JOBS ---##
-        self.process_re_runs("compare_happy", total_jobs_in_phase=self.num_tests)
+        self.process_re_runs("compare_happy", total_jobs_in_phase=self.num_tests, genome=self.itr.train_genome)
 
         if no_dependencies_required:
             compare_tests = CompareHappy(
@@ -953,7 +948,7 @@ class RunTrioTrain:
             phase_skipped_counter += 1
 
         ##--- MAKE + SUBMIT CONVERT_HAPPY JOBS ---##
-        self.process_re_runs("convert_happy", total_jobs_in_phase=self.num_tests)
+        self.process_re_runs("convert_happy", total_jobs_in_phase=self.num_tests, genome=self.itr.train_genome)
 
         if no_dependencies_required:
             convert_results = ConvertHappy(
