@@ -196,7 +196,9 @@ class MakeExamples:
                 if updated_jobs_list:
                     self._jobs_to_run = updated_jobs_list
 
-        if 0 < self._num_to_ignore < self._total_regions:
+        if self._num_to_ignore == 0:
+            return
+        elif 0 < self._num_to_ignore < self._total_regions:
             self.itr.logger.info(
                 f"{self.logger_msg}: ignoring {self._num_to_ignore}-of-{self._total_regions} SLURM jobs"
             )
@@ -423,6 +425,7 @@ class MakeExamples:
             self.itr.logger.info(
                 f"{self.logger_msg}: --overwrite=True; re-submitting job because replacing existing labeled.tfrecords"
             )
+            
         else:
             self.itr.logger.info(
                 f"{self.logger_msg}: submitting job to create labeled.tfrecords"
@@ -555,10 +558,9 @@ class MakeExamples:
 
         if skip_re_runs:
             msg = "sub"
-            rerun = False
         else:
             msg = "re-sub"
-            rerun = True
+            
         self.find_restart_jobs()
 
         if self.itr.debug_mode:

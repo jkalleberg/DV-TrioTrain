@@ -175,24 +175,25 @@ class BeamShuffleExamples:
                 updated_jobs_list = []
 
                 for index in self._jobs_to_run:
-                    if index is not None:
-                        if is_jobid(self.shuffle_examples_job_nums[index]):
-                            self._num_to_run -= 1
-                            self._num_to_ignore += 1
-                            self._skipped_counter += 1
-                            self._re_shuffle_dependencies[index] = str(
-                                self.shuffle_examples_job_nums[index]
-                            )
-                        elif is_job_index(
-                            self.shuffle_examples_job_nums[index],
-                            max_jobs=self._total_regions,
-                        ):
-                            updated_jobs_list.append(index)
+                    if is_jobid(self.shuffle_examples_job_nums[index]):
+                        self._num_to_run -= 1
+                        self._num_to_ignore += 1
+                        self._skipped_counter += 1
+                        self._re_shuffle_dependencies[index] = str(
+                            self.shuffle_examples_job_nums[index]
+                        )
+                    elif is_job_index(
+                        self.shuffle_examples_job_nums[index],
+                        max_jobs=self._total_regions,
+                    ):
+                        updated_jobs_list.append(index)
 
                 if updated_jobs_list:
                     self._jobs_to_run = updated_jobs_list
 
-        if 0 < self._num_to_ignore < self._total_regions:
+        if self._num_to_ignore == 0:
+            return
+        elif 0 < self._num_to_ignore < self._total_regions:
             self.itr.logger.info(
                 f"{self.logger_msg}: ignoring {self._num_to_ignore}-of-{self._total_regions} SLURM jobs"
             )
@@ -417,7 +418,9 @@ class BeamShuffleExamples:
         """
         Submit SLURM jobs to queue.
         """
-        if not self.overwrite and self._outputs_exist:
+        if (self._outputs_exist and self.overwrite is False) or (
+            self._outputs_exist and self._ignoring_restart_jobs
+        ):
             self._skipped_counter += 1
             if resubmission:
                 self.itr.logger.info(

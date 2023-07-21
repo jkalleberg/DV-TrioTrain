@@ -458,7 +458,9 @@ class TrainEval:
         """
         Submit SLURM jobs to queue.
         """
-        if not self.overwrite and self._outputs_exist:
+        if (self._outputs_exist and self.overwrite is False) or (
+            self._outputs_exist and self._ignoring_restart_jobs
+        ):
             self._skipped_counter += 1
             if resubmission:
                 self.itr.logger.info(
