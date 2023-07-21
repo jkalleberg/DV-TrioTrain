@@ -1,13 +1,15 @@
 #!/bin/python3
 """
-description: confirms log files from both training and evaluation contain successful completion lines, then adds the selected best checkpoint to the environment file (.env) as CurrentGenome_TestCkpt - used to call variants, and NextGenome_StartCkpt - used as the warm-starting model weights for the next iteration.
+description: confirms log files from both training and evaluation contain expected completion strings, then adds the selected best checkpoint to the environment file (.env) as:
+    <CurrentGenome>_TestCkpt - used to call variants
+    <NextGenome>_StartCkpt - used as the warm-starting model weights for the next iteration
 
 example:
-    python3 triotrain/model_training/slurm/select_ckpt.py         \\
-        --env-file envs/demo.env                          \\ 
-        --current-ckpt /path/to/best_ckpt.txt             \\
-        --next-genome Mother                              \\
-        --next-run 2                                      \\
+    python3 triotrain/model_training/slurm/select_ckpt.py       \\
+        --env-file envs/demo.env                                \\ 
+        --current-ckpt /path/to/best_ckpt.txt                   \\
+        --next-genome Mother                                    \\
+        --next-run 2                                            \\
         --dry-run
 """
 # load in python libraries
@@ -17,7 +19,7 @@ from logging import Logger
 from os import environ
 from os import path as p
 from pathlib import Path
-from re import findall
+from re import findall, sub
 from sys import exit, path
 from typing import Union
 
@@ -43,7 +45,7 @@ def collect_args() -> argparse.Namespace:
         "-c",
         "--current-ckpt",
         dest="current_ckpt",
-        help="[REQUIRED]\ninput file (.txt)\ncontains the optimal model checkpoint selected by training algorithm",
+        help="[REQUIRED]\ninput file (.txt)\ncontains the current best checkpoint",
         type=str,
         metavar="</path/file>",
     )
@@ -60,13 +62,13 @@ def collect_args() -> argparse.Namespace:
         "--next-genome",
         dest="next_genome",
         choices=["Mother", "Father", "None"],
-        help="[REQUIRED]\nsets the next genome to use within a Trio",
+        help="[REQUIRED]\nsets the next training genome",
     )
     parser.add_argument(
         "-r",
         "--next-run",
         dest="next_run",
-        help="[REQUIRED]\niteration number for next iteration",
+        help="[REQUIRED]\nselects the next iteration",
         metavar="<int>",
     )
     parser.add_argument(
@@ -144,8 +146,8 @@ class MergeSelect:
     env: Env
     next_genome: Union[str, None] = None
     next_run: Union[int, None] = None
-    debug_mode: bool = False
-    dryrun_mode: bool = False
+    _debug_mode: bool = False
+    _dryrun_mode: bool = False
     _lines_with_pattern: int = field(default=0, init=False, repr=False)
     _phase: str = field(default="select_ckpt", init=False, repr=False)
 
@@ -173,19 +175,21 @@ class MergeSelect:
                 )
                 exit(1)
 
-        self._logger_msg = f"[{self._phase}] - [{self.current_genome}]"    
-        self.logger.info(f"{self._logger_msg}: found the next genome | '{self.next_genome}'")
-
-        if self.next_run is not None:
-            self.current_run = int(self.next_run - 1)
+        if self._dryrun_mode:
+            self._logger_msg = f"[DRY_RUN] - [{self._phase}] - [{self.current_genome}]"
         else:
+            self._logger_msg = f"[{self._phase}] - [{self.current_genome}]"    
+        self.logger.info(f"{self._logger_msg}: found the next genome\t\t\t| '{self.next_genome}'")
+
+        if self.next_run is None:
             run_path = str(self.ckpt_file.parent.parent.parent.stem)
             run_num = findall(r"[0-9]+", run_path)
             if run_num:
                 self.current_run = int(run_num[0])
             else:
                 self.current_run = None
-            
+        else:
+            self.current_run = int(self.next_run - 1)
 
         vars_list = [
             "RunName",
@@ -227,7 +231,7 @@ class MergeSelect:
                 f"{self.log_dir}/train-{self.current_genome}-{self.num_training_steps}steps.log"
             )
             pattern = compile(r"Loss for final step: (.*)$")
-            mode = "training"
+            mode = "training  "
         else:
             # Check on the Model_Evaluation Phase
             self.slurm_log_file = Path(
@@ -248,11 +252,15 @@ class MergeSelect:
             match = search(pattern, line)
             if match:
                 self._lines_with_pattern += 1
+                if self._dryrun_mode:
+                    msg = f"successfully completed {mode}\t"
+                else:
+                    msg = f"successfully completed {mode}\t\t"
                 self.logger.info(
-                    f"{self._logger_msg}: successfully completed {mode} according to log file | '{self.slurm_log_file.name}'"
+                    f"{self._logger_msg}: {msg}| '{self.slurm_log_file.name}'"
                 )
-                if self.debug_mode:
-                    self.logger.debug(f"{self._logger_msg}: matching line contents: [{match.group(0)}]")
+                if self._debug_mode:
+                    self.logger.debug(f"{self._logger_msg}: matching line contents\t\t\t| '{match.group(0)}'")
                 self.logging_file.close()
                 break
             else:
@@ -316,13 +324,13 @@ class MergeSelect:
                 f"{self.run_name}-run{self.current_run}:{self.current_genome}"
             )
             self.logger.info(
-                f"{self._logger_msg}: identified the testing checkpoint for {current_model_name} | '{self.checkpoint}'",
+                f"{self._logger_msg}: current testing ckpt identified\t\t| '{self.checkpoint}'",
             )
 
         if self.next_run is not None:
             next_model_name = f"{self.run_name}-run{self.next_run}:{self.next_genome}"
             self.logger.info(
-                f"{self._logger_msg}: identified a new starting checkpoint for {next_model_name} | '{self.checkpoint}'",
+                f"{self._logger_msg}: next starting ckpt identified\t\t| '{self.checkpoint}'",
             )
 
     def record_results(self) -> None:
@@ -333,7 +341,8 @@ class MergeSelect:
             self.env.add_to(
                 f"{self.current_genome}_N_Steps",
                 str(self.num_training_steps),
-                self.dryrun_mode,
+                self._dryrun_mode,
+                msg=self._logger_msg
             )
 
         # Add the new checkpoint to current Env File
@@ -342,7 +351,7 @@ class MergeSelect:
             and self.checkpoint is not None
         ):
             self.env.add_to(
-                f"{self.current_genome}TestCkptName", self.checkpoint, self.dryrun_mode
+                f"{self.current_genome}TestCkptName", self.checkpoint, self._dryrun_mode, msg=self._logger_msg
             )
 
         # Add the new checkpoint to next Env File
@@ -355,12 +364,14 @@ class MergeSelect:
                     self.env.add_to(
                         f"{self.next_genome}StartCkptName",
                         self.checkpoint,
-                        self.dryrun_mode,
+                        self._dryrun_mode,
+                        msg=self._logger_msg
                     )
             else:
                 analysis_name = self.env.env_path.name.split("-")[0]
-                next_env_file = f"envs/{analysis_name}-run{self.next_run}.env"
-                next_env = Env(next_env_file, self.logger, dryrun_mode=self.dryrun_mode)
+                new_env_name = sub(r'\d+', str(self.next_run), analysis_name)
+                next_env_file = self.env.env_path.parent / new_env_name
+                next_env = Env(next_env_file, self.logger, debug_mode=self._debug_mode, dryrun_mode=self._dryrun_mode)
 
                 if (
                     f"{self.next_genome}StartCkptName" not in next_env.contents
@@ -369,7 +380,8 @@ class MergeSelect:
                     next_env.add_to(
                         f"{self.next_genome}StartCkptName",
                         self.checkpoint,
-                        self.dryrun_mode,
+                        self._dryrun_mode,
+                        msg=self._logger_msg
                     )
 
     def run(self) -> None:
@@ -422,8 +434,8 @@ def __init__() -> None:
         env,
         next_genome,
         next_run,
-        debug_mode=args.debug,
-        dryrun_mode=args.dry_run,
+        _debug_mode=args.debug,
+        _dryrun_mode=args.dry_run,
     ).run()
 
     Wrapper(__file__, "end").wrap_script(timestamp())

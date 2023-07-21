@@ -265,12 +265,12 @@ class ParseMetrics:
         try:
             if self._debug_mode:
                 self.logger.debug(
-                    f"{self._logger_msg}: currently working on metrics files @\n[{str(self._eval_dir)}]"
+                    f"{self._logger_msg}: currently working | '{str(self._eval_dir)}'"
                 )
             self.clean_files()
             if self._debug_mode:
                 self.logger.debug(
-                    f"{self._logger_msg}: new model {self._run_name}-{self.genome} resulted in {self._num_metrics} evaluations",
+                    f"{self._logger_msg}: found {self._num_metrics} uniqe evaluations\t| {self._run_name}-{self.genome}",
                 )
         except AssertionError as error_msg:
             self.logger.error(error_msg)
