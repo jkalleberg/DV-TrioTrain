@@ -147,6 +147,7 @@ class MergeSelect:
     debug_mode: bool = False
     dryrun_mode: bool = False
     _lines_with_pattern: int = field(default=0, init=False, repr=False)
+    _phase: str = field(default="select_ckpt", init=False, repr=False)
 
     def __post_init__(self) -> None:
         # Identify current_genome
@@ -154,27 +155,26 @@ class MergeSelect:
         if self.next_genome is None:
             train_path = self.ckpt_file.parent.parent
             self.current_genome = train_path.stem.split("_")[1]
-            self.logger.info(f"Current Genome = [{self.current_genome}]")
 
         elif self.next_genome not in valid_genomes:
             self.logger.error(
-                f"Invalid value for next_genome [{self.next_genome}] provided.\n Exiting... "
+                f"Invalid value for provided. | 'next_genome={self.next_genome}'\nPlease enter one of the following valid options: {valid_genomes}.\nExiting... "
             )
             exit(1)
         else:
-            self.logger.info(f"Next Genome = [{self.next_genome}]")
             index = valid_genomes.index(self.next_genome)
             if index == 0:
                 self.current_genome = valid_genomes[1]
-                self.logger.info(f"Current Genome =  [{self.current_genome}]")
             elif index == 1:
                 self.current_genome = valid_genomes[0]
-                self.logger.info(f"Current Genome =  [{self.current_genome}]")
             else:
                 self.logger.error(
                     f"Unable to identify a current_genome index\nExiting... "
                 )
                 exit(1)
+
+        self._logger_msg = f"[{self._phase}] - [{self.current_genome}]"    
+        self.logger.info(f"{self._logger_msg}: found the next genome | '{self.next_genome}'")
 
         if self.next_run is not None:
             self.current_run = int(self.next_run - 1)
@@ -214,7 +214,7 @@ class MergeSelect:
         """
         assert (
             self.slurm_log_file.exists()
-        ), f"required input file does not exist | '{self.slurm_log_file.name}'"
+        ), f"{self._logger_msg}: required input file does not exist | '{self.slurm_log_file.name}'"
         self.logging_file = open(str(self.slurm_log_file), mode="r")
 
     def count_log_lines(self, train_mode=True) -> None:
@@ -227,6 +227,7 @@ class MergeSelect:
                 f"{self.log_dir}/train-{self.current_genome}-{self.num_training_steps}steps.log"
             )
             pattern = compile(r"Loss for final step: (.*)$")
+            mode = "training"
         else:
             # Check on the Model_Evaluation Phase
             self.slurm_log_file = Path(
@@ -234,6 +235,7 @@ class MergeSelect:
             )
             pattern = compile(r"Terminating eval after(.*)$")
             # NOTE: (.*)$ regex prints to the end of the line
+            mode = "evaluation"
 
         try:
             self.find_log_file()
@@ -247,10 +249,10 @@ class MergeSelect:
             if match:
                 self._lines_with_pattern += 1
                 self.logger.info(
-                    f"Identified at least one match in [{self.slurm_log_file.name}]"
+                    f"{self._logger_msg}: successfully completed {mode} according to log file | '{self.slurm_log_file.name}'"
                 )
                 if self.debug_mode:
-                    self.logger.debug(f"Matching line contents: [{match.group(0)}]")
+                    self.logger.debug(f"{self._logger_msg}: matching line contents: [{match.group(0)}]")
                 self.logging_file.close()
                 break
             else:
@@ -258,14 +260,15 @@ class MergeSelect:
 
         if self._lines_with_pattern == 0:
             self.logger.warning(
-                f"No lines in {self.slurm_log_file.name} match {pattern} pattern",
+                f"{self._logger_msg}: no lines in {self.slurm_log_file.name} match {pattern} pattern",
             )
             if train_mode:
                 self.training_worked = False
-                self.logger.error("Training did not finish")
+                self.logger.error(f"{self._logger_msg}: training did not finish!\nExiting...")
             else:
                 self.eval_worked = False
-                self.logger.error("Model evaluation did not finish")
+                self.logger.error(f"{self._logger_msg}: model evaluation did not finish!\nExiting...")
+            exit(1)
 
         else:
             if train_mode:
@@ -279,7 +282,7 @@ class MergeSelect:
         """
         assert (
             self.ckpt_file.exists()
-        ), f"required input file does not exist | '{self.ckpt_file.name}'"
+        ), f"{self._logger_msg}: required input file does not exist | '{self.ckpt_file.name}'"
         self.model_ckpt = open(str(self.ckpt_file), mode="r")
 
     def select_ckpt_name(self) -> None:
@@ -306,20 +309,20 @@ class MergeSelect:
                 continue
 
         if match is None:
-            self.logger.warning("Unable to identify a new checkpoint")
+            self.logger.warning(f"{self._logger_msg}: unable to identify a new checkpoint")
             self.checkpoint = None
         else:
             current_model_name = (
                 f"{self.run_name}-run{self.current_run}:{self.current_genome}"
             )
             self.logger.info(
-                f"Identified the testing checkpoint for '{current_model_name}' | '{self.checkpoint}'",
+                f"{self._logger_msg}: identified the testing checkpoint for {current_model_name} | '{self.checkpoint}'",
             )
 
         if self.next_run is not None:
             next_model_name = f"{self.run_name}-run{self.next_run}:{self.next_genome}"
             self.logger.info(
-                f"Identified a new starting checkpoint for '{next_model_name}' | '{self.checkpoint}'",
+                f"{self._logger_msg}: identified a new starting checkpoint for {next_model_name} | '{self.checkpoint}'",
             )
 
     def record_results(self) -> None:
@@ -356,8 +359,6 @@ class MergeSelect:
                     )
             else:
                 analysis_name = self.env.env_path.name.split("-")[0]
-                print("ENV PATH:", self.env.env_path)
-                breakpoint()
                 next_env_file = f"envs/{analysis_name}-run{self.next_run}.env"
                 next_env = Env(next_env_file, self.logger, dryrun_mode=self.dryrun_mode)
 

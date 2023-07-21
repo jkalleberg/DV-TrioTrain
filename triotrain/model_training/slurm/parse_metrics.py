@@ -1,19 +1,11 @@
 #!/bin/python3
 """
-NOTE: This is run as a command line script via a SLURM job in the pipeline
- 
-Collect evaluation metrics JSON files and put them together in a clean CSV for plotting. 
+description: process multiple evaluation performance metrics (.JSON) into a single clean (.CSV) for plotting.
 
-The required arguments include:
+example:
 
-    env_file - [file] a text file record of environment parameters used for individual analysis iterations in <export variable='parameter'> format
-
-    genome - [string] label indicating the current iteration's location in a trio dataset 
-
-Usage:
-
-    python3 triotrain/model_training/pipeline/parse_eval_metrics.py \
-        --env-file </path/to/ENV_file> \
+    python3 triotrain/model_training/pipeline/parse_metrics.py \\
+        --env-file </path/to/ENV_file> \\
         --genome <genome_label>
 
 """
@@ -55,8 +47,8 @@ def collect_args() -> argparse.Namespace:
         "-g",
         "--genome",
         dest="genome",
-        choices=["Mother", "Father", "Child"],
-        help="[REQUIRED]\nsets the genome with metrics that need to be processed",
+        choices=["Mother", "Father"],
+        help="[REQUIRED]\nsets the genome to process training metrics",
         type=str,
     )
     parser.add_argument(
@@ -76,9 +68,10 @@ def collect_args() -> argparse.Namespace:
     parser.add_argument(
         "--threshold",
         dest="threshold",
-        help="defines the proportion of the training genome should be covered by the new model",
+        help="defines the proportion of the training genome should be covered by the new model\n(default: %(default)s)",
         type=float,
         default=20.0,
+        metavar="<float>"
     )
 
     return parser.parse_args()
@@ -112,10 +105,10 @@ def check_args(args: argparse.Namespace, logger: Logger) -> None:
 
     assert (
         args.env_file
-    ), "Missing --env-file; Please provide a file with environment variables for the current analysis"
+    ), "missing --env-file; Please provide a file with environment variables for the current analysis"
     assert (
         args.vcf_file
-    ), "Missing --vcf-file; Please designate a hap.py VCF file to process"
+    ), "missing --vcf-file; Please designate a hap.py VCF file to process"
 
 
 @dataclass
@@ -128,10 +121,10 @@ class ParseMetrics:
     env: Env
     logger: Logger
     threshold: float = 20.0
-    debug_mode: bool = False
-    dryrun_mode: bool = False
+    _debug_mode: bool = False
+    _dryrun_mode: bool = False
     _eval_genome: str = "Child"
-    _phase: str = field(default="parse_tf_metrics", init=False, repr=False)
+    _phase: str = field(default="parse_metrics", init=False, repr=False)
 
     def load_variables(self) -> None:
         """
@@ -159,7 +152,7 @@ class ParseMetrics:
         try:
             assert (
                 getcwd() == code_path
-            ), "Run the workflow in the deep-variant/ directory only!"
+            ), f"{self._logger_msg}: run the workflow in the deep-variant/ directory only!"
         except AssertionError as error_msg:
             self.logger.error(f"{error_msg}.\nExiting... ")
             exit(1)
@@ -168,20 +161,21 @@ class ParseMetrics:
         """
         define which genome from a Trio to parse metrics
         """
-        self._logger_msg = f"[{self._phase}] - [{self.genome}]"
+        if self._dryrun_mode:
+            self._logger_msg = f"[DRY_RUN] - [{self._phase}] - [{self.genome}]"
+        else:
+            self._logger_msg = f"[{self._phase}] - [{self.genome}]"
 
         self._eval_dir = Path(f"{self._train_dir}/eval_{self._eval_genome}")
         assert (
             self._eval_dir.is_dir()
-        ), f"Evaluation Directory [{self._eval_dir}] does not exist"
+        ), f"evaluation directory does not exist | '{self._eval_dir}'"
 
         self._output_dir = Path(self._outpath)
         assert (
             self._output_dir.is_dir()
-        ), f"Output Directory [{self._output_dir}] does not exist"
-        self.logger.info(
-            f"{self._logger_msg}: Saving parsed metrics here: '{str(self._output_dir)}'"
-        )
+        ), f"output directory does not exist | '{self._output_dir}'"
+        
 
     def clean_files(self):
         """
@@ -212,17 +206,14 @@ class ParseMetrics:
                 metrics_stem.append(item.stem)
 
         # Count how many files match
-        num_metrics = len(metrics_stem)
-        assert num_metrics > 0, "No existing evaluation metrics files were found"
-        self.logger.info(
-            f"{self._logger_msg}: Identified [{num_metrics}] input metrics files to process"
-        )
+        self._total_metrics = len(metrics_stem)
+        assert self._total_metrics > 0, f"{self._logger_msg}: no existing evaluation metrics files were found"
 
         # Create data descriptor columns to keep records unique
         run_order, model, train_order = (
-            [self._current_run] * num_metrics,
-            [self._run_name] * num_metrics,
-            [self.genome] * num_metrics,
+            [self._current_run] * self._total_metrics,
+            [self._run_name] * self._total_metrics,
+            [self.genome] * self._total_metrics,
         )
 
         # Create a list of row data
@@ -256,12 +247,12 @@ class ParseMetrics:
         )
         data_sliced = data.take(list(indexes_to_keep))
         self._num_metrics = data_sliced.shape[0]
-        if num_metrics == num_metrics - 1:
+        if self._num_metrics == self._total_metrics - 1:
             self.logger.info(
-                f"{self._logger_msg}: Ignoring duplicate metrics in file labeled 'current' & 'best_checkpoint'"
+                f"{self._logger_msg}: ignoring duplicate metrics in file labeled 'current' & 'best_checkpoint'"
             )
             self.logger.info(
-                f"{self._logger_msg}: Keeping results from [{num_metrics}] metrics files"
+                f"{self._logger_msg}: keeping results from {self._num_metrics} metrics files"
             )
 
         # Sort by step num
@@ -272,14 +263,14 @@ class ParseMetrics:
         clean up and sort all metrics files
         """
         try:
-            if self.debug_mode:
+            if self._debug_mode:
                 self.logger.debug(
-                    f"{self._logger_msg}: Currently working on metrics files @\n[{str(self._eval_dir)}]"
+                    f"{self._logger_msg}: currently working on metrics files @\n[{str(self._eval_dir)}]"
                 )
             self.clean_files()
-            if self.debug_mode:
+            if self._debug_mode:
                 self.logger.debug(
-                    f"{self._logger_msg}: New model [{self._run_name}-{self.genome}] resulted in [{self._num_metrics}] evaluations",
+                    f"{self._logger_msg}: new model {self._run_name}-{self.genome} resulted in {self._num_metrics} evaluations",
                 )
         except AssertionError as error_msg:
             self.logger.error(error_msg)
@@ -301,35 +292,35 @@ class ParseMetrics:
         determine if there is a descrepency between the possible 'best-ckpts'
         """
         self.logger.info(
-            f"{self._logger_msg}: Of all {self._num_metrics} evaluations... "
+            f"{self._logger_msg}: using {self._num_metrics}-of-{self._total_metrics} metrics files"
         )
         self.logger.info(
-            f"{self._logger_msg}: [{self._best_f1_all_ckpt_name}] had the MAXIMUM F1/All score"
+            f"{self._logger_msg}: MAXIMUM F1/All score\t\t| {self._best_f1_all_ckpt_name}"
         )
         self.logger.info(
-            f"{self._logger_msg}: [{self._lowest_loss_ckpt_name}] had the MINIMUM Loss"
+            f"{self._logger_msg}: MINIMUM Loss\t\t\t| {self._lowest_loss_ckpt_name}"
         )
 
         if int(self._best_ckpt_steps) != int(self._lowest_loss_steps_num):
             self.logger.warning(
-                f"{self._logger_msg}: Discrepancy in step numbers of potential best checkpoints"
+                f"{self._logger_msg}: different best checkpoint\t\t| "
             )
             self.logger.warning(
-                f"{self._logger_msg}: Consider switching metrics for selecting the best checkpoint, if appropriate"
+                f"{self._logger_msg}: consider alternative performance metric for selecting checkpoint\t| "
             )
         else:
             self.logger.info(
-                f"{self._logger_msg}: Best checkpoints for F1/All and Loss match!"
+                f"{self._logger_msg}: identical best checkpoint\t\t| SUCCESS"
             )
         steps_per_genome = int(self._total_steps) / int(self._epochs)
         self.logger.info(
-            f"{self._logger_msg}: Training Steps Required to Cover Training Genome: {int(steps_per_genome):,}"
+            f"{self._logger_msg}: training steps per epoch\t\t| '{int(steps_per_genome):,}'"
         )
         prop_genome_used_in_training = (
             int(self._best_ckpt_steps) / steps_per_genome
         ) * 100
         self.logger.info(
-            f"{self._logger_msg}: Proportion of the genome seen by the model at best-ckpt: {round(prop_genome_used_in_training, 3)}%",
+            f"{self._logger_msg}: epoch proportion at best-ckpt\t| '{round(prop_genome_used_in_training, 3)}%'",
         )
 
         # This is a threshold to alert me if the entire re-training
@@ -338,24 +329,27 @@ class ParseMetrics:
         # threshold = 20.0
         if prop_genome_used_in_training < self.threshold:
             self.logger.warning(
-                f"{self._logger_msg}: New model saw less than {self.threshold}% of the training genome!"
+                f"{self._logger_msg}: new model saw less than {self.threshold}% of the training genome"
             )
             self.logger.warning(
-                f"{self._logger_msg}: Best Checkpoint Identified [{self._best_f1_all_ckpt_name}] is extremely similar to prior model",
+                f"{self._logger_msg}: new checkpoint {self._best_f1_all_ckpt_name} may be very similar to prior model",
             )
             self.logger.warning(
-                "{self._logger_msg}: Current re-training may not be an improvment!"
+                f"{self._logger_msg}: current used less than{self.threshold}%\t| WARNING"
             )
         else:
             self.logger.info(
-                f"{self._logger_msg}: The best checkpoint [{self._best_f1_all_ckpt_name}] covers more than {self.threshold}% of the training genome!",
+                f"{self._logger_msg}: training used more than {self.threshold}%\t| SUCCESS",
             )
 
     def save_results(self) -> None:
         """
         write the processed metrics to an intermediate file
         """
-        if self.dryrun_mode is False:
+        if self._dryrun_mode is False:
+            self.logger.info(
+                f"{self._logger_msg}: parsed metrics CSV directory\t| '{str(self._output_dir)}'"
+            )
             # Define the output CSV to be created
             outfile = WriteFiles(
                 self._outpath,
@@ -366,7 +360,7 @@ class ParseMetrics:
             if file_missing:
                 # Write the sorted data to a CSV
                 self._sorted_data.to_csv(outfile.file_path, index=False)
-                if self.debug_mode:
+                if self._debug_mode:
                     self.logger.debug(f"{outfile.file} written")
 
                 assert (
@@ -374,7 +368,7 @@ class ParseMetrics:
                 ), f"{outfile.file} was not written correctly"
         else:
             self.logger.info(
-                f"{self._logger_msg}: Evaluation metrics contents, sorted by step number"
+                f"{self._logger_msg}: evaluation metrics contents, sorted by step number"
             )
             print(self._sorted_data)
 
@@ -416,15 +410,15 @@ def __init__() -> None:
         for key, val in vars(args).items():
             str_args += f"{key}={val} | "
         logger.debug(str_args)
-        logger.debug(f"Using DeepVariant version {_version}")
+        logger.debug(f"using DeepVariant version {_version}")
 
     if args.dry_run:
-        logger.info("Option [--dry-run] set. Display evaluation metrics only")
+        logger.info("option [--dry-run] set; displaying evaluation metrics to screen only")
         pd.set_option("display.max_rows", None)
         pd.set_option("display.max_columns", None)
 
     env = Env(args.env_file, logger, dryrun_mode=args.dry_run)
-    ParseMetrics(args.genome, env, logger).run()
+    ParseMetrics(args.genome, env, logger, threshold=args.threshold, _debug_mode=args.debug, _dryrun_mode = args.dry_run).run()
 
     Wrapper(__file__, "end").wrap_script(timestamp())
 

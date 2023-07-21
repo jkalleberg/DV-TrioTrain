@@ -224,7 +224,7 @@ class SelectCheckpoint:
             f"numEvals=$(ls {self.itr.train_dir}/eval_Child| grep 'model\.ckpt\-[0-9]\+\.metrics' | wc -l)",
             'echo "SUCCESS: Performed ${numEvals} evaluations"',
             'echo "INFO: Parsing evaluation metrics:"',
-            f"conda run --no-capture-output -p miniconda_envs/beam_v2.30 python3 triotrain/model_training/pipeline/parse_train_metrics.py --env-file {self.itr.env.env_file} --genome {self.itr.train_genome}",
+            f"conda run --no-capture-output -p miniconda_envs/beam_v2.30 python3 triotrain/model_training/slurm/parse_metrics.py --env-file {self.itr.env.env_file} --genome {self.itr.train_genome}",
         ]
 
         # Selecting the next checkpoint
