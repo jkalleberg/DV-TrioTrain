@@ -205,7 +205,7 @@ class MakeExamples:
         elif self._num_to_ignore == self._total_regions:
             if self.make_examples_job_nums:
                 self.itr.logger.info(
-                    f"{self.logger_msg}: there are no jobs to re-submit for '{self._phase}:{self.genome}'... SKIPPING AHEAD"
+                    f"{self.logger_msg}: completed '{self._phase}:{self.genome}'... SKIPPING AHEAD"
                 )
         else:
             if self.itr.debug_mode:
@@ -393,13 +393,13 @@ class MakeExamples:
             self._num_tfrecords_found = 0
 
     def submit_job(
-        self, dependency_index: int = 0, resubmission: bool = False, total_jobs: int = 1
+        self, msg: str = "sub", dependency_index: int = 0, resubmission: bool = False, total_jobs: int = 1
     ) -> None:
         """
         Submit SLURM jobs to queue.
         """
         if (self._outputs_exist and self.overwrite is False) or (
-            self._outputs_exist and self._ignoring_restart_jobs
+            self._outputs_exist and self._ignoring_restart_jobs and self.overwrite is False
         ):
             self._skipped_counter += 1
             if resubmission:
@@ -418,17 +418,17 @@ class MakeExamples:
 
         if not self.overwrite and resubmission:
             self.itr.logger.info(
-                f"{self.logger_msg}: --overwrite=False; re-submitting job because missing labeled.tfrecords"
+                f"{self.logger_msg}: --overwrite=False; {msg}mitting job because missing labeled.tfrecords"
             )
 
         elif self.overwrite and self._outputs_exist:
             self.itr.logger.info(
-                f"{self.logger_msg}: --overwrite=True; re-submitting job because replacing existing labeled.tfrecords"
+                f"{self.logger_msg}: --overwrite=True; {msg}mitting job because replacing existing labeled.tfrecords"
             )
             
         else:
             self.itr.logger.info(
-                f"{self.logger_msg}: submitting job to create labeled.tfrecords"
+                f"{self.logger_msg}: {msg}mitting job to create labeled.tfrecords"
             )
 
         slurm_job = SubmitSBATCH(
@@ -471,7 +471,7 @@ class MakeExamples:
                 self._beam_shuffle_dependencies[dependency_index] = slurm_job.job_number
             else:
                 self.itr.logger.error(
-                    f"{self.logger_msg}: unable to submit SLURM job",
+                    f"{self.logger_msg}: unable to {msg}mit SLURM job",
                 )
                 self._beam_shuffle_dependencies[dependency_index] = None
 
@@ -512,7 +512,7 @@ class MakeExamples:
             exit(1)
 
     def find_all_outputs(
-        self, phase: str = "find_outputs", find_beam_tfrecords: bool = False
+        self, phase: str = "find_outputs", verbose: bool = False
     ) -> None:
         """
         Determine if final data_prep outputs already exist.
@@ -529,7 +529,7 @@ class MakeExamples:
         re_shuffle.set_genome()
         re_shuffle.find_outputs(phase=phase, find_all=True)
 
-        if re_shuffle._outputs_exist and find_beam_tfrecords:
+        if re_shuffle._outputs_exist and verbose:
             beam = BeamShuffleExamples(
                 itr=self.itr,
                 slurm_resources=self.slurm_resources,
@@ -609,12 +609,14 @@ class MakeExamples:
                         self.find_outputs()
                     if skip_re_runs or not self._outputs_exist:
                         self.submit_job(
+                            msg=msg,
                             dependency_index=region_index,
                             resubmission=False,
                             total_jobs=self._num_to_run,
                         )
                     else:
                         self.submit_job(
+                            msg=msg,
                             dependency_index=region_index,
                             resubmission=True,
                             total_jobs=self._num_to_run,
@@ -633,6 +635,7 @@ class MakeExamples:
                 if not self.itr.demo_mode:
                     self.find_outputs()
                 self.submit_job(
+                    msg=msg,
                     dependency_index=r, total_jobs=int(self._total_regions)
                 )  # THIS HAS TO BE r because indexing of the list of job ids starts with 3
 

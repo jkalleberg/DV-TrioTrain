@@ -108,7 +108,7 @@ class SelectCheckpoint:
         elif self._num_to_ignore == 1:
             if self.select_ckpt_job_num:
                 self.itr.logger.info(
-                    f"{self.logger_msg}: there are no jobs to re-submit for '{self._phase}'... SKIPPING AHEAD"
+                    f"{self.logger_msg}: completed '{self._phase}'... SKIPPING AHEAD"
                 )
 
         else:
@@ -265,7 +265,7 @@ class SelectCheckpoint:
             and f"{self.itr.train_genome}TestCkptName" in self.itr.env.contents
         ):
             self.itr.logger.info(
-                f"{logger_msg}: {self.itr.train_genome}{self.itr.current_trio_num} testing checkpoint exits... SKIPPING AHEAD"
+                f"{logger_msg}: {self.itr.train_genome}{self.itr.current_trio_num} testing checkpoint variable exits... SKIPPING AHEAD"
             )
             self.ckpt_name = self.itr.env.contents[
                 f"{self.itr.train_genome}TestCkptName"
@@ -276,12 +276,12 @@ class SelectCheckpoint:
                     if f"{self.itr.next_genome}StartCkptName" in self.itr.env.contents:
                         self.ckpt_selected = True
                         self.itr.logger.info(
-                            f"{logger_msg}: {self.itr.next_genome}{self.itr.next_trio_num} starting checkpoint exists... SKIPPING AHEAD"
+                            f"{logger_msg}: {self.itr.next_genome}{self.itr.next_trio_num} starting checkpoint variable exists... SKIPPING AHEAD"
                         )
                     else:
                         self.ckpt_selected = False
                         self.itr.logger.info(
-                            f"{logger_msg}: but {self.itr.next_genome}{self.itr.next_trio_num} starting checkpoint does not"
+                            f"{logger_msg}: but {self.itr.next_genome}{self.itr.next_trio_num} starting checkpoint variable does not"
                         )
                 else:
                     current_env_str = self.itr.env.env_path.name
@@ -298,16 +298,16 @@ class SelectCheckpoint:
                     if f"{self.itr.next_genome}StartCkptName" in next_env.contents:
                         self.ckpt_selected = True
                         self.itr.logger.info(
-                            f"{logger_msg}: {self.itr.next_genome}{self.itr.next_trio_num} starting checkpoint exits... SKIPPING AHEAD"
+                            f"{logger_msg}: {self.itr.next_genome}{self.itr.next_trio_num} starting checkpoint variable exits... SKIPPING AHEAD"
                         )
                     else:
                         self.ckpt_selected = False
                         self.itr.logger.info(
-                            f"{logger_msg}: but {self.itr.next_genome}{self.itr.next_trio_num} starting checkpoint does not"
+                            f"{logger_msg}: but {self.itr.next_genome}{self.itr.next_trio_num} starting checkpoint variable does not"
                         )
         else:
             self.ckpt_selected = False
-            self.itr.logger.info(f"{logger_msg}: testing checkpoint does not exist")
+            self.itr.logger.info(f"{logger_msg}: testing checkpoint variable does not exist")
 
         self._outputs_exist = self.ckpt_selected
 
@@ -337,12 +337,12 @@ class SelectCheckpoint:
             dryrun_mode=self.itr.dryrun_mode,
         )
 
-    def submit_job(self, resubmission: bool = False) -> None:
+    def submit_job(self, msg: str = "sub", resubmission: bool = False) -> None:
         """
         Submit SLURM jobs to queue.
         """
         if (self._outputs_exist and self.overwrite is False) or (
-            self._outputs_exist and self._ignoring_restart_jobs
+            self._outputs_exist and self._ignoring_restart_jobs and self.overwrite is False
         ):
             self._skipped_counter += 1
             if resubmission:
@@ -359,25 +359,18 @@ class SelectCheckpoint:
             else:
                 slurm_job.write_job()
 
-        if not self.overwrite:
-            if resubmission:
-                if self._ignoring_training:
-                    self.itr.logger.info(
-                        f"{self.logger_msg}: --overwrite=False; re-submitting job because missing best checkpoint file"
-                    )
-            else:
-                self.itr.logger.info(
-                    f"{self.logger_msg}: submitting job to find the best checkpoint"
-                )
+        if not self.overwrite and resubmission:
+            self.itr.logger.info(
+                f"{self.logger_msg}: --overwrite=False; {msg}mitting job because missing best checkpoint file"
+            )
+        elif self.overwrite and self._outputs_exist:
+            self.itr.logger.info(
+                f"{self.logger_msg}: --overwrite=True; {msg}mitting job because replacing existing best checkpoint"
+            )
         else:
-            if self._outputs_exist:
-                self.itr.logger.info(
-                    f"{self.logger_msg}: --overwrite=True; re-submitting job because replacing existing best checkpoint"
-                )
-            else:
-                self.itr.logger.info(
-                    f"{self.logger_msg}: submitting job to find the best checkpoint"
-                )
+            self.itr.logger.info(
+                f"{self.logger_msg}: {msg}mitting job to find the best checkpoint"
+            )
 
         if self.itr.current_genome_dependencies[3] is None:
             # submit the training eval job to queue
@@ -409,7 +402,7 @@ class SelectCheckpoint:
                     self.itr.next_genome_dependencies[2] = slurm_job.job_number
                 else:
                     self.itr.logger.error(
-                        f"{self.logger_msg}: unable to submit SLURM job",
+                        f"{self.logger_msg}: unable to {msg}mit SLURM job",
                     )
                     self._model_testing_dependency[0] = None
                     self.itr.current_genome_dependencies[3] = None
@@ -446,16 +439,24 @@ class SelectCheckpoint:
             if (
                 self.itr.current_genome_num is not None
                 and self.itr.current_genome_num != 0
-            ):
-                self.itr.logger.info(
-                    f"{self.logger_msg}: no additional dependencies are required because missing a select_ckpt job number for prior iteration"
-                )
+            ):  
+                if self.itr.debug_mode:
+                    self.itr.logger.debug(
+                        f"{self.logger_msg}: no additional dependencies are required because missing a select_ckpt job number for prior iteration"
+                    )
         else:
             self.itr.logger.info(
                 f"{self.logger_msg}: prior iteration select-ckpt job number | '{self.itr.current_genome_dependencies[2]}'"
             )
 
         self.find_restart_jobs()
+
+        skip_re_runs = check_if_all_same(self.train_eval_job_num, None)
+
+        if skip_re_runs and self._ignoring_training:
+            msg = "sub"
+        else:
+            msg = "re-sub"
 
         # determine if we are re-running select-ckpt
         if self.select_ckpt_job_num or not self._ignoring_training:
@@ -476,13 +477,6 @@ class SelectCheckpoint:
                         f"{self.logger_msg}: train_eval job was submitted...",
                     )
 
-                skip_re_runs = check_if_all_same(self.train_eval_job_num, None)
-
-                if skip_re_runs:
-                    msg = "sub"
-                else:
-                    msg = "re-sub"
-
                 if self._num_to_run == 1:
                     self.itr.logger.info(
                         f"{self.logger_msg}: attempting to {msg}mit {self._num_to_run}-of-1 SLURM jobs to the queue",
@@ -493,13 +487,12 @@ class SelectCheckpoint:
                     )
                     exit(1)
 
-                self.find_outputs()
-                self.submit_job(resubmission=True)
+                self.submit_job(msg=msg, resubmission=True)
 
         # or running it for the first time
         else:
             self.find_outputs()
-            self.submit_job()
+            self.submit_job(msg=msg)
 
         self.check_submission()
         return self.itr

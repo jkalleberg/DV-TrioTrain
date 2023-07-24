@@ -141,7 +141,7 @@ class ReShuffleExamples:
         elif self._num_to_ignore == 1:
             if self.re_shuffle_job_num:
                 self.itr.logger.info(
-                        f"{self.logger_msg}: there are no jobs to re-submit for '{self._phase}:{self.genome}'... SKIPPING AHEAD"
+                        f"{self.logger_msg}: completed '{self._phase}:{self.genome}'... SKIPPING AHEAD"
                     )
         else:
             if self.itr.debug_mode:
@@ -331,12 +331,12 @@ class ReShuffleExamples:
             else:
                 self._merged_tfrecords_exist = True
 
-    def submit_job(self, resubmission: bool = False) -> Union[int, str, None]:
+    def submit_job(self, msg: str = "sub", resubmission: bool = False) -> Union[int, str, None]:
         """
         Submit SLURM job to queue
         """
         if (self._outputs_exist and self.overwrite is False) or (
-            self._outputs_exist and self._ignoring_restart_jobs
+            self._outputs_exist and self._ignoring_restart_jobs and self.overwrite is False
         ):
             self._skipped_counter += 1
             if resubmission:
@@ -353,25 +353,18 @@ class ReShuffleExamples:
             else:
                 slurm_job.write_job()
 
-        if not self.overwrite:
-            if resubmission:
-                if self._ignoring_beam_shuffle:
-                    self.itr.logger.info(
-                        f"{self.logger_msg}: --overwrite=False; re-submitting job because missing labeled.shuffled.merged outputs"
-                    )
-            else:
-                self.itr.logger.info(
-                    f"{self.logger_msg}: submitting job to create the labeled.shuffled.merged outputs"
-                )
+        if not self.overwrite and resubmission:
+            self.itr.logger.info(
+                f"{self.logger_msg}: --overwrite=False; {msg}mitting job because missing labeled.shuffled.merged outputs"
+            )
+        elif self.overwrite and self._outputs_exist:
+            self.itr.logger.info(
+                f"{self.logger_msg}: --overwrite=True; {msg}mitting job because replacing existing labeled.shuffled.merged outputs"
+            )
         else:
-            if self._outputs_exist:
-                self.itr.logger.info(
-                    f"{self.logger_msg}: --overwrite=True; re-submitting job because replacing existing labeled.shuffled.merged outputs"
-                )
-            else:
-                self.itr.logger.info(
-                    f"{self.logger_msg}: submitting job to create labeled.shuffled.merged outputs"
-                )
+            self.itr.logger.info(
+                 f"{self.logger_msg}: {msg}mitting job to create labeled.shuffled.merged outputs"
+            )
 
         slurm_job = SubmitSBATCH(
             self.itr.job_dir,
@@ -398,7 +391,7 @@ class ReShuffleExamples:
             if slurm_job.status == 0:
                 self._train_dependency = slurm_job.job_number
             else:
-                self.itr.logger.error(f"{self.logger_msg}: unable to submit SLURM job")
+                self.itr.logger.error(f"{self.logger_msg}: unable to {msg}mit SLURM job")
 
     def check_submission(self) -> None:
         """
@@ -474,6 +467,13 @@ class ReShuffleExamples:
             )
             return
 
+        skip_re_runs = check_if_all_same(self.re_shuffle_job_num, None)
+
+        if skip_re_runs and self._ignoring_beam_shuffle:
+            msg = "sub"
+        else:
+            msg = "re-sub"
+
         # Determine if we are re-running re-shuffle
         if self.re_shuffle_job_num or not self._ignoring_beam_shuffle:
             if self._num_to_run == 0:
@@ -490,13 +490,6 @@ class ReShuffleExamples:
                         f"{self.logger_msg}: beam_shuffle jobs were submitted...",
                     )
 
-                skip_re_runs = check_if_all_same(self.re_shuffle_job_num, None)
-
-                if skip_re_runs and self._ignoring_beam_shuffle:
-                    msg = "sub"
-                else:
-                    msg = "re-sub"
-
                 if self._num_to_run == 1:
                     self.itr.logger.info(
                         f"{self.logger_msg}: attempting to {msg}mit {self._num_to_run}-of-1 SLURM jobs to the queue",
@@ -507,12 +500,15 @@ class ReShuffleExamples:
                     )
                     exit(1)
 
-                self.submit_job(resubmission=True)
+                self.submit_job(msg=msg, resubmission=True)
 
         # or running it for the first time
         else:
-            self.find_outputs(find_all=True)
-            self.submit_job()
+            if self._outputs_exist:
+                return 
+            
+            # self.find_outputs(find_all=True)
+            self.submit_job(msg=msg)
 
         if self._train_dependency:
             self.itr.current_genome_dependencies[self.index] = self._train_dependency
@@ -520,6 +516,6 @@ class ReShuffleExamples:
         self.check_submission()
 
         if self._train_dependency is None:
-            return None
+            return
         else:
             return self.itr

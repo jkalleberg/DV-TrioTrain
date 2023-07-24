@@ -133,7 +133,7 @@ class CallVariants:
 
         else:
             self._num_to_run = 0
-            self._num_to_ignore = 1
+            self._num_to_ignore = self.itr.total_num_tests
             if self.itr.debug_mode:
                 self.itr.logger.debug(
                     f"{self.logger_msg}: running job ids were NOT provided"
@@ -166,10 +166,11 @@ class CallVariants:
             self.itr.logger.info(
                 f"{self.logger_msg}: ignoring {self._num_to_ignore}-of-{self.itr.total_num_tests} SLURM jobs"
             )
+        
         elif self._num_to_ignore == self.itr.total_num_tests:
             if self.call_variants_job_nums:
                 self.itr.logger.info(
-                    f"{self.logger_msg}: there are no jobs to re-submit for '{self._phase}'... SKIPPING AHEAD"
+                    f"{self.logger_msg}: completed '{self._phase}'... SKIPPING AHEAD"
                 )
         else:
             if self.itr.debug_mode:
@@ -505,17 +506,22 @@ class CallVariants:
             self.test_logger_msg,
         )
         if slurm_job.check_sbatch_file():
-            if (
-                self.call_variants_job_nums
-                and self.call_variants_job_nums[index] is not None
-                and self.overwrite
-            ):
+            prior_job = self._select_ckpt_job[0] is not None
+            print("PRIOR JOB:", prior_job)
+            breakpoint()
+
+            if index < len(self.call_variants_job_nums):
+                resub_jobs = self.call_variants_job_nums[index] is not None
+            else:
+                resub_jobs = False
+
+            if (prior_job or resub_jobs) and self.overwrite:
                 self.itr.logger.info(
-                    f"{self.test_logger_msg}: --overwrite=True, re-writing the existing SLURM job now..."
+                    f"{self.logger_msg}: --overwrite=True; re-writing the existing SLURM job now... "
                 )
             else:
                 self.itr.logger.info(
-                    f"{self.test_logger_msg}: --overwrite=False; SLURM job file already exists... SKIPPING AHEAD"
+                    f"{self.logger_msg}: --overwrite=False; SLURM job file already exists... SKIPPING AHEAD"
                 )
                 return
         else:
@@ -648,12 +654,12 @@ class CallVariants:
         else:
             self._outputs_exist = False
 
-    def submit_job(self, dependency_index: int = 0, total_jobs: int = 1, resubmission: bool = False) -> None:
+    def submit_job(self, msg: str = "sub", dependency_index: int = 0, total_jobs: int = 1, resubmission: bool = False) -> None:
         """
         Submits a SLURM job to the queue.
         """
         if (self._outputs_exist and self.overwrite is False) or (
-            self._outputs_exist and self._ignoring_restart_jobs
+            self._outputs_exist and self._ignoring_restart_jobs and self.overwrite is False
         ):
             self._skipped_counter += 1
             self._compare_dependencies[dependency_index] = None
@@ -672,20 +678,19 @@ class CallVariants:
 
         if not self.overwrite and resubmission:
             self.itr.logger.info(
-                f"{self.test_logger_msg}: --overwrite=False; re-submitting job because missing DeepVariant VCF file"
+                f"{self.test_logger_msg}: --overwrite=False; {msg}mitting job because missing DeepVariant VCF file"
                 )
         
         elif self.overwrite and self._outputs_exist:
             self.itr.logger.info(
-                f"{self.logger_msg}: --overwrite=True; re-submitting job because replacing existing DeepVariant VCF file"
+                f"{self.logger_msg}: --overwrite=True; {msg}mitting job because replacing existing DeepVariant VCF file"
             )
             
         else:
             self.itr.logger.info(
-                f"{self.test_logger_msg}: submitting job to call variants with DeepVariant"
+                f"{self.test_logger_msg}: {msg}mitting job to call variants with DeepVariant"
             )
-
-        
+ 
         slurm_job = SubmitSBATCH(
             self.itr.job_dir,
             f"{self.job_name}.sh",
@@ -741,7 +746,7 @@ class CallVariants:
                     self._compare_dependencies[dependency_index] = slurm_job.job_number
             else:
                 self.itr.logger.warning(
-                    f"{self.test_logger_msg}: unable to submit SLURM job",
+                    f"{self.test_logger_msg}: unable to {msg}mit SLURM job",
                 )
                 self._compare_dependencies[dependency_index] = None
 
@@ -786,18 +791,17 @@ class CallVariants:
         """
         self.set_genome()
         self.set_container()
+        self.find_restart_jobs()
 
         skip_re_runs = check_if_all_same(self.call_variants_job_nums, None)
 
-        if skip_re_runs:
+        if skip_re_runs and self._ignoring_select_ckpt:
             msg = "sub"
         else:
             msg = "re-sub"
 
-        self.find_restart_jobs()
-
         # Determine if we are re-running some of the test genomes with call variants
-        if not self._ignoring_restart_jobs:
+        if not self._ignoring_restart_jobs or not self._ignoring_select_ckpt:
             if self._num_to_run == 0:
                 self._skipped_counter = self._num_to_ignore
                 if (
@@ -819,7 +823,7 @@ class CallVariants:
                     self.find_outputs(find_all=True, phase=self._phase)
 
                     self.itr.logger.info(
-                            f"{self.logger_msg}: attempting to {msg}mit {self._num_to_run}-of-{self._total_regions} SLURM jobs to the queue",
+                            f"{self.logger_msg}: attempting to {msg}mit {self._num_to_run}-of-{self.itr.total_num_tests} SLURM jobs to the queue",
                         )
                 else:
                     self.itr.logger.error(
@@ -843,10 +847,13 @@ class CallVariants:
                     if self.test_genome is None:
                         continue
                     else:
+                        print("HERE!")
                         self.find_outputs()
                         self.submit_job(
+                            msg=msg,
                             dependency_index=test_index,
                             total_jobs=self.itr.total_num_tests,
+                            resubmission=True,
                         )  # THIS (^) HAS TO BE test_index to ensure the dependencies maintain appropriate order
 
         # Determine if we are submitting all tests
@@ -867,11 +874,15 @@ class CallVariants:
                     self.find_outputs()
                     # re-submit 'call_variants' if 'select_ckpt' was re-submitted
                     if self.itr.current_genome_dependencies[3] is not None:
+                        print("NOPE, HERE!")
                         self.submit_job(
+                            msg=msg,
                             dependency_index=t, total_jobs=self.itr.total_num_tests
                         )
                     else:
+                        print("ACTUALLY HERE!")
                         self.submit_job(
+                            msg=msg,
                             dependency_index=t, total_jobs=self.itr.total_num_tests
                         )
 

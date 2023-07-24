@@ -760,7 +760,7 @@ class RunTrioTrain:
             overwrite=self.overwrite,
         )
 
-        self.re_training.find_all_outputs("find_outputs")
+        self.re_training.find_all_outputs("find_all_outputs", verbose=True)
 
         # skip ahead if all outputs exist already
         if self.re_training._outputs_exist and not self.restart_jobs:
@@ -819,17 +819,14 @@ class RunTrioTrain:
             overwrite=self.overwrite,
         )
 
+        self.select_ckpt.find_outputs()
+
         if self.restart_jobs and self._phase_jobs is None:
             self.check_next_phase(total_jobs=1, genome=self.itr.train_genome)
 
         self.itr = self.select_ckpt.run()
         print("ENDING SELECT_CKPT")
         breakpoint()
-
-        # else:
-        #     self.itr.logger.info(
-        #         f"{self.itr._mode_string} - [re_training_jobs] - [{self.logger_msg}]: next checkpoint will not be identified since there is no 'next_genome'"
-        #     )
 
         # Determine if a 'select-ckpt' job was submitted
         no_dependencies_required = check_if_all_same(

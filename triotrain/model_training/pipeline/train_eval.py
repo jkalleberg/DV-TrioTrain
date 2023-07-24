@@ -143,7 +143,7 @@ class TrainEval:
         elif self._num_to_ignore == 1:
             if self.train_job_num:
                 self.itr.logger.info(
-                    f"{self.logger_msg}: there are no jobs to re-submit for '{self._phase}'... SKIPPING AHEAD"
+                    f"{self.logger_msg}: completed '{self._phase}'... SKIPPING AHEAD"
                 )
         else:
             if self.itr.debug_mode:
@@ -157,22 +157,47 @@ class TrainEval:
                 f"{self.logger_msg}: expected a list of 1 SLURM jobs (or 'None' as a place holder)"
             )
             self._num_to_run = 0
-
-    def find_outputs(
-        self, number_outputs_expected: int = 2, phase: Union[str, None] = None
-    ) -> None:
+    
+    def find_outputs(self, number_outputs_expected: int = 2, phase: Union[str, None] = None) -> None:
         """
-        Determine if model_train and model_eval results already exist
+        Search for model-ckpts, based on expected output patterns.
+
+        Tests to see if training has already begun.
         """
         if phase is None:
-            logging_msg = self.logger_msg
+            logging_msg = f"{self.itr._mode_string} - [{self._phase}]"
         else:
             logging_msg = f"{self.itr._mode_string} - [{phase}]"
 
             if self.itr.train_genome is not None:
                 logging_msg = f"{logging_msg} - [{self.itr.train_genome}]"
 
-        self.find_training_outputs()
+        eval_path = Path(self.itr.train_dir) / f"eval_{self.itr.eval_genome}"
+
+        # if eval dir exists, then...
+        if eval_path.is_dir():
+            # confirm a best_ckpt txt file is present
+            # NOTE: these will start being created at the
+            best_ckpt_pattern = compile(r"best_checkpoint.*")
+
+            # Confirm examples do not already exist
+            (
+                self.existing_best_ckpt,
+                self.best_ckpt_files_found,
+                best_ckpt_files,
+            ) = check_if_output_exists(
+                best_ckpt_pattern,
+                "best_checkpoint files",
+                self.itr.train_dir / f"eval_{self.itr.eval_genome}",
+                logging_msg,
+                self.itr.logger,
+                debug_mode=self.itr.debug_mode,
+                dryrun_mode=self.itr.dryrun_mode,
+            )
+
+        # if eval dir doesn't exist, then...
+        else:
+            self.existing_best_ckpt = False
 
         if self.existing_best_ckpt:
             missing_files = check_expected_outputs(
@@ -189,7 +214,7 @@ class TrainEval:
         else:
             self._outputs_exist = False
 
-    def find_all_outputs(self, phase: str = "find_outputs") -> Union[bool, None]:
+    def find_all_outputs(self, phase: str = "find_outputs", verbose: bool = False) -> Union[bool, None]:
         """
         Determine if re-shuffle or beam outputs already exist, skip ahead if they do.
         """
@@ -201,10 +226,12 @@ class TrainEval:
             benchmarking_file=self.benchmarking_file,
             overwrite=self.overwrite,
         )
+        if verbose:
+            selecting_ckpt.find_outputs(phase=phase)
+        else:
+            selecting_ckpt.find_selected_ckpt_vars(phase=phase)
 
-        selecting_ckpt.find_outputs(phase=phase)
-
-        if selecting_ckpt._outputs_exist:
+        if selecting_ckpt._outputs_exist and verbose:
             self.find_outputs(phase=phase)
         else:
             self._outputs_exist = False
@@ -238,7 +265,8 @@ class TrainEval:
         """
         Behave differently if memory is provided in GB vs MB
         """
-        self.itr.logger.info(f"{self.logger_msg}: processing memory inputs now... ")
+        if self.itr.debug_mode:
+            self.itr.logger.debug(f"{self.logger_msg}: processing memory inputs now... ")
 
         # search patterns
         digits_only = compile(r"\d+")
@@ -250,9 +278,10 @@ class TrainEval:
             self._ntasks_per_gpu = int(floor(int(self._total_ntasks) / 2))
         elif int(self._gpu_mem) == 0:
             self._per_gpu_mem = "50G"
-            self.itr.logger.info(
-                f"{self.logger_msg}: exclusively using all mem across 2 GPU cards"
-            )
+            if self.itr.debug_mode:
+                self.itr.logger.debug(
+                    f"{self.logger_msg}: exclusively using all mem across 2 GPU cards"
+                )
         elif isinstance(self._gpu_mem, str):
             mem_value = digits_only.search(self._gpu_mem)
             mem_unit = letters_only.search(self._gpu_mem)
@@ -262,7 +291,7 @@ class TrainEval:
                 self._per_gpu_mem = f"{int(total_mem/ 2)}{unit}"
             else:
                 self.itr.logger.warning(
-                    f"Unexpected input format for gpu_mem: [{type(self._gpu_mem)}={self._gpu_mem}]"
+                    f"{self.logger_msg}: unexpected input format for gpu_mem: [{type(self._gpu_mem)}={self._gpu_mem}]"
                 )
                 raise ValueError("invalid GPU mem input")
         else:
@@ -279,7 +308,7 @@ class TrainEval:
                     self._per_cpu_mem = int(total_mem / 2)
                 else:
                     self.itr.logger.warning(
-                        f"Unexpected input format for cpu_mem: [{type(self._cpu_mem)}={self._cpu_mem}]"
+                        f"{self.logger_msg}: unexpected input format for cpu_mem: [{type(self._cpu_mem)}={self._cpu_mem}]"
                     )
                     raise ValueError("invalid CPU mem input")
             else:
@@ -288,14 +317,16 @@ class TrainEval:
 
         if self._per_gpu_mem is None and self._per_cpu_mem is not None:
             self._srun_mem = f"--mem-per-cpu={self._per_cpu_mem_string}"
-            self.itr.logger.info(
-                f"{self.logger_msg}: using [{int(self._per_cpu_mem) * int(self._ntasks_per_gpu)}] memory for each GPU srun task"
-            )
+            if self.itr.debug_mode:
+                self.itr.logger.debug(
+                    f"{self.logger_msg}: using {int(self._per_cpu_mem) * int(self._ntasks_per_gpu)} memory for each GPU srun task"
+                )
         else:
             self._srun_mem = f"--mem={self._per_gpu_mem}"
-            self.itr.logger.info(
-                f"{self.logger_msg}: using [{self._per_gpu_mem}] memory for each GPU srun task"
-            )
+            if self.itr.debug_mode:
+                self.itr.logger.debug(
+                    f"{self.logger_msg}: using {self._per_gpu_mem} memory for each GPU srun task"
+                )
 
     def make_job(self) -> Union[SBATCH, None]:
         """
@@ -383,9 +414,10 @@ class TrainEval:
         )
 
         if not slurm_job.job_file_exists:
-            self.itr.logger.info(
-                f"{self.logger_msg}: adding additional lines for model_eval... "
-            )
+            if self.itr.debug_mode:
+                self.itr.logger.debug(
+                    f"{self.logger_msg}: adding additional lines for model_eval... "
+                )
 
         # link training with evaluation
         if self._per_gpu_mem is None and self._per_cpu_mem is None:
@@ -414,52 +446,12 @@ class TrainEval:
 
         return slurm_job
 
-    def find_training_outputs(self, phase: Union[str, None] = None) -> None:
-        """
-        Search for model-ckpts, based on expected output patterns.
-
-        Test to see if training has already begun
-
-        Confirm that a best-ckpt does NOT already exist before re-training.
-        """
-        if phase is None:
-            logging_msg = f"{self.itr._mode_string} - [{self._phase}]"
-        else:
-            logging_msg = f"{self.itr._mode_string} - [{phase}]"
-
-        eval_path = Path(self.itr.train_dir) / f"eval_{self.itr.eval_genome}"
-
-        # if eval dir exists, then...
-        if eval_path.is_dir():
-            # confirm a best_ckpt txt file is present
-            # NOTE: these will start being created at the
-            best_ckpt_pattern = compile(r"best_checkpoint.*")
-
-            # Confirm examples do not already exist
-            (
-                self.existing_best_ckpt,
-                self.best_ckpt_files_found,
-                best_ckpt_files,
-            ) = check_if_output_exists(
-                best_ckpt_pattern,
-                "best_checkpoint files",
-                self.itr.train_dir / f"eval_{self.itr.eval_genome}",
-                logging_msg,
-                self.itr.logger,
-                debug_mode=self.itr.debug_mode,
-                dryrun_mode=self.itr.dryrun_mode,
-            )
-
-        # if eval dir doesn't exist, then...
-        else:
-            self.existing_best_ckpt = False
-
-    def submit_job(self, resubmission: bool = False) -> None:
+    def submit_job(self, msg: str = "sub", resubmission: bool = False) -> None:
         """
         Submit SLURM jobs to queue.
         """
         if (self._outputs_exist and self.overwrite is False) or (
-            self._outputs_exist and self._ignoring_restart_jobs
+            self._outputs_exist and self._ignoring_restart_jobs and self.overwrite is False
         ):
             self._skipped_counter += 1
             if resubmission:
@@ -476,25 +468,18 @@ class TrainEval:
             else:
                 slurm_job.write_job()
 
-        if not self.overwrite:
-            if resubmission:
-                if self._ignoring_re_shuffle:
-                    self.itr.logger.info(
-                        f"{self.logger_msg}: --overwrite=False; re-submitting job because missing model checkpoint files"
-                    )
-            else:
-                self.itr.logger.info(
-                    f"{self.logger_msg}: submitting job to create the model checkpoint files"
-                )
+        if not self.overwrite and resubmission:
+            self.itr.logger.info(
+                f"{self.logger_msg}: --overwrite=False; {msg}mitting job because missing model checkpoint files"
+            )
+        elif self.overwrite and self._outputs_exist:
+            self.itr.logger.info(
+                f"{self.logger_msg}: --overwrite=True; {msg}mitting job because replacing existing model checkpoint files"
+            )
         else:
-            if self._outputs_exist:
-                self.itr.logger.info(
-                    f"{self.logger_msg}: --overwrite=True; re-submitting job because replacing existing model checkpoint files"
-                )
-            else:
-                self.itr.logger.info(
-                    f"{self.logger_msg}: submitting job to create the model checkpoint files"
-                )
+            self.itr.logger.info(
+                f"{self.logger_msg}: {msg}mitting job to create the model checkpoint files"
+            )
 
         # identify any iteration dependencies
         # current_genome_dependencies[3] is the SLURM
@@ -525,7 +510,7 @@ class TrainEval:
                     self._select_ckpt_dependency = [slurm_job.job_number]
                 else:
                     self.itr.logger.error(
-                        f"{self.logger_msg}: unable to submit SLURM job",
+                        f"{self.logger_msg}: unable to {msg}mit SLURM job",
                     )
                     self._select_ckpt_dependency = [None]
 
@@ -566,6 +551,13 @@ class TrainEval:
         """
         self.find_restart_jobs()
 
+        skip_re_runs = check_if_all_same(self.train_job_num, None)
+
+        if skip_re_runs and self._ignoring_re_shuffle:
+            msg = "sub"
+        else:
+            msg = "re-sub"
+        
         # Determine if we are re-running training
         if self.train_job_num or not self._ignoring_re_shuffle:
             if self._num_to_run == 0:
@@ -582,15 +574,8 @@ class TrainEval:
             else:
                 if not self._ignoring_re_shuffle:
                     self.itr.logger.info(
-                        f"{self.logger_msg}: re_shuffle jobs were submitted...",
+                        f"{self.logger_msg}: re_shuffle job(s) were submitted...",
                     )
-
-                skip_re_runs = check_if_all_same(self.train_job_num, None)
-
-                if skip_re_runs:
-                    msg = "sub"
-                else:
-                    msg = "re-sub"
 
                 if self._num_to_run == 1:
                     self.itr.logger.info(
@@ -602,13 +587,12 @@ class TrainEval:
                     )
                     exit(1)
 
-                self.find_outputs()
-                self.submit_job(resubmission=True)
+                self.submit_job(msg=msg, resubmission=True)
 
         # or running it for the first time
         else:
             self.find_outputs()
-            self.submit_job()
+            self.submit_job(msg=msg)
 
         self.check_submission()
         return self._select_ckpt_dependency
