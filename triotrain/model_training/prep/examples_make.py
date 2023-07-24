@@ -554,6 +554,7 @@ class MakeExamples:
         Combine all the steps for making examples for all regions into one step
         """
         self.set_genome()
+        
         skip_re_runs = check_if_all_same(self.make_examples_job_nums, None)
 
         if skip_re_runs:

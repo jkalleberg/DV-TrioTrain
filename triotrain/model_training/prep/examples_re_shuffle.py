@@ -353,7 +353,7 @@ class ReShuffleExamples:
             else:
                 slurm_job.write_job()
 
-        if not self.overwrite and resubmission:
+        if not self.overwrite and self._ignoring_beam_shuffle:
             self.itr.logger.info(
                 f"{self.logger_msg}: --overwrite=False; {msg}mitting job because missing labeled.shuffled.merged outputs"
             )
@@ -469,7 +469,7 @@ class ReShuffleExamples:
 
         skip_re_runs = check_if_all_same(self.re_shuffle_job_num, None)
 
-        if skip_re_runs and self._ignoring_beam_shuffle:
+        if skip_re_runs and self._outputs_exist is False:
             msg = "sub"
         else:
             msg = "re-sub"
@@ -506,8 +506,7 @@ class ReShuffleExamples:
         else:
             if self._outputs_exist:
                 return 
-            
-            # self.find_outputs(find_all=True)
+
             self.submit_job(msg=msg)
 
         if self._train_dependency:

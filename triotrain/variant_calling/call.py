@@ -189,6 +189,15 @@ class CallVariants:
         """
         Load in variables from the env file, and define python variables.
         """
+        if self.itr.current_genome_num == 0:
+            self.itr.logger.warning(
+                f"{self.logger_msg}: using the default model checkpoint"
+            )
+        else:
+            self.itr.logger.info(
+                f"{self.logger_msg}: using a custom model checkpoint",
+            )
+            
         if self.itr.env is not None:
             if "N_Parts" not in self.itr.env.contents:
                 self.itr.env.add_to(
@@ -304,17 +313,11 @@ class CallVariants:
                 assert (
                     self.pop_vcf.exists()
                 ), "missing the population VCF file"
-                self.itr.logger.info(
-                    f"{self.logger_msg}: a population VCF was provided"
-                )
                 self.use_pop = True
                 self.itr.logger.info(
                     f"{self.logger_msg}: using both [8: 'allele_frequency', 19: 'insert_size'] channels in test genome examples"
                 )
             elif "PopVCF" in self.itr.env.contents:
-                self.itr.logger.warning(
-                    f"{self.logger_msg}: a population VCF was NOT provided"
-                )
                 self.use_pop = False
                 self.itr.logger.info(
                     f"{self.logger_msg}: using default [19: 'insert_size'] channel in test genome examples"
@@ -507,8 +510,6 @@ class CallVariants:
         )
         if slurm_job.check_sbatch_file():
             prior_job = self._select_ckpt_job[0] is not None
-            print("PRIOR JOB:", prior_job)
-            breakpoint()
 
             if index < len(self.call_variants_job_nums):
                 resub_jobs = self.call_variants_job_nums[index] is not None
@@ -517,11 +518,11 @@ class CallVariants:
 
             if (prior_job or resub_jobs) and self.overwrite:
                 self.itr.logger.info(
-                    f"{self.logger_msg}: --overwrite=True; re-writing the existing SLURM job now... "
+                    f"{self.test_logger_msg}: --overwrite=True; re-writing the existing SLURM job now... "
                 )
             else:
                 self.itr.logger.info(
-                    f"{self.logger_msg}: --overwrite=False; SLURM job file already exists... SKIPPING AHEAD"
+                    f"{self.test_logger_msg}: --overwrite=False; SLURM job file already exists... SKIPPING AHEAD"
                 )
                 return
         else:
@@ -676,14 +677,14 @@ class CallVariants:
             else:
                 slurm_job.write_job()
 
-        if not self.overwrite and resubmission:
+        if not self.overwrite and self._ignoring_select_ckpt and resubmission:
             self.itr.logger.info(
                 f"{self.test_logger_msg}: --overwrite=False; {msg}mitting job because missing DeepVariant VCF file"
                 )
         
         elif self.overwrite and self._outputs_exist:
             self.itr.logger.info(
-                f"{self.logger_msg}: --overwrite=True; {msg}mitting job because replacing existing DeepVariant VCF file"
+                f"{self.test_logger_msg}: --overwrite=True; {msg}mitting job because replacing existing DeepVariant VCF file"
             )
             
         else:
@@ -698,15 +699,6 @@ class CallVariants:
             self.itr.logger,
             self.test_logger_msg,
         )
-
-        if self.itr.current_genome_num == 0:
-            self.itr.logger.warning(
-                f"{self.test_logger_msg}: using the default model checkpoint"
-            )
-        else:
-            self.itr.logger.info(
-                f"{self.test_logger_msg}: using a custom model checkpoint",
-            )
         
         # if there is a running select-ckpt job...
         if self.itr.current_genome_dependencies[3] is not None:
@@ -795,7 +787,7 @@ class CallVariants:
 
         skip_re_runs = check_if_all_same(self.call_variants_job_nums, None)
 
-        if skip_re_runs and self._ignoring_select_ckpt:
+        if skip_re_runs and self._outputs_exist is False:
             msg = "sub"
         else:
             msg = "re-sub"
@@ -820,8 +812,6 @@ class CallVariants:
                     )
 
                 if self._num_to_run <= self.itr.total_num_tests:
-                    self.find_outputs(find_all=True, phase=self._phase)
-
                     self.itr.logger.info(
                             f"{self.logger_msg}: attempting to {msg}mit {self._num_to_run}-of-{self.itr.total_num_tests} SLURM jobs to the queue",
                         )
@@ -847,8 +837,6 @@ class CallVariants:
                     if self.test_genome is None:
                         continue
                     else:
-                        print("HERE!")
-                        self.find_outputs()
                         self.submit_job(
                             msg=msg,
                             dependency_index=test_index,
@@ -872,19 +860,10 @@ class CallVariants:
                     continue
                 else:
                     self.find_outputs()
-                    # re-submit 'call_variants' if 'select_ckpt' was re-submitted
-                    if self.itr.current_genome_dependencies[3] is not None:
-                        print("NOPE, HERE!")
-                        self.submit_job(
-                            msg=msg,
-                            dependency_index=t, total_jobs=self.itr.total_num_tests
-                        )
-                    else:
-                        print("ACTUALLY HERE!")
-                        self.submit_job(
-                            msg=msg,
-                            dependency_index=t, total_jobs=self.itr.total_num_tests
-                        )
+                    self.submit_job(
+                        msg=msg,
+                        dependency_index=t, total_jobs=self.itr.total_num_tests
+                    )
 
         self.check_submissions()
         return self._compare_dependencies

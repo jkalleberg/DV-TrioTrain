@@ -437,8 +437,8 @@ class BeamShuffleExamples:
                 slurm_job.write_job()
 
         num_missing_files = int(self.n_parts) - int(self._num_shuff_tfrecords_found)  # type: ignore
-
-        if not self.overwrite and resubmission:
+        
+        if not self.overwrite and self._ignoring_make_examples:
             self.itr.logger.info(
                     f"{self.logger_msg}: --overwrite=False; {msg}mitting job because missing {num_missing_files} labeled.shuffled.tfrecords"
             )
@@ -658,7 +658,7 @@ class BeamShuffleExamples:
 
         skip_re_runs = check_if_all_same(self.shuffle_examples_job_nums, None)
 
-        if skip_re_runs and self._ignoring_make_examples:
+        if skip_re_runs and self._outputs_exist is False:
             msg = "sub"
         else:
             msg = "re-sub"
@@ -748,8 +748,6 @@ class BeamShuffleExamples:
         else:
             if self._outputs_exist:
                 return self._re_shuffle_dependencies
-
-            # self.find_outputs(find_all=True)
             
             self.set_genome()
             for r in range(0, int(self._total_regions)):

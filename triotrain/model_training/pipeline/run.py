@@ -550,6 +550,7 @@ class RunTrioTrain:
                         overwrite=self.overwrite,
                         make_examples_job_nums=self._jobIDs,
                     )
+                    
                     self.make_examples.find_all_outputs(phase="find_all_outputs")
 
                     # skip ahead if all outputs exist already
@@ -879,15 +880,17 @@ class RunTrioTrain:
                 self.test_model.find_outputs(find_all=True)
             else:
                 self.test_model.find_all_outputs(phase="find_all_outputs")
-
-            if self.restart_jobs and self._phase_jobs is None:
-                self.check_next_phase(total_jobs=self.itr.total_num_tests, genome=self.itr.train_genome)
-
+            
             if self.test_model._outputs_exist and not self.restart_jobs:
                 self.itr.logger.info(
                     f"============ SKIPPING {self.itr._mode_string} - [test_model] ============"
                 )
                 return
+            
+            self.test_model.find_outputs(self.current_phase, find_all=True)
+
+            if self.restart_jobs and self._phase_jobs is None:
+                self.check_next_phase(total_jobs=self.itr.total_num_tests, genome=self.itr.train_genome)
 
             call_vars_job_nums = self.test_model.run()
         
@@ -970,6 +973,8 @@ class RunTrioTrain:
             )
 
         convert_job_nums = convert_results.run()
+        print("ENDING CONVERT HAPPY")
+        breakpoint()
 
         # Determine if any 'convert_happy' jobs were submitted
         no_dependencies_required = check_if_all_same(convert_job_nums, None)

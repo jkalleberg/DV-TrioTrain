@@ -359,7 +359,7 @@ class SelectCheckpoint:
             else:
                 slurm_job.write_job()
 
-        if not self.overwrite and resubmission:
+        if not self.overwrite and self._ignoring_training:
             self.itr.logger.info(
                 f"{self.logger_msg}: --overwrite=False; {msg}mitting job because missing best checkpoint file"
             )
@@ -451,9 +451,9 @@ class SelectCheckpoint:
 
         self.find_restart_jobs()
 
-        skip_re_runs = check_if_all_same(self.train_eval_job_num, None)
+        skip_re_runs = check_if_all_same(self.select_ckpt_job_num, None)
 
-        if skip_re_runs and self._ignoring_training:
+        if skip_re_runs and self._outputs_exist is False:
             msg = "sub"
         else:
             msg = "re-sub"
