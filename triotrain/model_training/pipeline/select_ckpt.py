@@ -373,6 +373,8 @@ class SelectCheckpoint:
                 f"{self.logger_msg}: {msg}mitting job to find the best checkpoint"
             )
 
+        prior_jobs = [self.train_eval_job_num[0], self.itr.current_genome_dependencies[2]]
+
         if self.itr.current_genome_dependencies[3] is None:
             # submit the training eval job to queue
             slurm_job = SubmitSBATCH(
@@ -382,9 +384,12 @@ class SelectCheckpoint:
                 self.itr.logger,
                 self.logger_msg,
             )
+
+
             slurm_job.build_command(
-                prior_job_number=self.train_eval_job_num, allow_dep_failure=True
+                prior_job_number=prior_jobs, allow_dep_failure=True
             )
+
             if self.itr.dryrun_mode:
                 slurm_job.display_command(display_mode=self.itr.dryrun_mode)
                 self._model_testing_dependency[0] = generate_job_id()
@@ -449,6 +454,7 @@ class SelectCheckpoint:
             self.itr.logger.info(
                 f"{self.logger_msg}: prior iteration select-ckpt job number | '{self.itr.current_genome_dependencies[2]}'"
             )
+            breakpoint()
 
         self.find_restart_jobs()
 
@@ -470,7 +476,11 @@ class SelectCheckpoint:
                     self.itr.logger.info(
                         f"{self.logger_msg}: 'call_variants' dependency updated | '{self._model_testing_dependency[0]}'"
                     )
-                    self.itr.current_genome_dependencies[3] = self._model_testing_dependency[0] 
+                    self.itr.current_genome_dependencies[3] = self._model_testing_dependency[0]
+                    self.itr.next_genome_dependencies[2] = self._model_testing_dependency[0]
+                    print("CURRENT DEPENDENCIES:", self.itr.current_genome_dependencies)
+                    print("NEXT DEPENDENCIES:", self.itr.next_genome_dependencies)
+                    breakpoint() 
                 else:
                     self._model_testing_dependency[0] = None
             else:
