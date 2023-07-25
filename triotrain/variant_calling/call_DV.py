@@ -604,8 +604,7 @@ class VariantCaller:
                     debug_mode=self.args.debug,
                 )
                 if submit_slurm_job.status == 0:
-                    if self._job_nums:
-                        self._job_nums[index] = str(submit_slurm_job.job_number)
+                    self._job_nums[index] = str(submit_slurm_job.job_number)
                 else:
                     self.logger.warning(
                         f"{self._test_logger_msg}: unable to submit SLURM job",

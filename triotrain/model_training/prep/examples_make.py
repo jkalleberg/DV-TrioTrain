@@ -527,7 +527,7 @@ class MakeExamples:
         )
 
         re_shuffle.set_genome()
-        re_shuffle.find_outputs(phase=phase, find_all=True)
+        re_shuffle.find_outputs(phase=phase)
 
         if re_shuffle._outputs_exist and verbose:
             beam = BeamShuffleExamples(
@@ -554,7 +554,7 @@ class MakeExamples:
         Combine all the steps for making examples for all regions into one step
         """
         self.set_genome()
-        
+
         skip_re_runs = check_if_all_same(self.make_examples_job_nums, None)
 
         if skip_re_runs:

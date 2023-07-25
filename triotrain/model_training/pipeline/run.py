@@ -72,10 +72,9 @@ class RunTrioTrain:
             self.genome = self.itr.train_genome
         else:
             self.genome = self.itr.eval_genome
-        
+
         if self.itr.dryrun_mode:
             self.logger_msg = f"[DRY_RUN]"
-
 
         if self.itr.demo_mode:
             if "chr" in self.itr.demo_chromosome.lower():
@@ -173,7 +172,13 @@ class RunTrioTrain:
         """
         self.re_running_jobs = None
 
-        if phase in ["train_eval", "select_ckpt", "call_variants", "compare_happy", "convert_happy"]:
+        if phase in [
+            "train_eval",
+            "select_ckpt",
+            "call_variants",
+            "compare_happy",
+            "convert_happy",
+        ]:
             self._phase_logger_msg = (
                 f"{self.itr._mode_string} - [check_restart] - [{genome}]"
             )
@@ -393,7 +398,7 @@ class RunTrioTrain:
             self.next_phase = "call_variants"
         elif self.current_phase == "call_variants":
             self.next_phase = "compare_happy"
-        elif self.current_phase == "compare_happy": 
+        elif self.current_phase == "compare_happy":
             self.next_phase = "convert_happy"
 
     def check_next_phase(
@@ -401,11 +406,11 @@ class RunTrioTrain:
     ) -> None:
         self.find_next_phase()
         self.process_re_runs(
-                phase=self.next_phase,
-                total_jobs_in_phase=total_jobs,
-                genome=genome,
-                restart=True,
-            )
+            phase=self.next_phase,
+            total_jobs_in_phase=total_jobs,
+            genome=genome,
+            restart=True,
+        )
 
         if genome:
             current_phase_str = f"{self.current_phase}:{genome}"
@@ -447,12 +452,15 @@ class RunTrioTrain:
 
                 elif self.current_phase == "select_ckpt":
                     outputs_found = self.select_ckpt._outputs_exist
-                
+
                 elif self.current_phase == "call_variants":
                     outputs_found = self.test_model._outputs_exist
-                
+
                 elif self.current_phase == "compare_happy":
-                    outputs_found = self.compare_hap._outputs_exist
+                    outputs_found = self.compare_tests._outputs_exist
+
+                elif self.current_phase == "convert_happy":
+                    outputs_found = self.convert_results._outputs_exist
 
                 if outputs_found:
                     continue
@@ -521,7 +529,7 @@ class RunTrioTrain:
             self.set_job_expectations()
             if genome is not None:
                 self.count_jobs(genome=genome)
-                self.check_jobs(genome=genome) 
+                self.check_jobs(genome=genome)
 
             ### ------ MAKE EXAMPLES ------ ###
             if self.itr.current_genome_num is not None:
@@ -538,7 +546,7 @@ class RunTrioTrain:
                         )
                     else:
                         self.process_re_runs(self.current_phase, genome=genome)
-                
+
                     self.make_examples = MakeExamples(
                         itr=self.itr,
                         slurm_resources=self.resource_dict,
@@ -550,7 +558,7 @@ class RunTrioTrain:
                         overwrite=self.overwrite,
                         make_examples_job_nums=self._jobIDs,
                     )
-                    
+
                     self.make_examples.find_all_outputs(phase="find_all_outputs")
 
                     # skip ahead if all outputs exist already
@@ -564,10 +572,11 @@ class RunTrioTrain:
                         self.check_next_phase(total_jobs=self._n_regions, genome=genome)
                     else:
                         self.make_examples.set_genome()
-                        self.make_examples.find_outputs(self.current_phase, find_all=True)
+                        self.make_examples.find_outputs(
+                            self.current_phase, find_all=True
+                        )
 
                     examples_job_nums = self.make_examples.run()
-                    print("ENDING MAKE_EXAMPLES")
                     breakpoint()
 
                     # Determine if any 'make_examples' jobs were submitted
@@ -626,7 +635,6 @@ class RunTrioTrain:
                         self.check_next_phase(total_jobs=self._n_regions, genome=genome)
 
                     beam_job_nums = self.shuffle_examples.run()
-                    print("ENDING BEAM_SHUFFLE")
                     breakpoint()
 
                     if beam_job_nums is None:
@@ -677,16 +685,12 @@ class RunTrioTrain:
                             )
 
                         self.re_shuffle.set_genome()
-                        self.re_shuffle.find_outputs(
-                            phase=self.current_phase, find_all=True
-                        )
+                        self.re_shuffle.find_outputs(phase=self.current_phase)
 
                         if self.restart_jobs and self._phase_jobs is None:
                             self.check_next_phase(total_jobs=1, genome=genome)
 
                         output = self.re_shuffle.run()
-
-                        print("ENDING RE_SHUFFLE")
                         breakpoint()
 
                         if output is not None:
@@ -766,8 +770,8 @@ class RunTrioTrain:
         # skip ahead if all outputs exist already
         if self.re_training._outputs_exist and not self.restart_jobs:
             self.itr.logger.info(
-                    f"============ SKIPPING {self.itr._mode_string} - [re_training_jobs] ============"
-                )
+                f"============ SKIPPING {self.itr._mode_string} - [re_training_jobs] ============"
+            )
             return
 
         elif self.restart_jobs and self._phase_jobs is None:
@@ -792,7 +796,6 @@ class RunTrioTrain:
                 exit(1)
 
         train_job_num = self.re_training.run()
-        print("ENDING TRAIN_EVAL")
         breakpoint()
 
         # Determine if a 'train_eval' job was submitted
@@ -826,7 +829,6 @@ class RunTrioTrain:
             self.check_next_phase(total_jobs=1, genome=self.itr.train_genome)
 
         self.itr = self.select_ckpt.run()
-        print("ENDING SELECT_CKPT")
         breakpoint()
 
         # Determine if a 'select-ckpt' job was submitted
@@ -838,7 +840,7 @@ class RunTrioTrain:
 
         if phase_skipped_counter == 2:
             self.itr.logger.info(
-                f"============ SKIPPING {self.itr._mode_string} - [re_training_jobs] - [{self.logger_msg}] ============"
+                f"============ SKIPPING {self.itr._mode_string} - [re_training_jobs] - [{self.itr.train_genome}] ============"
             )
 
     def test_model_jobs(self, useDT: bool = False) -> None:
@@ -863,7 +865,11 @@ class RunTrioTrain:
         else:
             ##--- MAKE + SUBMIT CALL_VARIANTS JOBS ---##
             self.current_phase = "call_variants"
-            self.process_re_runs(self.current_phase, total_jobs_in_phase=self.num_tests, genome=self.itr.train_genome)
+            self.process_re_runs(
+                self.current_phase,
+                total_jobs_in_phase=self.num_tests,
+                genome=self.itr.train_genome,
+            )
 
             self.test_model = CallVariants(
                 itr=self.itr,
@@ -880,22 +886,20 @@ class RunTrioTrain:
                 self.test_model.find_outputs(find_all=True)
             else:
                 self.test_model.find_all_outputs(phase="find_all_outputs")
-            
+
             if self.test_model._outputs_exist and not self.restart_jobs:
                 self.itr.logger.info(
                     f"============ SKIPPING {self.itr._mode_string} - [test_model] ============"
                 )
                 return
-            
-            self.test_model.find_outputs(self.current_phase, find_all=True)
 
             if self.restart_jobs and self._phase_jobs is None:
-                self.check_next_phase(total_jobs=self.itr.total_num_tests, genome=self.itr.train_genome)
+                self.check_next_phase(
+                    total_jobs=self.itr.total_num_tests, genome=self.itr.train_genome
+                )
 
             call_vars_job_nums = self.test_model.run()
-        
-        print("ENDING CALL VARIANTS")
-        breakpoint()
+            breakpoint()
 
         # Determine if any 'call_variants' jobs were submitted
         if call_vars_job_nums is None:
@@ -910,32 +914,32 @@ class RunTrioTrain:
             return
 
         ##--- MAKE + SUBMIT COMPARE_HAPPY JOBS ---##
-        self.process_re_runs("compare_happy", total_jobs_in_phase=self.num_tests, genome=self.itr.train_genome)
+        self.current_phase = "compare_happy"
+        self.process_re_runs(
+            self.current_phase,
+            total_jobs_in_phase=self.num_tests,
+            genome=self.itr.train_genome,
+        )
 
-        if no_dependencies_required:
-            compare_tests = CompareHappy(
-                itr=self.itr,
-                slurm_resources=self.resource_dict,
-                model_label=self.model_label,
-                track_resources=self.track_resources,
-                benchmarking_file=self.benchmarking_file,
-                compare_happy_job_nums=self._jobIDs,
-                overwrite=self.overwrite,
-            )
-        else:
-            compare_tests = CompareHappy(
-                itr=self.itr,
-                slurm_resources=self.resource_dict,
-                model_label=self.model_label,
-                call_variants_jobs=call_vars_job_nums,
-                track_resources=self.track_resources,
-                benchmarking_file=self.benchmarking_file,
-                compare_happy_job_nums=self._jobIDs,
-                overwrite=self.overwrite,
+        self.compare_tests = CompareHappy(
+            itr=self.itr,
+            slurm_resources=self.resource_dict,
+            model_label=self.model_label,
+            call_variants_jobs=call_vars_job_nums,
+            track_resources=self.track_resources,
+            benchmarking_file=self.benchmarking_file,
+            compare_happy_job_nums=self._jobIDs,
+            overwrite=self.overwrite,
+        )
+
+        self.compare_tests.find_outputs(self.current_phase, find_all=True)
+
+        if self.restart_jobs and self._phase_jobs is None:
+            self.check_next_phase(
+                total_jobs=self.itr.total_num_tests, genome=self.itr.train_genome
             )
 
-        compare_job_nums = compare_tests.run()
-        print("ENDING COMPARE HAPPY")
+        compare_job_nums = self.compare_tests.run()
         breakpoint()
 
         # Determine if any 'compare_happy' jobs were submitted
@@ -948,31 +952,32 @@ class RunTrioTrain:
             phase_skipped_counter += 1
 
         ##--- MAKE + SUBMIT CONVERT_HAPPY JOBS ---##
-        self.process_re_runs("convert_happy", total_jobs_in_phase=self.num_tests, genome=self.itr.train_genome)
+        self.current_phase = "convert_happy"
+        self.process_re_runs(
+            self.current_phase,
+            total_jobs_in_phase=self.num_tests,
+            genome=self.itr.train_genome,
+        )
 
-        if no_dependencies_required:
-            convert_results = ConvertHappy(
-                itr=self.itr,
-                slurm_resources=self.resource_dict,
-                model_label=self.model_label,
-                track_resources=self.track_resources,
-                benchmarking_file=self.benchmarking_file,
-                convert_happy_job_nums=self._jobIDs,
-                overwrite=self.overwrite,
-            )
-        else:
-            convert_results = ConvertHappy(
-                itr=self.itr,
-                slurm_resources=self.resource_dict,
-                model_label=self.model_label,
-                compare_happy_jobs=compare_job_nums,
-                track_resources=self.track_resources,
-                benchmarking_file=self.benchmarking_file,
-                convert_happy_job_nums=self._jobIDs,
-                overwrite=self.overwrite,
-            )
+        self.convert_results = ConvertHappy(
+            itr=self.itr,
+            slurm_resources=self.resource_dict,
+            model_label=self.model_label,
+            track_resources=self.track_resources,
+            benchmarking_file=self.benchmarking_file,
+            convert_happy_job_nums=self._jobIDs,
+            overwrite=self.overwrite,
+        )
+        self.convert_results.find_outputs(self.current_phase, find_all=True)
+        print("OUTPUTS EXIST:", self.convert_results._outputs_exist)
+        breakpoint()
 
-        convert_job_nums = convert_results.run()
+        if self.restart_jobs and self._phase_jobs is None:
+            self.check_next_phase(
+                total_jobs=self.itr.total_num_tests, genome=self.itr.train_genome
+            )
+        
+        convert_job_nums = self.convert_results.run()
         print("ENDING CONVERT HAPPY")
         breakpoint()
 

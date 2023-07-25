@@ -110,8 +110,8 @@ class TrainEval:
 
         if not self._ignoring_re_shuffle:
             self._jobs_to_run = [0]
-            self._num_to_ignore = 0
             self._num_to_run = 1
+            self._num_to_ignore = 0
 
         elif not self._ignoring_restart_jobs:
             self._jobs_to_run = find_not_NaN(self.train_job_num)

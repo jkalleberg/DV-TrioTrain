@@ -412,6 +412,103 @@ class BeamShuffleExamples:
             dryrun_mode=self.itr.dryrun_mode,
         )
 
+    def find_outputs(
+        self, 
+        phase: Union[str, None] = None,
+        find_all: bool = False
+    ) -> Union[bool, None]:
+        """
+        Determine if shuffling outputs already exist
+        """
+        if phase is None:
+            log_msg = f"{self.itr._mode_string} - [{self._phase}] - [{self.genome}]"
+            if not self.itr.demo_mode:
+                log_msg = f"{log_msg}{self.region_logger_msg}"
+            self.find_beam_shuffled_examples(find_all=find_all)
+        else:
+            log_msg = f"{self.itr._mode_string} - [{phase}] - [{self.genome}]"
+            if not self.itr.demo_mode:
+                log_msg = f"{log_msg}{self.region_logger_msg}"
+            self.find_beam_shuffled_examples(phase=phase, find_all=find_all)
+
+        if find_all:
+            expected_shuffle_outputs = self.total_shuffle_outputs_expected1
+            expected_config_outputs = self.total_pbtxt_outputs_expected
+            file_type1 = "total labeled.shuffled.tfrecords"
+            file_type2 = "total labeled.shuffled.pbtxt files"
+        else:
+            expected_shuffle_outputs = self.n_parts
+            expected_config_outputs = 1
+            file_type1 = "the labeled.shuffled.tfrecords"
+            file_type2 = "the labeled.shuffled.pbtxt file"
+
+        if (
+            self._existing_shuff_examples
+            and self._num_shuff_tfrecords_found is not None
+        ):
+            missing_shuffled_files1 = check_expected_outputs(
+                self._num_shuff_tfrecords_found,
+                expected_shuffle_outputs,
+                log_msg,
+                file_type1.split(" ")[1],
+                self.itr.logger,
+            )
+        else:
+            missing_shuffled_files1 = True
+
+        if find_all:
+            if missing_shuffled_files1:
+                self.itr.logger.info(
+                    f"{log_msg}: double-checking if last region produced very few examples...",
+                )
+                missing_shuffled_files2 = check_expected_outputs(
+                    self._num_shuff_tfrecords_found,
+                    self.total_shuffle_outputs_expected2,
+                    log_msg,
+                    file_type1.split(" ")[1],
+                    self.itr.logger,
+                )
+            else:
+                missing_shuffled_files2 = True
+        else:
+            missing_shuffled_files2 = False
+
+        # handling multiple numbers of outputs, depending on contents shuffled
+        if missing_shuffled_files1 and missing_shuffled_files2:
+            missing_shuffled_files = True
+        elif missing_shuffled_files1 and not missing_shuffled_files2:
+            missing_shuffled_files = False
+        else:
+            missing_shuffled_files = False
+
+        if phase is None:
+            self.find_beam_shuffled_pbtxt(phase=self._phase, find_all=find_all)
+        else:
+            self.find_beam_shuffled_pbtxt(phase=phase, find_all=find_all)
+
+        if self._existing_config and self._num_config_found is not None:
+            missing_config_file = check_expected_outputs(
+                self._num_config_found,
+                expected_config_outputs,
+                log_msg,
+                file_type2,
+                self.itr.logger,
+            )
+        else:
+            missing_config_file = True
+
+        if missing_shuffled_files or missing_config_file:
+            self._outputs_exist = False
+        else:
+            self._outputs_exist = True
+
+        if self.itr.debug_mode:
+            self._total_regions = 5
+
+        assert (
+            self._total_regions is not None
+        ), f"unable to proceed; expected a value for total_regions, and None was provided"
+
     def submit_job(
         self, msg: str = "sub", dependency_index: int = 0, resubmission: bool = False, total_jobs: int = 1
     ) -> None:
@@ -543,101 +640,6 @@ class BeamShuffleExamples:
                 f"{self.logger_msg}: fatal error encountered, unable to proceed further with pipeline.\nExiting... ",
             )
             exit(1)
-
-    def find_outputs(
-        self, phase: Union[str, None] = None, find_all: bool = False
-    ) -> Union[bool, None]:
-        """
-        Determine if shuffling outputs already exist
-        """
-        if phase is None:
-            log_msg = f"{self.itr._mode_string} - [{self._phase}] - [{self.genome}]"
-            if not self.itr.demo_mode:
-                log_msg = f"{log_msg}{self.region_logger_msg}"
-            self.find_beam_shuffled_examples(find_all=find_all)
-        else:
-            log_msg = f"{self.itr._mode_string} - [{phase}] - [{self.genome}]"
-            if not self.itr.demo_mode:
-                log_msg = f"{log_msg}{self.region_logger_msg}"
-            self.find_beam_shuffled_examples(phase=phase, find_all=find_all)
-
-        if find_all:
-            expected_shuffle_outputs = self.total_shuffle_outputs_expected1
-            expected_config_outputs = self.total_pbtxt_outputs_expected
-            file_type1 = "total labeled.shuffled.tfrecords"
-            file_type2 = "total labeled.shuffled.pbtxt files"
-        else:
-            expected_shuffle_outputs = self.n_parts
-            expected_config_outputs = 1
-            file_type1 = "the labeled.shuffled.tfrecords"
-            file_type2 = "the labeled.shuffled.pbtxt file"
-
-        if (
-            self._existing_shuff_examples
-            and self._num_shuff_tfrecords_found is not None
-        ):
-            missing_shuffled_files1 = check_expected_outputs(
-                self._num_shuff_tfrecords_found,
-                expected_shuffle_outputs,
-                log_msg,
-                file_type1.split(" ")[1],
-                self.itr.logger,
-            )
-        else:
-            missing_shuffled_files1 = True
-
-        if find_all:
-            if missing_shuffled_files1:
-                self.itr.logger.info(
-                    f"{log_msg}: double-checking if last region produced very few examples...",
-                )
-                missing_shuffled_files2 = check_expected_outputs(
-                    self._num_shuff_tfrecords_found,
-                    self.total_shuffle_outputs_expected2,
-                    log_msg,
-                    file_type1.split(" ")[1],
-                    self.itr.logger,
-                )
-            else:
-                missing_shuffled_files2 = True
-        else:
-            missing_shuffled_files2 = False
-
-        # handling multiple numbers of outputs, depending on contents shuffled
-        if missing_shuffled_files1 and missing_shuffled_files2:
-            missing_shuffled_files = True
-        elif missing_shuffled_files1 and not missing_shuffled_files2:
-            missing_shuffled_files = False
-        else:
-            missing_shuffled_files = False
-
-        if phase is None:
-            self.find_beam_shuffled_pbtxt(phase=self._phase, find_all=find_all)
-        else:
-            self.find_beam_shuffled_pbtxt(phase=phase, find_all=find_all)
-
-        if self._existing_config and self._num_config_found is not None:
-            missing_config_file = check_expected_outputs(
-                self._num_config_found,
-                expected_config_outputs,
-                log_msg,
-                file_type2,
-                self.itr.logger,
-            )
-        else:
-            missing_config_file = True
-
-        if missing_shuffled_files or missing_config_file:
-            self._outputs_exist = False
-        else:
-            self._outputs_exist = True
-
-        if self.itr.debug_mode:
-            self._total_regions = 5
-
-        assert (
-            self._total_regions is not None
-        ), f"unable to proceed; expected a value for total_regions, and None was provided"
 
     def run(self) -> Union[List[Union[str, None]], None]:
         """

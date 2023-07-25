@@ -141,8 +141,8 @@ class ReShuffleExamples:
         elif self._num_to_ignore == 1:
             if self.re_shuffle_job_num:
                 self.itr.logger.info(
-                        f"{self.logger_msg}: completed '{self._phase}:{self.genome}'... SKIPPING AHEAD"
-                    )
+                    f"{self.logger_msg}: completed '{self._phase}:{self.genome}'... SKIPPING AHEAD"
+                )
         else:
             if self.itr.debug_mode:
                 self.itr.logger.debug(
@@ -185,9 +185,7 @@ class ReShuffleExamples:
                         data_dict=data,
                     )
                 else:
-                    self.itr.logger.info(
-                        f"{self.logger_msg}: benchmarking is active"
-                    )
+                    self.itr.logger.info(f"{self.logger_msg}: benchmarking is active")
 
     def make_job(self) -> Union[SBATCH, None]:
         """
@@ -331,93 +329,9 @@ class ReShuffleExamples:
             else:
                 self._merged_tfrecords_exist = True
 
-    def submit_job(self, msg: str = "sub", resubmission: bool = False) -> Union[int, str, None]:
-        """
-        Submit SLURM job to queue
-        """
-        if (self._outputs_exist and self.overwrite is False) or (
-            self._outputs_exist and self._ignoring_restart_jobs and self.overwrite is False
-        ):
-            self._skipped_counter += 1
-            if resubmission:
-                self.itr.logger.info(
-                    f"{self.logger_msg}: --overwrite=False; skipping job because found all labeled.shuffled.merged outputs"
-                )
-            return
-
-        slurm_job = self.make_job()
-
-        if slurm_job is not None:
-            if self.itr.dryrun_mode:
-                slurm_job.display_job()
-            else:
-                slurm_job.write_job()
-
-        if not self.overwrite and self._ignoring_beam_shuffle:
-            self.itr.logger.info(
-                f"{self.logger_msg}: --overwrite=False; {msg}mitting job because missing labeled.shuffled.merged outputs"
-            )
-        elif self.overwrite and self._outputs_exist:
-            self.itr.logger.info(
-                f"{self.logger_msg}: --overwrite=True; {msg}mitting job because replacing existing labeled.shuffled.merged outputs"
-            )
-        else:
-            self.itr.logger.info(
-                 f"{self.logger_msg}: {msg}mitting job to create labeled.shuffled.merged outputs"
-            )
-
-        slurm_job = SubmitSBATCH(
-            self.itr.job_dir,
-            f"{self.job_name}.sh",
-            self.handler_label,
-            self.itr.logger,
-            f"{self.logger_msg}",
-        )
-
-        if self.beam_shuffling_jobs is not None:
-            slurm_job.build_command(prior_job_number=self.beam_shuffling_jobs)
-        else:
-            slurm_job.build_command(prior_job_number=None)
-
-        slurm_job.display_command(
-            display_mode=self.itr.dryrun_mode, debug_mode=self.itr.debug_mode
-        )
-
-        if self.itr.dryrun_mode:
-            self._train_dependency = generate_job_id()
-        else:
-            slurm_job.get_status(debug_mode=self.itr.debug_mode)
-
-            if slurm_job.status == 0:
-                self._train_dependency = slurm_job.job_number
-            else:
-                self.itr.logger.error(f"{self.logger_msg}: unable to {msg}mit SLURM job")
-
-    def check_submission(self) -> None:
-        """
-        check if the SLURM job file was submitted to the SLURM queue successfully
-        """
-        if self._train_dependency is not None:
-            print(
-                f"============================================================\n{self.logger_msg} Job Number: {self._train_dependency}\n============================================================"
-            )
-
-        elif self._skipped_counter == 1:
-            self._train_dependency = None
-        else:
-            self.itr.logger.error(
-                f"{self.logger_msg}: expected SLURM jobs to be submitted, but they were not",
-            )
-            self.itr.logger.warning(
-                f"{self.logger_msg}: fatal error encountered, unable to proceed further with pipeline.\nExiting... ",
-            )
-            exit(1)
-
-        if self.track_resources and self.benchmarking_file is not None:
-            self.benchmark()
-
     def find_outputs(
-        self, phase: Union[str, None] = None, find_all: bool = False
+        self,
+        phase: Union[str, None] = None,
     ) -> None:
         """
         Determine if re-shuffling outputs already exist
@@ -452,6 +366,97 @@ class ReShuffleExamples:
 
                 if self._merged_tfrecords_exist and self._merged_config_exists:
                     self._outputs_exist = True
+
+    def submit_job(
+        self, msg: str = "sub", resubmission: bool = False
+    ) -> Union[int, str, None]:
+        """
+        Submit SLURM job to queue
+        """
+        if (self._outputs_exist and self.overwrite is False) or (
+            self._outputs_exist
+            and self._ignoring_restart_jobs
+            and self.overwrite is False
+        ):
+            self._skipped_counter += 1
+            if resubmission:
+                self.itr.logger.info(
+                    f"{self.logger_msg}: --overwrite=False; skipping job because found all labeled.shuffled.merged outputs"
+                )
+            return
+
+        slurm_job = self.make_job()
+
+        if slurm_job is not None:
+            if self.itr.dryrun_mode:
+                slurm_job.display_job()
+            else:
+                slurm_job.write_job()
+
+        if not self.overwrite and self._ignoring_beam_shuffle:
+            self.itr.logger.info(
+                f"{self.logger_msg}: --overwrite=False; {msg}mitting job because missing labeled.shuffled.merged outputs"
+            )
+        elif self.overwrite and self._outputs_exist:
+            self.itr.logger.info(
+                f"{self.logger_msg}: --overwrite=True; {msg}mitting job because replacing existing labeled.shuffled.merged outputs"
+            )
+        else:
+            self.itr.logger.info(
+                f"{self.logger_msg}: {msg}mitting job to create labeled.shuffled.merged outputs"
+            )
+
+        slurm_job = SubmitSBATCH(
+            self.itr.job_dir,
+            f"{self.job_name}.sh",
+            self.handler_label,
+            self.itr.logger,
+            f"{self.logger_msg}",
+        )
+
+        if self.beam_shuffling_jobs is not None:
+            slurm_job.build_command(prior_job_number=self.beam_shuffling_jobs)
+        else:
+            slurm_job.build_command(prior_job_number=None)
+
+        slurm_job.display_command(
+            display_mode=self.itr.dryrun_mode, debug_mode=self.itr.debug_mode
+        )
+
+        if self.itr.dryrun_mode:
+            self._train_dependency = generate_job_id()
+        else:
+            slurm_job.get_status(debug_mode=self.itr.debug_mode)
+
+            if slurm_job.status == 0:
+                self._train_dependency = slurm_job.job_number
+            else:
+                self.itr.logger.error(
+                    f"{self.logger_msg}: unable to {msg}mit SLURM job"
+                )
+
+    def check_submission(self) -> None:
+        """
+        check if the SLURM job file was submitted to the SLURM queue successfully
+        """
+        if self._train_dependency is not None:
+            print(
+                f"============================================================\n{self.logger_msg} Job Number: {self._train_dependency}\n============================================================"
+            )
+
+        elif self._skipped_counter == 1:
+            self._train_dependency = None
+        else:
+            self.itr.logger.error(
+                f"{self.logger_msg}: expected SLURM jobs to be submitted, but they were not",
+            )
+            self.itr.logger.warning(
+                f"{self.logger_msg}: fatal error encountered, unable to proceed further with pipeline.\nExiting... ",
+            )
+            exit(1)
+
+        if self.track_resources and self.benchmarking_file is not None:
+            self.benchmark()
 
     def run(self) -> Union[Iteration, None]:
         """
@@ -505,7 +510,7 @@ class ReShuffleExamples:
         # or running it for the first time
         else:
             if self._outputs_exist:
-                return 
+                return
 
             self.submit_job(msg=msg)
 
