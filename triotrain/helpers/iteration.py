@@ -136,7 +136,7 @@ class Iteration:
                 missing_default_file = check_expected_outputs(
                     outputs_found,
                     1,
-                    f"{self._mode_string} - [region_shuffling]",
+                    f"{self._mode_string} - [region_shuffling] - [{self.train_genome}]",
                     "default region file",
                     self.logger,
                 )

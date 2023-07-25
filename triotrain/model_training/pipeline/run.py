@@ -9,7 +9,6 @@ from dataclasses import dataclass, field
 from json import load
 from sys import exit
 from typing import List, TextIO, Union
-from pathlib import Path
 
 # Custom helper modules
 from helpers.files import WriteFiles

@@ -99,6 +99,7 @@ def check_expected_outputs(
     msg: str,
     file_type: str,
     logger: Logger,
+    verbose: bool = True
 ) -> bool:
     """Confirms if expected outputs were made correctly.
 
@@ -114,6 +115,8 @@ def check_expected_outputs(
         general descriptor for the files to find
     logger : Logger
         handler for print statements
+    verbose: bool
+        if True, print additional logging msgs
 
     Returns
     -------
@@ -122,9 +125,10 @@ def check_expected_outputs(
     """
     if outputs_found == outputs_expected:
         if outputs_expected == 1:
-            logger.info(
-                f"{msg}: found the {int(outputs_found):,} expected {file_type}... SKIPPING AHEAD"
-            )
+            if verbose:
+                logger.info(
+                    f"{msg}: found the {int(outputs_found):,} expected {file_type}... SKIPPING AHEAD"
+                )
         else:
             logger.info(
                 f"{msg}: found all {int(outputs_found):,} expected {file_type}... SKIPPING AHEAD"
