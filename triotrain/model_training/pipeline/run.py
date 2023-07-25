@@ -888,9 +888,14 @@ class RunTrioTrain:
                 self.test_model.find_all_outputs(phase="find_all_outputs")
 
             if self.test_model._outputs_exist and not self.restart_jobs:
-                self.itr.logger.info(
-                    f"============ SKIPPING {self.itr._mode_string} - [test_model] ============"
-                )
+                if self.itr.train_genome is None:
+                    self.itr.logger.info(
+                        f"============ SKIPPING {self.itr._mode_string} - [test_model] ============"
+                    )
+                else:
+                    self.itr.logger.info(
+                        f"============ SKIPPING {self.itr._mode_string} - [test_model] - [{self.itr.train_genome}] ============"
+                    ) 
                 return
 
             if self.restart_jobs and self._phase_jobs is None:
@@ -963,22 +968,16 @@ class RunTrioTrain:
             itr=self.itr,
             slurm_resources=self.resource_dict,
             model_label=self.model_label,
+            compare_happy_jobs=compare_job_nums,
             track_resources=self.track_resources,
             benchmarking_file=self.benchmarking_file,
             convert_happy_job_nums=self._jobIDs,
             overwrite=self.overwrite,
         )
         self.convert_results.find_outputs(self.current_phase, find_all=True)
-        print("OUTPUTS EXIST:", self.convert_results._outputs_exist)
-        breakpoint()
+        self.convert_results.double_check(phase_to_check="process_happy", find_all=True)
 
-        if self.restart_jobs and self._phase_jobs is None:
-            self.check_next_phase(
-                total_jobs=self.itr.total_num_tests, genome=self.itr.train_genome
-            )
-        
         convert_job_nums = self.convert_results.run()
-        print("ENDING CONVERT HAPPY")
         breakpoint()
 
         # Determine if any 'convert_happy' jobs were submitted
@@ -987,9 +986,14 @@ class RunTrioTrain:
             phase_skipped_counter += 1
 
         if phase_skipped_counter == 3:
-            self.itr.logger.info(
-                f"============ SKIPPING {self.itr._mode_string} - [test_model] - [{self.logger_msg}] ============"
-            )
+            if self.itr.train_genome is None:
+                self.itr.logger.info(
+                    f"============ SKIPPING {self.itr._mode_string} - [test_model] ============"
+                )
+            else:
+                self.itr.logger.info(
+                    f"============ SKIPPING {self.itr._mode_string} - [test_model] - [{self.itr.train_genome}] ============"
+                )
 
     def make_and_submit_jobs(
         self,

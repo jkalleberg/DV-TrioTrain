@@ -674,14 +674,14 @@ class BeamShuffleExamples:
                     and check_if_all_same(self._re_shuffle_dependencies, None) is False
                 ):
                     self.itr.logger.info(
-                        f"{self.logger_msg}: re_shuffle dependencies updated | '{self._re_shuffle_dependencies}'"
+                        f"{self.logger_msg}: 're_shuffle' dependencies updated | '{self._re_shuffle_dependencies}'"
                     )
                 else:
                     self._re_shuffle_dependencies = None
             else:
                 if not self._ignoring_make_examples:
                     self.itr.logger.info(
-                        f"{self.logger_msg}: make_examples jobs were submitted...",
+                        f"{self.logger_msg}: 'make_examples' jobs were submitted...",
                     )
 
                 if self._num_to_run <= self._total_regions:

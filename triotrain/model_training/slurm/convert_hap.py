@@ -111,16 +111,6 @@ class Convert:
         input_file_list = self._input_file.split("-")
         self._current_comparision_name = input_file_list[0]
 
-        # Grab the genome number only
-        # split_nums = re.compile(r"([a-zA-Z]+)([0-9]+)")
-        # match = split_nums.match(self._current_comparision_name)
-        # if match is not None:
-        #     self._test_num = match.groups()[1]
-
-        # else:
-        #     self._test_num = None
-        #     self._test_name = "Test"
-
     def load_variables(self) -> None:
         """
         Load in variables from the env file, and define python variables.

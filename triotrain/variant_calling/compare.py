@@ -164,7 +164,7 @@ class CompareHappy:
                     f"{self.logger_msg}: --running-jobids triggered reprocessing {self._num_to_run} jobs"
                 )
             self.itr.logger.error(
-                f"{self.logger_msg}: incorrect format for 'compare_happy' SLURM job numbers"
+                f"{self.logger_msg}: incorrect format for '{self._phase}' SLURM job numbers"
             )
             self.itr.logger.error(
                 f"{self.logger_msg}: expected a list of {self.itr.total_num_tests} SLURM jobs (or 'None' as a place holder)"
@@ -354,7 +354,7 @@ class CompareHappy:
         # Define the regrex pattern of expected output
         if find_all:
             msg = "all hap.py output files"
-            expected_outputs = int(self.itr.total_num_tests * outputs_per_test)
+            self._expected_outputs = int(self.itr.total_num_tests * outputs_per_test)
 
             # Define the regrex pattern of expected output
             compare_happy_regex = rf"^(happy\d+).+\.(?![out$|\.sh$]).+$"
@@ -365,7 +365,7 @@ class CompareHappy:
             # which is required for Baseline
         else:
             msg = "hap.py output files"
-            expected_outputs = outputs_per_test
+            self._expected_outputs = outputs_per_test
             compare_happy_regex = rf"^({self.prefix}).+\.(?![out$|\.sh$]).+$"
             logging_msg = f"{logging_msg} - [{self.test_logger_msg}]"
 
@@ -393,7 +393,7 @@ class CompareHappy:
         if existing_results_files:
             missing_files = check_expected_outputs(
                 self._outputs_found,
-                expected_outputs,
+                self._expected_outputs,
                 logging_msg,
                 "hap.py output files",
                 self.itr.logger,
@@ -401,7 +401,7 @@ class CompareHappy:
             if missing_files:
                 if find_all:
                     self._num_to_ignore = self._outputs_found
-                    self._num_to_run = int(expected_outputs - self._outputs_found)
+                    self._num_to_run = int(self._expected_outputs - self._outputs_found)
                 self._outputs_exist = False
             else:
                 self._outputs_exist = True
@@ -526,9 +526,6 @@ class CompareHappy:
             )
             exit(1)
 
-        if self.track_resources and self.benchmarking_file is not None:
-            self.benchmark()
-
     def run(self) -> Union[List[Union[str, None]], None]:
         """
         Combines all the steps for assessing a DV model into one step.
@@ -553,24 +550,19 @@ class CompareHappy:
                     is False
                 ):
                     self.itr.logger.info(
-                        f"{self.logger_msg}: convert_happy dependencies updated | '{self._convert_happy_dependencies}'"
+                        f"{self.logger_msg}: 'convert_happy' dependencies updated | '{self._convert_happy_dependencies}'"
                     )
                 else:
                     self._convert_happy_dependencies = None
             else:
                 if not self._ignoring_call_variants:
                     self.itr.logger.info(
-                        f"{self.logger_msg}: call_variants jobs were submitted...",
+                        f"{self.logger_msg}: 'call_variants' jobs were submitted...",
                     )
 
                 if self._num_to_run <= self.itr.total_num_tests:
-                    # self.converting.find_outputs(find_all=True, phase=self._phase)
-                    # self._outputs_exist = self.converting._outputs_exist
-                    # self._outputs_found = self.converting._outputs_found
-
-                    # if self.converting._expected_outputs > self._outputs_found > 0:
-                    #     self.converting.double_check(phase_to_check=self._phase)
-                    #     self.converting.double_check(phase_to_check="process_happy")
+                    if self._expected_outputs > self._outputs_found > 0:
+                        self.converting.double_check(phase_to_check="process_happy")
 
                     self.itr.logger.info(
                         f"{self.logger_msg}: attempting to {msg}mit {self._num_to_run}-of-{self.itr.total_num_tests} SLURM jobs to the queue",

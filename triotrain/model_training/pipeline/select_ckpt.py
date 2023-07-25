@@ -467,7 +467,7 @@ class SelectCheckpoint:
                     and self._model_testing_dependency[0] is not None
                 ):
                     self.itr.logger.info(
-                        f"{self.logger_msg}: call_variants dependency updated | '{self._model_testing_dependency[0]}'"
+                        f"{self.logger_msg}: 'call_variants' dependency updated | '{self._model_testing_dependency[0]}'"
                     )
                     self.itr.current_genome_dependencies[3] = self._model_testing_dependency[0] 
                 else:
@@ -475,7 +475,7 @@ class SelectCheckpoint:
             else:
                 if not self._ignoring_training:
                     self.itr.logger.info(
-                        f"{self.logger_msg}: train_eval job was submitted...",
+                        f"{self.logger_msg}: 'train_eval' job was submitted...",
                     )
 
                 if self._num_to_run == 1:

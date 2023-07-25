@@ -485,14 +485,14 @@ class ReShuffleExamples:
                 self._skipped_counter = self._num_to_ignore
                 if self._train_dependency:
                     self.itr.logger.info(
-                        f"{self.logger_msg}: train dependency updated | '{self._train_dependency}'"
+                        f"{self.logger_msg}: 'train_eval' dependency updated | '{self._train_dependency}'"
                     )
                 else:
                     self._train_dependency = None
             else:
                 if not self._ignoring_beam_shuffle:
                     self.itr.logger.info(
-                        f"{self.logger_msg}: beam_shuffle jobs were submitted...",
+                        f"{self.logger_msg}: 'beam_shuffle' jobs were submitted...",
                     )
 
                 if self._num_to_run == 1:

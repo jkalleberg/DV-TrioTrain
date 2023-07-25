@@ -184,7 +184,7 @@ class CallVariants:
                 )
 
             self.itr.logger.error(
-                f"{self.logger_msg}: incorrect format for 'call_variants_job_nums'"
+                f"{self.logger_msg}: incorrect format for '{self._phase}' SLURM job numbers"
             )
             self.itr.logger.error(
                 f"{self.logger_msg}: expected a list of {self.itr.total_num_tests} SLURM jobs (or 'None' as a place holder)"
@@ -512,8 +512,6 @@ class CallVariants:
             self.test_logger_msg,
         )
         if slurm_job.check_sbatch_file():
-            print("SELECT CKPT JOB NUM:", self._select_ckpt_job)
-            breakpoint()
             prior_job = self._select_ckpt_job[0] is not None
 
             if index < len(self.call_variants_job_nums):
@@ -813,7 +811,7 @@ class CallVariants:
                     and check_if_all_same(self._compare_dependencies, None) is False
                 ):
                     self.itr.logger.info(
-                        f"{self.logger_msg}: compare_happy dependencies updated | '{self._compare_dependencies}'"
+                        f"{self.logger_msg}: 'compare_happy' dependencies updated | '{self._compare_dependencies}'"
                     )
                 else:
                     self._compare_dependencies = None
@@ -821,7 +819,7 @@ class CallVariants:
                 
                 if not self._ignoring_select_ckpt:
                     self.itr.logger.info(
-                        f"{self.logger_msg}: select_ckpt job was submitted...",
+                        f"{self.logger_msg}: 'select_ckpt' job was submitted...",
                     )
 
                 if self._num_to_run <= self.itr.total_num_tests:
