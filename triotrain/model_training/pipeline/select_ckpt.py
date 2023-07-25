@@ -469,6 +469,7 @@ class SelectCheckpoint:
                     self.itr.logger.info(
                         f"{self.logger_msg}: call_variants dependency updated | '{self._model_testing_dependency[0]}'"
                     )
+                    self.itr.current_genome_dependencies[3] = self._model_testing_dependency[0] 
                 else:
                     self._model_testing_dependency[0] = None
             else:
