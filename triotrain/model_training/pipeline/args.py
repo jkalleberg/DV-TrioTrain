@@ -231,14 +231,14 @@ def collect_args() -> argparse.ArgumentParser:
     demo.add_argument(
         "--show-regions",
         dest="show_regions",
-        help="if True, create PNG images of the multi-channel tensor vector(s)\n(default: %(default)s)",
+        help="[beta]\nif True, create PNG images of the multi-channel tensor vector(s)\n(default: %(default)s)",
         default=False,
         action="store_true",
     )
     demo.add_argument(
         "--show-regions-file",
         dest="show_regions_file",
-        help="input file (.bed or .txt)\ncontains location(s) to visualize\n==== .bed format ====\nCHROM\tSTART\tSTOP\n=====================\n==== .txt format ====\nCHROM:START-STOP\n=====================",
+        help="[beta]\ninput file (.bed or .txt)\ncontains location(s) to visualize\n==== .bed format ====\nCHROM\tSTART\tSTOP\n=====================\n==== .txt format ====\nCHROM:START-STOP\n=====================",
         type=str,
         metavar="</path/to/regions_file>",
     )
@@ -394,20 +394,20 @@ def check_args(args: argparse.Namespace, logger: Logger, default_channels: str) 
     try:
         assert (
             args.name
-        ), "Missing --name; Please provide a label for the current analysis"
+        ), "missing option --name; Please provide a label for the current analysis"
         assert (
             args.metadata
-        ), "Missing --metadata; Please provide the path to pipeline run parameters in CSV format"
+        ), "missing option --metadata; Please provide the path to pipeline run parameters in CSV format"
         assert (
             args.first_genome
-        ), "Missing --first-genome; Please designate which genome to use to start training for each iteration"
+        ), "missing option --first-genome; Please designate which genome to use to start training for each iteration"
         # Convert the string value from arguments to a 'None' value
         if args.first_genome == "None":
             args.first_genome = None
 
         assert (
             args.resource_config
-        ), "Missing --resources; Please designate a path to pipeline compute resources in JSON format"
+        ), "missing option --resources; Please designate a path to pipeline compute resources in JSON format"
 
         assert Path(
             args.modules
@@ -416,19 +416,24 @@ def check_args(args: argparse.Namespace, logger: Logger, default_channels: str) 
         if args.demo_mode and args.show_regions:
             assert (
                 args.show_regions_file
-            ), "Missing --show-regions-file; Please designate a path to show_examples subset region in either BED or text format"
+            ), "missing option --show-regions-file; Please designate a path to show_examples subset region in either BED or text format"
 
         if args.overwrite:
             assert (
                 args.restart_jobs
-            ), f"--overwrite is set, but missing --restart-jobs.\nPlease provide a JSON dictionary with the following format:\n{{'phase': ['jobid', 'jobid', 'None', 'jobid']}}.\n\t- 'phase' determines which parts of the pipeline to re-run completely\n\t- any jobid = 'None' will be have the SLURM job file and any existing results overwritten"
+            ), f"option --overwrite is set, but missing --restart-jobs.\nPlease provide a JSON dictionary with the following format:\n{{'phase': ['jobid', 'jobid', 'None', 'jobid']}}.\n\t- 'phase' determines which parts of the pipeline to re-run completely\n\t- any jobid = 'None' will be have the SLURM job file and any existing results overwritten"
 
-            if args.begin is not None:
-                if args.terminate is not None:
-                    num_runs_to_overwrite = int(args.terminate) - int(args.begin)
-                    assert (
-                        num_runs_to_overwrite == 1
-                    ), f"--overwrite is set, but attempting to run {num_runs_to_overwrite} iterations.\nPlease adjust either --start-itr or --stop-itr flags so that only one iteration will be overwritten at a time"
+            if args.begin is None:
+                args.begin = 0
+            
+            if args.terminate is None:
+                logger.warning("missing option --stop-itr; however only one iteration will be overwritten at a time")
+                args.terminate = args.begin + 1
+
+            num_runs_to_overwrite = int(args.terminate) - int(args.begin)
+            assert (
+                num_runs_to_overwrite == 1
+                ), f"option --overwrite is set, but attempting to run {num_runs_to_overwrite} iterations.\nPlease adjust either --start-itr or --stop-itr flags so that only one iteration will be overwritten at a time"
 
         # warn the user against phase name typos
         if args.restart_jobs:
