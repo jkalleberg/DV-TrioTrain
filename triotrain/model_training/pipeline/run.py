@@ -9,6 +9,7 @@ from dataclasses import dataclass, field
 from json import load
 from sys import exit
 from typing import List, TextIO, Union
+from pathlib import Path
 
 # Custom helper modules
 from helpers.files import WriteFiles
@@ -498,6 +499,7 @@ class RunTrioTrain:
                 self.itr.logger.info(
                     f"{self.itr._mode_string} - [region_shuffling] - [{genome}]: --use-regions-shuffle is set"
                 )
+
                 regions = MakeRegions(
                     self.itr,
                     self.max_examples,
@@ -506,9 +508,10 @@ class RunTrioTrain:
                 )
 
                 # create the default regions_file for testing, if necessary
-                regions.write_autosomes_withX_regions(
-                    output_file_name=f"FIXTHIS_autosomes_withX.bed"
-                )
+                if not self.itr.default_region_file.is_file():
+                    regions.write_autosomes_withX_regions(
+                        output_file_name=f"{self.itr._reference_genome.stem}_autosomes_withX.bed"
+                    )
 
                 # make the regions_shuffling bed files
                 current_itr = regions.run()
@@ -518,8 +521,6 @@ class RunTrioTrain:
                     self.itr.logger.error(
                         f"{self.itr._mode_string} - [region_shuffling] - [{genome}]: expected regions to be created, but they were not"
                     )
-                print("STOP!")
-                breakpoint()
 
             # Update the internal variable
             if self.train_mode:
@@ -561,6 +562,7 @@ class RunTrioTrain:
                         make_examples_job_nums=self._jobIDs,
                     )
 
+                    self.make_examples.set_genome()
                     self.make_examples.find_all_outputs(phase="find_all_outputs")
 
                     # skip ahead if all outputs exist already
@@ -573,7 +575,6 @@ class RunTrioTrain:
                     if self.restart_jobs and self._phase_jobs is None:
                         self.check_next_phase(total_jobs=self._n_regions, genome=genome)
                     else:
-                        self.make_examples.set_genome()
                         self.make_examples.find_outputs(
                             self.current_phase, find_all=True
                         )
@@ -858,11 +859,11 @@ class RunTrioTrain:
             [self.est_examples],
         )
 
-        print("STOP, FIX THIS!")
-        breakpoint()
-        # regions.write_autosomes_withX_regions(
-        #     output_file_name=f"{self.itr.args.species.lower()}_autosomes_withX.bed"
-        # )
+        # create the default regions_file for testing, if necessary
+        if not self.itr.default_region_file.is_file():
+            regions.write_autosomes_withX_regions(
+                output_file_name=f"{self.itr._reference_genome.stem}_autosomes_withX.bed"
+            )
 
         if useDT:
             call_vars_job_nums = None

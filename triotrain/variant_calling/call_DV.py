@@ -350,6 +350,8 @@ class VariantCaller:
         """
         Create an iteration object for downstream modules
         """
+        print("FIX THIS!")
+        breakpoint()
         if self._species.lower() == "cow":
             self._itr = Iteration(
                 current_trio_num="None",

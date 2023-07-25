@@ -403,7 +403,6 @@ class MakeRegions:
                 self.itr.logger.debug(
                     f"{self.itr._mode_string} - [{self._phase}]: found default region file | '{output_file.file_path}'"
                 )
-        breakpoint()
 
     def set_genome(
         self,
@@ -975,42 +974,42 @@ def __init__() -> None:
     env = Env(args.env_file, logger, args.dry_run)
     trio_num = str(env.contents["RunOrder"])
 
-    if args.genome != "Child":
-        current_itr = Iteration(
-            current_trio_num=trio_num,
-            next_trio_num="None",
-            current_genome_num=args.restart,
-            total_num_genomes=(args.restart + 1),
-            total_num_tests=19,
-            train_genome=args.genome,
-            eval_genome=None,
-            env=env,
-            logger=logger,
-            args=args,
-        )
-        updated_itr = MakeRegions(
-            current_itr,
-            args.max_examples,
-            args.est_examples,
-        ).run()
-    else:
-        current_itr = Iteration(
-            current_trio_num=trio_num,
-            next_trio_num="None",
-            current_genome_num=args.restart,
-            total_num_genomes=(args.restart + 1),
-            total_num_tests=19,
-            train_genome=None,
-            eval_genome="Child",
-            env=env,
-            logger=logger,
-            args=args,
-        )
-        updated_itr = MakeRegions(
-            current_itr, args.max_examples, args.est_examples, train_mode=False
-        ).run()
+    # if args.genome != "Child":
+    #     current_itr = Iteration(
+    #         current_trio_num=trio_num,
+    #         next_trio_num="None",
+    #         current_genome_num=args.restart,
+    #         total_num_genomes=(args.restart + 1),
+    #         total_num_tests=19,
+    #         train_genome=args.genome,
+    #         eval_genome=None,
+    #         env=env,
+    #         logger=logger,
+    #         args=args,
+    #     )
+    #     updated_itr = MakeRegions(
+    #         current_itr,
+    #         args.max_examples,
+    #         args.est_examples,
+    #     ).run()
+    # else:
+    #     current_itr = Iteration(
+    #         current_trio_num=trio_num,
+    #         next_trio_num="None",
+    #         current_genome_num=args.restart,
+    #         total_num_genomes=(args.restart + 1),
+    #         total_num_tests=19,
+    #         train_genome=None,
+    #         eval_genome="Child",
+    #         env=env,
+    #         logger=logger,
+    #         args=args,
+    #     )
+    #     updated_itr = MakeRegions(
+    #         current_itr, args.max_examples, args.est_examples, train_mode=False
+    #     ).run()
 
-    print(updated_itr)
+    # print(updated_itr)
 
     Wrapper(__file__, "end").wrap_script(timestamp())
 

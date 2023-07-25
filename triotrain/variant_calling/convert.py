@@ -414,7 +414,7 @@ class ConvertHappy:
             else:
                 slurm_job.write_job()
         
-        if not self.overwrite and self._ignoring_call_variants and resubmission:
+        if not self.overwrite and self._ignoring_compare_happy and resubmission:
             self.itr.logger.info(
                 f"{self.test_logger_msg}: --overwrite=False; {msg}mitting job because missing {self._output_type}"
             )

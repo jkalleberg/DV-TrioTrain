@@ -263,15 +263,13 @@ class DTVariantCaller:
 
         # Region File --------------------------------------
 
-        if self._species.lower() == "cow":
-            use_cow = True
-            _regions = Path(f"{getcwd()}/region_files/cow_autosomes_withX.bed")
-        else:
-            use_cow = False
-            if self._data_list[index]["RegionsFile"] != "NA":
-                _regions = Path(self._data_list[0]["RegionsFile"])
-            else:
-                _regions = None
+        # if self._species.lower() == "cow":
+        #     _regions = Path(f"{getcwd()}/region_files/cow_autosomes_withX.bed")
+        # else:
+        #     if self._data_list[index]["RegionsFile"] != "NA":
+        #         _regions = Path(self._data_list[0]["RegionsFile"])
+        #     else:
+        #         _regions = None
 
         if _regions is not None:
             self._regions = TestFile(_regions, self.logger)
@@ -295,7 +293,6 @@ class DTVariantCaller:
                 logger=self.logger,
                 args=self.args,
                 default_region_file=self._regions.path,
-                # cow=use_cow
             )
         else:
             self._regions = None
@@ -310,7 +307,6 @@ class DTVariantCaller:
                 logger=self.logger,
                 args=self.args,
                 default_region_file=None,
-                # cow=use_cow
             )
 
         # INITIALIZE Pedigree ------------------------------------

@@ -118,6 +118,7 @@ class Iteration:
         else:
             _regex = r"\w+_autosomes_withX.bed"
             reference_dir = Path(self.env.contents["RefFASTA_Path"])
+            self._reference_genome = reference_dir / self.env.contents["RefFASTA_File"]
             (
                 default_exists,
                 outputs_found,
@@ -126,25 +127,21 @@ class Iteration:
                 _regex,
                 "default region file",
                 reference_dir,
-                self._mode_string,
+                f"{self._mode_string} - [region_shuffling]",
                 self.logger,
                 debug_mode=self.debug_mode,
                 dryrun_mode=self.dryrun_mode,
             )
             if default_exists:
-                self.missing_default_file = check_expected_outputs(
+                missing_default_file = check_expected_outputs(
                     outputs_found,
                     1,
-                    self._mode_string,
+                    f"{self._mode_string} - [region_shuffling]",
                     "default region file",
                     self.logger,
                 )
-                if not self.missing_default_file:
-                    self.default_region_file = (
-                        reference_dir / files[0]
-                    )
-            else:
-                self.missing_default_file = True
+                if not missing_default_file:
+                    self.default_region_file = reference_dir / files[0]
         
         assert self.default_region_file.is_file, f"{self._mode_string}: missing default regions file | '{self.default_region_file}'"
 
@@ -186,7 +183,6 @@ class Iteration:
             self.model_label = f"{self.run_name}-{self._version}"
 
         elif (
-            # self.train_genome is not None and
             self.current_genome_num != 0
             and self.current_trio_num is not None
         ):

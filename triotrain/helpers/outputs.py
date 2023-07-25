@@ -59,7 +59,7 @@ def check_if_output_exists(
             unique_files_list = list(natsorted(unique_files))
 
             if debug_mode:
-                logger.debug(f"{msg}: files found | {unique_files_list}")
+                logger.debug(f"{msg} - [outputs]: files found | {unique_files_list}")
 
             for file in files:
                 filename: Path = search_path / file
@@ -71,7 +71,7 @@ def check_if_output_exists(
     else:
         if not dryrun_mode:
             logger.warning(
-                f"{msg}: unable to search a non-existant path | '{str(search_path)}'"
+                f"{msg} - [outputs]: unable to search a non-existant path | '{str(search_path)}'"
             )
         num_unique_files = 0
         unique_files_list = []
@@ -83,12 +83,12 @@ def check_if_output_exists(
         unique_files_list = []
     else:
         if debug_mode:
-            logger.debug(f"{msg}: found [{int(n_matches):,}] {file_type}")
+            logger.debug(f"{msg} - [outputs]: found [{int(n_matches):,}] {file_type}")
         output_exists = True
 
     if n_matches > num_unique_files:
-        logger.warning(f"{msg}: pattern provided returns duplicate files")
-        logger.warning(f"{msg}: please use a more specific regex")
+        logger.warning(f"{msg} - [outputs]: pattern provided returns duplicate files")
+        logger.warning(f"{msg} - [outputs]: please use a more specific regex")
 
     return output_exists, n_matches, unique_files_list
 
@@ -137,8 +137,8 @@ def check_expected_outputs(
             )
             missing_outputs = True
         else:
-            logger.info(
-                f"{msg}: found {int(int(outputs_found)-int(outputs_expected)):,} more {file_type} than expected"
+            logger.warning(
+                f"{msg}: found {int(int(outputs_found)-int(outputs_expected)):,} more {file_type} than expected!"
             )
             missing_outputs = False
 
