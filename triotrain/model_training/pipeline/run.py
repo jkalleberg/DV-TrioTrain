@@ -507,7 +507,7 @@ class RunTrioTrain:
 
                 # create the default regions_file for testing, if necessary
                 regions.write_autosomes_withX_regions(
-                    output_file_name=f"{self.itr.args.species.lower()}_autosomes_withX.bed"
+                    output_file_name=f"FIXTHIS_autosomes_withX.bed"
                 )
 
                 # make the regions_shuffling bed files
@@ -518,6 +518,8 @@ class RunTrioTrain:
                     self.itr.logger.error(
                         f"{self.itr._mode_string} - [region_shuffling] - [{genome}]: expected regions to be created, but they were not"
                     )
+                print("STOP!")
+                breakpoint()
 
             # Update the internal variable
             if self.train_mode:
@@ -856,9 +858,11 @@ class RunTrioTrain:
             [self.est_examples],
         )
 
-        regions.write_autosomes_withX_regions(
-            output_file_name=f"{self.itr.args.species.lower()}_autosomes_withX.bed"
-        )
+        print("STOP, FIX THIS!")
+        breakpoint()
+        # regions.write_autosomes_withX_regions(
+        #     output_file_name=f"{self.itr.args.species.lower()}_autosomes_withX.bed"
+        # )
 
         if useDT:
             call_vars_job_nums = None

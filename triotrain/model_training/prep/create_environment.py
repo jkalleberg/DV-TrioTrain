@@ -468,7 +468,12 @@ class Environment:
             self.logger.info(f"{self.logging_msg}: {msg} env file | '{env_path}'")
 
         # Load in the env file to write any missing variables to
-        self.env = Env(env_path, self.logger, debug_mode=self.debug_mode, dryrun_mode=self.dryrun_mode)
+        self.env = Env(
+            env_path,
+            self.logger,
+            logger_msg=self.logging_msg,
+            debug_mode=self.debug_mode,
+            dryrun_mode=self.dryrun_mode)
 
         # Define the row index to use
         if self.trio_num == 0:
@@ -489,8 +494,6 @@ class Environment:
         if self.debug_mode:
             self.logger.debug(f"{self.logging_msg}: current trio | {self.trio_num}")
             self.logger.debug(f"{self.logging_msg}: index used | {self.index}")
-            self.logger.debug(f"{self.logging_msg}: env file | {self.env.env_file}")
-            self.logger.debug(f"{self.logging_msg}: env contents | {self.env.contents}")
 
     def identify_channels(
         self,
@@ -555,10 +558,6 @@ class Environment:
         if update:
             self.logger.info(
                 f"{self.logging_msg}: updated channels include | {self.additional_channels}"
-            )
-        elif self.debug_mode:
-            self.logger.debug(
-                f"{self.logging_msg}: initial channels include | {self.additional_channels}"
             )
 
     def set_conditions(self, update: bool = False) -> None:
@@ -991,7 +990,11 @@ class Environment:
                 return
             else:
                 self.env = Env(
-                    self.env.env_file, self.logger, debug_mode=self.debug_mode, dryrun_mode=self.dryrun_mode
+                    self.env.env_file,
+                    self.logger,
+                    logger_msg=self.logging_msg,
+                    debug_mode=self.debug_mode,
+                    dryrun_mode=self.dryrun_mode
                 )
                 self.logger.info(
                     f"{self.logging_msg}: loaded environment variables from | '{self.env.env_file}'"

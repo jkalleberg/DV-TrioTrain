@@ -53,15 +53,6 @@ def collect_args():
         help="if True, display final hap.py metrics to the screen",
         action="store_true",
     )
-    parser.add_argument(
-        "-s",
-        "--species",
-        dest="species",
-        choices=["cow", "human", "None"],
-        help="sets the default autosomes + sex chromosomes to use for training\n(default: %(default)s)",
-        type=str,
-        default="cow",
-    )
 
     return parser.parse_args()
     # return parser.parse_args(

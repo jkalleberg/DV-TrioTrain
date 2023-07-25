@@ -115,7 +115,7 @@ class Convert:
         """
         Load in variables from the env file, and define python variables.
         """
-        self.env = Env(self.args.env_file, self.logger, dryrun_mode=self.args.dry_run)
+        self.env = Env(self.args.env_file, self.logger, self._logger_msg, dryrun_mode=self.args.dry_run, debug_mode=self.args.debug)
         env_vars = [
             "RunName",
             "RunOrder",
@@ -162,18 +162,6 @@ class Convert:
 
         self._test_vcf_file_path = Path(self._test_dir) / self._test_vcf_name
         self._logger_msg = f"[{self._mode}] - [{self._phase}] - [{self._test_msg}]"
-
-        if self.args.species.lower() == "cow":
-            self.CHR = list(map(str, range(1, 30))) + ["X", "Y"]
-            self.CHR_Order = {k: v for v, k in enumerate(self.CHR)}
-        elif self.args.species.lower() == "human":
-            self.CHR = list(map(str, range(1, 22))) + ["X", "Y"]
-            self.CHR_Order = {k: v for v, k in enumerate(self.CHR)}
-        else:
-            self.logger.error(
-                f"{self._logger_msg}: ADD LOGIC FOR HANDELING DIFFERENT CHR NUMBERS"
-            )
-            exit(1)
 
         assert (
             getcwd() == code_path

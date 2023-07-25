@@ -155,7 +155,7 @@ class Examples:
         """
         Load in variables from the env file, and define python variables.
         """
-        self.env = Env(self.args.env_file, self.logger, dryrun_mode=self.args.dry_run)
+        self.env = Env(self.args.env_file, self.logger, dryrun_mode=self.args.dry_run, debug_mode=self.args.debug)
         env_vars = [
             "RunOrder",
             "N_Parts",
@@ -191,7 +191,7 @@ class Examples:
         self._reference = Path(self._ref_dir) / self._ref_file
         assert (
             self._reference.exists()
-        ), f"Reference Genome FASTA file [{self._reference.name}] does not exist"
+        ), f"missing the reference Genome FASTA file | '{self._reference.name}'"
 
         # figure out which autosomes + sex chromsomes we're including
         bed_files = list(Path(self._ref_dir).glob("*.bed"))
@@ -209,7 +209,7 @@ class Examples:
         self._ref_dict = Path(self._ref_dir) / f"{self._reference.stem}.dict"
         assert (
             self._ref_dict.exists()
-        ), f"Reference Genome DICT file [{self._ref_dict.name}] does not exist"
+        ), f"missing the reference Genome PICARD .dict file | '{self._ref_dict.name}'"
 
         valid_chrs = list()
         with open(str(self._ref_dict), "r", encoding="utf8") as dict_file:
@@ -237,13 +237,13 @@ class Examples:
         self._bam = Path(self._bam_dir) / self._bam_file
         self._truth_vcf = Path(self._truth_dir) / self._truth_vcf_file
         self._callable_bed = Path(self._callable_dir) / self._callable_file
-        assert self._bam.exists(), f"BAM file [{self._bam.name}] does not exist"
+        assert self._bam.exists(), f"missing the BAM file | '{self._bam.name}'"
         assert (
             self._truth_vcf.exists()
-        ), f"TruthVCF file [{self._truth_vcf.name}] does not exist"
+        ), f"missing the TruthVCF file | '{self._truth_vcf.name}'"
         assert (
             self._callable_bed.exists()
-        ), f"CallableBED file [{self._callable_bed.name}] does not exist"
+        ), f"missing the CallableBED file | '{self._callable_bed.name}'"
 
     def process_region(self) -> None:
         """
@@ -277,7 +277,6 @@ class Examples:
                     f"AN EXISTING FILE FOR REGION WAS ENTERED | '{bed_file}'"
                 )
                 self._output_prefix = f"{self.args.genome}.{bed_file.name}"
-                # self._output_prefix = f"{self.args.genome}.region_file"
             else:
                 self.logger.debug(
                     f"AN UNKNOWN VALUE FOR REGION WAS ENTERED | '{self.args.region_bed}'"
@@ -334,7 +333,7 @@ class Examples:
             self._region_file_path = self._regions_dir / self._region_file
             if not self._region_file_path.exists():
                 self.logger.error(
-                    f"[{self._mode}] - [{self._logger_msg}]: missing the regions shuffling file |  '{self._region_file_path.name}'\nExiting... "
+                    f"[{self._mode}] - [{self._logger_msg}]: missing the regions shuffling file | '{self._region_file_path.name}'\nExiting... "
                 )
                 exit(1)
             else:
@@ -386,16 +385,7 @@ class Examples:
                 )
             else:
                 missing_var3 = False
-
-            # if self.args.region not in self.CHR:
-            #     missing_var4 = True
-            #     self.logger.info(
-            #         f"[{self._mode}] - [{self._logger_msg}]: a valid region was not provided via command line arguments"
-            #     )
-            # else:
-            #     missing_var4 = False
-
-            # if missing_var1 and missing_var2 and missing_var3 and missing_var4:
+            
             if missing_var1 and missing_var2 and missing_var3:
                 self.logger.info(
                     f"[{self._mode}] - [{self._logger_msg}]: missing at least one of the required options. Exiting... "

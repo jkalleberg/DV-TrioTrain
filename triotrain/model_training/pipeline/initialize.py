@@ -54,7 +54,7 @@ def initalize_weights(setup: Setup, itr: Iteration, logging_msg: str):
                     f"run{setup.prior_trio_num}.env"
                 )
                 prior_env = Env(
-                    str(prior_env_path), itr.logger, dryrun_mode=itr.dryrun_mode
+                    str(prior_env_path), itr.logger, logger_msg=logging_msg, dryrun_mode=itr.dryrun_mode
                 )
                 try:
                     prior_env.check_out()
@@ -177,6 +177,7 @@ def initalize_weights(setup: Setup, itr: Iteration, logging_msg: str):
                     next_env = Env(
                         str(next_env_path),
                         itr.logger,
+                        logger_msg=f"{itr._mode_string} - [setup]",
                         debug_mode=setup.args.debug,
                         dryrun_mode=setup.args.dry_run,
                     )

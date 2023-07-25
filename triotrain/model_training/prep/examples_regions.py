@@ -9,7 +9,7 @@ usage:
 import argparse
 import os
 import subprocess
-import sys
+from sys import exit
 from dataclasses import dataclass, field, fields, replace
 from logging import Logger
 from pathlib import Path
@@ -242,7 +242,7 @@ class MakeRegions:
                         f"unable to create a reference .dict file",
                     )
                     self.itr.logger.error(f"{err}\n{err.stderr}\nExiting... ")
-                    sys.exit(err.returncode)
+                    exit(err.returncode)
 
                 ref_dict_exists.check_existing()
                 if ref_dict_exists.file_exists:
@@ -250,7 +250,7 @@ class MakeRegions:
                     self._input_exists = ref_dict_exists
                 else:
                     raise FileNotFoundError(
-                        f"{self.itr._mode_string} - [{self._phase}]: unable to find a dictionary file [{ref_dict_exists.file}] for the reference genome"
+                        f"{self.itr._mode_string} - [{self._phase}]: missing a dictionary file for the reference genome | '{ref_dict_exists.file}'"
                     )
             else:
                 self._input = input_file
@@ -258,7 +258,7 @@ class MakeRegions:
         else:
             self._input_exists = False
             raise FileNotFoundError(
-                f"{self.itr._mode_string} - [{self._phase}]: unable to find the reference genome [{ref_genome_exists.file}]"
+                f"{self.itr._mode_string} - [{self._phase}]: missing the reference genome | '{ref_genome_exists.file}'"
             )
 
     def check_output(self) -> None:
@@ -305,15 +305,24 @@ class MakeRegions:
                 usecols=[1, 2],
             )
             chromosome_names = input_data[1].str.split(":", n=1, expand=True)[1]
+            exclude_list = ["Y", "MT", "EBV"]
 
-            if self.itr.args.species == "cow":
-                chr_to_exclude = ["Y", "MT"]
-            elif self.itr.args.species == "human":
-                chr_to_exclude = ["chrY", "chrM", "chrEBV"]
+            if self.itr.args.unmapped_reads:
+                exclude_list.append(self.itr.args.unmapped_reads)
+
+            # test for 'chr' in chromosome names
+            name_test = chromosome_names.str.match(pat='chr', case=False)
+            
+            if len(chromosome_names) == sum(name_test):
+                chr_to_exclude = [f"chr{x}" if "chr" not in x else x for x in exclude_list]
             else:
-                print("ADD LOGIC HERE FOR OTHER SPECIES!")
-                sys.exit(1)
-
+                chr_to_exclude = exclude_list
+            
+            for e in chr_to_exclude:
+                find_exclude = chromosome_names.str.match(pat=e, case=False)
+                if sum(find_exclude) == 0:
+                    chr_to_exclude.remove(e)
+            
             chr_names = [
                 chr
                 for chr in chromosome_names
@@ -361,7 +370,6 @@ class MakeRegions:
         """
         self.check_inputs()
         self.check_output()
-        self.transform_dictionary()
 
         if (
             self.itr.default_region_file is not None
@@ -386,6 +394,7 @@ class MakeRegions:
                 self.itr.logger.debug(
                     f"{self.itr._mode_string} - [{self._phase}]: creating the default region file now..."
                 )
+            self.transform_dictionary()
             self._autosome_BED_data.to_csv(
                 output_file.path / output_file.file, sep="\t", index=False, header=False
             )
@@ -394,6 +403,7 @@ class MakeRegions:
                 self.itr.logger.debug(
                     f"{self.itr._mode_string} - [{self._phase}]: found default region file | '{output_file.file_path}'"
                 )
+        breakpoint()
 
     def set_genome(
         self,
@@ -608,7 +618,7 @@ class MakeRegions:
             self.itr.logger.error(
                 f"{self._logger_msg}: count_variants() failed.\nExiting..."
             )
-            sys.exit(1)
+            exit(1)
 
     def create_samples(self) -> None:
         """
@@ -759,7 +769,7 @@ class MakeRegions:
                         self.itr.logger.error(
                             f"{self.itr._mode_string} - [{self._phase}] - [{self._genome}] - [Chromosome {chrom}]: {abs(regions_missing_chr)} additional region file(s) are needed. Exiting... "
                         )
-                        sys.exit(1)
+                        exit(1)
 
             else:
                 regions_in_chr = None
@@ -889,7 +899,7 @@ class MakeRegions:
 
             except AssertionError as error_msg:
                 self.itr.logger.error(f"{error_msg}\nExiting... ")
-                sys.exit(1)
+                exit(1)
 
     def run(self) -> Union[Iteration, None]:
         """

@@ -15,6 +15,7 @@ from typing import Union
 
 from helpers.environment import Env
 from helpers.utils import create_deps
+from helpers.outputs import check_if_output_exists, check_expected_outputs
 
 
 @dataclass
@@ -114,26 +115,38 @@ class Iteration:
             self.default_region_file = Path(
                 str(self.env.contents["RegionsFile_Path"])
             ) / str(self.env.contents["RegionsFile_File"])
-        elif "species" in self.args:
-            if self.args.species.lower() == "cow":
-                CHR = list(map(str, range(1, 30))) + ["X"]
-                self.CHR_Order = {k: v for v, k in enumerate(CHR)}
-                self.default_region_file = (
-                    Path(getcwd()) / "region_files" / "cow_autosomes_withX.bed"
+        else:
+            _regex = r"\w+_autosomes_withX.bed"
+            reference_dir = Path(self.env.contents["RefFASTA_Path"])
+            (
+                default_exists,
+                outputs_found,
+                files,
+            ) = check_if_output_exists(
+                _regex,
+                "default region file",
+                reference_dir,
+                self._mode_string,
+                self.logger,
+                debug_mode=self.debug_mode,
+                dryrun_mode=self.dryrun_mode,
+            )
+            if default_exists:
+                self.missing_default_file = check_expected_outputs(
+                    outputs_found,
+                    1,
+                    self._mode_string,
+                    "default region file",
+                    self.logger,
                 )
-            elif self.args.species.lower() == "human":
-                CHR_num = list(map(str, range(1, 22))) + ["X"]
-                # human genome adds the "chr" prefix to chromosomes...
-                CHR = list()
-                for c in CHR_num:
-                    CHR.append(f"chr{c}")
-                self.CHR_Order = {k: v for v, k in enumerate(CHR)}
-                self.default_region_file = (
-                    Path(getcwd()) / "region_files" / "human_autosomes_withX.bed"
-                )
+                if not self.missing_default_file:
+                    self.default_region_file = (
+                        reference_dir / files[0]
+                    )
             else:
-                self.logger.error("ADD LOGIC FOR ANY SPECIES BESIDES COW AND HUMANS!")
-                sys.exit(1)
+                self.missing_default_file = True
+        
+        assert self.default_region_file.is_file, f"{self._mode_string}: missing default regions file | '{self.default_region_file}'"
 
         if self.debug_mode:
             self.logger.debug(

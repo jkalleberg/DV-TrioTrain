@@ -16,6 +16,8 @@ from typing import Union
 
 from spython.main import Client
 
+from helpers.environment import Env
+
 def collect_args() -> argparse.Namespace:
     """
     Process command line argument to execute script.
@@ -160,7 +162,7 @@ class TestModel:
         """
         load in variables from the env file, and define python variables
         """
-        self.env = Env(self.args.env_file, self.logger, dryrun_mode=self.args.dry_run)
+        self.env = Env(self.args.env_file, self.logger, f"[{self._phase}]", dryrun_mode=self.args.dry_run, debug_mode=self.args.debug)
 
         if "N_Parts" not in self.env.contents:
             self._n_shards = self._nproc

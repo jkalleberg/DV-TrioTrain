@@ -16,6 +16,7 @@ class Env:
         self,
         env_file: str,
         logger: Logger,
+        logger_msg: Union[str, None] = None,
         debug_mode: bool = False,
         dryrun_mode: bool = False,
     ) -> None:
@@ -26,6 +27,11 @@ class Env:
         self.debug_mode = debug_mode
         self.dryrun_mode = dryrun_mode
         self.updated_keys: Dict[str, Union[str, None]] = dict()
+
+        if logger_msg is None:
+            self._logger_msg = ""
+        else:
+            self._logger_msg = f"{logger_msg}: "
 
     def check_out(self) -> None:
         """Confirms if the environment file contains at least one variable.
@@ -38,11 +44,11 @@ class Env:
         if len(self.contents) != 0:
             if self.debug_mode:
                 self.logger.debug(
-                    f"{self.env_path.name} contains {len(self.contents)} variables"
+                    f"{self._logger_msg}{self.env_path.name} contains {len(self.contents)} variables"
                 )
         else:
             self.logger.error(
-                f"unable to load variables, '{self.env_path}' is empty\nExiting..."
+                f"{self._logger_msg}unable to load variables, '{self.env_path}' is empty\nExiting..."
             )
             exit(1)
 
@@ -62,24 +68,24 @@ class Env:
         for var in variables:
             if var in self.contents:
                 if self.debug_mode:
-                    self.logger.debug(f"{self.env_path.name} contains '{var}'")
+                    self.logger.debug(f"{self._logger_msg}{self.env_path.name} contains '{var}'")
                 self.var_count += 1
             else:
                 if not self.dryrun_mode:
                     self.logger.warning(
-                        f"{self.env_path.name} does not have a variable  | '{var}'"
+                        f"{self._logger_msg}{self.env_path.name} does not have a variable  | '{var}'"
                     )
 
         if self.var_count == len(variables):
             if self.debug_mode:
                 self.logger.debug(
-                    f"{self.env_path.name} contains [{self.var_count}-of-{len(variables)}] variables"
+                    f"{self._logger_msg}{self.env_path.name} contains [{self.var_count}-of-{len(variables)}] variables"
                 )
             return True
         else:
             if self.debug_mode:
                 self.logger.debug(
-                    f"{self.env_path.name} contains [{self.var_count}-of-{len(variables)}] variables"
+                    f"{self._logger_msg}{self.env_path.name} contains [{self.var_count}-of-{len(variables)}] variables"
                 )
             return False
 
@@ -106,16 +112,11 @@ class Env:
         msg : Union[str, None], optional
             label for logging, by default None
         """
-        if msg is None:
-            logger_msg = ""
-        else:
-            logger_msg = f"{msg}: "
-
         if update and key in self.contents:
             old_value = get_key(self.env_file, key)
             if old_value == value:
                 if self.debug_mode:
-                    self.logger.debug(f"{logger_msg}SKIPPING {key}='{value}'")
+                    self.logger.debug(f"{self._logger_msg}{self._logger_msg}SKIPPING {key}='{value}'")
                 return
             else:
                 self.updated_keys[key] = value
@@ -125,21 +126,12 @@ class Env:
                 description = f"adding a comment: '{key}'"
             else:
                 description = f"adding {key}='{value}'"
-                if self.debug_mode:
-                    self.logger.debug(
-                        f"{logger_msg}variable '{key}' missing in '{Path(self.env_file).name}'"
-                    )
-            pass
         else:
-            if self.debug_mode:
-                self.logger.debug(
-                    f"{logger_msg}variable '{key}' found in '{Path(self.env_file).name}'"
-                )
             return
 
         # Either save the variable within the Env object,
         # Or write it to the .env file
-        self.logger.info(f"{logger_msg}{description}")
+        self.logger.info(f"{self._logger_msg}{description}")
         if dryrun_mode:
             self.contents[key] = value
         else:            
@@ -153,14 +145,9 @@ class Env:
             else:
                 dotenv_output = get_key(self.env_file, key)
 
-            if dotenv_output is not None:
-                if self.debug_mode:
-                    self.logger.debug(
-                        f"{logger_msg}'{Path(self.env_file).name}' contains '{key}={dotenv_output}'"
-                    )
-            else:
+            if dotenv_output is None:
                 self.logger.error(
-                    f"{logger_msg}{key}='{value}' was not added to '{Path(self.env_file).name}'"
+                    f"{self._logger_msg}{key}='{value}' was not added to '{Path(self.env_file).name}'"
                 )
 
     def load(
@@ -182,7 +169,7 @@ class Env:
         self.test_contents(*variables)
         if self.debug_mode:
             self.logger.debug(
-                f"configured {self.var_count} variables from env file | '{Path(self.env_file).name}'"
+                f"{self._logger_msg}configured {self.var_count} variables from env file | '{Path(self.env_file).name}'"
             )
         return_list: List[Text] = []
         for var in variables:

@@ -22,18 +22,13 @@ from pathlib import Path
 from sys import exit
 from typing import List, Union
 
-from helpers.files import WriteFiles
 from helpers.iteration import Iteration
-from helpers.outputs import check_expected_outputs, check_if_output_exists
+from helpers.outputs import check_if_output_exists
 from helpers.utils import (
     check_if_all_same,
-    create_deps,
-    find_NaN,
-    find_not_NaN,
     generate_job_id,
 )
 from model_training.prep.examples_make import MakeExamples
-from model_training.prep.examples_shuffle import BeamShuffleExamples
 from model_training.slurm.sbatch import SBATCH, SubmitSBATCH
 from regex import Pattern, findall
 
@@ -69,14 +64,6 @@ def collect_args() -> argparse.Namespace:
         metavar="</path/to/cluster_config.json>",
     )
     parser.add_argument(
-        "-d",
-        "--debug",
-        dest="debug",
-        help="printing detailed messages",
-        default=False,
-        action="store_true",
-    )
-    parser.add_argument(
         "--demo-mode",
         dest="demo_mode",
         help="creates images for the demo chromosome only\n(default: %(default)s)",
@@ -95,6 +82,14 @@ def collect_args() -> argparse.Namespace:
         help=f"comma-delimited list of (1+) SLURM job number(s) that must complete successfully before submitting show_examples job(s)",
         type=str,
         metavar="<'24485783,24485784'>",
+    )
+    parser.add_argument(
+        "-d",
+        "--debug",
+        dest="debug",
+        help="printing detailed messages",
+        default=False,
+        action="store_true",
     )
     parser.add_argument(
         "--dry-run",
@@ -546,22 +541,27 @@ def __init__():
     except AssertionError as error:
         logger.error(f"{error}\nExiting... ")
         exit(1)
-
-    # Load in environment vars into Python
-    env_path = Path(args.env_file)
-    env = Env(str(env_path), logger, dryrun_mode=args.dry_run)
-
-    # Parse out current run name & num
-    itr_name = env_path.stem.split("-")[1]
-    itr = findall(r"\d+", itr_name)
-    itr_num = int(itr[0])
-
+    
     if args.demo_mode:
         model_label = f"Demo.{args.genome}.CHR{args.demo_chr}"
         prefix = f"[DEMO] - [TRIO{itr_num}] - [show_examples]"
     else:
         model_label = f"{args.genome}"
         prefix = f"[{args.genome}] - [show_examples]"
+
+    # Load in environment vars into Python
+    env_path = Path(args.env_file)
+    env = Env(
+        str(env_path),
+        logger,
+        logger_msg=prefix,
+        dryrun_mode=args.dry_run,
+        debug_mode=args.debug)
+
+    # Parse out current run name & num
+    itr_name = env_path.stem.split("-")[1]
+    itr = findall(r"\d+", itr_name)
+    itr_num = int(itr[0])
 
     if "TotalTests" in env.contents:
         num_tests = str(env.contents["TotalTests"])
@@ -589,7 +589,7 @@ def __init__():
                 total_num_tests=total_tests,
                 train_genome=args.genome,
                 eval_genome="Child",
-                env=Env(args.env_file, logger, dryrun_mode=args.dry_run),
+                env=Env(args.env_file, logger, prefix, dryrun_mode=args.dry_run, debug_mode=args.debug),
                 logger=logger,
                 args=args,
             )
@@ -602,7 +602,7 @@ def __init__():
                 total_num_tests=total_tests,
                 train_genome=args.genome,
                 eval_genome="Child",
-                env=Env(args.env_file, logger, dryrun_mode=args.dry_run),
+                env=Env(args.env_file, logger, prefix, dryrun_mode=args.dry_run, debug_mode=args.debug),
                 logger=logger,
                 args=args,
             )

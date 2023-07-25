@@ -88,10 +88,18 @@ def collect_args() -> argparse.ArgumentParser:
     parser.add_argument(
         "--output",
         dest="output",
-        help="directory path \nre-direct where to save TrioTrain results\n(default: %(default)s)",
+        help="directory path\nre-direct where to save TrioTrain results\n(default: %(default)s)",
         default="../TRIO_TRAINING_OUTPUTS",
         type=str,
         metavar="</path/dir>",
+    )
+    parser.add_argument(
+        "--unmapped-reads",
+        dest="unmapped_reads",
+        help="string\nprefix for unmapped reads in reference genome; used to exclude from these reads during training; defaults to @SQ tag from ARS-UCD1.2_Btau5.0.1Y.\n(default: %(default)s)",
+        type=str,
+        metavar="<str>",
+        default="NKLS",
     )
     parser.add_argument(
         "--benchmark",
@@ -153,15 +161,6 @@ def collect_args() -> argparse.ArgumentParser:
         type=int,
         default=1,
         metavar="<int>",
-    )
-    parser.add_argument(
-        "-s",
-        "--species",
-        dest="species",
-        choices=["cow", "human", "None"],
-        help="sets the default autosomes + sex chromosomes to use for training\n(default: %(default)s)",
-        type=str,
-        default="cow",
     )
     parser.add_argument(
         "-t",
@@ -329,9 +328,6 @@ def get_args(parser: argparse.ArgumentParser) -> argparse.Namespace:
     # "220913_NewTrios",
     # "221118_NewTrios",
     # "221214_MotherFirst",
-    # "--species",
-    # "cow",
-    # "human",
     # "-r",
     # "resource_configs/221113_resources_used.json",
     # "resource_configs/221205_resources_used.json",
@@ -405,8 +401,7 @@ def check_args(args: argparse.Namespace, logger: Logger, default_channels: str) 
         # Convert the string value from arguments to a 'None' value
         if args.first_genome == "None":
             args.first_genome = None
-        if args.species == "None":
-            args.species = None
+
         assert (
             args.resource_config
         ), "Missing --resources; Please designate a path to pipeline compute resources in JSON format"

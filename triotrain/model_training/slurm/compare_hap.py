@@ -183,7 +183,7 @@ class Happy:
         """
         Load in variables from the env file, and define python variables.
         """
-        self.env = Env(self.args.env_file, self.logger, dryrun_mode=self.args.dry_run)
+        self.env = Env(self.args.env_file, self.logger, dryrun_mode=self.args.dry_run, debug_mode=self.args.debug)
         env_vars = [
             "RunOrder",
             "N_Parts",

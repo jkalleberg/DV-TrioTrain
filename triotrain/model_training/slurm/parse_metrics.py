@@ -421,7 +421,7 @@ def __init__() -> None:
         pd.set_option("display.max_rows", None)
         pd.set_option("display.max_columns", None)
 
-    env = Env(args.env_file, logger, dryrun_mode=args.dry_run)
+    env = Env(args.env_file, logger, dryrun_mode=args.dry_run, debug_mode=args.debug)
     ParseMetrics(args.genome, env, logger, threshold=args.threshold, _debug_mode=args.debug, _dryrun_mode = args.dry_run).run()
 
     Wrapper(__file__, "end").wrap_script(timestamp())

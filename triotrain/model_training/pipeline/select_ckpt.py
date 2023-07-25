@@ -292,6 +292,7 @@ class SelectCheckpoint:
                     next_env = Env(
                         next_env_file,
                         self.itr.logger,
+                        logger_msg=logger_msg,
                         dryrun_mode=self.itr.args.dry_run,
                     )
 
