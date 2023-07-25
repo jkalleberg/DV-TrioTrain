@@ -305,7 +305,7 @@ class MakeRegions:
                 usecols=[1, 2],
             )
             chromosome_names = input_data[1].str.split(":", n=1, expand=True)[1]
-            exclude_list = ["Y", "MT", "EBV"]
+            exclude_list = ["Y", "MT", "M", "EBV"]
 
             if self.itr.args.unmapped_reads:
                 exclude_list.append(self.itr.args.unmapped_reads)
