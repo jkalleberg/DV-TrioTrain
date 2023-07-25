@@ -248,7 +248,7 @@ def collect_args() -> argparse.ArgumentParser:
     restart.add_argument(
         "--restart-jobs",
         dest="restart_jobs",
-        help=f"provide a JSON dictionary containing phase names as keys, and either a list of indexs to re-run or a list of running SLURM job numbers to skip\nyour choice of phases:\n\t{_phases_string}\n(default: %(default)s)",
+        help=f"provide a JSON dictionary containing phase names as keys, and either:\n- a list of indexs to re-run, or\n- a list of running SLURM job numbers to use as dependencies\nVALID PHASES:\n\t{_phases_string}\n(default: %(default)s)",
         type=json.loads,
         default=None,
         metavar='{"phase": [jobid1, jobid2, jobid3]}',
