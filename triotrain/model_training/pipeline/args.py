@@ -78,14 +78,7 @@ def collect_args() -> argparse.ArgumentParser:
         metavar="</path/file>",
     )
     parser.add_argument(
-        "--modules",
-        dest="modules",
-        help="[REQUIRED]\ninput file (.sh)\nhelper script which loads the local software packages\n(default: %(default)s)",
-        default="./scripts/setup/modules.sh",
-        type=str,
-        metavar="</path/file>",
-    )
-    parser.add_argument(
+        "-o",
         "--output",
         dest="output",
         help="directory path\nre-direct where to save TrioTrain results\n(default: %(default)s)",
@@ -94,9 +87,26 @@ def collect_args() -> argparse.ArgumentParser:
         metavar="</path/dir>",
     )
     parser.add_argument(
+        "-t",
+        "--num-tests",
+        dest="num_tests",
+        help="[REQUIRED]\nthe number of test genomes in metadata.csv file\n(default: %(default)s)",
+        type=int,
+        default=13,
+        metavar="<int>",
+    )
+    parser.add_argument(
+        "--modules",
+        dest="modules",
+        help="[REQUIRED]\ninput file (.sh)\nhelper script which loads the local software packages\n(default: %(default)s)",
+        default="./scripts/setup/modules.sh",
+        type=str,
+        metavar="</path/file>",
+    )
+    parser.add_argument(
         "--unmapped-reads",
         dest="unmapped_reads",
-        help="string\nprefix for unmapped reads in reference genome; used to exclude from these reads during training; defaults to @SQ tag from ARS-UCD1.2_Btau5.0.1Y.\n(default: %(default)s)",
+        help="prefix for unmapped reads in reference genome; used to exclude from these reads during training\ndefaults to @SQ tag from ARS-UCD1.2_Btau5.0.1Y.\n(default: %(default)s)",
         type=str,
         metavar="<str>",
         default="NKLS",
@@ -104,7 +114,7 @@ def collect_args() -> argparse.ArgumentParser:
     parser.add_argument(
         "--benchmark",
         dest="benchmark",
-        help="if True, triggers the pipeline to save resource usage by each phase",
+        help="if True, save SLURM job numbers for calculating resource usage",
         action="store_true",
     )
     parser.add_argument(
@@ -127,6 +137,7 @@ def collect_args() -> argparse.ArgumentParser:
         help="estimated examples created per variant\n(default: %(default)s)",
         default=1.5,
         type=float,
+        metavar="<float>"
     )
     parser.add_argument(
         "--max-examples",
@@ -134,6 +145,7 @@ def collect_args() -> argparse.ArgumentParser:
         help="maximum examples include per regions file\n(default: %(default)s)",
         default=200000,
         type=int,
+        metavar="<int>"
     )
     parser.add_argument(
         "-B",
@@ -163,25 +175,16 @@ def collect_args() -> argparse.ArgumentParser:
         metavar="<int>",
     )
     parser.add_argument(
-        "-t",
-        "--num-tests",
-        dest="num_tests",
-        help="the number of test genomes in metadata.csv file\n(default: %(default)s)",
-        type=int,
-        default=13,
-        metavar="<int>",
-    )
-    parser.add_argument(
         "--use-gpu",
         dest="use_gpu",
-        help=f"if True, use the GPU container to accelerate variant calling\n\tNOTE: requires running with GPU partition/resources from SLURM\nif False, use the CPU container\n(default: %(default)s)",
+        help=f"if True, use the GPU container to accelerate variant calling\n\tNOTE: NOT OPTIMZED; requires running with GPU partition/resources from SLURM\n(default: %(default)s)",
         default=False,
         action="store_true",
     )
     parser.add_argument(
         "--use-regions-shuffle",
         dest="use_regions_shuffle",
-        help="if True, split genomes into smaller, genome-wide chunks that\n\tfit 'in_memory' for Apache Beam Shuffling\nif False, return to shuffling all examples made\n(default: %(default)s)",
+        help="if True, split genomes into smaller, genome-wide chunks that fit 'in_memory' for Apache Beam Shuffling\nif False, return to shuffling all examples made\n(default: %(default)s)",
         action="store_true",
         default=True,
     )
@@ -223,6 +226,7 @@ def collect_args() -> argparse.ArgumentParser:
         dest="demo_chr",
         help="sets which chromosome to use for demo mode\n(default: %(default)s)",
         default="29",
+        metavar="<str>"
     )
     demo.add_argument(
         "--show-regions",
@@ -240,22 +244,21 @@ def collect_args() -> argparse.ArgumentParser:
     )
     restart = parser.add_argument_group("re-start the pipeline")
 
-    restart.add_argument(
-        "--overwrite",
-        dest="overwrite",
-        help="[WIP]\nif [phase] == [int, str] and != 'None', then re-write the SLURM job files and output files\n(default: %(default)s)",
-        default=False,
-        action="store_true",
-    )
-
-    _phases_string = ",\n".join(parser.get_default("_phases"))
+    _phases_string = ",\n\t".join(parser.get_default("_phases"))
     restart.add_argument(
         "--restart-jobs",
         dest="restart_jobs",
-        help=f"provide a JSON dictionary containing phase names as keys, and a list of SLURM job numbers as values\nyour choice of phases:\n{_phases_string}\n(default: %(default)s)",
+        help=f"provide a JSON dictionary containing phase names as keys, and either a list of indexs to re-run or a list of running SLURM job numbers to skip\nyour choice of phases:\n\t{_phases_string}\n(default: %(default)s)",
         type=json.loads,
         default=None,
         metavar='{"phase": [jobid1, jobid2, jobid3]}',
+    )
+    restart.add_argument(
+        "--overwrite",
+        dest="overwrite",
+        help="if True, re-write the SLURM job files and output files\n(default: %(default)s)",
+        default=False,
+        action="store_true",
     )
     restart.add_argument(
         "--start-itr",
@@ -297,7 +300,7 @@ def collect_args() -> argparse.ArgumentParser:
     customize.add_argument(
         "--channel-info",
         dest="channel_info",
-        help="[REQUIRED] if --custom-checkpoint is not the 'wgs_af' model\ninput file (.json) or JSON-format string\ncontaines 'channels' as a key, with a list of channel numbers as values\n(default: %(default)s)",
+        help="input file (.json) or JSON-format string\ncontaines 'channels' as a key, with a list of channel numbers as values\n(default: %(default)s)",
         default='{"channels": [1, 2, 3, 4, 5, 6, 19]}',
         metavar="JSON data or file",
     )
