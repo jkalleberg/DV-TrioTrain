@@ -416,7 +416,7 @@ class ConvertHappy:
         
         if not self.overwrite and self._ignoring_compare_happy and resubmission:
             self.itr.logger.info(
-                f"{self.test_logger_msg}: --overwrite=False; {msg}mitting job because missing {self._output_type}"
+                f"{self.logger_msg} - [{self.test_logger_msg}]: --overwrite=False; {msg}mitting job because missing {self._output_type}"
             )
 
         elif self.overwrite and self._outputs_exist:
