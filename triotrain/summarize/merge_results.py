@@ -9,8 +9,8 @@ example:
         --dry-run
 """
 import argparse
-import csv
-import sys
+from csv import DictReader, reader
+from sys import exit
 from collections import defaultdict
 from dataclasses import dataclass, field
 from logging import Logger
@@ -19,12 +19,9 @@ from pathlib import Path
 from typing import Union
 import pandas as pd
 
-sys.path.append(
-    "/storage/hpc/group/UMAG_test/WORKING/jakth2/deep-variant/scripts/model_training"
-)
-import helpers as h
-import helpers_logger
-
+from helpers.environment import Env
+from helpers.files import WriteFiles, TestFile
+from helpers.outputs import check_if_output_exists, check_expected_outputs
 
 def collect_args():
     """
@@ -141,7 +138,7 @@ class MergedTests:
 
     # required values
     args: argparse.Namespace
-    logger: h.Logger
+    logger: Logger
 
     # internal, imutable values
     _input_files: list = field(default_factory=list, init=False, repr=False)
@@ -174,7 +171,7 @@ class MergedTests:
         """
         Load in variables from the env file, and define python variables.
         """
-        self.env = h.Env(self.args.env_file, self.logger)
+        self.env = Env(self.args.env_file, self.logger)
         var_list = [
             "RunOrder",
             "CodePath",
@@ -265,7 +262,7 @@ class MergedTests:
         Read in and save the metadata file as a dictionary.
         """
         # Confirm data input is an existing file
-        self.metadata = h.TestFile(self.args.metadata, self.logger)
+        self.metadata = TestFile(self.args.metadata, self.logger)
         self.metadata.check_existing()
         if self.metadata.file_exists:
             self.logger.info(f"{self._logger_msg}: adding test-specific metadata to CSV file")
@@ -275,7 +272,7 @@ class MergedTests:
             else:
                 # read in the csv file
                 with open(self.metadata.file, mode="r", encoding="utf-8-sig") as data:
-                    dict_reader = csv.DictReader(data)
+                    dict_reader = DictReader(data)
                     data_list = list(dict_reader)
 
                 # identify the column with test name(s)
@@ -353,7 +350,7 @@ class MergedTests:
             self.logger.warning(
                 f"{self._logger_msg}: no results files detected.\nExiting..."
             )
-            sys.exit(1)
+            exit(1)
     
     def find_AllTests(self) -> None:
         """
@@ -361,7 +358,7 @@ class MergedTests:
         """
         search_pattern = r"\w+\d+\.AllTests\.total\.metrics\.csv"
         
-        self._files_exist, total_found, self._file_names = h.check_if_output_exists(
+        self._files_exist, total_found, self._file_names = check_if_output_exists(
             match_pattern=search_pattern, 
             file_type="AllTests files",
             search_path=self._output_path,
@@ -383,7 +380,7 @@ class MergedTests:
             input_name = Path(self._input_files[index]).parent.name
 
             test_dict = {}
-            reader = csv.reader(results_csv)
+            reader = reader(results_csv)
 
             keep_these = [
                 "checkpoint",
@@ -489,7 +486,7 @@ class MergedTests:
             else:
                 name = ".".join([str(self._run_name), "AllTests"] + input_label[1:])
 
-        output = h.WriteFiles(
+        output = WriteFiles(
             str(self._output_path),
             name,
             self.logger,
@@ -597,16 +594,20 @@ class MergedTests:
             self.merge_tests()
 
 def __init__():
+    from helpers.utils import get_logger
+    from helpers.wrapper import Wrapper, timestamp
+
     # Collect command line arguments
     args = collect_args()
+    breakpoint()
 
     # Collect start time
-    h.Wrapper(__file__, "start").wrap_script(h.timestamp())
+    Wrapper(__file__, "start").wrap_script(timestamp())
 
     # Create error log
     current_file = path.basename(__file__)
     module_name = path.splitext(current_file)[0]
-    logger = helpers_logger.get_logger(module_name)
+    logger = get_logger(module_name)
 
     # Check command line args
     check_args(args, logger)
@@ -620,9 +621,9 @@ def __init__():
             logger.error(f"{merging._logger_msg}: {e}\nExiting...")
         else:
             logger.error(f"{e}\nExiting...")
-        sys.exit(1)
+        exit(1)
 
-    h.Wrapper(__file__, "end").wrap_script(h.timestamp())
+    Wrapper(__file__, "end").wrap_script(timestamp())
 
 
 # Execute functions created
