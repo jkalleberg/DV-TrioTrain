@@ -227,7 +227,7 @@ class Iteration:
         try:
             assert (
                 getcwd() == working_dir
-            ), "Run the workflow in the deep-variant/ directory only"
+            ), f"run the workflow in the {working_dir} directory only"
         except AssertionError as error_msg:
             self.logger.error(f"{error_msg}.\nExiting... ")
             sys.exit(1)

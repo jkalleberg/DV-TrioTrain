@@ -195,7 +195,7 @@ class CallVariants:
         Load in variables from the env file, and define python variables.
         """
         if self.itr.current_genome_num == 0:
-            self.itr.logger.warning(
+            self.itr.logger.info(
                 f"{self.logger_msg}: using the default model checkpoint"
             )
         else:

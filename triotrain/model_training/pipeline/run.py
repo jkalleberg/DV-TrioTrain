@@ -787,13 +787,13 @@ class RunTrioTrain:
 
             if restart_dataprep and self.overwrite is False:
                 self.itr.logger.warning(
-                    f"{self.itr._mode_string} - [re_training_jobs]: '--restart-jobs' includes data_prep phase(s) | {matches}"
+                    f"{self.itr._mode_string} - [re_training_jobs]: option '--restart-jobs' includes data_prep phase(s) | {matches}"
                 )
                 self.itr.logger.error(
-                    f"{self.itr._mode_string} - [re_training_jobs]: However, train_eval is attempting to ignore upstream job(s)"
+                    f"{self.itr._mode_string} - [re_training_jobs]: however, 'train_eval' is attempting to ignore upstream job(s)"
                 )
                 self.itr.logger.error(
-                    f"{self.itr._mode_string} - [re_training_jobs]: To ensure proper SLURM depenencies for train_eval, either:\n\t1. remove '--restart-jobs' flag, or\n\t2. add the '--overwrite' flag\nExiting..."
+                    f"{self.itr._mode_string} - [re_training_jobs]: to ensure proper SLURM depenencies for train_eval, either:\n\t1. remove '--restart-jobs' flag, or\n\t2. add the '--overwrite' flag\nExiting..."
                 )
                 exit(1)
 
