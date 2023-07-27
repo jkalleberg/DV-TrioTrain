@@ -89,7 +89,7 @@ def collect_args():
     parser.add_argument(
         "--dry-run",
         dest="dry_run",
-        help="if True, display, total hap.py metrics to the screen",
+        help="if True, display commands to the screen",
         action="store_true",
     )
     return parser.parse_args()

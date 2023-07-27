@@ -64,13 +64,13 @@ def collect_args() -> argparse.Namespace:
     parser.add_argument(
         "--dry-run",
         dest="dry_run",
-        help="if True, display, total hap.py metrics to the screen",
+        help="if True, display commands to the screen",
         action="store_true",
     )
     parser.add_argument(
         "--get-help",
         dest="get_help",
-        help="if True, display DV 'run_deepvariant' man page to the screen",
+        help="if True, display DT 'run_deeptrio' man page to the screen",
         action="store_true",
         default=False,
     )

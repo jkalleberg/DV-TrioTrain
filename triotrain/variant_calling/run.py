@@ -49,7 +49,7 @@ def collect_args():
     parser.add_argument(
         "--dry-run",
         dest="dry_run",
-        help="if True, display, commands to the screen",
+        help="if True, display commands to the screen",
         action="store_true",
     )
     parser.add_argument(
@@ -62,7 +62,7 @@ def collect_args():
     parser.add_argument(
         "--use-DT",
         dest="use_DT",
-        help="if True, display, variant calling is assumed to be completed already and will be skipped",
+        help="if True, variant calling is assumed to be completed already and will be skipped",
         action="store_true",
         default=False,
     )

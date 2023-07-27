@@ -82,7 +82,7 @@ def collect_args() -> argparse.Namespace:
     parser.add_argument(
         "--dry-run",
         dest="dry_run",
-        help="if True, display commands to be used to the screen",
+        help="if True, display commands to the screen",
         action="store_true",
     )
     return parser.parse_args()

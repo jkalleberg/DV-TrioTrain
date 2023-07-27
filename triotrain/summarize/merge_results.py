@@ -10,14 +10,19 @@ example:
 """
 import argparse
 from csv import DictReader, reader
-from sys import exit
+from sys import exit, path
 from collections import defaultdict
 from dataclasses import dataclass, field
 from logging import Logger
-from os import environ, getcwd, path
+from os import environ, getcwd, path as p
 from pathlib import Path
 from typing import Union
 import pandas as pd
+
+abs_path = Path(__file__).resolve()
+module_path = str(abs_path.parent.parent)
+print("MODULE PATH:", module_path)
+path.append(module_path)
 
 from helpers.environment import Env
 from helpers.files import WriteFiles, TestFile
@@ -49,7 +54,7 @@ def collect_args():
         type=str,
     )
     parser.add_argument(
-        "-O",
+        "-o",
         "--output-prefix",
         dest="output_prefix",
         type=str,
@@ -67,7 +72,7 @@ def collect_args():
     parser.add_argument(
         "--dry-run",
         dest="dry_run",
-        help="if True, display, total hap.py metrics to the screen",
+        help="if True, display commands to the screen",
         action="store_true",
     )
     parser.add_argument(
