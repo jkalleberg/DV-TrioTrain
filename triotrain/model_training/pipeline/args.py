@@ -423,17 +423,18 @@ def check_args(args: argparse.Namespace, logger: Logger, default_channels: str) 
                 args.restart_jobs
             ), f"option --overwrite is set, but missing --restart-jobs.\nPlease provide a JSON dictionary with the following format:\n{{'phase': ['jobid', 'jobid', 'None', 'jobid']}}.\n\t- 'phase' determines which parts of the pipeline to re-run completely\n\t- any jobid = 'None' will be have the SLURM job file and any existing results overwritten"
 
-            if args.begin is None:
-                args.begin = 0
-            
-            if args.terminate is None:
-                logger.warning("missing option --stop-itr; however only one iteration will be overwritten at a time")
-                args.terminate = args.begin + 1
+            if args.demo_mode is False:
+                if args.begin is None:
+                    args.begin = 0
+                
+                if args.terminate is None:
+                    logger.warning("missing option --stop-itr; however only one iteration will be overwritten at a time")
+                    args.terminate = args.begin + 1
 
-            num_runs_to_overwrite = int(args.terminate) - int(args.begin)
-            assert (
-                num_runs_to_overwrite == 1
-                ), f"option --overwrite is set, but attempting to run {num_runs_to_overwrite} iterations.\nPlease adjust either --start-itr or --stop-itr flags so that only one iteration will be overwritten at a time"
+                num_runs_to_overwrite = int(args.terminate) - int(args.begin)
+                assert (
+                    num_runs_to_overwrite == 1
+                    ), f"option --overwrite is set, but attempting to run {num_runs_to_overwrite} iterations.\nPlease adjust either --start-itr or --stop-itr flags so that only one iteration will be overwritten at a time"
 
         # warn the user against phase name typos
         if args.restart_jobs:
