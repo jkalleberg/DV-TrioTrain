@@ -270,8 +270,10 @@ class SelectCheckpoint:
             self.ckpt_name = self.itr.env.contents[
                 f"{self.itr.train_genome}TestCkptName"
             ]
+            
             # confirm if new ckpt was saved for next training round correctly
             if self.itr.next_genome is not None and self.itr.next_trio_num is not None:
+                
                 if self.itr.next_trio_num == self.itr.current_trio_num:
                     if f"{self.itr.next_genome}StartCkptName" in self.itr.env.contents:
                         self.ckpt_selected = True
@@ -306,6 +308,10 @@ class SelectCheckpoint:
                         self.itr.logger.info(
                             f"{logger_msg}: but {self.itr.next_genome}{self.itr.next_trio_num} starting checkpoint variable does not"
                         )
+            else:
+                # For terminal checkpoint
+                self.ckpt_selected = True
+
         else:
             self.ckpt_selected = False
             self.itr.logger.info(f"{logger_msg}: testing checkpoint variable does not exist")
