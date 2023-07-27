@@ -901,6 +901,8 @@ class RunTrioTrain:
                         f"============ SKIPPING {self.itr._mode_string} - [test_model] - [{self.itr.train_genome}] ============"
                     ) 
                 return
+            elif self.test_model._outputs_exist is False:
+                self.test_model.find_outputs(find_all=True)
 
             if self.restart_jobs and self._phase_jobs is None:
                 self.check_next_phase(
