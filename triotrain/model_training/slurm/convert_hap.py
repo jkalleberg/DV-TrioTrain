@@ -22,7 +22,6 @@ module_path = str(abs_path.parent.parent.parent)
 path.append(module_path)
 from helpers.environment import Env
 
-
 @dataclass
 class Convert:
     """
@@ -115,7 +114,7 @@ class Convert:
         """
         Load in variables from the env file, and define python variables.
         """
-        self.env = Env(self.args.env_file, self.logger, self._logger_msg, dryrun_mode=self.args.dry_run, debug_mode=self.args.debug)
+        self.env = Env(self.args.env_file, self.logger, dryrun_mode=self.args.dry_run, debug_mode=self.args.debug)
         env_vars = [
             "RunName",
             "RunOrder",
