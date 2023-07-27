@@ -106,7 +106,7 @@ def collect_args() -> argparse.ArgumentParser:
     parser.add_argument(
         "--unmapped-reads",
         dest="unmapped_reads",
-        help="prefix for unmapped reads in reference genome; used to exclude from these reads during training\ndefaults to @SQ tag from ARS-UCD1.2_Btau5.0.1Y.\n(default: %(default)s)",
+        help="prefix for unmapped reads in reference genome; used to exclude from these reads during training\ndefaults to @SQ tag from ARS-UCD1.2_Btau5.0.1Y\n(default: %(default)s)",
         type=str,
         metavar="<str>",
         default="NKLS",
