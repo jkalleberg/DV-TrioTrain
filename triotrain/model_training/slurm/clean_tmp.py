@@ -123,6 +123,11 @@ class ClearTmp:
                     if int(self.trio_num) == 0:
                         self.logger_msg = f"[Baseline] - [{self._phase}]"
                         self._baseline_mode = True
+                        # Load in environment variables
+                        vars = ["BaselineModelResultsDir"]
+                        results = Env.load(self.env, *vars)
+                        self.results_dir = Path(str(results[0]))
+                        self.genome = None
                     else:
                         self.logger_msg = f"[TRIO{self.trio_num}] - [{self._phase}]"
                 else:
@@ -145,29 +150,23 @@ class ClearTmp:
         """
         Defines which genome in a trio to work with.
         """
-        if self._baseline_mode:
-            # Load in environment variables
-            vars = ["BaselineModelResultsDir"]
-            results = Env.load(self.env, *vars)
-            self.results_dir = Path(str(results))
-            self.genome = None
+        self.genome = genome
+        
+        # Load in environment variables
+        if "ExamplesDir" in self.env.contents:
+            examples = self.env.contents["ExamplesDir"]
+            self.examples_dir = Path(str(examples))
         else:
-            self.genome = genome
-            # Load in environment variables
-            if "ExamplesDir" in self.env.contents:
-                examples = self.env.contents["ExamplesDir"]
-                self.examples_dir = Path(str(examples))
-            else:
-                self.logger.error(
-                    f"{self.logger_msg}: missing the 'ExamplesDir' variable in {self.env.env_file}\nExiting..."
-                )
-                exit(1)
+            self.logger.error(
+                f"{self.logger_msg}: missing the 'ExamplesDir' variable in {self.env.env_file}\nExiting..."
+            )
+            exit(1)
 
-            if self.genome in self.parents:
-                vars = [f"{self.genome}TestDir", f"{self.genome}CompareDir"]
-                test, compare = Env.load(self.env, *vars)
-                self.test_dir = Path(test)
-                self.compare_dir = Path(compare)
+        if self.genome in self.parents:
+            vars = [f"{self.genome}TestDir", f"{self.genome}CompareDir"]
+            test, compare = Env.load(self.env, *vars)
+            self.test_dir = Path(test)
+            self.compare_dir = Path(compare)
 
     def keep_example_info(self) -> None:
         """
@@ -201,7 +200,7 @@ class ClearTmp:
             new_file = f"{self.genome}.example_info.json"
             new = TestFile(file=self.examples_dir / new_file, logger=self.logger)
 
-        new.check_missing(logger_msg=logging_msg, debug_mode=True)
+        new.check_missing(logger_msg=logging_msg, debug_mode=self.debug_mode)
 
         if new.file_exists:
             return
@@ -210,7 +209,7 @@ class ClearTmp:
         keep_file = files[0]
 
         keep = TestFile(file=keep_file, logger=self.logger)
-        keep.check_existing(logger_msg=logging_msg, debug_mode=True)
+        keep.check_existing(logger_msg=logging_msg, debug_mode=self.debug_mode)
         if not keep.file_exists:
             self.logger.error(
                 f"{logging_msg} - [{self.genome}]: missing '{str(keep_file)}' to save example_info...\nExiting"
@@ -371,10 +370,13 @@ class ClearTmp:
         """
         self.set_trio()
 
-        for g in self.trio:
-            self.set_genome(genome=g)
-            self.keep_example_info()
+        if self._baseline_mode:
             self.create_search_patterns()
+        else:
+            for g in self.trio:
+                self.set_genome(genome=g)
+                self.keep_example_info()
+                self.create_search_patterns()
 
         self.num_files = 0
         self.num_sub_dirs = 0
