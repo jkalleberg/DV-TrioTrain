@@ -14,17 +14,24 @@ import argparse
 from csv import DictReader
 from dataclasses import dataclass, field
 from logging import Logger
-from os import environ, path
+from os import environ, path as p
 from pathlib import Path
 from typing import List, TextIO, Union
 from regex import compile
 from json import load
 import subprocess
+from sys import path
 
-import helpers as h
-import helpers_logger
-from iteration import Iteration
-from sbatch import SBATCH, SubmitSBATCH
+abs_path = Path(__file__).resolve()
+module_path = str(abs_path.parent.parent)
+path.append(module_path)
+
+from model_training.slurm.sbatch import SBATCH, SubmitSBATCH
+from helpers.iteration import Iteration
+from model_training.slurm.suffix import remove_suffixes
+from model_training.prep.count import count_variants
+from helpers.files import TestFile, WriteFiles
+from helpers.utils import generate_job_id, check_if_all_same
 
 def collect_args():
     """
@@ -121,7 +128,7 @@ class Stats:
 
     # required parameters
     args: argparse.Namespace
-    logger: h.Logger
+    logger: Logger
 
     # optional values
     run_iteractively: bool = False
@@ -158,7 +165,7 @@ class Stats:
         Read in and save the metadata file as a dictionary.
         """
         # Confirm data input is an existing file
-        metadata = h.TestFile(str(self._metadata_input), self.logger)
+        metadata = TestFile(str(self._metadata_input), self.logger)
         metadata.check_existing(logger_msg=self._logger_msg, debug_mode=self.args.debug)
         if metadata.file_exists:
             # read in the csv file
@@ -196,11 +203,11 @@ class Stats:
         """
         Confirm that the VCF file in the metadata file exists.
         """
-        self._vcf_file = h.TestFile(self._data["file_path"], self.logger)
+        self._vcf_file = TestFile(self._data["file_path"], self.logger)
         self._vcf_file.check_existing(
             logger_msg=self._logger_msg, debug_mode=self.args.debug
         )
-        self._clean_filename = h.remove_suffixes(self._vcf_file.path)
+        self._clean_filename = remove_suffixes(self._vcf_file.path)
     
     def execute(self, command_list: list, type: str, keep_output: bool = False) -> None:
         """
@@ -253,7 +260,7 @@ class Stats:
         Filter the contents of a VCF and create a new VCF file
         """
         # Determine if filtered VCF files exist
-        _vcf = h.TestFile(file=output, logger=self.logger)
+        _vcf = TestFile(file=output, logger=self.logger)
         _vcf.check_existing(
             logger_msg=self._logger_msg, debug_mode=self.args.debug
         )
@@ -287,7 +294,7 @@ class Stats:
         Create the required TABIX index file for 'bcftools +smpl-stats'
         """
         # Determine if indexed VCF files exist
-        _tbi = h.TestFile(file=f"{vcf_input}.tbi", logger=self.logger)
+        _tbi = TestFile(file=f"{vcf_input}.tbi", logger=self.logger)
         _tbi.check_existing(
             logger_msg=self._logger_msg, debug_mode=self.args.debug
         )
@@ -325,7 +332,7 @@ class Stats:
         """
         Produce bcftools +smpl-stats for each sample in metadata file, if missing the .STATS file.
         """
-        _filename = h.remove_suffixes(Path(input))
+        _filename = remove_suffixes(Path(input))
         stats_output = f"{_filename}.STATS"
         if self.args.filter_GQ and "GQ" in stats_output:
             self._filter_applied = self.find_filter(stats_output)
@@ -333,7 +340,7 @@ class Stats:
                 self.logger.debug(
                         f"{self._logger_msg}: FILTER | '{self._filter_applied}'")
 
-        self._stats_file = h.TestFile(stats_output, self.logger)
+        self._stats_file = TestFile(stats_output, self.logger)
         self._stats_file.check_existing(
             logger_msg=self._logger_msg, debug_mode=self.args.debug
         )
@@ -364,7 +371,7 @@ class Stats:
                         f"{self._logger_msg}: using 'bcftools +smpl-stats' to create STATS file | '{stats_output}'",
                     )
 
-                bcftools_smpl_stats_output = h.count_variants(
+                bcftools_smpl_stats_output = count_variants(
                     self._vcf_file.path,
                     self._logger_msg,
                     logger=self.logger,
@@ -378,7 +385,7 @@ class Stats:
                 if not self.args.dry_run:
                     output_path = str(Path(stats_output).parent)
                     output_name = Path(stats_output).name
-                    stats_file = h.WriteFiles(
+                    stats_file = WriteFiles(
                         path_to_file=output_path,
                         file=output_name,
                         logger=self.logger,
@@ -533,7 +540,7 @@ class Stats:
         submit_slurm_job.display_command(current_job=(index+1), total_jobs=self._total_lines, display_mode=self.itr.dryrun_mode, debug_mode=self.itr.debug_mode)
 
         if self.itr.dryrun_mode:
-            self._job_nums.append(h.generate_job_id())
+            self._job_nums.append(generate_job_id())
             self._num_submitted += 1
         else:
             submit_slurm_job.get_status(debug_mode=self.itr.debug_mode, current_job=(index+1), total_jobs=self._total_lines)
@@ -551,7 +558,7 @@ class Stats:
         """
         Save the combined metrics to a new CSV output, or display to screen.
         """
-        results = h.WriteFiles(
+        results = WriteFiles(
             path_to_file=self._output_path,
             file=self._output_name,
             logger=self.logger,
@@ -585,7 +592,7 @@ class Stats:
         Check if the SLURM job file was submitted to the SLURM queue successfully
         """
         # look at job number list to see if all items are 'None'
-        _results = h.check_if_all_same(self._job_nums, None)
+        _results = check_if_all_same(self._job_nums, None)
         if _results is False:
             if self.args.dry_run:
                 print(
@@ -645,7 +652,7 @@ class Stats:
                 for g in GQ_scores:
                     label = f"{self._clean_filename}.GQ{g}.vcf.gz"
 
-                    _gq_vcf = h.TestFile(label, self.logger)
+                    _gq_vcf = TestFile(label, self.logger)
                     _gq_vcf.check_existing(
                         logger_msg=self._logger_msg, debug_mode=self.args.debug
                     )
@@ -662,8 +669,6 @@ class Stats:
                         self.filter(f"--exclude 'GQ<{g}'", self._vcf_file.file, label)
                         self.index_vcf(label)
                         self.stats(label, create_job=True)
-                        # breakpoint()
-                        # continue
                 
                 self._slurm_job = self.make_job()
                 self.submit_job(index=i)
@@ -714,16 +719,19 @@ class Stats:
         )
 
 def __init__():
+    from helpers.utils import get_logger
+    from helpers.wrapper import Wrapper, timestamp
+
     # Collect command line arguments
     args = collect_args()
 
     # Collect start time
-    h.Wrapper(__file__, "start").wrap_script(h.timestamp())
+    Wrapper(__file__, "start").wrap_script(timestamp())
 
     # Create error log
     current_file = path.basename(__file__)
     module_name = path.splitext(current_file)[0]
-    logger = helpers_logger.get_logger(module_name)
+    logger = get_logger(module_name)
 
     try:
         # Check command line args
@@ -732,7 +740,7 @@ def __init__():
     except AssertionError as E:
         logger.error(E)
 
-    h.Wrapper(__file__, "end").wrap_script(h.timestamp())
+    Wrapper(__file__, "end").wrap_script(timestamp())
 
 
 # Execute functions created

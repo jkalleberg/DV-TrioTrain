@@ -9,6 +9,8 @@ from dataclasses import dataclass, field
 from sys import exit
 from typing import List, Union
 
+from regex import compile
+
 from helpers.environment import Env
 from helpers.files import WriteFiles
 from helpers.iteration import Iteration
@@ -22,7 +24,7 @@ from helpers.utils import (
     generate_job_id,
 )
 from model_training.slurm.sbatch import SBATCH, SubmitSBATCH
-from regex import compile
+
 
 
 @dataclass

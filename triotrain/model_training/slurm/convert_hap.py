@@ -15,12 +15,13 @@ from subprocess import run as run_sub
 from sys import path
 
 from regex import compile
-from suffix import remove_suffixes
 
 abs_path = Path(__file__).resolve()
 module_path = str(abs_path.parent.parent.parent)
 path.append(module_path)
 from helpers.environment import Env
+from suffix import remove_suffixes
+
 
 @dataclass
 class Convert:
@@ -114,7 +115,12 @@ class Convert:
         """
         Load in variables from the env file, and define python variables.
         """
-        self.env = Env(self.args.env_file, self.logger, dryrun_mode=self.args.dry_run, debug_mode=self.args.debug)
+        self.env = Env(
+            self.args.env_file,
+            self.logger,
+            dryrun_mode=self.args.dry_run,
+            debug_mode=self.args.debug,
+        )
         env_vars = [
             "RunName",
             "RunOrder",

@@ -3,34 +3,36 @@
 description: produce a Trio VCF, then give to 'rtg-tools mendelian' to calculate Mendelian Inheritance Error (MIE) Rate, saved in a log file.
 
 example:
-    python3 scripts/results/mie_rate.py                                                \\
-        --metadata metadata/230515_mie_rate_inputs.csv                                 \\
+    python3 triotrain/summarize/mie.py                           \\
+        --metadata metadata/230515_mie_rate_inputs.csv           \\
         --output ../TRIO_TRAINING_OUTPUTS/final_results/230213_mendelian.csv           \\
         --resources resource_configs/221205_resources_used.json                        \\
         --dry-run
 """
 
 import argparse
-import sys
+from logging import Logger
+from sys import exit, path
 from dataclasses import dataclass, field
 from json import load
-from os import getcwd, path
+from os import getcwd, path as p
 from pathlib import Path
 from re import sub
 from typing import List, TextIO, Union
 
 from regex import compile
 
-sys.path.append(
-    "/storage/hpc/group/UMAG_test/WORKING/jakth2/deep-variant/scripts/model_training"
-)
+abs_path = Path(__file__).resolve()
+module_path = str(abs_path.parent.parent)
+path.append(module_path)
 
-import helpers as h
-import helpers_logger
-from iteration import Iteration
-from results_stats import Stats, check_args
-from sbatch import SBATCH, SubmitSBATCH
-
+from model_training.slurm.suffix import remove_suffixes
+from helpers.files import TestFile, WriteFiles
+from model_training.slurm.sbatch import SBATCH, SubmitSBATCH
+from stats import Stats, check_args
+from helpers.iteration import Iteration
+from helpers.outputs import check_if_output_exists
+from helpers.utils import generate_job_id, check_if_all_same
 
 def collect_args():
     """
@@ -103,7 +105,7 @@ class MIE:
 
     # required parameters
     args: argparse.Namespace
-    logger: h.Logger
+    logger: Logger
 
     # optional values
     run_iteractively: bool = False
@@ -135,7 +137,7 @@ class MIE:
             / "region_files"
             / f"{self._stats._species.lower()}_autosomes_withX.bed"
         )
-        self._regions_file = h.TestFile(regions_path, self.logger)
+        self._regions_file = TestFile(regions_path, self.logger)
         self._regions_file.check_existing()
         if self._stats._species != "Mosquito":
             if self._regions_file.file_exists:
@@ -144,7 +146,7 @@ class MIE:
                 self.logger.error(
                     f"{self._stats._logger_msg}: missing a valid regions file | '{self._regions_file.file}'\nExiting..."
                 )
-                sys.exit(1)
+                exit(1)
 
     def find_trio_name(self, trio_input: str) -> Union[str, None]:
         """
@@ -231,13 +233,13 @@ class MIE:
             _input = Path(self._stats._data_list[self._index]["file_path"])
             self._merge_inputs = True
 
-        _input_file = h.TestFile(file=_input, logger=self.logger)
+        _input_file = TestFile(file=_input, logger=self.logger)
         _input_file.check_missing(
             logger_msg=self._stats._logger_msg, debug_mode=self.args.debug
         )
         if _input_file.file_exists:
             self._input_path = _input.parent
-            _file = h.remove_suffixes(_input, remove_all=False)
+            _file = remove_suffixes(_input, remove_all=False)
             self._input_filename = _file.name
             self._name = self.find_trio_name(self._input_filename)
             self._running_name = self.find_trio_name(self._output_label)
@@ -275,7 +277,7 @@ class MIE:
         if self._filetype == ".bcf":
             self._stats._logger_msg = f"[{self._stats._phase}] - [{self._stats._species}] - [{self._stats._caller}] - [{self._running_name}:{self._trio_type}]"
             _label = f"{self._name}.{self._trio_type}"
-            self._trio_vcf = h.TestFile(
+            self._trio_vcf = TestFile(
                 f"{self._input_path}/{_label}.vcf.gz", self.logger
             )
         else:
@@ -285,7 +287,7 @@ class MIE:
             else:
                 if self._merge_inputs and self._filter == "test":
                     _label = f"{self._stats._species}.{self._name}"
-                    self._trio_vcf = h.TestFile(
+                    self._trio_vcf = TestFile(
                         f"{self._input_path}/{_label}.vcf.gz", self.logger
                     )
                 else:
@@ -301,14 +303,14 @@ class MIE:
         """
         Determine if 'rtg-tools mendelian' needs to be run.
         """
-        trio_filename = h.remove_suffixes(self._trio_vcf.path)
+        trio_filename = remove_suffixes(self._trio_vcf.path)
 
         if pass_only:
             mie_vcf_file = Path(f"{trio_filename}.PASS.MIE")
         else:
             mie_vcf_file = Path(f"{trio_filename}.ALL.MIE")
 
-        self._mie_vcf = h.WriteFiles(
+        self._mie_vcf = WriteFiles(
             path_to_file=str(mie_vcf_file.parent),
             file=f"{mie_vcf_file.name}.vcf.gz",
             logger=self.logger,
@@ -335,7 +337,7 @@ class MIE:
 
             mie_regex = compile(rf"mie-{self._name}-{self._stats._caller}_\d+\.out")
 
-            mie_metrics_file_exists, num_found, files_found = h.check_if_output_exists(
+            mie_metrics_file_exists, num_found, files_found = check_if_output_exists(
                 match_pattern=mie_regex,
                 file_type="the MIE log file",
                 search_path=self._log_dir,
@@ -348,7 +350,7 @@ class MIE:
                 self._existing_metrics_log_file = mie_metrics_file_exists
                 mie_metrics_file = self._log_dir / str(files_found[0])
 
-                self._mie_metrics = h.WriteFiles(
+                self._mie_metrics = WriteFiles(
                     path_to_file=str(mie_metrics_file.parent),
                     file=f"{mie_metrics_file.name}",
                     logger=self.logger,
@@ -413,7 +415,7 @@ class MIE:
                         self.logger.error(
                             f"{self._stats._logger_msg}: trio concordance math error | expected: {self._trio_concordance_clean}%, but got {trio_con}\nExiting..."
                         )
-                        sys.exit(1)
+                        exit(1)
 
             elif "incorrect pedigree" in row.lower():
                 
@@ -430,7 +432,7 @@ class MIE:
                     # self.logger.error(
                     #     f"{self._stats._logger_msg}: Check trio pedigree file and vcfs for correct sample names\nExiting..."
                     # )
-                    # sys.exit(1)
+                    # exit(1)
                     continue
                 else:
                     self.logger.warning(
@@ -493,7 +495,7 @@ class MIE:
                 f"{self._stats._logger_msg}: unable to find '{giab_samples[sampleID]}' or '{sampleID}' in '{self._clean_filename.name}'"
             )
             self.logger.error(f"{self._stats._logger_msg}: re-naming error\nExiting...")
-            sys.exit(1)
+            exit(1)
 
         if "giab" in self._stats._caller.lower():
             self.logger.info(
@@ -504,7 +506,7 @@ class MIE:
             stem = input_path.stem
             suffix = Path(stem).suffix
             output = f"{self._clean_filename}.renamed{suffix}.gz"
-            new_vcf = h.TestFile(output, self.logger)
+            new_vcf = TestFile(output, self.logger)
             new_vcf.check_existing(
                 logger_msg=self._stats._logger_msg, debug_mode=self.args.debug
             )
@@ -575,7 +577,7 @@ class MIE:
                     and self._stats._data_list[self._index + 2]["file_path"]
                 ):
                     # Child ---
-                    self._child_vcf = h.TestFile(
+                    self._child_vcf = TestFile(
                         self._stats._data_list[self._index]["file_path"], self.logger
                     )
                     self._child_vcf.check_existing(
@@ -583,7 +585,7 @@ class MIE:
                     )
 
                     # Father ---
-                    self._father_vcf = h.TestFile(
+                    self._father_vcf = TestFile(
                         self._stats._data_list[self._index + 1]["file_path"],
                         self.logger,
                     )
@@ -592,7 +594,7 @@ class MIE:
                     )
 
                     # Mother ---
-                    self._mother_vcf = h.TestFile(
+                    self._mother_vcf = TestFile(
                         self._stats._data_list[self._index + 2]["file_path"],
                         self.logger,
                     )
@@ -646,7 +648,7 @@ class MIE:
         """
         _lines = [f"{sample_name}"]
 
-        renaming_file = h.WriteFiles(
+        renaming_file = WriteFiles(
             path_to_file=str(self._input_path),
             file=f"{sample_name}.rename",
             logger=self.logger,
@@ -679,7 +681,7 @@ class MIE:
             f"{self._name} {self._childID} {self._fatherID} {self._motherID} {self._child_sex} 0",
         ]
 
-        self._pedigree = h.WriteFiles(
+        self._pedigree = WriteFiles(
             path_to_file=str(self._input_path),
             file=f"{self._name}.PED",
             logger=self.logger,
@@ -708,8 +710,8 @@ class MIE:
         # If a Family BCF is missing,
         if vcf_path is not None and index is not None and self._merge_inputs:
             # Determine if indvidual BCF files exist
-            self._clean_filename = h.remove_suffixes(vcf_path)
-            _bcf = h.TestFile(file=f"{self._clean_filename}.bcf.gz", logger=self.logger)
+            self._clean_filename = remove_suffixes(vcf_path)
+            _bcf = TestFile(file=f"{self._clean_filename}.bcf.gz", logger=self.logger)
             _bcf.check_existing(
                 logger_msg=self._stats._logger_msg, debug_mode=self.args.debug
             )
@@ -724,7 +726,7 @@ class MIE:
             if index == 0:
                 bcf_renamed = self.rename(input=_bcf.file, sampleID=self._childID)
                 if bcf_renamed != _bcf.file:
-                    _bcf = h.TestFile(file=bcf_renamed, logger=self.logger)
+                    _bcf = TestFile(file=bcf_renamed, logger=self.logger)
                     _bcf.check_existing(
                         logger_msg=self._stats._logger_msg, debug_mode=self.args.debug
                     )
@@ -733,7 +735,7 @@ class MIE:
             elif index == 1:
                 bcf_renamed = self.rename(input=_bcf.file, sampleID=self._fatherID)
                 if bcf_renamed != _bcf.file:
-                    _bcf = h.TestFile(file=bcf_renamed, logger=self.logger)
+                    _bcf = TestFile(file=bcf_renamed, logger=self.logger)
                     _bcf.check_existing(
                         logger_msg=self._stats._logger_msg, debug_mode=self.args.debug
                     )
@@ -742,7 +744,7 @@ class MIE:
             elif index == 2:
                 bcf_renamed = self.rename(input=_bcf.file, sampleID=self._motherID)
                 if bcf_renamed != _bcf.file:
-                    _bcf = h.TestFile(file=bcf_renamed, logger=self.logger)
+                    _bcf = TestFile(file=bcf_renamed, logger=self.logger)
                     _bcf.check_existing(
                         logger_msg=self._stats._logger_msg, debug_mode=self.args.debug
                     )
@@ -751,7 +753,7 @@ class MIE:
 
         # Confirm a Family BCF File already exists...
         else:
-            self._trio_bcf = h.TestFile(
+            self._trio_bcf = TestFile(
                 f"{self._input_path}/{self._input_filename}", self.logger
             )
             self._trio_bcf.check_existing(
@@ -794,7 +796,7 @@ class MIE:
         else:
             output = f"{input}.csi"
 
-        _bcf_index = h.TestFile(file=output, logger=self.logger)
+        _bcf_index = TestFile(file=output, logger=self.logger)
         _bcf_index.check_existing(
             logger_msg=self._stats._logger_msg, debug_mode=self.args.debug
         )
@@ -969,7 +971,7 @@ class MIE:
         )
 
         if self.itr.dryrun_mode:
-            self._job_nums.append(h.generate_job_id())
+            self._job_nums.append(generate_job_id())
             self._num_submitted += 1
         else:
             submit_slurm_job.get_status(debug_mode=self.itr.debug_mode)
@@ -996,7 +998,7 @@ class MIE:
 
         self._stats._logger_msg = f"[{self._stats._phase}]"
         # look at job number list to see if all items are 'None'
-        _results = h.check_if_all_same(self._job_nums, None)
+        _results = check_if_all_same(self._job_nums, None)
         if _results is False:
             self.logger.info(
                 f"{self._stats._logger_msg}: submitted {self._num_submitted}-of-{int(self._stats._total_lines/3)} jobs"
@@ -1155,16 +1157,19 @@ class MIE:
 
 
 def __init__():
+    from helpers.utils import get_logger
+    from helpers.wrapper import Wrapper, timestamp
+
     # Collect command line arguments
     args = collect_args()
 
     # Collect start time
-    h.Wrapper(__file__, "start").wrap_script(h.timestamp())
+    Wrapper(__file__, "start").wrap_script(timestamp())
 
     # Create error log
     current_file = path.basename(__file__)
     module_name = path.splitext(current_file)[0]
-    logger = helpers_logger.get_logger(module_name)
+    logger = get_logger(module_name)
 
     try:
         # Check command line args
@@ -1173,7 +1178,7 @@ def __init__():
     except AssertionError as E:
         logger.error(E)
 
-    h.Wrapper(__file__, "end").wrap_script(h.timestamp())
+    Wrapper(__file__, "end").wrap_script(timestamp())
 
 
 # Execute functions created
