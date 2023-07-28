@@ -1,0 +1,4 @@
+label,sampleID,labID,species,sex
+test1,NA24631,HG005,human,M
+test2,NA24694,HG006,human,M
+test3,NA24695,HG007,human,F

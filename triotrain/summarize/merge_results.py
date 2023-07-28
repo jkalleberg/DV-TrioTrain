@@ -3,9 +3,8 @@
 description: combine the CSV outputs from multiple TrioTrain iterations
 
 example:
-    python3 triotrain/summarize/merge_tests.py                      \\
-        --env-file envs/demo.env                                    \\
-        -M metadata/221221_tests_metadata.csv                       \\
+    python3 triotrain/summarize/merge_results.py                    \\
+        --env-file TUTORIAL/GIAB_Trio/envs/run0.env                 \\
         --dry-run
 """
 import argparse
@@ -21,12 +20,11 @@ import pandas as pd
 
 abs_path = Path(__file__).resolve()
 module_path = str(abs_path.parent.parent)
-print("MODULE PATH:", module_path)
 path.append(module_path)
 
 from helpers.environment import Env
 from helpers.files import WriteFiles, TestFile
-from helpers.outputs import check_if_output_exists, check_expected_outputs
+from helpers.outputs import check_if_output_exists
 
 def collect_args():
     """
@@ -90,23 +88,7 @@ def collect_args():
         help="input file (.csv)\nprovide unique descriptions for the test genome(s)",
         metavar="</path/file>",
     )
-
     return parser.parse_args()
-    # return parser.parse_args(
-    #     [
-    #         "--env-file",
-    #         # "envs/220913_NewTrios-run1.env",
-    #         "envs/230313_GIAB-run1.env",
-    #         # "--first-genome",
-    #         # "Father",
-    #         # "--metadata",
-    #         # "metadata/221221_tests_metadata.csv",
-    #         # "-T",
-    #         "--dry-run",
-    #         # "--debug",
-    #     ]
-    # )
-
 
 def check_args(args: argparse.Namespace, logger: Logger):
     """
@@ -132,7 +114,6 @@ def check_args(args: argparse.Namespace, logger: Logger):
 
     if args.first_genome == "None":
         args.first_genome = None
-    
 
 
 @dataclass
@@ -211,7 +192,7 @@ class MergedTests:
         
         assert (
             getcwd() == code_path
-        ), "run the workflow in the deep-variant/ directory only!" 
+        ), f"run the workflow in the {code_path} directory only!" 
 
         if self.args.first_genome is not None and self._run_num >= 1:
             assert (
@@ -233,6 +214,7 @@ class MergedTests:
             else:
                 self._expected_num_tests = self._total_num_tests * 2
                 self._mode = f"Trio{self._run_num}"
+            
             if self.args.first_genome is None:
                 self._search_paths = [self._compare_dir1]
                 self._ckpts_list = ["TestCkptName"]
@@ -361,16 +343,28 @@ class MergedTests:
         """
         identify how many 'AllTests' files exist.
         """
-        search_pattern = r"\w+\d+\.AllTests\.total\.metrics\.csv"
+        self._total_found = 0
+        self._file_names = list()
+        search_paths = [Path(self._baseline_results), self._output_path]
+        search_patterns = [r"\w+\.\w+\.\w+\.AllTests\.total\.metrics\.csv", r"\w+\d+\.AllTests\.total\.metrics\.csv"]
         
-        self._files_exist, total_found, self._file_names = check_if_output_exists(
-            match_pattern=search_pattern, 
-            file_type="AllTests files",
-            search_path=self._output_path,
-            label="merge_all",
-            logger=self.logger,
-            debug_mode=self.args.debug
-        )
+        for i,sp in enumerate(search_paths):
+            self.logger.info(f"{self._logger_msg}: searching path | '{sp}'")
+            files_exist, total_found, file_names = check_if_output_exists(
+                match_pattern=search_patterns[i], 
+                file_type="AllTests files",
+                search_path=sp,
+                msg=self._logger_msg,
+                logger=self.logger,
+                debug_mode=self.args.debug
+            )
+            self._files_exist = files_exist
+            if files_exist:
+                self._total_found += total_found
+                self._file_names = self._file_names + [sp / f for f in file_names]
+        
+        if self._files_exist:        
+            self.logger.info(f"{self._logger_msg}: found {self._total_found} matching files")
 
     def load_csv(self, index: int = 0) -> None:
         """
@@ -385,7 +379,7 @@ class MergedTests:
             input_name = Path(self._input_files[index]).parent.name
 
             test_dict = {}
-            reader = reader(results_csv)
+            csv_reader = reader(results_csv)
 
             keep_these = [
                 "checkpoint",
@@ -397,7 +391,7 @@ class MergedTests:
             ]
 
             self._run_name = None
-            for row in reader:
+            for row in csv_reader:
                 key, value = row
                 if "testname" in key.lower():
                     K = value.lower()
@@ -481,7 +475,7 @@ class MergedTests:
         either display output to the screen, or write to a new intermediate CSV file
         """
         if self.args.merge_all:
-            input_label = self._file_names[0].split(".")
+            input_label = str(self._file_names[0]).split(".")
             name = ".".join(["AllRuns"] + input_label[2:])
         else:
             input_label = Path(self._input_files[0]).name.split(".")
@@ -546,14 +540,6 @@ class MergedTests:
             for key, value in dd.items():
                 self._output_dict[key].append(value)
 
-        # Combine the list of values across samples into a comma-sep string
-        # row_index = 0
-        # for k, values in _output_dict.items():
-        #     value_string = ",".join(values)
-        #     v = f"{k},{value_string}"
-        #     self._output_dict.update({row_index: v})
-        #     row_index +=1
-
         # confirm we didn't skip any samples
         num_missing = self._expected_num_tests - len(self._input_files)
         if num_missing != 0:
@@ -583,6 +569,9 @@ class MergedTests:
             self._final_csv = pd.concat([clean_metadata, combined_csv])
         else:
             self._final_csv = combined_csv
+        
+        print(combined_csv)
+        breakpoint()
         self.save_results()
 
     def run(self) -> None:
@@ -604,14 +593,13 @@ def __init__():
 
     # Collect command line arguments
     args = collect_args()
-    breakpoint()
 
     # Collect start time
     Wrapper(__file__, "start").wrap_script(timestamp())
 
     # Create error log
-    current_file = path.basename(__file__)
-    module_name = path.splitext(current_file)[0]
+    current_file = p.basename(__file__)
+    module_name = p.splitext(current_file)[0]
     logger = get_logger(module_name)
 
     # Check command line args
