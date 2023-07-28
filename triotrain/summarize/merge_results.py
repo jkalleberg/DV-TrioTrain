@@ -245,10 +245,10 @@ class MergedTests:
             "version": self._model_version,
         }
 
-        if self.args.merge_all:
-            self._logger_msg = "[merge_all]"
-        else:    
-            self._logger_msg = f"[{self._mode}] - [{self._phase}]"
+        # if self.args.merge_all:
+        #     self._logger_msg = "[merge_all]"
+        # else:    
+        self._logger_msg = f"[{self._mode}] - [{self._phase}]"
 
     def load_metadata(self) -> None:
         """
@@ -260,32 +260,32 @@ class MergedTests:
         if self.metadata.file_exists:
             self.logger.info(f"{self._logger_msg}: adding test-specific metadata to CSV file")
 
-            if self.args.merge_all:
-                return
-            else:
-                # read in the csv file
-                with open(self.metadata.file, mode="r", encoding="utf-8-sig") as data:
-                    dict_reader = DictReader(data)
-                    data_list = list(dict_reader)
+            # if self.args.merge_all:
+            #     return
+            # else:
+            # read in the csv file
+            with open(self.metadata.file, mode="r", encoding="utf-8-sig") as data:
+                dict_reader = DictReader(data)
+                data_list = list(dict_reader)
 
-                # identify the column with test name(s)
-                for k, v in data_list[0].items():
-                    if "test".lower() in v:
-                        self._key = k
-                    else:
-                        pass
+            # identify the column with test name(s)
+            for k, v in data_list[0].items():
+                if "test".lower() in v:
+                    self._key = k
+                else:
+                    pass
 
-                # use the unique test names as keys,
-                # and save all other columns as a dictionary
-                for line in data_list:
-                    new_key = line[self._key]
-                    new_values = {key: val for key, val in line.items() if key != self._key}
-                    self._metadata_dict[new_key] = new_values
+            # use the unique test names as keys,
+            # and save all other columns as a dictionary
+            for line in data_list:
+                new_key = line[self._key]
+                new_values = {key: val for key, val in line.items() if key != self._key}
+                self._metadata_dict[new_key] = new_values
 
-                num_missing = self._total_num_tests - len(self._metadata_dict)
-                assert (
-                    num_missing == 0
-                ), f"missing {num_missing} lines in metadata | '{str(self.metadata.path.name)}'"
+            num_missing = self._total_num_tests - len(self._metadata_dict)
+            assert (
+                num_missing == 0
+            ), f"missing {num_missing} lines in metadata | '{str(self.metadata.path.name)}'"
         else:
             self.logger.error(
                 f"{self._logger_msg}: unable to load metadata file | '{str(self.metadata.path)}'"
@@ -475,16 +475,15 @@ class MergedTests:
         """
         either display output to the screen, or write to a new intermediate CSV file
         """
-        if self.args.merge_all:
-            input_label = str(self._file_names[0]).split(".")
-            name = ".".join(["AllRuns"] + input_label[2:])
-        else:
-            input_label = Path(self._input_files[0]).name.split(".")
-            if self._custom_model:
-                
+        # if self.args.merge_all:
+        #     input_label = str(self._file_names[0]).split(".")
+        #     name = ".".join(["AllRuns"] + input_label[2:])
+        # else:
+        input_label = Path(self._input_files[0]).name.split(".")
+        if self._custom_model:
                 name = ".".join([self._mode, "AllTests"] + input_label[1:])
-            else:
-                name = ".".join([str(self._model_name), "AllTests"] + input_label[1:])
+        else:
+            name = ".".join([str(self._model_name), "AllTests"] + input_label[1:])
 
         output = WriteFiles(
             str(self._output_path),
@@ -495,19 +494,19 @@ class MergedTests:
         )
         output.check_missing()
 
-        if self.args.merge_all:
-            if self.args.dry_run:
-                self.logger.info(
-                    f"[DRY RUN] - {self._logger_msg}: pretending to write the final CSV file | '{str(output.file_path)}'"
-                )
-                print("---------------------------------------------")
-                print(self._final_csv)
-                print("---------------------------------------------")
-            else:
-                self.logger.info(f"{self._logger_msg}: writing the final CSV file |  '{str(output.path)}'")
-                self._final_csv.to_csv(output.file_path, index=False)
-        else:
-            output.write_csv(write_dict=self._output_dict)
+        # if self.args.merge_all:
+            # if self.args.dry_run:
+            #     self.logger.info(
+            #         f"[DRY RUN] - {self._logger_msg}: pretending to write the final CSV file | '{str(output.file_path)}'"
+            #     )
+            #     print("---------------------------------------------")
+            #     print(self._final_csv)
+            #     print("---------------------------------------------")
+            # else:
+            #     self.logger.info(f"{self._logger_msg}: writing the final CSV file |  '{str(output.path)}'")
+            #     self._final_csv.to_csv(output.file_path, index=False)
+        # else:
+        output.write_csv(write_dict=self._output_dict)
     
     def merge_tests(self) -> None:
         """
@@ -517,9 +516,6 @@ class MergedTests:
             self.find_tests(search_path=c)
 
         self.load_csv_results(starting_index=0)
-
-        print("RESULTS DICT2:", self._results_dict)      
-        breakpoint() 
         self.merge()
 
         # Identify the final row names across all samples
@@ -589,11 +585,10 @@ class MergedTests:
             self.load_metadata()
             self.add_metadata()
 
-        if self.args.merge_all:
-            self.merge_all()
-        else:
-            self.merge_tests()
-
+        # if self.args.merge_all:
+        #     self.merge_all()
+        # else:
+        self.merge_tests()
         self.save_results()
 
 def __init__():
