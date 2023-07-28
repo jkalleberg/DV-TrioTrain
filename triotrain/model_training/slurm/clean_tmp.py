@@ -3,8 +3,8 @@
 description: removes all temporary files made for the entire trio.
 
 example:
-    python3 triotrain/model_training/slurm/clean_tmp.py              \\
-        --env-file envs/demo.env                             \\
+    python3 triotrain/model_training/slurm/clean_tmp.py         \\
+        --env-file ../TUTORIAL/GIAB_Trio/envs/run1.env          \\
         --dry-run
 """
 
@@ -58,9 +58,6 @@ def collect_args() -> argparse.Namespace:
         help="pretend to remove files only",
         action="store_true",
     )
-    # return parser.parse_args(
-    #     ["--env-file", "envs/TriosPASS_30PopBeam-run1.env", "--genome", "Mother", "--mode", "custom", "--dry-run"]
-    # )
     return parser.parse_args()
 
 
