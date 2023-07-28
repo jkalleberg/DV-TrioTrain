@@ -936,7 +936,7 @@ Each `Test_.total.metrics.csv` output file should contain 57 rows and 2 columns.
 ```bash
 for start_i in $(seq 0 1); do
     echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: merging processed results from hap.py for GIAB run#${start_i}"
-    python3 triotrain/summarize/merge_results.py --env ../TUTORIAL/GIAB_Trio/envs/run${start_i}.env -g Father
+    python3 triotrain/summarize/merge_results.py --env ../TUTORIAL/GIAB_Trio/envs/run${start_i}.env -g Father -m triotrain/summarize/data/tutorial_metadata.csv
     echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: finished merging processed results from hap.py for GIAB run#${start_i}"
 done
 ```
@@ -952,21 +952,56 @@ done
 
 ??? success "Expected Outputs | GIAB Trio1"
     ```bash title="Run at the command line"
-    ls ../TUTORIAL/GIAB_Trio/Human_tutorial/compare_Mother/ | grep total
+    ls ../TUTORIAL/GIAB_Trio/summary | grep All
     ```
 
     ```bash title="Check outputs"
-    Test1.total.metrics.csv
-    Test2.total.metrics.csv
-    Test3.total.metrics.csv
+    Trio1.AllTests.total.metrics.csv
     ```
 
-## Merge Results | Entire GIAB_Tutorial
+## Clean Up Directories | Per-Iteration
 
-Creating results for all iterations by merging the per-iteration results created above:
+Running TrioTrain produces a large volume of temporary files. Run the following at the command line to free up space:
 
 ```bash
-python3 triotrain/summarize/merge_results.py --env ../TUTORIAL/GIAB_Trio/envs/run1.env --merge-all -m triotrain/summarize/data/tutorial_metadata.csv --dry-run
+for start_i in $(seq 0 1); do
+    echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: removing temp files for GIAB run#${start_i}"
+    python3 triotrain/model_training/slurm/clean_tmp.py --env ../TUTORIAL/GIAB_Trio/envs/run${start_i}.env
+    echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: finished removing temp files for GIAB run#${start_i}"
+done
 ```
 
-[Assessing the new models :material-arrow-right-box:](../user-guide/mie.md){ .md-button }
+??? success "Expected Outputs | Baseline WGS.AF"
+    ```bash title="Run at the command line"
+    du -h ../TUTORIAL/baseline_v1.4.0_withIS_withAF/
+    ```
+
+    ```bash title="Check outputs"
+    700M    ../TUTORIAL/baseline_v1.4.0_withIS_withAF/
+    ```
+
+??? success "Expected Outputs | GIAB Trio1"
+    ```bash title="Run at the command line"
+    du -h ../TUTORIAL/GIAB_Trio
+    ``
+
+    ```bash title="Check outputs"
+    141M    ../TUTORIAL/GIAB_Trio/Human_tutorial/logs
+    402M    ../TUTORIAL/GIAB_Trio/Human_tutorial/compare_Mother
+    1.1M    ../TUTORIAL/GIAB_Trio/Human_tutorial/train_Mother/eval_Child
+    23G     ../TUTORIAL/GIAB_Trio/Human_tutorial/train_Mother
+    394M    ../TUTORIAL/GIAB_Trio/Human_tutorial/test_Father
+    298M    ../TUTORIAL/GIAB_Trio/Human_tutorial/compare_Father
+    1.1M    ../TUTORIAL/GIAB_Trio/Human_tutorial/train_Father/eval_Child
+    23G     ../TUTORIAL/GIAB_Trio/Human_tutorial/train_Father
+    243G    ../TUTORIAL/GIAB_Trio/Human_tutorial/examples
+    391M    ../TUTORIAL/GIAB_Trio/Human_tutorial/test_Mother
+    3.1M    ../TUTORIAL/GIAB_Trio/Human_tutorial/jobs
+    290G    ../TUTORIAL/GIAB_Trio/Human_tutorial
+    100K    ../TUTORIAL/GIAB_Trio/summary
+    50K     ../TUTORIAL/GIAB_Trio/envs
+    290G    ../TUTORIAL/GIAB_Trio/
+    ```
+
+
+[Next - Comparing Models :material-arrow-right-box:](../user-guide/mie.md){ .md-button }
