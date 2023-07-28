@@ -17,6 +17,7 @@ from os import environ, getcwd, path as p
 from pathlib import Path
 from typing import Union
 import pandas as pd
+from regex import compile
 
 abs_path = Path(__file__).resolve()
 module_path = str(abs_path.parent.parent)
@@ -127,6 +128,7 @@ class MergedTests:
     logger: Logger
 
     # internal, imutable values
+    _digits_only = compile(r"\d+")
     _input_files: list = field(default_factory=list, init=False, repr=False)
     _logger_msg: Union[str, None] = None
     _metadata_dict: dict = field(default_factory=dict, init=False, repr=False)
@@ -158,8 +160,15 @@ class MergedTests:
         Load in variables from the env file, and define python variables.
         """
         self.env = Env(self.args.env_file, self.logger)
+
+        match = self._digits_only.search(self.env.env_path.name)
+        if match:
+            self._run_num = int(float(match.group()))
+        else:
+            self.logger.error(f"unable to identify a valid run number\nExiting...")
+            exit(1)
+
         var_list = [
-            "RunOrder",
             "CodePath",
             "TotalTests",
             "BaselineModelResultsDir",
@@ -174,7 +183,6 @@ class MergedTests:
         vars = var_list + extra_vars
 
         (
-            _run_num,
             code_path,
             _total_num_tests,
             self._baseline_results,
@@ -182,8 +190,6 @@ class MergedTests:
             self._compare_dir1,
             self._compare_dir2,
         ) = self.env.load(*vars)
-
-        self._run_num = int(float(_run_num))
 
         if self._custom_model:
             self._output_path = Path(_output_dir)
@@ -194,7 +200,7 @@ class MergedTests:
             getcwd() == code_path
         ), f"run the workflow in the {code_path} directory only!" 
 
-        if self.args.first_genome is not None and self._run_num >= 1:
+        if self._run_num >= 1:
             assert (
                 self.args.first_genome
             ), "missing --first-genome\nPlease set which training from the current trio was used first."
@@ -293,14 +299,6 @@ class MergedTests:
         input_file_csv = self._search_path / f"Test{test_num}.total.metrics.csv" 
         if input_file_csv.is_file():
             self._num_found += 1
-            if self._genome is not None:
-                self.logger.info(
-                    f"{self._logger_msg} - [{self._genome}]: identified results file {self._num_found}-of-{self._expected_num_tests}"
-                )
-            else:
-                self.logger.info(
-                    f"{self._logger_msg}: identified results file {self._num_found}-of-{self._expected_num_tests}"
-                )
             self._input_files.append(str(input_file_csv))
         else:
             if self._genome is not None:
@@ -405,14 +403,12 @@ class MergedTests:
                             else:
                                 self._run_name = f"{self._model_version}_WGS.AF_human"
                     else:
-                        self._run_name = value
+                        genome = value.split("-")[1]
+                        self._run_name = f"Trio{self._run_num}-{genome}"
                 else:
                     for k in keep_these:
                         if k in key.lower() or k in key:
-                            if self._run_name is None:
-                                test_dict[key] = value
-                            else:
-                                test_dict[f"{self._run_name}_{key}"] = value
+                            test_dict[key] = value
 
             if K is not None and len(test_dict) > 0:
                 if K in self._results_dict.keys():
@@ -440,7 +436,7 @@ class MergedTests:
         """
         combine the two dictionaries and create a list of dicts to write as a file.
         """
-        for i, key in enumerate(self._results_dict.keys()):
+        for key in self._results_dict.keys():
             self._num_merged += 1
             if self._genome is None:
                 self.logger.info(
@@ -452,23 +448,19 @@ class MergedTests:
                 )
 
             # combine metrics from multiple tests
-            merged_values = {**self._results_dict[key]}
+            merged_values = {"model_name": self._run_name, "test_name": key, **self._results_dict[key]}
 
             # use defaultdict so that any missing keys will be set to 'None' automatically
             _final_results = defaultdict(None)
-            _final_results["test_name"] = key
             _final_results.update(merged_values)
 
             # create a list of defaultdicts
-            if self.args.first_genome is None:
-                self._samples.insert(i, _final_results)
-            else:
-                if self._num_merged > (self._expected_num_tests / 2):
-                    if self.args.debug:
-                        self.logger.debug(
-                            f"{self._logger_msg}: SAMPLE#{i}\n{_final_results}"
-                        )
-                    self._samples.insert(i, _final_results)
+            index = self._num_merged - 1
+            if self.args.debug:
+                self.logger.debug(
+                    f"{self._logger_msg}: SAMPLE#{index}\n{_final_results}"
+                    )
+            self._samples.insert(index, _final_results)
 
     def save_results(self) -> None:
         """
