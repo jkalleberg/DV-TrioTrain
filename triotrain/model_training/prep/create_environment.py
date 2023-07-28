@@ -838,7 +838,11 @@ class Environment:
                             "JobDir": f"{str(run_dir / 'jobs')}",
                             "LogDir": f"{str(run_dir / 'logs')}",
                         }
-                        self._output_dict.update(more_vars)
+                    else:
+                        more_vars = {
+                            "RunDir": f"{str(run_dir)}"}
+                    
+                    self._output_dict.update(more_vars)
 
                     if None in self.train_order:
                         self._output_dict["BaselineModelResultsDir"] = f"{str(run_dir)}"
