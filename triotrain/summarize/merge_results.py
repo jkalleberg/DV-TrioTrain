@@ -74,13 +74,13 @@ def collect_args():
         help="if True, display commands to the screen",
         action="store_true",
     )
-    parser.add_argument(
-        "-s",
-        "--merge-all",
-        dest="merge_all",
-        help="if True, after merging tests, merge the AllTests files in the summary/",
-        action="store_true",
-    )
+    # parser.add_argument(
+    #     "-s",
+    #     "--merge-all",
+    #     dest="merge_all",
+    #     help="if True, after merging tests, merge the AllTests files in the summary/",
+    #     action="store_true",
+    # )
     parser.add_argument(
         "-m",
         "--metadata",
@@ -388,33 +388,42 @@ class MergedTests:
                 "F1-Score",
             ]
 
-            self._run_name = None
+            self._model_name = None
             for row in csv_reader:
                 key, value = row
                 if "testname" in key.lower():
                     K = value.lower()
+                    test_dict["test_name"] = K
                 elif "modelused" in key.lower():
                     if "default" in value:
                         if self._custom_model:
-                            self._run_name = self.env.contents["RunName"]
+                            self._model_name = self.env.contents["RunName"]
                         else:
                             if "noPop" in input_name:
-                                self._run_name = f"{self._model_version}_default_human"
+                                self._model_name = f"{self._model_version}_default_human"
                             else:
-                                self._run_name = f"{self._model_version}_WGS.AF_human"
+                                self._model_name = f"{self._model_version}_WGS.AF_human"
                     else:
                         genome = value.split("-")[1]
-                        self._run_name = f"Trio{self._run_num}-{genome}"
+                        self._model_name = f"Trio{self._run_num}-{genome}"
+                    
+                    test_dict["model_name"] = self._model_name
+                    
                 else:
+                    if self.args.metadata:
+                        for k in self._metadata_dict.keys():
+                            if k in test_dict.values():
+                                test_dict.update(self._metadata_dict[k])
+
                     for k in keep_these:
                         if k in key.lower() or k in key:
                             test_dict[key] = value
-
+            
             if K is not None and len(test_dict) > 0:
                 if K in self._results_dict.keys():
-                    self._results_dict[K].update(test_dict)
+                    self._results_dict[index].update(test_dict)
                 else:
-                    self._results_dict[K] = test_dict
+                    self._results_dict[index] = test_dict
 
     def load_csv_results(self, starting_index: int = 0) -> None:
         """
@@ -448,7 +457,7 @@ class MergedTests:
                 )
 
             # combine metrics from multiple tests
-            merged_values = {"model_name": self._run_name, "test_name": key, **self._results_dict[key]}
+            merged_values = {**self._results_dict[key]}
 
             # use defaultdict so that any missing keys will be set to 'None' automatically
             _final_results = defaultdict(None)
@@ -475,7 +484,7 @@ class MergedTests:
                 
                 name = ".".join([self._mode, "AllTests"] + input_label[1:])
             else:
-                name = ".".join([str(self._run_name), "AllTests"] + input_label[1:])
+                name = ".".join([str(self._model_name), "AllTests"] + input_label[1:])
 
         output = WriteFiles(
             str(self._output_path),
@@ -506,12 +515,12 @@ class MergedTests:
         """
         for i, c in enumerate(self._search_paths):
             self.find_tests(search_path=c)
-            if i != 0:
-                starting = self._total_num_tests
-            else:
-                starting = 0
-            self.load_csv_results(starting_index=starting)
-            self.merge()
+
+        self.load_csv_results(starting_index=0)
+
+        print("RESULTS DICT2:", self._results_dict)      
+        breakpoint() 
+        self.merge()
 
         # Identify the final row names across all samples
         final_row_names = list()
@@ -536,48 +545,56 @@ class MergedTests:
         num_missing = self._expected_num_tests - len(self._input_files)
         if num_missing != 0:
             self.logger.warning(f"{self._logger_msg}: missing {num_missing} input files... unable to include them in merge")
-        self.save_results()
     
-    def merge_all(self) -> None:
+    def add_metadata(self) -> None:
+        """combine metadata with columns
         """
-        merge the 'AllTests' files in the summary/ into a single file, and add optional metadata about each test.
-        """
-        self.find_AllTests()
-        
-        # combine all files in the list
-        combined_csv = pd.concat([pd.read_csv(self._output_path / f, sep=",") for f in self._file_names ])
+        metadata_csv = pd.read_csv(self.metadata.file)
 
-        # combine metadata with columns
-        if self.args.metadata:
-            metadata_csv = pd.read_csv(self.metadata.file)
-
-            # transpose columns and rows, remove a duplicate row
-            transposed_csv = metadata_csv.T
-            clean_metadata = transposed_csv.rename(columns=transposed_csv.iloc[0]).drop('label') # type: ignore
+        # transpose columns and rows, remove a duplicate row
+        transposed_csv = metadata_csv.T
+        clean_metadata = transposed_csv.rename(columns=transposed_csv.iloc[0]).drop('label') # type: ignore
+        self._metadata_dict = clean_metadata.to_dict()
             
-            clean_metadata.index.name = "test_name"
-            clean_metadata.reset_index(inplace=True)
-            
-            self._final_csv = pd.concat([clean_metadata, combined_csv])
-        else:
-            self._final_csv = combined_csv
+        # clean_metadata.index.name = "test_name"
+        # clean_metadata.reset_index(inplace=True)
+        # self._final_csv = pd.concat([clean_metadata, combined_csv])
+    
+    # def merge_all(self) -> None:
+    #     """
+    #     merge the 'AllTests' files in the summary/ into a single file, and add optional metadata about each test.
+    #     """
+    #     self.find_AllTests()
         
-        print(combined_csv)
-        breakpoint()
-        self.save_results()
+    #     total_records = [x for x in range(0, (self._total_found * self._total_num_tests))]
+    #     col_indexes = [total_records[i * self._total_num_tests:(i + 1) * self._total_num_tests] for i in range((len(total_records) + self._total_num_tests - 1) // self._total_num_tests )]
+        
+    #     # combine all files in the list
+    #     csv1 = pd.read_csv(self._file_names[0], sep=",")
+    #     print(csv1)
+    #     csv2 = pd.read_csv(self._file_names[1], sep=",")
+    #     print(csv2)
+    #     breakpoint()
+    #     # combined_csv = pd.concat([pd.read_csv(f, sep=",", names=col_indexes[i]) for i,f in enumerate(self._file_names)], axis=0)
+    #     # print(combined_csv)
+    #     # breakpoint()        
+    #     self.save_results()
 
     def run(self) -> None:
         """
         Combine all steps into a single module
         """
         self.load_variables()
+        if self.args.metadata:
+            self.load_metadata()
+            self.add_metadata()
 
         if self.args.merge_all:
-            if self.args.metadata:
-                self.load_metadata()
             self.merge_all()
         else:
             self.merge_tests()
+
+        self.save_results()
 
 def __init__():
     from helpers.utils import get_logger
