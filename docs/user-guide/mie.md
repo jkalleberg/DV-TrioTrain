@@ -22,20 +22,4 @@ For other species, use the following template:
     --8<-- "scripts/setup/setup_rtg_tools.sh"
     ```
 
-## Merge Results from each test genome
 
-Creating per-iteration results by merging the per-test results from the baseline DeepVariant WGS.AF model, and the two iterations completed during the GIAB tutorial:
-
-```bash
-for start_i in $(seq 0 1); do
-    echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: merging processed results from hap.py for GIAB run#${start_i}"
-    python3 triotrain/summarize/merge_results.py --env ../TUTORIAL/GIAB_Trio/envs/run${start_i}.env -g Father
-    echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: finished merging processed results from hap.py for GIAB run#${start_i}"
-done
-```
-
-Creating results for all iterations by merging the per-iteration results created above:
-
-```bash
-python3 triotrain/summarize/merge_results.py --env ../TUTORIAL/GIAB_Trio/envs/run1.env --merge-all -m triotrain/summarize/data/tutorial_metadata.csv --dry-run
-```

@@ -896,4 +896,77 @@ python3 triotrain/run_trio_train.py                                             
 
 [Need to Re-Submit a SLURM job :octicons-question-16:](../user-guide/resubmit.md){ .md-button }
 
+??? success "Expected Outputs | Baseline WGS.AF:"
+    ```bash title="Run at the command line"
+    ls ../TUTORIAL/baseline_v1.4.0_withIS_withAF/ | grep total | grep total
+    ```
+
+    ```bash title="Check outputs"
+    Test1.total.metrics.csv
+    Test2.total.metrics.csv
+    Test3.total.metrics.csv
+    ```
+
+??? success "Expected Outputs | Father:"
+    ```bash title="Run at the command line"
+    ls ../TUTORIAL/GIAB_Trio/Human_tutorial/compare_Father/ | grep total
+    ```
+
+    ```bash title="Check outputs"
+    Test1.total.metrics.csv
+    Test2.total.metrics.csv
+    Test3.total.metrics.csv
+    ```
+
+??? success "Expected Outputs | Mother:"
+    ```bash title="Run at the command line"
+    ls ../TUTORIAL/GIAB_Trio/Human_tutorial/compare_Mother/ | grep total
+    ```
+
+    ```bash title="Check outputs"
+    Test1.total.metrics.csv
+    Test2.total.metrics.csv
+    Test3.total.metrics.csv
+    ```
+
+## Merge Results | Per-Iteration
+
+Each `Test_.total.metrics.csv` output file should contain 57 rows and 2 columns. The metrics within are the raw and proprotional performance metrics from hap.py. After all `convert_happy` jobs complete, we will then individually merge the per-test results from running the baseline iteration, and both training iterations completed during the GIAB tutorial:
+
+```bash
+for start_i in $(seq 0 1); do
+    echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: merging processed results from hap.py for GIAB run#${start_i}"
+    python3 triotrain/summarize/merge_results.py --env ../TUTORIAL/GIAB_Trio/envs/run${start_i}.env -g Father
+    echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: finished merging processed results from hap.py for GIAB run#${start_i}"
+done
+```
+
+??? success "Expected Outputs | Baseline WGS.AF"
+    ```bash title="Run at the command line"
+    ls ../TUTORIAL/baseline_v1.4.0_withIS_withAF/ | grep All
+    ```
+
+    ```bash title="Check outputs"
+    DV1.4_WGS.AF_human.AllTests.total.metrics.csv
+    ```
+
+??? success "Expected Outputs | GIAB Trio1"
+    ```bash title="Run at the command line"
+    ls ../TUTORIAL/GIAB_Trio/Human_tutorial/compare_Mother/ | grep total
+    ```
+
+    ```bash title="Check outputs"
+    Test1.total.metrics.csv
+    Test2.total.metrics.csv
+    Test3.total.metrics.csv
+    ```
+
+## Merge Results | Entire GIAB_Tutorial
+
+Creating results for all iterations by merging the per-iteration results created above:
+
+```bash
+python3 triotrain/summarize/merge_results.py --env ../TUTORIAL/GIAB_Trio/envs/run1.env --merge-all -m triotrain/summarize/data/tutorial_metadata.csv --dry-run
+```
+
 [Assessing the new models :material-arrow-right-box:](../user-guide/mie.md){ .md-button }
