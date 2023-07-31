@@ -328,7 +328,7 @@
   
     <li class="md-nav__item">
       <a href="../../getting-started/getting-started/" class="md-nav__link">
-        Start Here!
+        Start Here
       </a>
     </li>
   
@@ -342,7 +342,7 @@
   
     <li class="md-nav__item">
       <a href="../../getting-started/installation/" class="md-nav__link">
-        Installation
+        Installation Guide
       </a>
     </li>
   
@@ -452,6 +452,13 @@
       Table of contents
     </label>
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#data-assumptions" class="md-nav__link">
+    Data Assumptions
+  </a>
+  
+</li>
       
         <li class="md-nav__item">
   <a href="#required-raw-data" class="md-nav__link">
@@ -680,6 +687,7 @@
 
 
 <h1 id="triotrain-data">TrioTrain Data</h1>
+<h2 id="data-assumptions">Data Assumptions</h2>
 <p>TrioTrain and DeepVariant use several input file formats; however, all files must:</p>
 <ul>
 <li>exist before the execution of the pipeline</li>
@@ -688,6 +696,7 @@
 <li>contain only one sample per file</li>
 </ul>
 <h2 id="required-raw-data">Required Raw Data</h2>
+<p><a name="reference"></a></p>
 <ol>
 <li>
 <p><strong>Reference Genome</strong></p>
@@ -742,7 +751,7 @@ format</li>
 </ol>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Examples made with different channel(s), a different tfRecord shape, or a different DeepVariant version can be incompatible with your chosen starting model. Get details about model features compatible with TrioTrain, such as shape, version and channels <a href="../existing_models/">here</a>.</p>
+<p>Examples made with different channel(s), a different tfRecord shape, or a different DeepVariant version can be incompatible with your chosen starting model. <a href="../existing_models/">Get details about model features compatible with TrioTrain, such as shape, version and channels here</a>.</p>
 <p><em>You can check the shape of a model's examples with:</em></p>
 <p><code>jq '.' &lt;model_name&gt;.example_info.json</code>.           </p>
 </div>
@@ -761,7 +770,7 @@ format</li>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>Our automated, cattle-optimized GATK Best Practices workflow used to generate our input files automatically performs realignment and  recalibration with Base Quality Score Recalibration <a href="https://gatk.broadinstitute.org/hc/en-us/articles/360035890531-Base-Quality-Score-Recalibration-BQSR-">(BQSR)</a>. <em>BQSR is not required or recommended for using the single-step variant caller from DeepVariant, as it may decrease the accuracy.</em></p>
-<p>However, re-training involves a small proportion of the total genomes processed by UMAG group (55 of ~6,000). Thus, removing BQSR would  decrease the quality of the entire cohort's GATK genotypes used in other research. The impact of including BQSR in our truth labels was not evaluated further during TrioTrain's development.</p>
+<p>However, re-training involves a small proportion of the total genomes processed by UMAG group (55 of 5,500+). Thus, removing BQSR would  decrease the quality of the entire cohort's GATK genotypes used in other research. The impact of including BQSR in our truth labels was not evaluated further during TrioTrain's development.</p>
 </div>
 <h2 id="triotrain-specific-inputs">TrioTrain-Specific Inputs</h2>
 <h3 id="configuring-slurm-resources">Configuring SLURM Resources</h3>
@@ -794,7 +803,8 @@ format</li>
 </ol>
 <p>The value for each <code>phase_name</code> is a nested dictionary that contains key:value pairs of parameters for running SBATCH job files. <a href="https://slurm.schedmd.com/sbatch.html">You can view valid SBATCH options in the SLURM documentation.</a></p>
 <h3 id="providing-required-data-to-triotrain">Providing required data to TrioTrain</h3>
-<p>Input files are handled by the primary input file for TrioTrain, a metadata file in <code>.csv</code> format. These metadata files are used to define different re-training approaches. For example, you can alter the order in which trios are seen when building a new model between two different metadata files. Metadata includes trio pedigree information, and the absolute file paths for the local data you want to give DeepVariant.</p>
+<p>Input files are handled by the primary input file for TrioTrain, a metadata file in <code>.csv</code> format. This input file includes trio pedigree information, and the absolute file paths for the local data you want to give DeepVariant.</p>
+<p>Different metadata files are used to define different re-training approaches. For example, you can alter the order in which trios are given to DeepVariant by varying the row order in two different metadata files.</p>
 <h4 id="metadata-assumptions">Metadata Assumptions</h4>
 <ul>
 <li>The first row includes column headers which will become variable names within TrioTrain</li>
@@ -848,7 +858,7 @@ format</li>
 <tr>
 <td>2</td>
 <td>RunName</td>
-<td>A unique name of the output directory</td>
+<td>A unique name for the trio's output directory</td>
 <td>string without spaces</td>
 </tr>
 <tr>
@@ -1029,7 +1039,7 @@ format</li>
   <small>
     
       Last update:
-      <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date">June 20, 2023</span>
+      <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date">July 31, 2023</span>
       
     
   </small>

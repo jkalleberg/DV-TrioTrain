@@ -23,7 +23,7 @@
     
     
       
-        <title>Start Here! - DeepVariant-TrioTrain</title>
+        <title>Start Here - DeepVariant-TrioTrain</title>
       
     
     
@@ -100,7 +100,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Start Here!
+              Start Here
             
           </span>
         </div>
@@ -339,12 +339,12 @@
       
       
         <label class="md-nav__link md-nav__link--active" for="__toc">
-          Start Here!
+          Start Here
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <a href="./" class="md-nav__link md-nav__link--active">
-        Start Here!
+        Start Here
       </a>
       
         
@@ -425,7 +425,7 @@
   
     <li class="md-nav__item">
       <a href="../installation/" class="md-nav__link">
-        Installation
+        Installation Guide
       </a>
     </li>
   
@@ -642,44 +642,45 @@
 <p>There are two main audiences of DV-TrioTrain:</p>
 <ol>
 <li>
-<p><strong><a href="#model-users">Model users</a></strong> - call variants using an existing, custom DeepVariant model produced by TrioTrain.</p>
+<p><strong><a href="#model-users">Model users</a></strong> - those who want to call variants using an existing, custom DeepVariant model produced by TrioTrain.</p>
 </li>
 <li>
-<p><strong><a href="#model-builders">Model builders</a></strong> - build a customized DeepVariant model, by training on either new data, or data from another diploid species.</p>
+<p><strong><a href="#model-builders">Model builders</a></strong> - those who want to customize an existing DeepVariant model, by extending training on either new data, or data from another diploid species.</p>
 </li>
 </ol>
 <hr />
 <h2 id="model-users">Model Users</h2>
-<p>A major benefit of using DeepVariant over alternatives like GATK is that once you've chosen a model checkpoint, you're ready to go! The models created by DV-TrioTrain can be used as an alternative checkpoint with DeepVariant's one-step, single-sample variant caller. <a href="../../user-guide/existing_models/">An index with descriptions of published models can be found here</a>.</p>
+<p>A major benefit of using DeepVariant over GATK is that once you've chosen a model checkpoint, you're ready to go! The models created by DV-TrioTrain can be used as an alternative checkpoint with DeepVariant's one-step, single-sample variant caller. <a href="../../user-guide/existing_models/">An index of published models can be found here</a>.</p>
 <h3 id="quick-start">Quick Start</h3>
 <p><font size= "4"> 
 <strong>Customizing DeepVariant with a TrioTrain model</strong>
 </font></p>
 <p>For SLURM-based HPC clusters, we recommend using Apptainer (formerly known as Singularity).</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nv">BIN_VERSION_DV</span><span class="o">=</span><span class="s2">&quot;1.4.0&quot;</span>
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span>apptainer<span class="w"> </span>run<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">    </span>-B<span class="w"> </span>/usr/lib/locale/:/usr/lib/locale/,<span class="se">\</span>
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">      </span><span class="si">${</span><span class="nv">YOUR_INPUT_DIR</span><span class="si">}</span>/DV-TrioTrain/:/run_dir/,<span class="se">\</span>
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">      </span><span class="si">${</span><span class="nv">YOUR_REF_DIR</span><span class="si">}</span>:/ref_dir/,<span class="se">\</span>
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">      </span><span class="si">${</span><span class="nv">YOUR_BAM_DIR</span><span class="si">}</span>:/bam_dir/,<span class="se">\</span>
-<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">      </span><span class="si">${</span><span class="nv">YOUR_OUTPUT_DIR</span><span class="si">}</span>:/out_dir/,<span class="se">\</span>
-<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">      </span><span class="si">${</span><span class="nv">CUSTOM_MODEL_DIR</span><span class="si">}</span>:/start_dir/,<span class="se">\</span>
-<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">      </span><span class="si">${</span><span class="nv">YOUR_POPVCF_DIR</span><span class="si">}</span>:/popVCF_dir/<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="w">    </span>deepvariant_<span class="si">${</span><span class="nv">BIN_VERSION_DV</span><span class="si">}</span>.sif<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="w">    </span>/opt/deepvariant/bin/run_deepvariant<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="w">    </span>--model_type<span class="o">=</span>WGS<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="w">    </span>--ref<span class="o">=</span>/ref_dir/<span class="si">${</span><span class="nv">YOUR_REFERENCE</span><span class="si">}</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="w">    </span>--reads<span class="o">=</span>/bam_dir/<span class="si">${</span><span class="nv">YOUR_BAM</span><span class="si">}</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="w">    </span>--output_vcf<span class="o">=</span>/out_dir/<span class="si">${</span><span class="nv">YOUR_OUTPUT_VCF</span><span class="si">}</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="w">    </span>--intermediate_results_dir<span class="o">=</span>/out_dir/tmp/<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a><span class="w">    </span>--num_shards<span class="o">=</span><span class="k">$(</span>nproc<span class="k">)</span><span class="w"> </span><span class="se">\ </span>**This<span class="w"> </span>will<span class="w"> </span>use<span class="w"> </span>all<span class="w"> </span>your<span class="w"> </span>cores<span class="w"> </span>to<span class="w"> </span>run<span class="w"> </span>make_examples.<span class="w"> </span>Feel<span class="w"> </span>free<span class="w"> </span>to<span class="w"> </span>change.**
-<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="w">    </span>--customized_model<span class="o">=</span>/start_dir/<span class="si">${</span><span class="nv">YOUR_CKPT_NAME</span><span class="si">}</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a><span class="w">    </span>--make_examples_extra_args<span class="o">=</span><span class="s2">&quot;use_allele_frequency=true,population_vcfs=/popVCF_dir/</span><span class="si">${</span><span class="nv">YOUR_POP_VCF</span><span class="si">}</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a><span class="w">    </span>--dry_run<span class="o">=</span><span class="nb">false</span><span class="w"> </span>**Default<span class="w"> </span>is<span class="w"> </span>false.<span class="w"> </span>If<span class="w"> </span><span class="nb">set</span><span class="w"> </span>to<span class="w"> </span>true,<span class="w"> </span>commands<span class="w"> </span>will<span class="w"> </span>be<span class="w"> </span>printed<span class="w"> </span>out<span class="w"> </span>but<span class="w"> </span>not<span class="w"> </span>executed.
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>apptainer<span class="w"> </span>run<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">  </span>-B<span class="w"> </span>/usr/lib/locale/:/usr/lib/locale/,<span class="se">\</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">    </span><span class="si">${</span><span class="nv">YOUR_INPUT_DIR</span><span class="si">}</span>/DV-TrioTrain/:/run_dir/,<span class="se">\</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">    </span><span class="si">${</span><span class="nv">YOUR_REF_DIR</span><span class="si">}</span>:/ref_dir/,<span class="se">\</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">    </span><span class="si">${</span><span class="nv">YOUR_BAM_DIR</span><span class="si">}</span>:/bam_dir/,<span class="se">\</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">    </span><span class="si">${</span><span class="nv">YOUR_OUTPUT_DIR</span><span class="si">}</span>:/out_dir/,<span class="se">\</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">    </span><span class="si">${</span><span class="nv">CUSTOM_MODEL_DIR</span><span class="si">}</span>:/start_dir/,<span class="se">\</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="w">    </span><span class="si">${</span><span class="nv">YOUR_POPVCF_DIR</span><span class="si">}</span>:/popVCF_dir/<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="w">  </span>deepvariant_<span class="si">${</span><span class="nv">BIN_VERSION_DV</span><span class="si">}</span>.sif<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="w">  </span>/opt/deepvariant/bin/run_deepvariant<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="w">  </span>--model_type<span class="o">=</span>WGS<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="w">  </span>--ref<span class="o">=</span>/ref_dir/<span class="si">${</span><span class="nv">YOUR_REFERENCE</span><span class="si">}</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="w">  </span>--reads<span class="o">=</span>/bam_dir/<span class="si">${</span><span class="nv">YOUR_BAM</span><span class="si">}</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="w">  </span>--output_vcf<span class="o">=</span>/out_dir/<span class="si">${</span><span class="nv">YOUR_OUTPUT_VCF</span><span class="si">}</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a><span class="w">  </span>--intermediate_results_dir<span class="o">=</span>/out_dir/tmp/<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="w">  </span>--num_shards<span class="o">=</span><span class="k">$(</span>nproc<span class="k">)</span><span class="w"> </span><span class="se">\ </span>**This<span class="w"> </span>will<span class="w"> </span>use<span class="w"> </span>all<span class="w"> </span>your<span class="w"> </span>cores<span class="w"> </span>to<span class="w"> </span>run<span class="w"> </span>make_examples.<span class="w"> </span>Feel<span class="w"> </span>free<span class="w"> </span>to<span class="w"> </span>change.**
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a><span class="w">  </span>--customized_model<span class="o">=</span>/start_dir/<span class="si">${</span><span class="nv">YOUR_CKPT_NAME</span><span class="si">}</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a><span class="w">  </span>--make_examples_extra_args<span class="o">=</span><span class="s2">&quot;use_allele_frequency=true,population_vcfs=/popVCF_dir/</span><span class="si">${</span><span class="nv">YOUR_POP_VCF</span><span class="si">}</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a><span class="w">  </span>--dry_run<span class="o">=</span><span class="nb">false</span><span class="w"> </span>**Default<span class="w"> </span>is<span class="w"> </span>false.<span class="w"> </span>If<span class="w"> </span><span class="nb">set</span><span class="w"> </span>to<span class="w"> </span>true,<span class="w"> </span>commands<span class="w"> </span>will<span class="w"> </span>be<span class="w"> </span>printed<span class="w"> </span>out<span class="w"> </span>but<span class="w"> </span>not<span class="w"> </span>executed.
 </code></pre></div>
 <hr />
 <h2 id="model-builders">Model Builders</h2>
-<p>TrioTrain provides a model development framework for DeepVariant, and is therefore compatible with <strong>any diploid species without NIST-GIAB reference materials.</strong> The current version of DV-TT extends DeepVariant for use with cattle, bison, and yak genomes. Future versions of TrioTrain will hopefully support other domesticated animal species with the requisite data.</p>
+<p>TrioTrain provides a model development framework for DeepVariant, and is therefore compatible with <strong>any diploid species without NIST-GIAB reference materials.</strong> The current version of DV-TT extends DeepVariant for use with cattle, bison, and yak genomes, and can be applied for other domesticated animal species with the requisite data.</p>
 <p>TrioTrain builds new models by starting with an existing DeepVariant model. The current version of TT uses DV-v1.4's short-read Whole Genome Sequence (WGS) model trained with the human GIAB samples. TrioTrain can optionally add the allele frequency channel, if given population-level allele frequency data (PopVCF).</p>
 <h3 id="setup-triotrain">Setup TrioTrain</h3>
 <p>Getting started with TrioTrain is straight-foward, but requires some configuration to work on your SLURM-based HPC cluster. The user guides below will walk you through what components require tweaking, depending on your system.</p>
@@ -687,18 +688,16 @@
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nb">cd</span><span class="w"> </span>/path/to/working_dir
 </code></pre></div>
 <p>Then, complete these guides in the following order:</p>
-<ol>
-<li><a href="../installation/">Installation Guide</a></li>
-<li><a href="../configuration/">Configuration Guide</a></li>
-<li><a href="../walk-through/">Human GIAB Tutorial</a></li>
-</ol>
+<p><a class="md-button md-button--primary" href="../installation/"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14 17h-2V9h-2V7h4m5-4H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2Z"/></svg></span> Installation Guide</a>
+<a class="md-button md-button--primary" href="../configuration/"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M15 11a2 2 0 0 1-2 2h-2v2h4v2H9v-4a2 2 0 0 1 2-2h2V9H9V7h4a2 2 0 0 1 2 2m4-6H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2Z"/></svg></span> Configuration Guide</a>
+<a class="md-button md-button--primary" href="../walk-through/"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M15 10.5a1.5 1.5 0 0 1-1.5 1.5c.84 0 1.5.67 1.5 1.5V15c0 1.11-.89 2-2 2H9v-2h4v-2h-2v-2h2V9H9V7h4c1.11 0 2 .89 2 2m4-6H5c-1.09 0-2 .9-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2Z"/></svg></span> Human GIAB Tutorial</a></p>
 <h3 id="other-commands-and-options">Other Commands and Options</h3>
 <p>There are various other commands and options available. For a complete list of
 commands, use the <code>--help</code> flag:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>python3<span class="w"> </span>triotrain/run_trio_train.py<span class="w"> </span>--help
 </code></pre></div>
-<p>To view a list of options available on a given command, use the <code>--help</code> flag with that command. For example, to get a list of all options available for the <code>build</code> command run the following:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>mkdocs<span class="w"> </span>build<span class="w"> </span>--help
+<p>To view a list of options available on a given script, use the <code>--help</code> flag with that command. For example, to get a list of all options available for the <code>make_examples</code> script, run the following:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>python3<span class="w"> </span>triotrain/model_training/slurm/make_examples.py<span class="w"> </span>-h
 </code></pre></div>
 <p><a class="md-button" href="../../user-guide/get-help/">Got a question <span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm8-6.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM6.92 6.085h.001a.749.749 0 1 1-1.342-.67c.169-.339.436-.701.849-.977C6.845 4.16 7.369 4 8 4a2.756 2.756 0 0 1 1.637.525c.503.377.863.965.863 1.725 0 .448-.115.83-.329 1.15-.205.307-.47.513-.692.662-.109.072-.22.138-.313.195l-.006.004a6.24 6.24 0 0 0-.26.16.952.952 0 0 0-.276.245.75.75 0 0 1-1.248-.832c.184-.264.42-.489.692-.661.103-.067.207-.132.313-.195l.007-.004c.1-.061.182-.11.258-.161a.969.969 0 0 0 .277-.245C8.96 6.514 9 6.427 9 6.25a.612.612 0 0 0-.262-.525A1.27 1.27 0 0 0 8 5.5c-.369 0-.595.09-.74.187a1.01 1.01 0 0 0-.34.398ZM9 11a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"/></svg></span></a></p>
 

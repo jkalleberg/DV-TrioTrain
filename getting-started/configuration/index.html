@@ -330,7 +330,7 @@
   
     <li class="md-nav__item">
       <a href="../getting-started/" class="md-nav__link">
-        Start Here!
+        Start Here
       </a>
     </li>
   
@@ -344,7 +344,7 @@
   
     <li class="md-nav__item">
       <a href="../installation/" class="md-nav__link">
-        Installation
+        Installation Guide
       </a>
     </li>
   
@@ -627,9 +627,9 @@
 
 
 <h1 id="configuration">Configuration</h1>
-<p>To ensure reproducibility, all configuration steps described below are included in a helper script, <code>build.sh</code>. However, these configuration steps require some system-specific customization for your HPC cluster.</p>
-<p>You can view a <a href="https://github.com/jkalleberg/DV-TrioTrain/scripts/setup/build.sh">template script for automatically building TrioTrain on Github.</a></p>
-<p>Each configuration step during the build process uses a separate helper script. Examples these can also found on <a href="https://github.com/jkalleberg/DV-TrioTrain/scripts/setup/">Github, under the scripts/ directory</a>.</p>
+<p>To ensure reproducibility, all configuration steps described below are included in a helper script, <code>build.sh</code>. However, proper configuration requires some system-specific edits for your HPC cluster.</p>
+<p>You can view a <a href="https://github.com/jkalleberg/DV-TrioTrain/blob/131498cd919b0f5c93da648e928d96a7fa06b8bc/scripts/setup/build.sh">template <code>build.sh</code> script for automatically building TrioTrain on Github.</a></p>
+<p>Each configuration step during the build process uses a separate helper script. Examples these can also found on <a href="https://github.com/jkalleberg/DV-TrioTrain/tree/131498cd919b0f5c93da648e928d96a7fa06b8bc/scripts">Github, under the scripts/ directory</a>.</p>
 <h2 id="1-begin-an-interactive-session-first">1. Begin an interactive session first</h2>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
@@ -665,20 +665,20 @@
 <p class="admonition-title">Note</p>
 <p>Both the GPU and CPU containers are required, since you can't run the GPU version used for training on a non-GPU hardware.</p>
 </div>
-<p>TrioTrain uses two (2) versions of DeepVariant containers:</p>
+<p>We need local copies of the two (2) versions of DeepVariant containers, and one (1) container for <code>hap.py</code>:</p>
 <ol>
-<li>GPU-specific container used for training.</li>
-<li>CPU-specific container used for all other steps.</li>
+<li>GPU-specific container used for training</li>
+<li>CPU-specific container used for all other steps</li>
+<li><code>hap.py</code> - we strongly recommend using a containerized version as this tool uses the depreciated Python v2.7 making it incompatible with either DeepVariant containers, and the TrioTrain conda environment.</li>
 </ol>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># Install GPU-specific apptainer container</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># Install GPU-specific DV apptainer container</span>
 <a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>bash<span class="w"> </span>scripts/setup/build_containers.sh<span class="w"> </span>DeepVariant-GPU
 <a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
-<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="c1"># Install CPU-specific apptainer container</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="c1"># Install CPU-specific DV apptainer container</span>
 <a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>bash<span class="w"> </span>scripts/setup/build_containers.sh<span class="w"> </span>DeepVariant-CPU
-</code></pre></div>
-<p>TrioTrain also uses a third container to run <code>hap.py</code>, as it requires the depreciated Python v2.7 making it incompatible with either DeepVariant container and the TrioTrain conda environment.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1"># Install the happ.py apptainer container</span>
-<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>bash<span class="w"> </span>scripts/setup/build_happy.sh
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="c1"># Install the happ.py apptainer container</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>bash<span class="w"> </span>scripts/setup/build_happy.sh
 </code></pre></div>
 <h2 id="4-install-the-conda-environment">4. Install the Conda environment</h2>
 <p>This conda environment includes the DeepVariant requirements, such as Apache Beam, Tensorflow, etc. The conda environment can take awhile to build. We recommend requesting ample memory during your interactive session before proceeding.</p>
@@ -686,11 +686,11 @@
 <summary>Note</summary>
 <p><code>source</code> is used instead of <code>bash</code> to by-pass system issues with <code>conda activate</code> specific to MU Lewis, which may not be required for your system.</p>
 </details>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="nb">source</span><span class="w"> </span>scripts/setup/build_beam.sh
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nb">source</span><span class="w"> </span>scripts/setup/build_beam.sh
 </code></pre></div>
 <h2 id="5-download-the-beam-shuffling-script">5. Download the Beam shuffling script</h2>
 <p>Create a local copy of the appropriate shuffling script from Google Genomoics Health Group.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>bash<span class="w"> </span>scripts/setup/download_shuffle.sh
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>bash<span class="w"> </span>scripts/setup/download_shuffle.sh
 </code></pre></div>
 <hr />
 <p><a class="md-button" href="../installation/"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-1 8H9.5L13 7.5l-1.42-1.42L5.66 12l5.92 5.92L13 16.5 9.5 13H18v-2Z"/></svg></span> Install TrioTrain</a> <a class="md-button" href="../walk-through/">Complete the Human GIAB Tutorial <span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M5 21a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5m1-8h8.5L11 16.5l1.42 1.42L18.34 12l-5.92-5.92L11 7.5l3.5 3.5H6v2Z"/></svg></span></a></p>
@@ -700,7 +700,7 @@
   <small>
     
       Last update:
-      <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date">June 27, 2023</span>
+      <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date">July 31, 2023</span>
       
     
   </small>

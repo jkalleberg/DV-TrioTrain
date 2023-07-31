@@ -23,7 +23,7 @@
     
     
       
-        <title>Installation - DeepVariant-TrioTrain</title>
+        <title>Installation Guide - DeepVariant-TrioTrain</title>
       
     
     
@@ -65,7 +65,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#software-assumptions" class="md-skip">
+        <a href="#installing-triotrain" class="md-skip">
           Skip to content
         </a>
       
@@ -100,7 +100,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Installation
+              Installation Guide
             
           </span>
         </div>
@@ -330,7 +330,7 @@
   
     <li class="md-nav__item">
       <a href="../getting-started/" class="md-nav__link">
-        Start Here!
+        Start Here
       </a>
     </li>
   
@@ -353,12 +353,12 @@
       
       
         <label class="md-nav__link md-nav__link--active" for="__toc">
-          Installation
+          Installation Guide
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <a href="./" class="md-nav__link md-nav__link--active">
-        Installation
+        Installation Guide
       </a>
       
         
@@ -612,13 +612,15 @@
   
 
 
-<h1 id="software-assumptions">Software Assumptions</h1>
-<p>If you're unfamiliar with SLURM, navigating your computing cluster, or what shared software is available to you, reach out to your HPC system's Cluster Administrator.</p>
+<h1 id="installing-triotrain">Installing TrioTrain</h1>
 <h2 id="prerequisites">Prerequisites</h2>
 <ul>
 <li>Unix-like operating system (cannot run on Windows)</li>
 <li>Python 3.8</li>
-<li>Access to a SLURM-based High Performance Computing Cluster that has both CPU and GPU resources</li>
+<li>Access to a SLURM-based High Performance Computing Cluster that has both CPU and GPU resources<ul>
+<li>If you're unfamiliar with SLURM, navigating your computing cluster, or what shared software is available to you, reach out to your HPC system's Cluster Administrator.</li>
+</ul>
+</li>
 </ul>
 <h2 id="system-requirements">System Requirements</h2>
 <p>The following software are required:</p>
@@ -670,7 +672,8 @@
 </tr>
 </tbody>
 </table>
-<p>TrioTrain expects the software listed above (referred to as modules) to be pre-built, and available locally on your SLURM-based HPC cluster. For example, on the MU Lewis Computing cluster, we can:</p>
+<p>TrioTrain expects the software listed above, referred to as modules, to be pre-built, and available locally on your SLURM-based HPC cluster.</p>
+<p>For example, on the MU Lewis Computing cluster, we can:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># Search for modules with:</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>module<span class="w"> </span>avail<span class="w"> </span>&lt;tool_search_string&gt;
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
@@ -681,24 +684,19 @@
 <a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="c1"># these modules are loaded in with:</span>
 <a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>module<span class="w"> </span>load<span class="w"> </span>&lt;module_name&gt;
 </code></pre></div>
-<p>These locally-available software are loaded by TrioTrain via an executable bash helper script (<code>modules.sh</code>).</p>
+<p>These locally-available software are loaded by TrioTrain via an executable bash helper script, referred to as <code>modules.sh</code>.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>TrioTrain assumes that the default <code>modules.sh</code> script works for your cluster.</p>
+</div>
 <hr />
 <h2 id="install-triotrain">Install TrioTrain</h2>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p><strong>TrioTrain assumes that the default <code>modules.sh</code> script <a href="https://github.com/jkalleberg/DV-TrioTrain/scripts/setup/modules.sh">(view on GitHub)</a> works for your cluster.</strong></p>
-<p>If you're building TrioTrain via Github, you will be able to edit <code>modules.sh</code> directly to match your system.</p>
-<p>However, if you're building TrioTrain via the Python package, you will need to specify an alternative helper script via  <code>python3 triotrain/model_train/run_trio_train.py --modules &lt;/path/to/your/module.sh&gt;</code></p>
-</div>
-<p>There are two supported options for DV-TrioTrain:</p>
-<ol>
-<li>
-<p>Clone from Github: <code>git clone git@github.com:jkalleberg/DV-TrioTrain.git</code></p>
-</li>
-<li>
-<p>Install the Python package: <code>pip install triotrain</code></p>
-</li>
-</ol>
+<p>Install  DV-TrioTrain by cloning from GitHub:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>git<span class="w"> </span>clone<span class="w"> </span>git@github.com:jkalleberg/DV-TrioTrain.git
+</code></pre></div>
+<p>Then, either edit <a href="https://github.com/jkalleberg/DV-TrioTrain/blob/f54f83be2aee1b6a39d8e6ca7b2b02dd0e1fa6eb/scripts/setup/modules.sh">the default modules script</a>, or specify an alternative helper script by adding the following flag with need to specify an alternative helper script using:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>python3<span class="w"> </span>triotrain/model_train/run_trio_train.py<span class="w"> </span>--modules<span class="w"> </span>&lt;/path/to/your/module.sh&gt;<span class="w"> </span>
+</code></pre></div>
 <hr />
 <p><a class="md-button" href="../configuration/">Configure TrioTrain <span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M5 21a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5m1-8h8.5L11 16.5l1.42 1.42L18.34 12l-5.92-5.92L11 7.5l3.5 3.5H6v2Z"/></svg></span></a></p>
 
@@ -707,7 +705,7 @@
   <small>
     
       Last update:
-      <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date">June 27, 2023</span>
+      <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date">July 31, 2023</span>
       
     
   </small>
