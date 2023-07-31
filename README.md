@@ -18,18 +18,17 @@ DV-TrioTrain v0.8 currently supports initializing a new DV model with one the fo
 * the human WGS Allele Frequency model (default + one additional channel)
 * any custom model satisfying the channel expectations above
 
-We built the DV-TT pipeline to extend DeepVariant with cattle, bison, and yak genomes. Specifically, TrioTrain builds upon the existing DV model for short-read (Illumina) Whole Genome Sequence (WGS) data, and adds population-level allele frequency data from over 5,500 published cattle samples from SRA. Currently, population-scale, long-read data is scarce in non-human species, but the DV-TT framework enables continued extension of DV as those data become available.
+We built the DV-TT pipeline to extend DeepVariant with cattle, bison, and yak genomes. Specifically, TrioTrain builds upon the existing DV model for short-read (Illumina) Whole Genome Sequence (WGS) data, and adds population-level allele frequency data from over 5,500 published cattle samples from SRA. Currently, long-read data is scarce in non-human species, but the DV-TT framework enables continued extension of DV as those data become available.
 
 ### Why TrioTrain?
 
-TrioTrain provides a template for model development for any diploid species without NIST-GIAB reference materials. Our goal is to motivate adoption of scalable, data-driven variant calling models in domestic animal species. We propose that comparative genomics approaches in deep learning model development offer performance benefits over species-specific models.
+TrioTrain provides a template for model development for any diploid species without NIST-GIAB reference materials. By developing a SLURM-based automated re-training pipeline, we aim to fascilitate adoption of scalable, data-driven variant calling models in domestic animal species. We propose that comparative genomics approaches in deep learning model development offer performance benefits over species-specific models.
 
-DV-TT produces new DV model(s) for germline variant-calling in diploid organisms. However, there are some species-dependent behaviors in the pipeline. The current species supported include:
+DV-TT produces new DV model(s) for germline variant-calling in diploid organisms. The current species supported include:
 
 * humans
-* cows
-* mosquitoes
-* *your favorite species could go here* - the DV-TT pipeline can be easily re-configured for your favorite species, assuming your already have the necessary training data.
+* cattle / bison / yak
+* *your favorite species could go here* - assuming your already have the necessary training data
 
 During model development, DV-TrioTrain iteratively feeds labeled examples from parent-offspring duos, enabling the model to incorporate inheritance expectations. While the DV-TT pipeline assumes re-training data are from trio-binned samples, **models built by DV-TrioTrain do not require trio-binned data for variant calling.** In contrast to the [DeepTrio](https://github.com/google/deepvariant/blob/r1.5/docs/deeptrio-details.md) joint-caller, DV-TT models are trained to prioritize features of inherited variants to produce fewer Mendelian Inheritance Errors (MIE) in individual samples.
 
@@ -39,22 +38,29 @@ During model development, DV-TrioTrain iteratively feeds labeled examples from p
 
 Published DV-TrioTrain models can be used as an alternative checkpoint with DeepVariant's one-step, single-sample variant caller. An index of available models can be found [here (fix this link)](pretrained_models).
 
-We recommend using Apptainer (a.k.a. Singularity), for local cluster computing.
+For SLURM-based HPC clusters, we recommend using Apptainer (formerly known as Singularity).
 
 ```bash
-BIN_VERSION="1.4.0"
-docker run \
-  -v "YOUR_INPUT_DIR":"/input" \
-  -v "YOUR_OUTPUT_DIR:/output" \
-  google/deepvariant:"${BIN_VERSION}" \
-  /opt/deepvariant/bin/run_deepvariant \
-  --model_type=WGS \
-  --ref=/input/YOUR_REF \
-  --reads=/input/YOUR_BAM \
-  --output_vcf=/output/YOUR_OUTPUT_VCF \
-  --output_gvcf=/output/YOUR_OUTPUT_GVCF \
-  --num_shards=$(nproc) \ **This will use all your cores to run make_examples. Feel free to change.**
-  --dry_run=false **Default is false. If set to true, commands will be printed out but not executed.
+BIN_VERSION_DV="1.4.0"
+  apptainer run \
+    -B /usr/lib/locale/:/usr/lib/locale/,\
+      ${YOUR_INPUT_DIR}/DV-TrioTrain/:/run_dir/,\
+      ${YOUR_REF_DIR}:/ref_dir/,\
+      ${YOUR_BAM_DIR}:/bam_dir/,\
+      ${YOUR_OUTPUT_DIR}:/out_dir/,\
+      ${CUSTOM_MODEL_DIR}:/start_dir/,\
+      ${YOUR_POPVCF_DIR}:/popVCF_dir/ \
+    deepvariant_${BIN_VERSION_DV}.sif \
+    /opt/deepvariant/bin/run_deepvariant \
+    --model_type=WGS \
+    --ref=/ref_dir/${YOUR_REFERENCE} \
+    --reads=/bam_dir/${YOUR_BAM} \
+    --output_vcf=/out_dir/${YOUR_OUTPUT_VCF} \
+    --intermediate_results_dir=/out_dir/tmp/ \
+    --num_shards=$(nproc) \ **This will use all your cores to run make_examples. Feel free to change.**
+    --customized_model=/start_dir/${YOUR_CKPT_NAME} \
+    --make_examples_extra_args="use_allele_frequency=true,population_vcfs=/popVCF_dir/${YOUR_POP_VCF}" \
+    --dry_run=false **Default is false. If set to true, commands will be printed out but not executed.
 ```
 
 <a name="citation"></a>
