@@ -18,31 +18,29 @@ A major benefit of using DeepVariant over alternatives like GATK is that once yo
 **Customizing DeepVariant with a TrioTrain model**
 </font>
 
-We recommend using Apptainer (a.k.a. Singularity), for local cluster computing.
+For SLURM-based HPC clusters, we recommend using Apptainer (formerly known as Singularity).
 
 ```bash
-BIN_VERSION="1.4.0"
-
-# Pull the image.
-singularity pull docker://google/deepvariant:"${BIN_VERSION}-gpu"
-
-# Run a Custom DeepVariant.
-singularity run -B /usr/lib/locale/:/usr/lib/locale/ \
-  "YOUR_INPUT_DIR":"/input" \
-  "YOUR_OUTPUT_DIR:/output" \
-  docker://google/deepvariant:"${BIN_VERSION}" \
-  /opt/deepvariant/bin/run_deepvariant \
-  --model_type=WGS \
-  --ref="${INPUT_DIR}"/ucsc.hg19.chr20.unittest.fasta \
-  --reads="${INPUT_DIR}"/NA12878_S1.chr20.10_10p1mb.bam \
-  --regions "chr20:10,000,000-10,010,000" \
-  --output_vcf="${OUTPUT_DIR}"/output.vcf.gz \
-  --output_gvcf="${OUTPUT_DIR}"/output.g.vcf.gz \
-  --intermediate_results_dir "${OUTPUT_DIR}/intermediate_results_dir" \ **Optional.
-  --num_shards=1 \ **How many cores the `make_examples` step uses. Change it to the number of CPU cores you have.**
-  --dry_run=false **Default is false. If set to true, commands will be printed out but not executed.  
-  # TODO: fix this command!
-  # --custom_model
+BIN_VERSION_DV="1.4.0"
+  apptainer run \
+    -B /usr/lib/locale/:/usr/lib/locale/,\
+      ${YOUR_INPUT_DIR}/DV-TrioTrain/:/run_dir/,\
+      ${YOUR_REF_DIR}:/ref_dir/,\
+      ${YOUR_BAM_DIR}:/bam_dir/,\
+      ${YOUR_OUTPUT_DIR}:/out_dir/,\
+      ${CUSTOM_MODEL_DIR}:/start_dir/,\
+      ${YOUR_POPVCF_DIR}:/popVCF_dir/ \
+    deepvariant_${BIN_VERSION_DV}.sif \
+    /opt/deepvariant/bin/run_deepvariant \
+    --model_type=WGS \
+    --ref=/ref_dir/${YOUR_REFERENCE} \
+    --reads=/bam_dir/${YOUR_BAM} \
+    --output_vcf=/out_dir/${YOUR_OUTPUT_VCF} \
+    --intermediate_results_dir=/out_dir/tmp/ \
+    --num_shards=$(nproc) \ **This will use all your cores to run make_examples. Feel free to change.**
+    --customized_model=/start_dir/${YOUR_CKPT_NAME} \
+    --make_examples_extra_args="use_allele_frequency=true,population_vcfs=/popVCF_dir/${YOUR_POP_VCF}" \
+    --dry_run=false **Default is false. If set to true, commands will be printed out but not executed.
 ```
 
 ---

@@ -18,6 +18,10 @@ DV-TrioTrain v0.8 currently supports initializing a new DV model with one the fo
 * the human WGS Allele Frequency model (default + one additional channel)
 * any custom model satisfying the channel expectations above
 
+An index of available models can be found [here.](./docs/user-guide/existing_models.md)
+
+After re-training, models built with DV-TrioTrain become an alternative checkpoint with DeepVariant's one-step, single-sample variant caller.
+
 We built the DV-TT pipeline to extend DeepVariant with cattle, bison, and yak genomes. Specifically, TrioTrain builds upon the existing DV model for short-read (Illumina) Whole Genome Sequence (WGS) data, and adds population-level allele frequency data from over 5,500 published cattle samples from SRA. Currently, long-read data is scarce in non-human species, but the DV-TT framework enables continued extension of DV as those data become available.
 
 ### Why TrioTrain?
@@ -34,34 +38,7 @@ During model development, DV-TrioTrain iteratively feeds labeled examples from p
 
 <a name="usage"></a>
 
-## How to customize DeepVariant with a TrioTrain model
-
-Published DV-TrioTrain models can be used as an alternative checkpoint with DeepVariant's one-step, single-sample variant caller. An index of available models can be found [here (fix this link)](pretrained_models).
-
-For SLURM-based HPC clusters, we recommend using Apptainer (formerly known as Singularity).
-
-```bash
-BIN_VERSION_DV="1.4.0"
-  apptainer run \
-    -B /usr/lib/locale/:/usr/lib/locale/,\
-      ${YOUR_INPUT_DIR}/DV-TrioTrain/:/run_dir/,\
-      ${YOUR_REF_DIR}:/ref_dir/,\
-      ${YOUR_BAM_DIR}:/bam_dir/,\
-      ${YOUR_OUTPUT_DIR}:/out_dir/,\
-      ${CUSTOM_MODEL_DIR}:/start_dir/,\
-      ${YOUR_POPVCF_DIR}:/popVCF_dir/ \
-    deepvariant_${BIN_VERSION_DV}.sif \
-    /opt/deepvariant/bin/run_deepvariant \
-    --model_type=WGS \
-    --ref=/ref_dir/${YOUR_REFERENCE} \
-    --reads=/bam_dir/${YOUR_BAM} \
-    --output_vcf=/out_dir/${YOUR_OUTPUT_VCF} \
-    --intermediate_results_dir=/out_dir/tmp/ \
-    --num_shards=$(nproc) \ **This will use all your cores to run make_examples. Feel free to change.**
-    --customized_model=/start_dir/${YOUR_CKPT_NAME} \
-    --make_examples_extra_args="use_allele_frequency=true,population_vcfs=/popVCF_dir/${YOUR_POP_VCF}" \
-    --dry_run=false **Default is false. If set to true, commands will be printed out but not executed.
-```
+[Getting Started with TrioTrain](./docs/getting-started/getting-started.md)
 
 <a name="citation"></a>
 
