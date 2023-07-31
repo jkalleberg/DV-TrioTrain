@@ -10,7 +10,7 @@ There are two main audiences of DV-TrioTrain:
 
 ## Model Users
 
-A major benefit of using DeepVariant over alternatives like GATK is that once you've chosen a model checkpoint, you're ready to go! The models created by DV-TrioTrain can be used as an alternative checkpoint with DeepVariant's one-step, single-sample variant caller. An index with descriptions of published models can be found [here](../user-guide/existing_models.md).
+A major benefit of using DeepVariant over alternatives like GATK is that once you've chosen a model checkpoint, you're ready to go! The models created by DV-TrioTrain can be used as an alternative checkpoint with DeepVariant's one-step, single-sample variant caller. [An index with descriptions of published models can be found here](../user-guide/existing_models.md).
 
 ### Quick Start
 
