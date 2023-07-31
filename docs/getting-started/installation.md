@@ -1,12 +1,11 @@
-# Software Assumptions
-
-If you're unfamiliar with SLURM, navigating your computing cluster, or what shared software is available to you, reach out to your HPC system's Cluster Administrator.
+# Installing TrioTrain
 
 ## Prerequisites
 
 * Unix-like operating system (cannot run on Windows)
 * Python 3.8
 * Access to a SLURM-based High Performance Computing Cluster that has both CPU and GPU resources
+    - If you're unfamiliar with SLURM, navigating your computing cluster, or what shared software is available to you, reach out to your HPC system's Cluster Administrator.
 
 ## System Requirements
 
@@ -20,7 +19,9 @@ The following software are required:
 | `java/openjdk` | 17.0.3      | | `htslib`       | 1.14        |
 | `apptainer`    | 1.1.7-1.el7 | |`samtools`     | 1.14        |
 
-TrioTrain expects the software listed above (referred to as modules) to be pre-built, and available locally on your SLURM-based HPC cluster. For example, on the MU Lewis Computing cluster, we can:
+TrioTrain expects the software listed above, referred to as modules, to be pre-built, and available locally on your SLURM-based HPC cluster.
+
+For example, on the MU Lewis Computing cluster, we can:
 
 ```bash
 # Search for modules with:
@@ -34,24 +35,26 @@ module spider <tool_search_string>
 module load <module_name>
 ```
 
-These locally-available software are loaded by TrioTrain via an executable bash helper script (`modules.sh`).
+These locally-available software are loaded by TrioTrain via an executable bash helper script, referred to as `modules.sh`.
+
+!!! warning
+    TrioTrain assumes that the default `modules.sh` script works for your cluster.
 
 ---
 
 ## Install TrioTrain
 
-!!! warning
-    **TrioTrain assumes that the default `modules.sh` script [(view on GitHub)](https://github.com/jkalleberg/DV-TrioTrain/blob/f54f83be2aee1b6a39d8e6ca7b2b02dd0e1fa6eb/scripts/setup/modules.sh) works for your cluster.**
+Install  DV-TrioTrain by cloning from GitHub:
 
-    If you're building TrioTrain via Github, you will be able to edit `modules.sh` directly to match your system.
-    
-~~However, if you're building TrioTrain via the Python package, you will need to specify an alternative helper script via  `python3 triotrain/model_train/run_trio_train.py --modules </path/to/your/module.sh>`~~
+```bash
+git clone git@github.com:jkalleberg/DV-TrioTrain.git
+```
 
-There are two supported options for DV-TrioTrain:
+Then, either edit [the default modules script](https://github.com/jkalleberg/DV-TrioTrain/blob/f54f83be2aee1b6a39d8e6ca7b2b02dd0e1fa6eb/scripts/setup/modules.sh), or specify an alternative helper script by adding the following flag with need to specify an alternative helper script using:
 
-1. Clone from Github: `git clone git@github.com:jkalleberg/DV-TrioTrain.git`
-
-2. ~~Install the Python package: `pip install triotrain`~~
+```bash
+python3 triotrain/model_train/run_trio_train.py --modules </path/to/your/module.sh> 
+```
 
 ---
 

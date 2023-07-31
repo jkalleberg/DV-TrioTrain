@@ -1,10 +1,10 @@
 # Configuration
 
-To ensure reproducibility, all configuration steps described below are included in a helper script, `build.sh`. However, these configuration steps require some system-specific customization for your HPC cluster.
+To ensure reproducibility, all configuration steps described below are included in a helper script, `build.sh`. However, proper configuration requires some system-specific edits for your HPC cluster.
 
-You can view a [template script for automatically building TrioTrain on Github.](https://github.com/jkalleberg/DV-TrioTrain/scripts/setup/build.sh)
+You can view a [template `build.sh` script for automatically building TrioTrain on Github.](https://github.com/jkalleberg/DV-TrioTrain/blob/131498cd919b0f5c93da648e928d96a7fa06b8bc/scripts/setup/build.sh)
 
-Each configuration step during the build process uses a separate helper script. Examples these can also found on [Github, under the scripts/ directory](https://github.com/jkalleberg/DV-TrioTrain/scripts/setup/).
+Each configuration step during the build process uses a separate helper script. Examples these can also found on [Github, under the scripts/ directory](https://github.com/jkalleberg/DV-TrioTrain/tree/131498cd919b0f5c93da648e928d96a7fa06b8bc/scripts).
 
 ## 1. Begin an interactive session first
 
@@ -51,22 +51,19 @@ source scripts/setup/modules.sh
 !!! note
     Both the GPU and CPU containers are required, since you can't run the GPU version used for training on a non-GPU hardware.
 
-TrioTrain uses two (2) versions of DeepVariant containers:
+We need local copies of the two (2) versions of DeepVariant containers, and one (1) container for `hap.py`:
 
-1. GPU-specific container used for training.
-2. CPU-specific container used for all other steps.
+1. GPU-specific container used for training
+2. CPU-specific container used for all other steps
+3. `hap.py` - we strongly recommend using a containerized version as this tool uses the depreciated Python v2.7 making it incompatible with either DeepVariant containers, and the TrioTrain conda environment.
 
 ```bash
-# Install GPU-specific apptainer container
+# Install GPU-specific DV apptainer container
 bash scripts/setup/build_containers.sh DeepVariant-GPU
 
-# Install CPU-specific apptainer container
+# Install CPU-specific DV apptainer container
 bash scripts/setup/build_containers.sh DeepVariant-CPU
-```
 
-TrioTrain also uses a third container to run `hap.py`, as it requires the depreciated Python v2.7 making it incompatible with either DeepVariant container and the TrioTrain conda environment.
-
-```bash
 # Install the happ.py apptainer container
 bash scripts/setup/build_happy.sh
 ```

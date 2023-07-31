@@ -1,5 +1,7 @@
 # TrioTrain Data
 
+## Data Assumptions
+
 TrioTrain and DeepVariant use several input file formats; however, all files must:
 
 - exist before the execution of the pipeline
@@ -8,6 +10,8 @@ TrioTrain and DeepVariant use several input file formats; however, all files mus
 - contain only one sample per file
 
 ## Required Raw Data
+
+<a name="reference"></a>
 
 1. **Reference Genome**
     - must be in [`FASTA`](https://en.wikipedia.org/wiki/FASTA_format)
@@ -45,7 +49,7 @@ format
         4. `.example_info.json` &mdash; defines which features to include as channels within the images given to DeepVariant in [`tfRecord` format](https://www.tensorflow.org/tutorials/load_data/tfrecord)
 
         !!! note
-            Examples made with different channel(s), a different tfRecord shape, or a different DeepVariant version can be incompatible with your chosen starting model. Get details about model features compatible with TrioTrain, such as shape, version and channels [here](existing_models.md).
+            Examples made with different channel(s), a different tfRecord shape, or a different DeepVariant version can be incompatible with your chosen starting model. [Get details about model features compatible with TrioTrain, such as shape, version and channels here](existing_models.md).
 
             *You can check the shape of a model's examples with:*
 
@@ -59,7 +63,7 @@ format
 !!! note
     Our automated, cattle-optimized GATK Best Practices workflow used to generate our input files automatically performs realignment and  recalibration with Base Quality Score Recalibration [(BQSR)](https://gatk.broadinstitute.org/hc/en-us/articles/360035890531-Base-Quality-Score-Recalibration-BQSR-). *BQSR is not required or recommended for using the single-step variant caller from DeepVariant, as it may decrease the accuracy.*
     
-    However, re-training involves a small proportion of the total genomes processed by UMAG group (55 of ~6,000). Thus, removing BQSR would  decrease the quality of the entire cohort's GATK genotypes used in other research. The impact of including BQSR in our truth labels was not evaluated further during TrioTrain's development.
+    However, re-training involves a small proportion of the total genomes processed by UMAG group (55 of 5,500+). Thus, removing BQSR would  decrease the quality of the entire cohort's GATK genotypes used in other research. The impact of including BQSR in our truth labels was not evaluated further during TrioTrain's development.
 
 ## TrioTrain-Specific Inputs
 
@@ -101,7 +105,9 @@ The value for each `phase_name` is a nested dictionary that contains key:value p
 
 ### Providing required data to TrioTrain
 
-Input files are handled by the primary input file for TrioTrain, a metadata file in `.csv` format. These metadata files are used to define different re-training approaches. For example, you can alter the order in which trios are seen when building a new model between two different metadata files. Metadata includes trio pedigree information, and the absolute file paths for the local data you want to give DeepVariant.
+Input files are handled by the primary input file for TrioTrain, a metadata file in `.csv` format. This input file includes trio pedigree information, and the absolute file paths for the local data you want to give DeepVariant.
+
+Different metadata files are used to define different re-training approaches. For example, you can alter the order in which trios are given to DeepVariant by varying the row order in two different metadata files.
 
 #### Metadata Assumptions
 
@@ -136,7 +142,7 @@ At a minimum, the metadata file must provide absolute paths to the following inp
 | Column Number | Column Name      | Description                     | Data Type |
 | ------------- | -----------      | ------------------------------- | --------- |
 | 1             | RunOrder         | Sequential number for each trio | integer   |
-| 2             | RunName          | A unique name of the output directory | string without spaces |
+| 2             | RunName          | A unique name for the trio's output directory | string without spaces |
 | 3             | ChildSampleID    | A primary, unique identifier for a child; must match the SampleID in the child’s `VCF/BAM/BED` files | alpha-numeric characters |
 | 4             | ChildLabID       | A secondary, unique ID for a child ; `default=ChildSampleID` | alpha-numeric characters |
 | 5             | FatherSampleID   | A primary, unique identifier for a father; must match the SampleID in the father’s `VCF/BAM/BED` files | alpha-numeric characters |

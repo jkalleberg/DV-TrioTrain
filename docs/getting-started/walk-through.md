@@ -1,16 +1,20 @@
 # Human GIAB Tutorial
 
-Completing this walk-through successfully confirms that DV-TrioTrain has been setup correctly on your HPC cluster. Additionally, the tutorial completes one round of re-training with a Human trio as an example of how to run DV-TrioTrain. If you haven't already, go back and complete the previous two guides:  
+This DV-TrioTrain tutorial completes one round of re-training with a Human trio from GIAB.
+
+!!! warning "Warning | Storage Needs"
+    Completing this tutorial will produce ~2T of intermediate and output data. Ensure you  have sufficient space before proceeding!
+
+## 1. Confirm Successful Install / Configuration
+
+If you haven't already, go back and complete the previous two guides:  
   
 [:material-numeric-1-box: Installation Guide](installation.md){ .md-button }
 [:material-numeric-2-box: Configuration Guide](configuration.md){ .md-button }
 
-!!! warning "Warning | Storage Needs"
-    Completing this tutorial will produce ~2T of files, so ensure you are working have sufficient space before proceeding!
+---
 
-## 1. Confirm setup worked
-
-Run the following at the command line:
+Then, run the following at the command line:
 
 ```bash
 cd DV-TrioTrain
@@ -32,7 +36,7 @@ ls
 !!! warning
     You will need to tailor this step to match your HPC cluster. Reach out to your system admin with any questions.
 
-The GIAB raw data we will be using for this tutorial is relatively large, and thus needs ample memory. We request resources in a SLURM "interactive session" to allow us to run code at the command line and avoid running resource-intensive code on the login node, which could negatively impact other users. Details about the memory/CPUs requested for this tutorial when run on the MU Lewis Computing Cluster can be found in the [User Guide](../user-guide/compute.md).
+The GIAB raw data we will be using for this tutorial is relatively large  and thus needs ample memory. We request resources in a SLURM "interactive session" to allow us to run code at the command line and avoid running resource-intensive code on the login node, which could negatively impact other users. Details about the memory/CPUs requested for this tutorial when run on the MU Lewis Computing Cluster can be found in the [User Guide](../user-guide/compute.md).
 
 There are two options:
 
@@ -69,7 +73,7 @@ source scripts/setup/modules.sh
 
 ## 4. Download pre-trained models
 
-Running a local copy of a container requires us to create a local copy of the `model.ckpt` files from v1.4 of DeepVariant. These checkpoints are the human-trained models produced by Google Genomics Health Group. An index with source links for the published models compatible with TrioTrain can be found [here](../user-guide/existing_models.md).
+Running a local copy of a container requires us to create a local copy of the `model.ckpt` files from v1.4 of DeepVariant. These checkpoints are the human-trained models produced by Google Genomics Health Group. [An index with source links for the published models compatible with TrioTrain can be found here](../user-guide/existing_models.md).
 
 We are downloading two model checkpoints:
 
@@ -258,7 +262,7 @@ bash triotrain/variant_calling/data/GIAB/allele_freq/concat_PopVCFs.sh
 ### b. Download GIAB Sequence Data
 
 !!! warning
-    Given the large file size, the NIST FTP server runs slowly causing `curl` to timeout. **You may need to run these scripts repeatedly until all data is transfered.**
+    Given the large file size, the NIST FTP server runs slowly causing `curl` to timeout. **You may need to run these scripts repeatedly until all data is transfered completely.**
 
 We need to download the large sequence data files, and confirm they are not corrupted by checking the MD5 checksums, where available. These `BAM/BAI` files orginate from the GIAB FTP site. [An index of GIAB data created with these samples can be found on GitHub.](https://github.com/genome-in-a-bottle/giab_data_indexes)
 
@@ -350,12 +354,14 @@ bash triotrain/variant_calling/data/GIAB/bam/HCtrio.download
 
 There are (3) required input files we must create before we can run TrioTrain. [Complete details about all required data can be found in the TrioTrain User Guide.](../user-guide/usage_guide.md#assumptions)
 
-### a. [Reference Dictionary File (`.dict`)](../user-guide/usage_guide.md#required-raw-data)
+### a. Reference Dictionary File (`.dict`)
 
 !!! warning
-    This step is specific to the Human reference genome GRCh38 as cattle-specific input files are packaged with TrioTrain. **If you are working with a new species, you will need to create this file for your reference genome.**
+    This step is specific to the Human reference genome GRCh38 since cattle-specific input files are pre-packaged with TrioTrain. **If you are working with a new species, you will need to create this file for your reference genome.**
 
-We need a reference dictionary file in the same directory as the reference genome. This file defines the valid genomic coordinates for TrioTrain's region shuffling. By default, region shuffling will only use the autosomes and X chromosome. However, you can expand or contract the shuffling area by providing an alternative region file (`.bed`) in the [metadata file (`.csv`).](#b-metadata-file-csv)
+We need a reference dictionary file in the same directory as the reference genome. [Details about this required input can be found in the TrioTrain User Guide.](../user-guide/usage_guide.md#reference)
+
+This file defines the valid genomic coordinates for TrioTrain's region shuffling. By default, region shuffling will only use the autosomes and X chromosome. However, you can expand or contract the shuffling area by providing an alternative region file for a particular trio by providing an existing `BED` file under the `RegionsFile` column within the [metadata file (`.csv`).](#b-metadata-file-csv)
 
 Run at the command line:
 
@@ -379,7 +385,7 @@ picard CreateSequenceDictionary \
 
 We also need a metadata file to tell TrioTrain where to find all of previously downloaded Human GIAB data. This file contains pedigree information, and the absolute paths for file inputs. Absolute paths are required to help the Apptainer/Singularity containers identify local files. [Formatting specifications for this required input can be found in the TrioTrain User Guide.](../user-guide/usage_guide.md#metadata-format)
 
-For the tutorial, we've created a helper script to automatically create an example of this file. This script uses expectations of where the tutorial data are stored to add local paths. However, outside of the tutorial this file is a user-created input.
+For the tutorial, we've created a helper script to automatically create an example of this file. This script uses expectations of where the tutorial data are stored to add local paths. **However, outside of the tutorial this file is a user-created input.**
 
 Run the following at the command line:
 
@@ -397,7 +403,7 @@ python triotrain/model_training/tutorial/create_metadata.py
     create_metadata.py  estimate.py  GIAB.Human_tutorial_metadata.csv  __init__.py  resources_used.json
     ```
 
-### c. [SLURM Resource Config File (`.json`)](../user-guide/usage_guide.md#configuring-slurm-resources)
+### c. SLURM Resource Config File (`.json`)
 
 The last required input we need for TrioTrain is the SLURM resource config file (`.json`). This file tells TrioTrain what resources to request from your HPC cluster when submitting SLURM jobs. [Formatting specifications for this required input can be found in the TrioTrain User Guide.](../user-guide/usage_guide.md#resource-config-format)
 
@@ -406,13 +412,19 @@ The last required input we need for TrioTrain is the SLURM resource config file 
     --8<-- "./triotrain/model_training/tutorial/resources_used.json"
     ```
 
-The hardware listed above for each phase (e.g. `mem`, `ntasks` , `gpus`, etc.) vary, as some phases are memory intensive. These values should not be interpretedate as the minimum or the optimum resources required for each phase. The MU Lewis Research Computing Cluster is heterogenous, so several phases within the example config file request resources to maximize the number of compute nodes for running a memory-intensive phase.
+The hardware listed above for each phase (e.g. `mem`, `ntasks` , `gpus`, etc.) vary, as some phases are memory intensive. These values should not be interpreted as the minimum or the optimum resources required for each phase. The MU Lewis Research Computing Cluster is heterogenous, the example config file requests resources to maximize the number of compute nodes when running memory-intensive phases.
 
 For the tutorial, copy the above example into a new file, and manually edit the SBATCH parameters to match your HPC cluster (i.e. changing the partition list, account, and email address).
 
 ```bash
 cp ./triotrain/model_training/tutorial/resources_used.json </path/to/new_file.json>
 vi </path/to/new_file.json>     # update resources manually 
+```
+
+This new resource config file is passed to TrioTrain via 
+
+```bash
+-r </path/to/new_file.json>
 ```
 
 ---
@@ -479,7 +491,7 @@ Our alternative approach, referred to as "Region Shuffling", splits the autosome
 
 A shuffling region is defined in a non-overlapping, 0-based `BED` file. The goal is to create a subset of labeled examples which are representative of the whole genome, yet small enough to be shuffled within the memory of a single compute node. After defining the shuffling regions, labeled and shuffled examples are created by running parallel SLURM jobs. In our testing with bovine genomes, constraining each region to produce ~200,000 labeled examples works well.
 
-In our experience, numerous small jobs running quickly minimizes wall time between phases. We also priorize a large number of regions, as this further increases the randomness during the final `re_shuffle` processes where TrioTrain randomizes the order the model is given these regions.
+In our experience, numerous small jobs running quickly minimizes wall time between phases. We also priorize a large number of regions, as this further increases the randomness during the final `re_shuffle` processes that randomizes the order regions are given to the model.
 
 ??? example "Example | Computing Power"
     Given ~370G mem across 40 cores, DeepVariant will shuffle each region's examples in around 6 minutes, which can be submitted in parallel to reduce wall time.
@@ -491,7 +503,7 @@ In our experience, numerous small jobs running quickly minimizes wall time betwe
 
     **If your species of interest produces a large volume of variants (> 8 million / genome), TrioTrain can easily overload your cluster's I/O capabilities, or write more than 10,000 files to a directory, or overwhelm the SLURM scheduler by submitting thousands of jobs simultaneously.** Future versions of TrioTrain will address these challenges, but proceed with caution; your cluster's SysAdmin will thank you!
 
-**The shuffling demo enables you to adjust TrioTrain's parameters to automatically estimate how many shuffling regions to use for each genome.** The two primary flags which control Region Shuffling are:
+**This shuffling demo enables you to adjust TrioTrain's parameters for estimating how many shuffling regions to use for each genome.** The two primary flags which control Region Shuffling are:
 
 1. `--max-examples` &mdash; defines the upper limit of total number of examples to produce for each region; values greater than the default (200,000) will increase the wall time.
 
@@ -499,10 +511,10 @@ In our experience, numerous small jobs running quickly minimizes wall time betwe
 
 Additionally, TrioTrain bases the Region Shuffling calculations on the total number of variants found in each genome. This value can vary drastically across training genomes, so TrioTrain uses the number of PASS variants within the corresponding TruthVCF. A larger number of truth variants results in more regions made per region.
 
-**Before running TrioTrain in a new mamalian genome or on a new HPC cluster, we strongly recommend completing the region shuffling demo, with the smallest chromosome provided via the `--demo-chr=<region_literal>` flag.**
+**Before running TrioTrain in a new mamalian genome or on a new HPC cluster, we strongly recommend completing the region shuffling demo using the smallest chromosome possible using the `--demo-chr=<region_literal>` flag.**
 
 ??? note "Note | Working in Other Species"
-    The appropriate values will potentially vary widely across species, as the number of examples DeepVariant produces depends on several factors including:
+    The appropriate values for `max-examples` and `est-examples` may vary widely across species, as the number of examples DeepVariant produces depends on several factors including:
 
     * genome size
 
@@ -514,7 +526,7 @@ Additionally, TrioTrain bases the Region Shuffling calculations on the total num
 
 ---
 
-For this tutorial, complete the demo for Human genomes by running the following at the command line:
+For this tutorial, complete the demo for Human genomes by **editing the following at the command to include your new SLURM config file**:
 
 ```bash
 # You can add the --dry-run flag to this command to confirm the TrioTrain pipeline runs smoothly before submitting jobs to the queue
@@ -523,13 +535,12 @@ python3 triotrain/run_trio_train.py                                             
     --unmapped-reads chrUn                                                                                  \
     -m triotrain/model_training/tutorial/GIAB.Human_tutorial_metadata.csv                                   \
     -n demo                                                                                                 \
-    -r triotrain/model_training/tutorial/resources_used.json                                                \
     --demo-mode                                                                                             \
     --demo-chr chr21                                                                                        \
     --num-tests 3                                                                                           \
     --custom-checkpoint triotrain/model_training/pretrained_models/v1.4.0_withIS_withAF/wgs_af.model.ckpt   \
     --output ../TUTORIAL                                                                                    \
-    --benchmark
+    -r </path/to/new_file.json>
 ```
 
 ---
@@ -540,6 +551,8 @@ This demo will produce and submit the following SLURM jobs:
 2. `beam_shuffle` &mdash; for both Father & Child
 3. `re_shuffle` &mdash; for both Father & Child
 4. `call_variants` &mdash; for just the Father
+
+---
 
 There are (6) types of output files from running the demo:
 
@@ -877,7 +890,7 @@ python3 triotrain/model_training/tutorial/estimate.py                           
 
 Now that we know how to tailor TrioTrain for our non-bovine species (human), we can move forward with starting the re-training pipeline.
 
-Run the following at the command line:
+Complete the GIAB TrioTrain by **editing the following at the command to include your new SLURM config file**:
 
 ```bash
 # You can add the --dry-run flag to this command to confirm the TrioTrain pipeline runs smoothly prior to submitting jobs to the queue
@@ -887,11 +900,11 @@ python3 triotrain/run_trio_train.py                                             
     --est-examples 1                                                                                        \
     -m triotrain/model_training/tutorial/GIAB.Human_tutorial_metadata.csv                                   \
     -n GIAB_Trio                                                                                            \
-    -r triotrain/model_training/tutorial/resources_used.json                                                \
     --num-tests 3                                                                                           \
     --custom-checkpoint triotrain/model_training/pretrained_models/v1.4.0_withIS_withAF/wgs_af.model.ckpt   \
     --output ../TUTORIAL                                                                                    \
-    --benchmark
+    --benchmark                                                                                             \
+    -r </path/to/new_file.json>
 ```
 
 [Need to Re-Submit a SLURM job :octicons-question-16:](../user-guide/resubmit.md){ .md-button }
@@ -931,7 +944,7 @@ python3 triotrain/run_trio_train.py                                             
 
 ## Merge Results | Per-Iteration
 
-Each `Test_.total.metrics.csv` output file should contain 57 rows and 2 columns. The metrics within are the raw and proprotional performance metrics from hap.py. After all `convert_happy` jobs complete, we will then individually merge the per-test results from running the baseline iteration, and both training iterations completed during the GIAB tutorial:
+Each `TestX.total.metrics.csv` output file should contain 57 rows and 2 columns. The metrics within are the raw and proprotional performance metrics from hap.py. After all `convert_happy` jobs complete, we will separately merge the results from running the baseline iteration, and both training iterations completed during the GIAB tutorial:
 
 ```bash
 for start_i in $(seq 0 1); do

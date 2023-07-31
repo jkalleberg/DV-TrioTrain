@@ -12,8 +12,8 @@ repo_name: jkalleberg/DV-TrioTrain
 nav:
   - Home: index.md
   - Getting Started:
-      - Start Here!: getting-started/getting-started.md
-      - Installation: getting-started/installation.md
+      - Start Here: getting-started/getting-started.md
+      - Installation Guide: getting-started/installation.md
       - Configuration Guide: getting-started/configuration.md
       - Human GIAB Tutorial: getting-started/walk-through.md
   - User Guide:
@@ -45,7 +45,6 @@ theme:
 markdown_extensions:
   - admonition
   - def_list
-  - del_ins
   - tables
   - attr_list
   - pymdownx.inlinehilite
