@@ -18,7 +18,7 @@ DV-TT is a SLURM-based, automated pipeline that produces new DV model(s) for ger
 
 ![Visual overview of training workflow: TrioTrain begins at an existing checkpoint, then creates labeled, shuffled examples for trio-binned samples before training on a parent and evaluating with the offspring. A new model is selected, which is then used as the starting point for the next iteration while simultaneously used to call variants in a set of test genomes. The resulting VCF from the new model is then compared against a GATK-derrived pseudo-truth VCF to compare model performance changes across training iterations.](https://github.com/jkalleberg/DV-TrioTrain/blob/0c42346a7dee708657358cdacdba298eaa1bfd7b/docs/img/Workflow_Sm_Horizontal.png?raw=true)
 
-Currently, TrioTrain supports initializing training using an existing DV. [An index of compatible models can be found here.](./docs/user-guide/existing_models.md)
+Currently, TrioTrain supports initializing training using an existing DV model. [An index of compatible models can be found here.](./docs/user-guide/existing_models.md)
 
 Specifically, TrioTrain builds upon the existing DV model for short-read (Illumina) Whole Genome Sequence (WGS) data and, optionally, adds population-level allele frequency data from published samples. During model development, DV-TrioTrain iteratively feeds labeled examples from parent-offspring duos. Intuitively, a model trained on both parents should better predict inherited variants in the offspring; therefore, two training rounds are performed for each trio. After re-training, any models built with DV-TrioTrain become an alternative checkpoint with DeepVariant's one-step, single-sample variant caller.
 
