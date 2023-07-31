@@ -42,6 +42,7 @@ Detailed user guides for installation, configuration, and a tutorial walk-throug
 
 > Citation to go here
 
+
 ### Please also cite:
 
 > [A universal SNP and small-indel variant caller using deep neural networks. *Nature Biotechnology* 36, 983–987 (2018).](https://rdcu.be/7Dhl) <br/>
