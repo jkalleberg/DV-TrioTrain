@@ -10,7 +10,7 @@ DeepVariant-TrioTrain is an automated pipeline for extending DeepVariant (DV), a
 
 ## Background
 
-The existing DeepVariant models were only trained on human data. Previous work built species-specific DeepVariant models for [mosquito genomes](https://google.github.io/deepvariant/posts/2018-12-05-improved-non-human-variant-calling-using-species-specific-deepvariant-models/) and [the endangered Kākāpō parot](https://www.biorxiv.org/content/10.1101/2022.10.22.513130v1.full). We built DeepVariant-TrioTrain (DV-TT) to enable us to re-train DeepVariant for cattle, bison, and yak genomes while incorporating allele frequency data from over 5,500 published Bovine samples, making DV-TT the first tool to expand [the existing Allele Frequency model](https://doi.org/10.1186/s12859-023-05294-0) into non-human, mammalian genomes. Our work developing DV-TT illustrates the limitations of applying models built exclusively with human-genome datasets in other species. Our findings also suggest comparative genomics approaches in deep learning model development offer performance benefits over species-specific models.
+The existing DeepVariant models were only trained on human data. Previous work built species-specific DeepVariant models for [mosquito genomes](https://google.github.io/deepvariant/posts/2018-12-05-improved-non-human-variant-calling-using-species-specific-deepvariant-models/) and [the endangered Kākāpō parot](https://www.biorxiv.org/content/10.1101/2022.10.22.513130v1.full). We built TrioTrain (DV-TT) to enable us to build custom DeepVariant models for cattle, bison, and yak genomes. Our custom models also incorporate allele frequency data from over 5,500 published Bovine samples, making DV-TT the first tool to expand [the existing Allele Frequency model](https://doi.org/10.1186/s12859-023-05294-0) into non-human, mammalian genomes. Our work illustrates the limitations of applying models built exclusively with human-genome datasets in other species. Our findings also suggest comparative genomics approaches in deep learning model development offer performance benefits over species-specific models.
 
 ### How does TrioTrain work?
 
@@ -42,7 +42,7 @@ Detailed user guides for installation, configuration, and a tutorial walk-throug
 
 > Citation to go here
 
-Please also cite:
+### Please also cite:
 
 > [A universal SNP and small-indel variant caller using deep neural networks. *Nature Biotechnology* 36, 983–987 (2018).](https://rdcu.be/7Dhl) <br/>
 Ryan Poplin, Pi-Chuan Chang, David Alexander, Scott Schwartz, Thomas Colthurst, Alexander Ku, Dan Newburger, Jojo Dijamco, Nam Nguyen, Pegah T. Afshar, Sam S. Gross, Lizzie Dorfman, Cory Y. McLean, and Mark A. DePristo.<br/>
