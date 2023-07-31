@@ -3,7 +3,7 @@
 description: contains Iteration-specific helper functions
 
 usage:
-    from pipeline_helpers import Setup
+    from model_training.pipeline.setup import Setup
 """
 import argparse
 import json

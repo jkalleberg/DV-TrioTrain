@@ -3,10 +3,9 @@
 description: creates region BED-format files containing bp-length chromosome samples proportional to the bp-length of each chromosome contained in the reference fasta.
 
 usage:
-    from regions_make import MakeRegions
+    from model_training.prep.examples_regions import MakeRegions
 """
 # Load python libraries
-import argparse
 import os
 import subprocess
 from sys import exit
@@ -21,114 +20,6 @@ from helpers.iteration import Iteration
 from helpers.outputs import check_expected_outputs, check_if_output_exists
 from model_training.prep.count import count_variants
 from natsort import natsorted
-
-
-def collect_args() -> argparse.Namespace:
-    """
-    Process the command line arguments
-    """
-    parser = argparse.ArgumentParser(
-        description=__doc__,
-        formatter_class=argparse.RawTextHelpFormatter,
-    )
-    parser.add_argument(
-        "-e",
-        "--env-file",
-        dest="env_file",
-        help="[REQUIRED]\ninput file (.env)\nprovides environmental variables",
-        type=str,
-        metavar="</path/file>",
-    )
-    parser.add_argument(
-        "--start-itr",
-        dest="restart",
-        help="[REQUIRED]\nstart a pipeline at a specified genome iteration.\nExample: to start @ Trio2-Parent1, set --start-itr=3",
-        type=int,
-        metavar="<int>",
-    )
-    parser.add_argument(
-        "-g",
-        "--genome",
-        dest="genome",
-        choices=["Father", "Mother", "Child"],
-        help="the genome to make_regions",
-        default="Mother",
-        type=str,
-    )
-    parser.add_argument(
-        "--est-examples",
-        dest="est_examples",
-        help="estimated examples created per variant\n(default: %(default)s)",
-        default=1.5,
-        type=float,
-    )
-    parser.add_argument(
-        "--max-examples",
-        dest="max_examples",
-        help="maximum examples include per regions file\n(default: %(default)s)",
-        default=200000,
-        type=int,
-    )
-
-    parser.add_argument(
-        "-d",
-        "--debug",
-        dest="debug",
-        help="print debug info",
-        default=False,
-        action="store_true",
-    )
-    parser.add_argument(
-        "--demo-mode",
-        dest="demo_mode",
-        help="if True, indicates that re-shuffling will use a demo chromosome",
-        action="store_true",
-    )
-    parser.add_argument(
-        "--dry-run",
-        dest="dry_run",
-        help="display region file contents to the screen",
-        action="store_true",
-    )
-    return parser.parse_args()
-    # return parser.parse_args(
-    #     [
-    #         "--debug",
-    #         "--env-file",
-    #         "envs/20220912_NewTrios-run1.env",
-    #         "--genome",
-    #         "Father",
-    #         "--dry-run",
-    #     ]
-    # )
-
-
-def check_args(args: argparse.Namespace, logger: Logger) -> None:
-    """
-    With "--debug", display command line args provided.
-
-    With "--dry-run", display a msg.
-
-    Then, check to make sure all required flags are provided.
-    """
-    if args.debug:
-        str_args = "COMMAND LINE ARGS USED: "
-        for key, val in vars(args).items():
-            str_args += f"{key}={val} | "
-
-        logger.debug(str_args)
-        logger.debug(f"using DeepVariant version | {os.environ.get('BIN_VERSION_DV')}")
-
-    if args.dry_run:
-        logger.info("[DRY_RUN]: output will display to screen and not write to a file")
-
-    assert (
-        args.env_file
-    ), "Missing --env-file; Please provide a file with environment variables for the current analysis"
-    assert (
-        args.restart
-    ), "Missing --start-itr; Please designate the iteration number you'd like to make_region files for Beam shuffling."
-
 
 @dataclass
 class MakeRegions:
@@ -942,73 +833,3 @@ class MakeRegions:
 
                 return self.itr
 
-
-# Create regions files function
-def __init__() -> None:
-    from helpers.environment import Env
-    from helpers.utils import get_logger
-    from helpers.wrapper import Wrapper, timestamp
-
-    """
-    An example of how to use the module
-    """
-    # Collect command line arguments
-    args = collect_args()
-
-    # Collect start time
-    Wrapper(__file__, "start").wrap_script(timestamp())
-
-    # Create error log
-    current_file = os.path.basename(__file__)
-    module_name = os.path.splitext(current_file)[0]
-    logger = get_logger(module_name)
-
-    # Check command line args
-    check_args(args, logger)
-
-    env = Env(args.env_file, logger, args.dry_run)
-    trio_num = str(env.contents["RunOrder"])
-
-    # if args.genome != "Child":
-    #     current_itr = Iteration(
-    #         current_trio_num=trio_num,
-    #         next_trio_num="None",
-    #         current_genome_num=args.restart,
-    #         total_num_genomes=(args.restart + 1),
-    #         total_num_tests=19,
-    #         train_genome=args.genome,
-    #         eval_genome=None,
-    #         env=env,
-    #         logger=logger,
-    #         args=args,
-    #     )
-    #     updated_itr = MakeRegions(
-    #         current_itr,
-    #         args.max_examples,
-    #         args.est_examples,
-    #     ).run()
-    # else:
-    #     current_itr = Iteration(
-    #         current_trio_num=trio_num,
-    #         next_trio_num="None",
-    #         current_genome_num=args.restart,
-    #         total_num_genomes=(args.restart + 1),
-    #         total_num_tests=19,
-    #         train_genome=None,
-    #         eval_genome="Child",
-    #         env=env,
-    #         logger=logger,
-    #         args=args,
-    #     )
-    #     updated_itr = MakeRegions(
-    #         current_itr, args.max_examples, args.est_examples, train_mode=False
-    #     ).run()
-
-    # print(updated_itr)
-
-    Wrapper(__file__, "end").wrap_script(timestamp())
-
-
-# Execute all functions created
-if __name__ == "__main__":
-    __init__()

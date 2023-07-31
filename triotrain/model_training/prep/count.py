@@ -1,3 +1,11 @@
+#!/usr/bin/python3
+"""
+description: count the variants present in a VCF file
+
+example:
+    from model_training.prep.count import count_variants
+"""
+
 from logging import Logger
 from pathlib import Path
 from subprocess import run, Popen, PIPE

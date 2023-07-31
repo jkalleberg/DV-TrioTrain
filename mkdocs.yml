@@ -45,6 +45,7 @@ theme:
 markdown_extensions:
   - admonition
   - def_list
+  - del_ins
   - tables
   - attr_list
   - pymdownx.inlinehilite

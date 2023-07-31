@@ -3,7 +3,7 @@
 description: contains all of the functions specific to the Beam shuffle_examples phase of TrioTrain.
 
 usage:
-    from examples_beam_shuffle import BeamShuffleExamples
+    from model_training.prep.examples_make import BeamShuffleExamples
 """
 from dataclasses import dataclass, field
 from sys import exit

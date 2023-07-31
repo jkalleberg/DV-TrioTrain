@@ -40,18 +40,18 @@ These locally-available software are loaded by TrioTrain via an executable bash 
 
 ## Install TrioTrain
 
-!!! note
-    **TrioTrain assumes that the default `modules.sh` script [(view on GitHub)](https://github.com/jkalleberg/DV-TrioTrain/scripts/setup/modules.sh) works for your cluster.**
+!!! warning
+    **TrioTrain assumes that the default `modules.sh` script [(view on GitHub)](https://github.com/jkalleberg/DV-TrioTrain/blob/f54f83be2aee1b6a39d8e6ca7b2b02dd0e1fa6eb/scripts/setup/modules.sh) works for your cluster.**
 
     If you're building TrioTrain via Github, you will be able to edit `modules.sh` directly to match your system.
     
-    However, if you're building TrioTrain via the Python package, you will need to specify an alternative helper script via  `python3 triotrain/model_train/run_trio_train.py --modules </path/to/your/module.sh>`
+~~However, if you're building TrioTrain via the Python package, you will need to specify an alternative helper script via  `python3 triotrain/model_train/run_trio_train.py --modules </path/to/your/module.sh>`~~
 
 There are two supported options for DV-TrioTrain:
 
 1. Clone from Github: `git clone git@github.com:jkalleberg/DV-TrioTrain.git`
 
-2. Install the Python package: `pip install triotrain`
+2. ~~Install the Python package: `pip install triotrain`~~
 
 ---
 

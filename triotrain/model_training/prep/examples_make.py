@@ -3,7 +3,7 @@
 description: contains all of the functions specific to the make_examples phase of TrioTrain.
 
 usage:
-    from examples_make import MakeExamples
+    from model_training.prep.examples_make import MakeExamples
 """
 from dataclasses import dataclass, field
 from sys import exit

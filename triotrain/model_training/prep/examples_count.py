@@ -3,7 +3,7 @@
 description: contains all of the functions specific to the count_examples phase of TrioTrain.
 
 usage:
-    from examples_count import CountExamples
+    from model_training.prep.examples_count import CountExamples
 """
 from dataclasses import dataclass, field
 from subprocess import getstatusoutput

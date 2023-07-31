@@ -4,7 +4,7 @@ description: contains all of the functions specific to
 the re-training and evaluating new models of TrioTrain.
 
 usage: 
-    from model_train_eval import TrainEval
+    from model_training.pipeline.train_eval import TrainEval
 """
 from dataclasses import dataclass, field
 from math import floor

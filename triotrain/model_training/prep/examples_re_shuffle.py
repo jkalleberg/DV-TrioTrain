@@ -3,7 +3,7 @@
 description: contains all of the functions specific to the re_shuffle_examples phase of TrioTrain.
 
 usage:
-    from examples_re_shuffle import ReShuffleExamples
+    from model_training.prep.examples_re_shuffle import ReShuffleExamples
 """
 from dataclasses import dataclass, field
 from sys import exit

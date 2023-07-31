@@ -3,7 +3,7 @@
 description: contains all of the functions specific to selecting a new model of TrioTrain.
 
 usage:
-    from select_ckpt import SelectCheckpoint
+    from model_training.pipeline.select_ckpt import SelectCheckpoint
 """
 from dataclasses import dataclass, field
 from sys import exit
