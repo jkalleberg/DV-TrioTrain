@@ -495,13 +495,6 @@
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#d-optional-reference-sequence-data-file" class="md-nav__link">
-    d. (OPTIONAL) Reference Sequence Data File
-  </a>
-  
-</li>
-        
       </ul>
     </nav>
   
@@ -517,6 +510,20 @@
         <li class="md-nav__item">
   <a href="#9-run-triotrain-with-a-human-trio" class="md-nav__link">
     9. Run TrioTrain with a Human Trio
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#merge-results-per-iteration" class="md-nav__link">
+    Merge Results | Per-Iteration
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#clean-up-directories-per-iteration" class="md-nav__link">
+    Clean Up Directories | Per-Iteration
   </a>
   
 </li>
@@ -712,6 +719,10 @@
 <p>Completing this walk-through successfully confirms that DV-TrioTrain has been setup correctly on your HPC cluster. Additionally, the tutorial completes one round of re-training with a Human trio as an example of how to run DV-TrioTrain. If you haven't already, go back and complete the previous two guides:  </p>
 <p><a class="md-button" href="../installation/"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14 17h-2V9h-2V7h4m5-4H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2Z"/></svg></span> Installation Guide</a>
 <a class="md-button" href="../configuration/"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M15 11a2 2 0 0 1-2 2h-2v2h4v2H9v-4a2 2 0 0 1 2-2h2V9H9V7h4a2 2 0 0 1 2 2m4-6H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2Z"/></svg></span> Configuration Guide</a></p>
+<div class="admonition warning">
+<p class="admonition-title">Warning | Storage Needs</p>
+<p>Completing this tutorial will produce ~2T of files, so ensure you are working have sufficient space before proceeding!</p>
+</div>
 <h2 id="1-confirm-setup-worked">1. Confirm setup worked</h2>
 <p>Run the following at the command line:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nb">cd</span><span class="w"> </span>DV-TrioTrain
@@ -937,7 +948,7 @@
 <h2 id="6-process-raw-data">6. Process Raw Data</h2>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>These scripts can either be wrapped with SBATCH, or run interactively at the command line if you have enough memory. However, each script can take awhile to complete, particularly the <code>.download</code> scripts (1hr+). </p>
+<p>These scripts can either be wrapped with SBATCH, or run interactively at the command line if you have enough memory. However, each script can take awhile to complete, particularly the <code>.download</code> scripts (1hr+).</p>
 </div>
 <p>In addition to the raw data, <code>download_GIAB.sh</code> also creates (3) bash scripts to process raw data into the formats expected by the tutorial:</p>
 <ol>
@@ -1173,66 +1184,114 @@
 <a id="__codelineno-44-101" name="__codelineno-44-101" href="#__codelineno-44-101"></a>}
 </code></pre></div>
 </details>
-<p>The hardware listed above for each phase (e.g. mem, ntasks, gpus, etc.)  illustrate which phases are memory intensive. These values should not be interpretedate as the minimum or the optimum resources required for each phase. The MU Lewis Research Computing Cluster is heterogenous, so several phases within the example config file request resources to maximize the number of compute nodes for running a memory-intensive phase.</p>
+<p>The hardware listed above for each phase (e.g. <code>mem</code>, <code>ntasks</code> , <code>gpus</code>, etc.) vary, as some phases are memory intensive. These values should not be interpretedate as the minimum or the optimum resources required for each phase. The MU Lewis Research Computing Cluster is heterogenous, so several phases within the example config file request resources to maximize the number of compute nodes for running a memory-intensive phase.</p>
 <p>For the tutorial, copy the above example into a new file, and manually edit the SBATCH parameters to match your HPC cluster (i.e. changing the partition list, account, and email address).</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-45-1" name="__codelineno-45-1" href="#__codelineno-45-1"></a>cp<span class="w"> </span>./triotrain/model_training/tutorial/resources_used.json<span class="w"> </span>&lt;/path/to/new_file.json&gt;
 <a id="__codelineno-45-2" name="__codelineno-45-2" href="#__codelineno-45-2"></a>vi<span class="w"> </span>&lt;/path/to/new_file.json&gt;<span class="w">     </span><span class="c1"># update resources manually </span>
 </code></pre></div>
-<h3 id="d-optional-reference-sequence-data-file">d. <em>(OPTIONAL)</em> Reference Sequence Data File</h3>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>This step is specific to the Human reference genome GRCh38. Cattle-specific input files are packaged with TrioTrain. <strong>If you are working with a new species, you will need to create this file for your reference genome.</strong></p>
-</div>
-<p>If you have trio-binned test genomes, TrioTrain can help calculate Mendelian Inheritance Error rate using <code>rtg-tools mendelian</code>. However, you must create a Sequence Data File (SDF) for each reference genome in the same directory as the reference genome in a sub-directory called <code>rtg_tools/</code>. Additional details about <code>rtg-tools</code> can be <a href="https://github.com/RealTimeGenomics/rtg-tools">found on GitHub</a>, or by <a href="https://cdn.rawgit.com/RealTimeGenomics/rtg-tools/master/installer/resources/tools/RTGOperationsManual.pdf">reviewing the PDF documentation here</a>.</p>
-<p>For this tutorial, create the Human reference SDF by running the following at the command line:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-46-1" name="__codelineno-46-1" href="#__codelineno-46-1"></a><span class="nb">source</span><span class="w"> </span>./scripts/start_conda.sh<span class="w">     </span><span class="c1"># Ensure the previously built conda env is active</span>
-<a id="__codelineno-46-2" name="__codelineno-46-2" href="#__codelineno-46-2"></a>bash<span class="w"> </span>scripts/setup/setup_rtg_tools.sh
-</code></pre></div>
-<p>For other species, use the following template:</p>
-<details class="example">
-<summary>Example | Creating the SDF</summary>
-<div class="highlight"><span class="filename">./scripts/setup/setup_rtg_tools.sh</span><pre><span></span><code><a id="__codelineno-47-1" name="__codelineno-47-1" href="#__codelineno-47-1"></a><span class="ch">#!/bin/bash</span>
-<a id="__codelineno-47-2" name="__codelineno-47-2" href="#__codelineno-47-2"></a><span class="c1"># scripts/setup/build_rtg_tools.sh</span>
-<a id="__codelineno-47-3" name="__codelineno-47-3" href="#__codelineno-47-3"></a>
-<a id="__codelineno-47-4" name="__codelineno-47-4" href="#__codelineno-47-4"></a><span class="nb">echo</span><span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;=== scripts/setup/build_rtg_tools.sh &gt; start </span><span class="k">$(</span>date<span class="k">)</span><span class="s2">&quot;</span>
-<a id="__codelineno-47-5" name="__codelineno-47-5" href="#__codelineno-47-5"></a>
-<a id="__codelineno-47-6" name="__codelineno-47-6" href="#__codelineno-47-6"></a><span class="c1">##======= Create RTG-TOOLS SDF ======================================##</span>
-<a id="__codelineno-47-7" name="__codelineno-47-7" href="#__codelineno-47-7"></a><span class="c1"># required for using rtg-tools &#39;mendelian&#39;</span>
-<a id="__codelineno-47-8" name="__codelineno-47-8" href="#__codelineno-47-8"></a><span class="k">if</span><span class="w"> </span><span class="o">[</span><span class="w"> </span>!<span class="w"> </span>-f<span class="w"> </span>./triotrain/variant_calling/data/GIAB/reference/rtg_tools/reference.txt<span class="w"> </span><span class="o">]</span><span class="p">;</span><span class="w"> </span><span class="k">then</span>
-<a id="__codelineno-47-9" name="__codelineno-47-9" href="#__codelineno-47-9"></a><span class="w">    </span>rtg<span class="w"> </span>format<span class="w"> </span>-o<span class="w"> </span>./triotrain/variant_calling/data/GIAB/reference/rtg_tools/<span class="w"> </span>./triotrain/variant_calling/data/GIAB/reference/GRCh38_no_alt_analysis_set.fasta
-<a id="__codelineno-47-10" name="__codelineno-47-10" href="#__codelineno-47-10"></a><span class="k">else</span>
-<a id="__codelineno-47-11" name="__codelineno-47-11" href="#__codelineno-47-11"></a><span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;</span><span class="k">$(</span>date<span class="w"> </span><span class="s1">&#39;+%Y-%m-%d %H:%M:%S&#39;</span><span class="k">)</span><span class="s2"> INFO: RTG-TOOLS SDF already exists... SKIPPING AHEAD&quot;</span>
-<a id="__codelineno-47-12" name="__codelineno-47-12" href="#__codelineno-47-12"></a><span class="k">fi</span>
-<a id="__codelineno-47-13" name="__codelineno-47-13" href="#__codelineno-47-13"></a>
-<a id="__codelineno-47-14" name="__codelineno-47-14" href="#__codelineno-47-14"></a><span class="nb">echo</span><span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;=== scripts/setup/build_rtg_tools.sh&gt; end </span><span class="k">$(</span>date<span class="k">)</span><span class="s2">&quot;</span>
-</code></pre></div>
-</details>
 <hr />
 <h2 id="8-run-shuffling-demo">8. Run Shuffling Demo</h2>
-<p>Shuffling the labeled examples is a critical step to re-training DeepVariant because the model assumes successive training images are independent of one another. DeepVariant includes an Apache Beam pipeline that puts training examples in random genomic order. However, in our experience, getting the Python SDK for Beam, Apache Spark and SLURM to cooperate is a dependency nightmare.</p>
-<p>Our alternative approach splits the complete genome into subset regions before making the labeled examples. Each region is defined in non-overlapping, 0-based <code>BED</code> file. Within a shuffling region, all chromosomes are sampled to ensure they remain proportionally consistent with the complete genome. Thus, each region will produce a subset of examples across the genome, which are then shuffled using a single compute node. Rather than a Beam pipeline runner, labeled examples from each region are created via parallel SLURM jobs.</p>
+<p><strong>Shuffling the labeled examples is a critical step to re-training DeepVariant because the model assumes successive training images are independent of one another.</strong> DeepVariant includes an Apache Beam pipeline that puts training examples in random genomic order. However, in our experience, getting the Python SDK for Beam, Apache Spark and SLURM to cooperate is a dependency nightmare.</p>
+<p>Our alternative approach, referred to as "Region Shuffling", splits the autosomes and the X chromosome into subset regions before making the labeled examples. Using the previously created <code>.dict</code> file created for the reference, TrioTrain will determine how many regions are required automatically.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>For our analyses in bovine genomes, we exclude parts of the genome from our region shuffling, including:</p>
+<ol>
+<li>
+<p>the Y chromosome and the Mitochondrial genome &mdash; due to limitations with the <code>ARS-UCD1.2_Btau5.0.1Y</code> reference genome</p>
+</li>
+<li>
+<p>the unmapped reads &mdash;  due to a large volume of contigs containing a small amount of variants that can not be easily distributed across 60-150+ shuffling regions</p>
+</li>
+</ol>
+<p>TrioTrain will automatically search the reference genome <code>.dict</code> file for contigs labeled with <code>Y</code> and <code>M/MT</code> and will ignore them prior to defining shuffling regions.</p>
+<p>Use the <code>--unmapped-reads</code> flag to provide a contig prefix pattern to exclude. The default value (NKLS) is approprate for the <code>ARS-UCD1.2_Btau5.0.1Y</code> reference genome.</p>
+</div>
+<details class="note">
+<summary>Note | Identifying Contig Labels</summary>
+<div class="highlight"><span class="filename">Run at the command line</span><pre><span></span><code><a id="__codelineno-46-1" name="__codelineno-46-1" href="#__codelineno-46-1"></a>cat<span class="w"> </span>ARS-UCD1.2_Btau5.0.1Y.dict<span class="w"> </span><span class="p">|</span><span class="w"> </span>awk<span class="w"> </span><span class="s1">&#39;{if($1 ~ &quot;@SQ&quot;) print $2}&#39;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>cut<span class="w"> </span>-c4-7<span class="w"> </span><span class="p">|</span><span class="w"> </span>sort<span class="w"> </span><span class="p">|</span><span class="w"> </span>uniq<span class="w"> </span>-c<span class="w"> </span><span class="p">|</span><span class="w"> </span>sort<span class="w"> </span>-k1
+</code></pre></div>
+<div class="highlight"><span class="filename">Check output</span><pre><span></span><code><a id="__codelineno-47-1" name="__codelineno-47-1" href="#__codelineno-47-1"></a><span class="w">    </span><span class="m">1</span><span class="w"> </span><span class="m">1</span>
+<a id="__codelineno-47-2" name="__codelineno-47-2" href="#__codelineno-47-2"></a><span class="w">    </span><span class="m">1</span><span class="w"> </span><span class="m">10</span>
+<a id="__codelineno-47-3" name="__codelineno-47-3" href="#__codelineno-47-3"></a><span class="w">    </span><span class="m">1</span><span class="w"> </span><span class="m">11</span>
+<a id="__codelineno-47-4" name="__codelineno-47-4" href="#__codelineno-47-4"></a><span class="w">    </span><span class="m">1</span><span class="w"> </span><span class="m">12</span>
+<a id="__codelineno-47-5" name="__codelineno-47-5" href="#__codelineno-47-5"></a><span class="w">    </span><span class="m">1</span><span class="w"> </span><span class="m">13</span>
+<a id="__codelineno-47-6" name="__codelineno-47-6" href="#__codelineno-47-6"></a><span class="w">    </span><span class="m">1</span><span class="w"> </span><span class="m">14</span>
+<a id="__codelineno-47-7" name="__codelineno-47-7" href="#__codelineno-47-7"></a><span class="w">    </span><span class="m">1</span><span class="w"> </span><span class="m">15</span>
+<a id="__codelineno-47-8" name="__codelineno-47-8" href="#__codelineno-47-8"></a><span class="w">    </span><span class="m">1</span><span class="w"> </span><span class="m">16</span>
+<a id="__codelineno-47-9" name="__codelineno-47-9" href="#__codelineno-47-9"></a><span class="w">    </span><span class="m">1</span><span class="w"> </span><span class="m">17</span>
+<a id="__codelineno-47-10" name="__codelineno-47-10" href="#__codelineno-47-10"></a><span class="w">    </span><span class="m">1</span><span class="w"> </span><span class="m">18</span>
+<a id="__codelineno-47-11" name="__codelineno-47-11" href="#__codelineno-47-11"></a><span class="w">    </span><span class="m">1</span><span class="w"> </span><span class="m">19</span>
+<a id="__codelineno-47-12" name="__codelineno-47-12" href="#__codelineno-47-12"></a><span class="w">    </span><span class="m">1</span><span class="w"> </span><span class="m">2</span>
+<a id="__codelineno-47-13" name="__codelineno-47-13" href="#__codelineno-47-13"></a><span class="w">    </span><span class="m">1</span><span class="w"> </span><span class="m">20</span>
+<a id="__codelineno-47-14" name="__codelineno-47-14" href="#__codelineno-47-14"></a><span class="w">    </span><span class="m">1</span><span class="w"> </span><span class="m">21</span>
+<a id="__codelineno-47-15" name="__codelineno-47-15" href="#__codelineno-47-15"></a><span class="w">    </span><span class="m">1</span><span class="w"> </span><span class="m">22</span>
+<a id="__codelineno-47-16" name="__codelineno-47-16" href="#__codelineno-47-16"></a><span class="w">    </span><span class="m">1</span><span class="w"> </span><span class="m">23</span>
+<a id="__codelineno-47-17" name="__codelineno-47-17" href="#__codelineno-47-17"></a><span class="w">    </span><span class="m">1</span><span class="w"> </span><span class="m">24</span>
+<a id="__codelineno-47-18" name="__codelineno-47-18" href="#__codelineno-47-18"></a><span class="w">    </span><span class="m">1</span><span class="w"> </span><span class="m">25</span>
+<a id="__codelineno-47-19" name="__codelineno-47-19" href="#__codelineno-47-19"></a><span class="w">    </span><span class="m">1</span><span class="w"> </span><span class="m">26</span>
+<a id="__codelineno-47-20" name="__codelineno-47-20" href="#__codelineno-47-20"></a><span class="w">    </span><span class="m">1</span><span class="w"> </span><span class="m">27</span>
+<a id="__codelineno-47-21" name="__codelineno-47-21" href="#__codelineno-47-21"></a><span class="w">    </span><span class="m">1</span><span class="w"> </span><span class="m">28</span>
+<a id="__codelineno-47-22" name="__codelineno-47-22" href="#__codelineno-47-22"></a><span class="w">    </span><span class="m">1</span><span class="w"> </span><span class="m">29</span>
+<a id="__codelineno-47-23" name="__codelineno-47-23" href="#__codelineno-47-23"></a><span class="w">    </span><span class="m">1</span><span class="w"> </span><span class="m">3</span>
+<a id="__codelineno-47-24" name="__codelineno-47-24" href="#__codelineno-47-24"></a><span class="w">    </span><span class="m">1</span><span class="w"> </span><span class="m">4</span>
+<a id="__codelineno-47-25" name="__codelineno-47-25" href="#__codelineno-47-25"></a><span class="w">    </span><span class="m">1</span><span class="w"> </span><span class="m">5</span>
+<a id="__codelineno-47-26" name="__codelineno-47-26" href="#__codelineno-47-26"></a><span class="w">    </span><span class="m">1</span><span class="w"> </span><span class="m">6</span>
+<a id="__codelineno-47-27" name="__codelineno-47-27" href="#__codelineno-47-27"></a><span class="w">    </span><span class="m">1</span><span class="w"> </span><span class="m">7</span>
+<a id="__codelineno-47-28" name="__codelineno-47-28" href="#__codelineno-47-28"></a><span class="w">    </span><span class="m">1</span><span class="w"> </span><span class="m">8</span>
+<a id="__codelineno-47-29" name="__codelineno-47-29" href="#__codelineno-47-29"></a><span class="w">    </span><span class="m">1</span><span class="w"> </span><span class="m">9</span>
+<a id="__codelineno-47-30" name="__codelineno-47-30" href="#__codelineno-47-30"></a><span class="w">    </span><span class="m">1</span><span class="w"> </span>MT
+<a id="__codelineno-47-31" name="__codelineno-47-31" href="#__codelineno-47-31"></a><span class="w">    </span><span class="m">1</span><span class="w"> </span>X
+<a id="__codelineno-47-32" name="__codelineno-47-32" href="#__codelineno-47-32"></a><span class="w">    </span><span class="m">1</span><span class="w"> </span>Y
+<a id="__codelineno-47-33" name="__codelineno-47-33" href="#__codelineno-47-33"></a><span class="w">    </span><span class="m">2180</span><span class="w"> </span>NKLS
+</code></pre></div>
+</details>
 <hr />
-<p><strong>Before running TrioTrain in a new mamalian genome or on a new HPC cluster, we strongly recommend completing the region shuffling demo.</strong> We recommend using a small chromosome with <code>--demo-chr=&lt;region_literal&gt;</code>.
-The shuffling demo will help you tailor some of TrioTrain's default parameter values: <code>--max-examples</code> and <code>--est-examples</code>.</p>
+<p>A shuffling region is defined in a non-overlapping, 0-based <code>BED</code> file. The goal is to create a subset of labeled examples which are representative of the whole genome, yet small enough to be shuffled within the memory of a single compute node. After defining the shuffling regions, labeled and shuffled examples are created by running parallel SLURM jobs. In our testing with bovine genomes, constraining each region to produce ~200,000 labeled examples works well.</p>
+<p>In our experience, numerous small jobs running quickly minimizes wall time between phases. We also priorize a large number of regions, as this further increases the randomness during the final <code>re_shuffle</code> processes where TrioTrain randomizes the order the model is given these regions.</p>
+<details class="example">
+<summary>Example | Computing Power</summary>
+<p>Given ~370G mem across 40 cores, DeepVariant will shuffle each region's examples in around 6 minutes, which can be submitted in parallel to reduce wall time.</p>
+</details>
+<details class="note">
+<summary>Note | Output Volume</summary>
+<p>A typical cattle genome with ~8 million variants results in around ~65 regions, resulting in (65 regions x 40 cores) tfrecord output files. TrioTrain repeats this process for shuffling, resulting in another (65 regions x 40 cores) shuffled tfrecord output files. This is repeated for all 3 genomes within a trio resulting in a large volume of individual files (65 regions x 40 cores x 2 phases per genome).</p>
+<p>The final step of our approach, referrred to as <code>re_shuffle</code>, condenses the 40 tfrecord files for a region, reducing the number of files fed to DeepVariant per genome back down to 65. To further improve shuffling, we randomize the order regions are provided to DeepVariant.</p>
+<p><strong>If your species of interest produces a large volume of variants (&gt; 8 million / genome), TrioTrain can easily overload your cluster's I/O capabilities, or write more than 10,000 files to a directory, or overwhelm the SLURM scheduler by submitting thousands of jobs simultaneously.</strong> Future versions of TrioTrain will address these challenges, but proceed with caution; your cluster's SysAdmin will thank you!</p>
+</details>
+<p><strong>The shuffling demo enables you to adjust TrioTrain's parameters to automatically estimate how many shuffling regions to use for each genome.</strong> The two primary flags which control Region Shuffling are:</p>
+<ol>
+<li>
+<p><code>--max-examples</code> &mdash; defines the upper limit of total number of examples to produce for each region; values greater than the default (200,000) will increase the wall time.</p>
+</li>
+<li>
+<p><code>--est-examples</code> &mdash; defines expectations of the number of examples DeepVariant produces per genomic variant; the default value (1.5) is appropriate for bovine genomes, but with the human GIAB samples, we found a value of 1 to be more appropriate.</p>
+</li>
+</ol>
+<p>Additionally, TrioTrain bases the Region Shuffling calculations on the total number of variants found in each genome. This value can vary drastically across training genomes, so TrioTrain uses the number of PASS variants within the corresponding TruthVCF. A larger number of truth variants results in more regions made per region.</p>
+<p><strong>Before running TrioTrain in a new mamalian genome or on a new HPC cluster, we strongly recommend completing the region shuffling demo, with the smallest chromosome provided via the <code>--demo-chr=&lt;region_literal&gt;</code> flag.</strong></p>
 <details class="note">
 <summary>Note | Working in Other Species</summary>
-<p>The values for the above parameters will potentially vary widely across species, as the number of examples DeepVariant produces depends on several factors including:</p>
+<p>The appropriate values will potentially vary widely across species, as the number of examples DeepVariant produces depends on several factors including:</p>
 <ul>
-<li>genome size</li>
-<li>the reference genome used</li>
-<li>how many variants are identified in an individual genome </li>
+<li>
+<p>genome size</p>
+</li>
+<li>
+<p>the reference genome used</p>
+</li>
+<li>
+<p>how many variants are identified in an individual genome</p>
+</li>
 </ul>
-<p>For example, the F1-hybrid offspring in cattle are crosses between diverent lineages, resulting in an abnormal amount heterzygous genotypes compared to typical cattle genomes. Instead of typical 8 million variants per genome, these samples produced 20+ million variants per genome. In our experience, this value is specific to each training genome, so TrioTrain will estimate this value based on the number of PASS variants within the corresponding TruthVCF. </p>
-<p><strong>For these unique cases, TrioTrain can easily overload your cluster's I/O capabilities, or write more than 10,000 files to a directory, or overwhelm the SLURM scheduler by submitting thousands of jobs simultaneously.</strong> Future versions of TrioTrain will address these challenges, but proceed with caution. Your cluster's SysAdmin will thank you!</p>
+<p>For example, the F1-hybrid offspring in cattle are crosses between diverent lineages, resulting in an abnormal amount heterzygous genotypes compared to typical cattle genomes. Instead of typical 8 million variants per genome, these samples produced 20+ million variants per genome.</p>
 </details>
-<p>In our experience with bovine genomes, setting <code>--max-examples=200000</code> is ideal as it creates many SLURM jobs for the <code>make_examples</code> and <code>beam_shuffle</code> phases. Numerous small jobs running quickly minimizes wall time between phases. The default value of <code>--est-examples=1.5</code> is based on running the shuffling demo with <code>--demo-chr=29</code> in an Angus genome. With the previously created <code>.dict</code> file created for the reference, TrioTrain will determine how many regions are required automatically.</p>
-<p>For bovine genomes we typically produce 60 - 130 shuffling regions, depending on the number of variants present in a sample's corresponding TruthVCF. We priorize a large number of regions, as this further increases the randomness during the <code>re_shuffle</code> processes which randomizes the order the model is given the shuffling regions.</p>
 <hr />
-<p>For the human GIAB tutorial, run the following at the command line:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-48-1" name="__codelineno-48-1" href="#__codelineno-48-1"></a><span class="c1"># You can add the --dry-run flag to this command to confirm the TrioTrain pipeline runs smoothly</span>
+<p>For this tutorial, complete the demo for Human genomes by running the following at the command line:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-48-1" name="__codelineno-48-1" href="#__codelineno-48-1"></a><span class="c1"># You can add the --dry-run flag to this command to confirm the TrioTrain pipeline runs smoothly before submitting jobs to the queue</span>
 <a id="__codelineno-48-2" name="__codelineno-48-2" href="#__codelineno-48-2"></a>python3<span class="w"> </span>triotrain/run_trio_train.py<span class="w">                                                                         </span><span class="se">\</span>
 <a id="__codelineno-48-3" name="__codelineno-48-3" href="#__codelineno-48-3"></a><span class="w">    </span>-g<span class="w"> </span>Father<span class="w">                                                                                               </span><span class="se">\</span>
-<a id="__codelineno-48-4" name="__codelineno-48-4" href="#__codelineno-48-4"></a><span class="w">    </span>-s<span class="w"> </span>human<span class="w">                                                                                                </span><span class="se">\</span>
+<a id="__codelineno-48-4" name="__codelineno-48-4" href="#__codelineno-48-4"></a><span class="w">    </span>--unmapped-reads<span class="w"> </span>chrUn<span class="w">                                                                                  </span><span class="se">\</span>
 <a id="__codelineno-48-5" name="__codelineno-48-5" href="#__codelineno-48-5"></a><span class="w">    </span>-m<span class="w"> </span>triotrain/model_training/tutorial/GIAB.Human_tutorial_metadata.csv<span class="w">                                   </span><span class="se">\</span>
 <a id="__codelineno-48-6" name="__codelineno-48-6" href="#__codelineno-48-6"></a><span class="w">    </span>-n<span class="w"> </span>demo<span class="w">                                                                                                 </span><span class="se">\</span>
 <a id="__codelineno-48-7" name="__codelineno-48-7" href="#__codelineno-48-7"></a><span class="w">    </span>-r<span class="w"> </span>triotrain/model_training/tutorial/resources_used.json<span class="w">                                                </span><span class="se">\</span>
@@ -1244,15 +1303,13 @@ The shuffling demo will help you tailor some of TrioTrain's default parameter va
 <a id="__codelineno-48-13" name="__codelineno-48-13" href="#__codelineno-48-13"></a><span class="w">    </span>--benchmark
 </code></pre></div>
 <hr />
-<p>The shuffling demo will produce and submit (7) SLURM jobs by running (3) steps &mdash; for both Father &amp; Child:</p>
+<p>This demo will produce and submit the following SLURM jobs:</p>
 <ol>
-<li><code>make_examples</code></li>
-<li><code>beam_shuffle</code></li>
-<li><code>re_shuffle</code></li>
+<li><code>make_examples</code> &mdash; for both Father &amp; Child</li>
+<li><code>beam_shuffle</code> &mdash; for both Father &amp; Child</li>
+<li><code>re_shuffle</code> &mdash; for both Father &amp; Child</li>
+<li><code>call_variants</code> &mdash; for just the Father</li>
 </ol>
-<p>The final step runs <code>call_variants</code> for just the Father.</p>
-<p><strong>If these jobs successfully complete, you will have a conservative estimate for the <code>--max-examples</code> and <code>--est-examples</code> parameters to ensure shuffling easily fits within your available memory.</strong></p>
-<hr />
 <p>There are (6) types of output files from running the demo:</p>
 <table>
 <thead>
@@ -1571,9 +1628,10 @@ The shuffling demo will help you tailor some of TrioTrain's default parameter va
 <a id="__codelineno-58-3" name="__codelineno-58-3" href="#__codelineno-58-3"></a>Baseline-v1.4.0,Human_tutorial,Father,beam_shuffle,27669523
 <a id="__codelineno-58-4" name="__codelineno-58-4" href="#__codelineno-58-4"></a>Baseline-v1.4.0,Human_tutorial,Father,make_examples,27669524
 <a id="__codelineno-58-5" name="__codelineno-58-5" href="#__codelineno-58-5"></a>Baseline-v1.4.0,Human_tutorial,Father,beam_shuffle,27669525
-<a id="__codelineno-58-6" name="__codelineno-58-6" href="#__codelineno-58-6"></a><span class="c1"># The JobList column will differ based on SLURM job IDs</span>
+<a id="__codelineno-58-6" name="__codelineno-58-6" href="#__codelineno-58-6"></a><span class="c1"># The JobList column will differ based on SLURM job numbers</span>
 </code></pre></div>
 </details>
+<p><strong>The following will provide a conservative estimate for the <code>--max-examples</code> and <code>--est-examples</code> parameters to ensure shuffling easily fits within your available memory.</strong></p>
 <p>After confirming all (7) jobs complete successfully, run the following at the command line:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-59-1" name="__codelineno-59-1" href="#__codelineno-59-1"></a>python3<span class="w"> </span>triotrain/model_training/tutorial/estimate.py<span class="w">                           </span><span class="se">\</span>
 <a id="__codelineno-59-2" name="__codelineno-59-2" href="#__codelineno-59-2"></a><span class="w">    </span>--vcf-file<span class="w"> </span>../TUTORIAL/demo/Human_tutorial/test_Father/test1_chr21.vcf.gz<span class="w">   </span><span class="se">\</span>
@@ -1583,44 +1641,136 @@ The shuffling demo will help you tailor some of TrioTrain's default parameter va
 </code></pre></div>
 <details class="success">
 <summary>Expected Output | Estimating TrioTrain Parameters:</summary>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-60-1" name="__codelineno-60-1" href="#__codelineno-60-1"></a><span class="o">=====</span><span class="w"> </span>start<span class="w"> </span>of<span class="w"> </span>triotrain/model_training/tutorial/estimate.py<span class="w"> </span>@<span class="w"> </span><span class="m">2023</span>-06-27<span class="w">  </span><span class="m">10</span>:54:59<span class="w"> </span><span class="o">=====</span>
-<a id="__codelineno-60-2" name="__codelineno-60-2" href="#__codelineno-60-2"></a><span class="m">2023</span>-06-27<span class="w"> </span><span class="m">10</span>:54:59<span class="w"> </span>AM<span class="w"> </span>-<span class="w"> </span><span class="o">[</span>INFO<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>DEMO<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>TRIO1<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>count_variants<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>Father<span class="o">]</span>:<span class="w"> </span>number<span class="w"> </span>of<span class="w"> </span>REF/REF<span class="w"> </span>variants<span class="w"> </span>found<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="m">44</span>,452
-<a id="__codelineno-60-3" name="__codelineno-60-3" href="#__codelineno-60-3"></a><span class="m">2023</span>-06-27<span class="w"> </span><span class="m">10</span>:54:59<span class="w"> </span>AM<span class="w"> </span>-<span class="w"> </span><span class="o">[</span>INFO<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>DEMO<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>TRIO1<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>count_variants<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>Father<span class="o">]</span>:<span class="w"> </span>number<span class="w"> </span>of<span class="w"> </span>PASS<span class="w"> </span>variants<span class="w"> </span>found<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="m">114</span>,332
-<a id="__codelineno-60-4" name="__codelineno-60-4" href="#__codelineno-60-4"></a><span class="m">2023</span>-06-27<span class="w"> </span><span class="m">10</span>:55:00<span class="w"> </span>AM<span class="w"> </span>-<span class="w"> </span><span class="o">[</span>INFO<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>DEMO<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>TRIO1<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>count_variants<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>Father<span class="o">]</span>:<span class="w"> </span>default<span class="w"> </span>maximum<span class="w"> </span>examples<span class="w"> </span>per<span class="w"> </span>region<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="m">200</span>,000
-<a id="__codelineno-60-5" name="__codelineno-60-5" href="#__codelineno-60-5"></a><span class="m">2023</span>-06-27<span class="w"> </span><span class="m">10</span>:55:00<span class="w"> </span>AM<span class="w"> </span>-<span class="w"> </span><span class="o">[</span>INFO<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>DEMO<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>TRIO1<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>count_variants<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>Father<span class="o">]</span>:<span class="w"> </span>default<span class="w"> </span>value<span class="w"> </span><span class="k">for</span><span class="w"> </span>--max-examples<span class="w"> </span>is<span class="w"> </span>appropriate
-<a id="__codelineno-60-6" name="__codelineno-60-6" href="#__codelineno-60-6"></a><span class="m">2023</span>-06-27<span class="w"> </span><span class="m">10</span>:55:00<span class="w"> </span>AM<span class="w"> </span>-<span class="w"> </span><span class="o">[</span>INFO<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>DEMO<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>TRIO1<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>count_variants<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>Father<span class="o">]</span>:<span class="w"> </span>added<span class="w"> </span><span class="s1">&#39;Demo_TotalVariants=114332&#39;</span><span class="w"> </span>to<span class="w"> </span>env<span class="w"> </span>file
-<a id="__codelineno-60-7" name="__codelineno-60-7" href="#__codelineno-60-7"></a><span class="m">2023</span>-06-27<span class="w"> </span><span class="m">10</span>:55:00<span class="w"> </span>AM<span class="w"> </span>-<span class="w"> </span><span class="o">[</span>INFO<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>DEMO<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>TRIO1<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>count_variants<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>Father<span class="o">]</span>:<span class="w"> </span>number<span class="w"> </span>of<span class="w"> </span>examples<span class="w"> </span>made<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="m">75</span>,902
-<a id="__codelineno-60-8" name="__codelineno-60-8" href="#__codelineno-60-8"></a><span class="m">2023</span>-06-27<span class="w"> </span><span class="m">10</span>:55:00<span class="w"> </span>AM<span class="w"> </span>-<span class="w"> </span><span class="o">[</span>INFO<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>DEMO<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>TRIO1<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>count_variants<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>Father<span class="o">]</span>:<span class="w"> </span>calculated<span class="w"> </span>examples<span class="w"> </span>per<span class="w"> </span>variant<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="m">0</span>.664
-<a id="__codelineno-60-9" name="__codelineno-60-9" href="#__codelineno-60-9"></a><span class="m">2023</span>-06-27<span class="w"> </span><span class="m">10</span>:55:00<span class="w"> </span>AM<span class="w"> </span>-<span class="w"> </span><span class="o">[</span>INFO<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>DEMO<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>TRIO1<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>count_variants<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>Father<span class="o">]</span>:<span class="w"> </span>default<span class="w"> </span>examples<span class="w"> </span>per<span class="w"> </span>variant<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="m">1</span>.5
-<a id="__codelineno-60-10" name="__codelineno-60-10" href="#__codelineno-60-10"></a><span class="m">2023</span>-06-27<span class="w"> </span><span class="m">10</span>:55:00<span class="w"> </span>AM<span class="w"> </span>-<span class="w"> </span><span class="o">[</span>INFO<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>DEMO<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>TRIO1<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>count_variants<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>Father<span class="o">]</span>:<span class="w"> </span>difference<span class="w"> </span>between<span class="w"> </span>default<span class="w"> </span>and<span class="w"> </span>calculated<span class="w"> </span>examples<span class="w"> </span>per<span class="w"> </span>variant<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="m">0</span>.836
-<a id="__codelineno-60-11" name="__codelineno-60-11" href="#__codelineno-60-11"></a><span class="m">2023</span>-06-27<span class="w"> </span><span class="m">10</span>:55:00<span class="w"> </span>AM<span class="w"> </span>-<span class="w"> </span><span class="o">[</span>INFO<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>DEMO<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>TRIO1<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>count_variants<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>Father<span class="o">]</span>:<span class="w"> </span>when<span class="w"> </span>running<span class="w"> </span>TrioTrain<span class="w"> </span>outside<span class="w"> </span>of<span class="w"> </span>this<span class="w"> </span>tutorial,<span class="w"> </span>please<span class="w"> </span>use<span class="w"> </span>--est-examples<span class="o">=</span><span class="m">0</span>.66
-<a id="__codelineno-60-12" name="__codelineno-60-12" href="#__codelineno-60-12"></a><span class="m">2023</span>-06-27<span class="w"> </span><span class="m">10</span>:55:00<span class="w"> </span>AM<span class="w"> </span>-<span class="w"> </span><span class="o">[</span>INFO<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>DEMO<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>TRIO1<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>count_variants<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>Father<span class="o">]</span>:<span class="w"> </span>added<span class="w"> </span><span class="s1">&#39;Est_Examples=0.66&#39;</span><span class="w"> </span>to<span class="w"> </span>env<span class="w"> </span><span class="nv">file</span>
-<a id="__codelineno-60-13" name="__codelineno-60-13" href="#__codelineno-60-13"></a><span class="o">=====</span><span class="w"> </span>end<span class="w"> </span>of<span class="w"> </span>triotrain/model_training/tutorial/estimate.py<span class="w"> </span>@<span class="w"> </span><span class="m">2023</span>-06-27<span class="w">  </span><span class="m">10</span>:55:00<span class="w"> </span><span class="o">=====</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-60-1" name="__codelineno-60-1" href="#__codelineno-60-1"></a><span class="o">=====</span><span class="w"> </span>start<span class="w"> </span>of<span class="w"> </span>triotrain/model_training/tutorial/estimate.py<span class="w"> </span>@<span class="w"> </span><span class="m">2023</span>-06-29<span class="w">  </span><span class="m">11</span>:25:27<span class="w"> </span><span class="o">=====</span>
+<a id="__codelineno-60-2" name="__codelineno-60-2" href="#__codelineno-60-2"></a><span class="m">2023</span>-06-29<span class="w"> </span><span class="m">11</span>:25:27<span class="w"> </span>AM<span class="w"> </span>-<span class="w"> </span><span class="o">[</span>INFO<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>DEMO<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>TRIO1<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>count_variants<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>Father<span class="o">]</span>:<span class="w"> </span>number<span class="w"> </span>of<span class="w"> </span>REF/REF<span class="w"> </span>variants<span class="w"> </span>found<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="m">44</span>,452
+<a id="__codelineno-60-3" name="__codelineno-60-3" href="#__codelineno-60-3"></a><span class="m">2023</span>-06-29<span class="w"> </span><span class="m">11</span>:25:27<span class="w"> </span>AM<span class="w"> </span>-<span class="w"> </span><span class="o">[</span>INFO<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>DEMO<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>TRIO1<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>count_variants<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>Father<span class="o">]</span>:<span class="w"> </span>number<span class="w"> </span>of<span class="w"> </span>PASS<span class="w"> </span>variants<span class="w"> </span>found<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="m">114</span>,332
+<a id="__codelineno-60-4" name="__codelineno-60-4" href="#__codelineno-60-4"></a><span class="m">2023</span>-06-29<span class="w"> </span><span class="m">11</span>:25:28<span class="w"> </span>AM<span class="w"> </span>-<span class="w"> </span><span class="o">[</span>INFO<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>DEMO<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>TRIO1<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>count_variants<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>Father<span class="o">]</span>:<span class="w"> </span>default<span class="w"> </span>maximum<span class="w"> </span>examples<span class="w"> </span>per<span class="w"> </span>region<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="m">200</span>,000
+<a id="__codelineno-60-5" name="__codelineno-60-5" href="#__codelineno-60-5"></a><span class="m">2023</span>-06-29<span class="w"> </span><span class="m">11</span>:25:28<span class="w"> </span>AM<span class="w"> </span>-<span class="w"> </span><span class="o">[</span>INFO<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>DEMO<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>TRIO1<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>count_variants<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>Father<span class="o">]</span>:<span class="w"> </span>default<span class="w"> </span>value<span class="w"> </span><span class="k">for</span><span class="w"> </span>--max-examples<span class="w"> </span>is<span class="w"> </span>appropriate
+<a id="__codelineno-60-6" name="__codelineno-60-6" href="#__codelineno-60-6"></a><span class="m">2023</span>-06-29<span class="w"> </span><span class="m">11</span>:25:28<span class="w"> </span>AM<span class="w"> </span>-<span class="w"> </span><span class="o">[</span>INFO<span class="o">]</span><span class="w"> </span>-<span class="w"> </span>adding<span class="w"> </span><span class="nv">Demo_TotalVariants</span><span class="o">=</span><span class="s1">&#39;114332&#39;</span>
+<a id="__codelineno-60-7" name="__codelineno-60-7" href="#__codelineno-60-7"></a><span class="m">2023</span>-06-29<span class="w"> </span><span class="m">11</span>:25:28<span class="w"> </span>AM<span class="w"> </span>-<span class="w"> </span><span class="o">[</span>INFO<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>DEMO<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>TRIO1<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>count_variants<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>Father<span class="o">]</span>:<span class="w"> </span>added<span class="w"> </span><span class="s1">&#39;Demo_TotalVariants=114332&#39;</span><span class="w"> </span>to<span class="w"> </span>env<span class="w"> </span>file
+<a id="__codelineno-60-8" name="__codelineno-60-8" href="#__codelineno-60-8"></a><span class="m">2023</span>-06-29<span class="w"> </span><span class="m">11</span>:25:28<span class="w"> </span>AM<span class="w"> </span>-<span class="w"> </span><span class="o">[</span>INFO<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>DEMO<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>TRIO1<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>count_variants<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>Father<span class="o">]</span>:<span class="w"> </span>number<span class="w"> </span>of<span class="w"> </span>examples<span class="w"> </span>made<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="m">75</span>,902
+<a id="__codelineno-60-9" name="__codelineno-60-9" href="#__codelineno-60-9"></a><span class="m">2023</span>-06-29<span class="w"> </span><span class="m">11</span>:25:28<span class="w"> </span>AM<span class="w"> </span>-<span class="w"> </span><span class="o">[</span>INFO<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>DEMO<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>TRIO1<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>count_variants<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>Father<span class="o">]</span>:<span class="w"> </span>calculated<span class="w"> </span>examples<span class="w"> </span>per<span class="w"> </span>variant<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="m">0</span>.664
+<a id="__codelineno-60-10" name="__codelineno-60-10" href="#__codelineno-60-10"></a><span class="m">2023</span>-06-29<span class="w"> </span><span class="m">11</span>:25:28<span class="w"> </span>AM<span class="w"> </span>-<span class="w"> </span><span class="o">[</span>INFO<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>DEMO<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>TRIO1<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>count_variants<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>Father<span class="o">]</span>:<span class="w"> </span>prevent<span class="w"> </span>underestimating<span class="w"> </span>which<span class="w"> </span>creates<span class="w"> </span>too<span class="w"> </span>many<span class="w"> </span>examples<span class="w"> </span>per<span class="w"> </span>region<span class="w"> </span>by<span class="w"> </span>rounding<span class="w"> </span>up<span class="w"> </span>to<span class="w"> </span>the<span class="w"> </span>nearest<span class="w"> </span><span class="m">0</span>.5<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="m">1</span>.0
+<a id="__codelineno-60-11" name="__codelineno-60-11" href="#__codelineno-60-11"></a><span class="m">2023</span>-06-29<span class="w"> </span><span class="m">11</span>:25:28<span class="w"> </span>AM<span class="w"> </span>-<span class="w"> </span><span class="o">[</span>INFO<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>DEMO<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>TRIO1<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>count_variants<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>Father<span class="o">]</span>:<span class="w"> </span>default<span class="w"> </span>examples<span class="w"> </span>per<span class="w"> </span>variant<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="m">1</span>.5
+<a id="__codelineno-60-12" name="__codelineno-60-12" href="#__codelineno-60-12"></a><span class="m">2023</span>-06-29<span class="w"> </span><span class="m">11</span>:25:28<span class="w"> </span>AM<span class="w"> </span>-<span class="w"> </span><span class="o">[</span>INFO<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>DEMO<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>TRIO1<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>count_variants<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>Father<span class="o">]</span>:<span class="w"> </span>difference<span class="w"> </span>between<span class="w"> </span>default<span class="w"> </span>and<span class="w"> </span>calculated<span class="w"> </span>examples<span class="w"> </span>per<span class="w"> </span>variant<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="m">0</span>.836
+<a id="__codelineno-60-13" name="__codelineno-60-13" href="#__codelineno-60-13"></a><span class="m">2023</span>-06-29<span class="w"> </span><span class="m">11</span>:25:28<span class="w"> </span>AM<span class="w"> </span>-<span class="w"> </span><span class="o">[</span>INFO<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>DEMO<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>TRIO1<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>count_variants<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>Father<span class="o">]</span>:<span class="w"> </span>when<span class="w"> </span>running<span class="w"> </span>TrioTrain<span class="w"> </span>outside<span class="w"> </span>of<span class="w"> </span>this<span class="w"> </span>tutorial,<span class="w"> </span>please<span class="w"> </span>use<span class="w"> </span><span class="s1">&#39;--est-examples=1.0&#39;</span>
+<a id="__codelineno-60-14" name="__codelineno-60-14" href="#__codelineno-60-14"></a><span class="m">2023</span>-06-29<span class="w"> </span><span class="m">11</span>:25:28<span class="w"> </span>AM<span class="w"> </span>-<span class="w"> </span><span class="o">[</span>INFO<span class="o">]</span><span class="w"> </span>-<span class="w"> </span>adding<span class="w"> </span><span class="nv">Est_Examples</span><span class="o">=</span><span class="s1">&#39;1.0&#39;</span>
+<a id="__codelineno-60-15" name="__codelineno-60-15" href="#__codelineno-60-15"></a><span class="m">2023</span>-06-29<span class="w"> </span><span class="m">11</span>:25:28<span class="w"> </span>AM<span class="w"> </span>-<span class="w"> </span><span class="o">[</span>INFO<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>DEMO<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>TRIO1<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>count_variants<span class="o">]</span><span class="w"> </span>-<span class="w"> </span><span class="o">[</span>Father<span class="o">]</span>:<span class="w"> </span>added<span class="w"> </span><span class="s1">&#39;Est_Examples=1.0&#39;</span><span class="w"> </span>to<span class="w"> </span>env<span class="w"> </span><span class="nv">file</span>
+<a id="__codelineno-60-16" name="__codelineno-60-16" href="#__codelineno-60-16"></a><span class="o">=====</span><span class="w"> </span>end<span class="w"> </span>of<span class="w"> </span>triotrain/model_training/tutorial/estimate.py<span class="w"> </span>@<span class="w"> </span><span class="m">2023</span>-06-29<span class="w">  </span><span class="m">11</span>:25:28<span class="w"> </span><span class="o">=====</span>
 </code></pre></div>
 </details>
 <h2 id="9-run-triotrain-with-a-human-trio">9. Run TrioTrain with a Human Trio</h2>
-<p>Now that we know how to tailor TrioTrain for our non-bovine species (human), we can move forward with starting the pipeline.</p>
+<p>Now that we know how to tailor TrioTrain for our non-bovine species (human), we can move forward with starting the re-training pipeline.</p>
 <p>Run the following at the command line:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-61-1" name="__codelineno-61-1" href="#__codelineno-61-1"></a><span class="c1"># You can add the --dry-run flag to this command to confirm the TrioTrain pipeline runs smoothly</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-61-1" name="__codelineno-61-1" href="#__codelineno-61-1"></a><span class="c1"># You can add the --dry-run flag to this command to confirm the TrioTrain pipeline runs smoothly prior to submitting jobs to the queue</span>
 <a id="__codelineno-61-2" name="__codelineno-61-2" href="#__codelineno-61-2"></a>python3<span class="w"> </span>triotrain/run_trio_train.py<span class="w">                                                                         </span><span class="se">\</span>
 <a id="__codelineno-61-3" name="__codelineno-61-3" href="#__codelineno-61-3"></a><span class="w">    </span>-g<span class="w"> </span>Father<span class="w">                                                                                               </span><span class="se">\</span>
-<a id="__codelineno-61-4" name="__codelineno-61-4" href="#__codelineno-61-4"></a><span class="w">    </span>-s<span class="w"> </span>human<span class="w">                                                                                                </span><span class="se">\</span>
-<a id="__codelineno-61-5" name="__codelineno-61-5" href="#__codelineno-61-5"></a><span class="w">    </span>--est-examples<span class="w"> </span><span class="m">0</span>.66<span class="w">                                                                                     </span><span class="se">\</span>
+<a id="__codelineno-61-4" name="__codelineno-61-4" href="#__codelineno-61-4"></a><span class="w">    </span>--unmapped-reads<span class="w"> </span>chrUn<span class="w">                                                                                  </span><span class="se">\</span>
+<a id="__codelineno-61-5" name="__codelineno-61-5" href="#__codelineno-61-5"></a><span class="w">    </span>--est-examples<span class="w"> </span><span class="m">1</span><span class="w">                                                                                        </span><span class="se">\</span>
 <a id="__codelineno-61-6" name="__codelineno-61-6" href="#__codelineno-61-6"></a><span class="w">    </span>-m<span class="w"> </span>triotrain/model_training/tutorial/GIAB.Human_tutorial_metadata.csv<span class="w">                                   </span><span class="se">\</span>
 <a id="__codelineno-61-7" name="__codelineno-61-7" href="#__codelineno-61-7"></a><span class="w">    </span>-n<span class="w"> </span>GIAB_Trio<span class="w">                                                                                            </span><span class="se">\</span>
 <a id="__codelineno-61-8" name="__codelineno-61-8" href="#__codelineno-61-8"></a><span class="w">    </span>-r<span class="w"> </span>triotrain/model_training/tutorial/resources_used.json<span class="w">                                                </span><span class="se">\</span>
 <a id="__codelineno-61-9" name="__codelineno-61-9" href="#__codelineno-61-9"></a><span class="w">    </span>--num-tests<span class="w"> </span><span class="m">3</span><span class="w">                                                                                           </span><span class="se">\</span>
 <a id="__codelineno-61-10" name="__codelineno-61-10" href="#__codelineno-61-10"></a><span class="w">    </span>--custom-checkpoint<span class="w"> </span>triotrain/model_training/pretrained_models/v1.4.0_withIS_withAF/wgs_af.model.ckpt<span class="w">   </span><span class="se">\</span>
 <a id="__codelineno-61-11" name="__codelineno-61-11" href="#__codelineno-61-11"></a><span class="w">    </span>--output<span class="w"> </span>../TUTORIAL<span class="w">                                                                                    </span><span class="se">\</span>
-<a id="__codelineno-61-12" name="__codelineno-61-12" href="#__codelineno-61-12"></a><span class="w">    </span>--benchmark<span class="w"> </span>--dry-run
+<a id="__codelineno-61-12" name="__codelineno-61-12" href="#__codelineno-61-12"></a><span class="w">    </span>--benchmark
 </code></pre></div>
+<p><a class="md-button" href="../../user-guide/resubmit/">Need to Re-Submit a SLURM job <span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm8-6.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM6.92 6.085h.001a.749.749 0 1 1-1.342-.67c.169-.339.436-.701.849-.977C6.845 4.16 7.369 4 8 4a2.756 2.756 0 0 1 1.637.525c.503.377.863.965.863 1.725 0 .448-.115.83-.329 1.15-.205.307-.47.513-.692.662-.109.072-.22.138-.313.195l-.006.004a6.24 6.24 0 0 0-.26.16.952.952 0 0 0-.276.245.75.75 0 0 1-1.248-.832c.184-.264.42-.489.692-.661.103-.067.207-.132.313-.195l.007-.004c.1-.061.182-.11.258-.161a.969.969 0 0 0 .277-.245C8.96 6.514 9 6.427 9 6.25a.612.612 0 0 0-.262-.525A1.27 1.27 0 0 0 8 5.5c-.369 0-.595.09-.74.187a1.01 1.01 0 0 0-.34.398ZM9 11a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"/></svg></span></a></p>
+<details class="success">
+<summary>Expected Outputs | Baseline WGS.AF:</summary>
+<div class="highlight"><span class="filename">Run at the command line</span><pre><span></span><code><a id="__codelineno-62-1" name="__codelineno-62-1" href="#__codelineno-62-1"></a>ls<span class="w"> </span>../TUTORIAL/baseline_v1.4.0_withIS_withAF/<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>total<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>total
+</code></pre></div>
+<div class="highlight"><span class="filename">Check outputs</span><pre><span></span><code><a id="__codelineno-63-1" name="__codelineno-63-1" href="#__codelineno-63-1"></a>Test1.total.metrics.csv
+<a id="__codelineno-63-2" name="__codelineno-63-2" href="#__codelineno-63-2"></a>Test2.total.metrics.csv
+<a id="__codelineno-63-3" name="__codelineno-63-3" href="#__codelineno-63-3"></a>Test3.total.metrics.csv
+</code></pre></div>
+</details>
+<details class="success">
+<summary>Expected Outputs | Father:</summary>
+<div class="highlight"><span class="filename">Run at the command line</span><pre><span></span><code><a id="__codelineno-64-1" name="__codelineno-64-1" href="#__codelineno-64-1"></a>ls<span class="w"> </span>../TUTORIAL/GIAB_Trio/Human_tutorial/compare_Father/<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>total
+</code></pre></div>
+<div class="highlight"><span class="filename">Check outputs</span><pre><span></span><code><a id="__codelineno-65-1" name="__codelineno-65-1" href="#__codelineno-65-1"></a>Test1.total.metrics.csv
+<a id="__codelineno-65-2" name="__codelineno-65-2" href="#__codelineno-65-2"></a>Test2.total.metrics.csv
+<a id="__codelineno-65-3" name="__codelineno-65-3" href="#__codelineno-65-3"></a>Test3.total.metrics.csv
+</code></pre></div>
+</details>
+<details class="success">
+<summary>Expected Outputs | Mother:</summary>
+<div class="highlight"><span class="filename">Run at the command line</span><pre><span></span><code><a id="__codelineno-66-1" name="__codelineno-66-1" href="#__codelineno-66-1"></a>ls<span class="w"> </span>../TUTORIAL/GIAB_Trio/Human_tutorial/compare_Mother/<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>total
+</code></pre></div>
+<div class="highlight"><span class="filename">Check outputs</span><pre><span></span><code><a id="__codelineno-67-1" name="__codelineno-67-1" href="#__codelineno-67-1"></a>Test1.total.metrics.csv
+<a id="__codelineno-67-2" name="__codelineno-67-2" href="#__codelineno-67-2"></a>Test2.total.metrics.csv
+<a id="__codelineno-67-3" name="__codelineno-67-3" href="#__codelineno-67-3"></a>Test3.total.metrics.csv
+</code></pre></div>
+</details>
+<h2 id="merge-results-per-iteration">Merge Results | Per-Iteration</h2>
+<p>Each <code>Test_.total.metrics.csv</code> output file should contain 57 rows and 2 columns. The metrics within are the raw and proprotional performance metrics from hap.py. After all <code>convert_happy</code> jobs complete, we will then individually merge the per-test results from running the baseline iteration, and both training iterations completed during the GIAB tutorial:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-68-1" name="__codelineno-68-1" href="#__codelineno-68-1"></a><span class="k">for</span><span class="w"> </span>start_i<span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="k">$(</span>seq<span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="m">1</span><span class="k">)</span><span class="p">;</span><span class="w"> </span><span class="k">do</span>
+<a id="__codelineno-68-2" name="__codelineno-68-2" href="#__codelineno-68-2"></a><span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;</span><span class="k">$(</span>date<span class="w"> </span><span class="s1">&#39;+%Y-%m-%d %H:%M:%S&#39;</span><span class="k">)</span><span class="s2"> INFO: merging processed results from hap.py for GIAB run#</span><span class="si">${</span><span class="nv">start_i</span><span class="si">}</span><span class="s2">&quot;</span>
+<a id="__codelineno-68-3" name="__codelineno-68-3" href="#__codelineno-68-3"></a><span class="w">    </span>python3<span class="w"> </span>triotrain/summarize/merge_results.py<span class="w"> </span>--env<span class="w"> </span>../TUTORIAL/GIAB_Trio/envs/run<span class="si">${</span><span class="nv">start_i</span><span class="si">}</span>.env<span class="w"> </span>-g<span class="w"> </span>Father<span class="w"> </span>-m<span class="w"> </span>triotrain/summarize/data/tutorial_metadata.csv
+<a id="__codelineno-68-4" name="__codelineno-68-4" href="#__codelineno-68-4"></a><span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;</span><span class="k">$(</span>date<span class="w"> </span><span class="s1">&#39;+%Y-%m-%d %H:%M:%S&#39;</span><span class="k">)</span><span class="s2"> INFO: finished merging processed results from hap.py for GIAB run#</span><span class="si">${</span><span class="nv">start_i</span><span class="si">}</span><span class="s2">&quot;</span>
+<a id="__codelineno-68-5" name="__codelineno-68-5" href="#__codelineno-68-5"></a><span class="k">done</span>
+</code></pre></div>
+<details class="success">
+<summary>Expected Outputs | Baseline WGS.AF</summary>
+<div class="highlight"><span class="filename">Run at the command line</span><pre><span></span><code><a id="__codelineno-69-1" name="__codelineno-69-1" href="#__codelineno-69-1"></a>ls<span class="w"> </span>../TUTORIAL/baseline_v1.4.0_withIS_withAF/<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>All
+</code></pre></div>
+<div class="highlight"><span class="filename">Check outputs</span><pre><span></span><code><a id="__codelineno-70-1" name="__codelineno-70-1" href="#__codelineno-70-1"></a>DV1.4_WGS.AF_human.AllTests.total.metrics.csv
+</code></pre></div>
+</details>
+<details class="success">
+<summary>Expected Outputs | GIAB Trio1</summary>
+<div class="highlight"><span class="filename">Run at the command line</span><pre><span></span><code><a id="__codelineno-71-1" name="__codelineno-71-1" href="#__codelineno-71-1"></a>ls<span class="w"> </span>../TUTORIAL/GIAB_Trio/summary<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>All
+</code></pre></div>
+<div class="highlight"><span class="filename">Check outputs</span><pre><span></span><code><a id="__codelineno-72-1" name="__codelineno-72-1" href="#__codelineno-72-1"></a>Trio1.AllTests.total.metrics.csv
+</code></pre></div>
+</details>
+<h2 id="clean-up-directories-per-iteration">Clean Up Directories | Per-Iteration</h2>
+<p>Running TrioTrain produces a large volume of temporary files. Run the following at the command line to free up space:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-73-1" name="__codelineno-73-1" href="#__codelineno-73-1"></a><span class="k">for</span><span class="w"> </span>start_i<span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="k">$(</span>seq<span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="m">1</span><span class="k">)</span><span class="p">;</span><span class="w"> </span><span class="k">do</span>
+<a id="__codelineno-73-2" name="__codelineno-73-2" href="#__codelineno-73-2"></a><span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;</span><span class="k">$(</span>date<span class="w"> </span><span class="s1">&#39;+%Y-%m-%d %H:%M:%S&#39;</span><span class="k">)</span><span class="s2"> INFO: removing temp files for GIAB run#</span><span class="si">${</span><span class="nv">start_i</span><span class="si">}</span><span class="s2">&quot;</span>
+<a id="__codelineno-73-3" name="__codelineno-73-3" href="#__codelineno-73-3"></a><span class="w">    </span>python3<span class="w"> </span>triotrain/model_training/slurm/clean_tmp.py<span class="w"> </span>--env<span class="w"> </span>../TUTORIAL/GIAB_Trio/envs/run<span class="si">${</span><span class="nv">start_i</span><span class="si">}</span>.env
+<a id="__codelineno-73-4" name="__codelineno-73-4" href="#__codelineno-73-4"></a><span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;</span><span class="k">$(</span>date<span class="w"> </span><span class="s1">&#39;+%Y-%m-%d %H:%M:%S&#39;</span><span class="k">)</span><span class="s2"> INFO: finished removing temp files for GIAB run#</span><span class="si">${</span><span class="nv">start_i</span><span class="si">}</span><span class="s2">&quot;</span>
+<a id="__codelineno-73-5" name="__codelineno-73-5" href="#__codelineno-73-5"></a><span class="k">done</span>
+</code></pre></div>
+<details class="success">
+<summary>Expected Outputs | Baseline WGS.AF</summary>
+<div class="highlight"><span class="filename">Run at the command line</span><pre><span></span><code><a id="__codelineno-74-1" name="__codelineno-74-1" href="#__codelineno-74-1"></a>du<span class="w"> </span>-h<span class="w"> </span>../TUTORIAL/baseline_v1.4.0_withIS_withAF/
+</code></pre></div>
+<div class="highlight"><span class="filename">Check outputs</span><pre><span></span><code><a id="__codelineno-75-1" name="__codelineno-75-1" href="#__codelineno-75-1"></a>700M<span class="w">    </span>../TUTORIAL/baseline_v1.4.0_withIS_withAF/
+</code></pre></div>
+</details>
+<details class="success">
+<summary>Expected Outputs | GIAB Trio1</summary>
+<div class="highlight"><span class="filename">Run at the command line</span><pre><span></span><code><a id="__codelineno-76-1" name="__codelineno-76-1" href="#__codelineno-76-1"></a>du<span class="w"> </span>-h<span class="w"> </span>../TUTORIAL/GIAB_Trio
+<a id="__codelineno-76-2" name="__codelineno-76-2" href="#__codelineno-76-2"></a><span class="sb">``</span>
+<a id="__codelineno-76-3" name="__codelineno-76-3" href="#__codelineno-76-3"></a>
+<a id="__codelineno-76-4" name="__codelineno-76-4" href="#__codelineno-76-4"></a><span class="sb">```</span>bash<span class="w"> </span><span class="nv">title</span><span class="o">=</span><span class="s2">&quot;Check outputs&quot;</span>
+<a id="__codelineno-76-5" name="__codelineno-76-5" href="#__codelineno-76-5"></a>141M<span class="w">    </span>../TUTORIAL/GIAB_Trio/Human_tutorial/logs
+<a id="__codelineno-76-6" name="__codelineno-76-6" href="#__codelineno-76-6"></a>402M<span class="w">    </span>../TUTORIAL/GIAB_Trio/Human_tutorial/compare_Mother
+<a id="__codelineno-76-7" name="__codelineno-76-7" href="#__codelineno-76-7"></a><span class="m">1</span>.1M<span class="w">    </span>../TUTORIAL/GIAB_Trio/Human_tutorial/train_Mother/eval_Child
+<a id="__codelineno-76-8" name="__codelineno-76-8" href="#__codelineno-76-8"></a>23G<span class="w">     </span>../TUTORIAL/GIAB_Trio/Human_tutorial/train_Mother
+<a id="__codelineno-76-9" name="__codelineno-76-9" href="#__codelineno-76-9"></a>394M<span class="w">    </span>../TUTORIAL/GIAB_Trio/Human_tutorial/test_Father
+<a id="__codelineno-76-10" name="__codelineno-76-10" href="#__codelineno-76-10"></a>298M<span class="w">    </span>../TUTORIAL/GIAB_Trio/Human_tutorial/compare_Father
+<a id="__codelineno-76-11" name="__codelineno-76-11" href="#__codelineno-76-11"></a><span class="m">1</span>.1M<span class="w">    </span>../TUTORIAL/GIAB_Trio/Human_tutorial/train_Father/eval_Child
+<a id="__codelineno-76-12" name="__codelineno-76-12" href="#__codelineno-76-12"></a>23G<span class="w">     </span>../TUTORIAL/GIAB_Trio/Human_tutorial/train_Father
+<a id="__codelineno-76-13" name="__codelineno-76-13" href="#__codelineno-76-13"></a>243G<span class="w">    </span>../TUTORIAL/GIAB_Trio/Human_tutorial/examples
+<a id="__codelineno-76-14" name="__codelineno-76-14" href="#__codelineno-76-14"></a>391M<span class="w">    </span>../TUTORIAL/GIAB_Trio/Human_tutorial/test_Mother
+<a id="__codelineno-76-15" name="__codelineno-76-15" href="#__codelineno-76-15"></a><span class="m">3</span>.1M<span class="w">    </span>../TUTORIAL/GIAB_Trio/Human_tutorial/jobs
+<a id="__codelineno-76-16" name="__codelineno-76-16" href="#__codelineno-76-16"></a>290G<span class="w">    </span>../TUTORIAL/GIAB_Trio/Human_tutorial
+<a id="__codelineno-76-17" name="__codelineno-76-17" href="#__codelineno-76-17"></a>100K<span class="w">    </span>../TUTORIAL/GIAB_Trio/summary
+<a id="__codelineno-76-18" name="__codelineno-76-18" href="#__codelineno-76-18"></a>50K<span class="w">     </span>../TUTORIAL/GIAB_Trio/envs
+<a id="__codelineno-76-19" name="__codelineno-76-19" href="#__codelineno-76-19"></a>290G<span class="w">    </span>../TUTORIAL/GIAB_Trio/
+</code></pre></div>
+</details>
+<p><a class="md-button" href="../../user-guide/mie/">Next - Comparing Models <span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M5 21a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5m1-8h8.5L11 16.5l1.42 1.42L18.34 12l-5.92-5.92L11 7.5l3.5 3.5H6v2Z"/></svg></span></a></p>
 
   <hr>
 <div class="md-source-file">
   <small>
     
       Last update:
-      <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date">June 27, 2023</span>
+      <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date">July 28, 2023</span>
       
     
   </small>
