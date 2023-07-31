@@ -10,7 +10,7 @@ DeepVariant-TrioTrain is an automated pipeline for extending DeepVariant (DV), a
 
 ## Background
 
-The existing DeepVariant models were only trained on human data. Previous work built species-specific DeepVariant models for [mosquito genomes](https://google.github.io/deepvariant/posts/2018-12-05-improved-non-human-variant-calling-using-species-specific-deepvariant-models/) and [the endangered Kākāpō parot](https://www.biorxiv.org/content/10.1101/2022.10.22.513130v1.full). We built TrioTrain (DV-TT) to enable us to build custom DeepVariant models for cattle, bison, and yak genomes. Our custom models also incorporate allele frequency data from over 5,500 published Bovine samples, making DV-TT the first tool to expand [the existing Allele Frequency model](https://doi.org/10.1186/s12859-023-05294-0) into non-human, mammalian genomes. Our work illustrates the limitations of applying models built exclusively with human-genome datasets in other species. Our findings also suggest comparative genomics approaches in deep learning model development offer performance benefits over species-specific models.
+The existing DeepVariant models were only trained on human data. Previous work built species-specific DeepVariant models for [mosquito genomes](https://google.github.io/deepvariant/posts/2018-12-05-improved-non-human-variant-calling-using-species-specific-deepvariant-models/) and [the endangered Kākāpō parrot](https://www.biorxiv.org/content/10.1101/2022.10.22.513130v1.full). We built TrioTrain (DV-TT) to enable us to build custom DeepVariant models for cattle, bison, and yak genomes. Our custom models incorporate allele frequency data from over 5,500 published Bovine samples, making DV-TT the first tool to expand [the existing Allele Frequency model](https://doi.org/10.1186/s12859-023-05294-0) into non-human, mammalian genomes. Our work illustrates the limitations of applying models built exclusively with human-genome datasets in other species. Our findings suggest that comparative genomics approaches in deep learning model development offer performance benefits over species-specific models.
 
 ### How does TrioTrain work?
 
@@ -20,9 +20,9 @@ DV-TT is a SLURM-based, automated pipeline that produces new DV model(s) for ger
 
 Currently, TrioTrain supports initializing training using an existing DV. [An index of compatible models can be found here.](./docs/user-guide/existing_models.md)
 
-Specifically, TrioTrain builds upon the existing DV model for short-read (Illumina) Whole Genome Sequence (WGS) data and optionally, adds population-level allele frequency data from published samples. During model development, DV-TrioTrain iteratively feeds labeled examples from parent-offspring duos. Intuitively, a model trained on both parents should be better at predicting inherited variants in the offspring; therefore, two training rounds are performed for each trio. After re-training, any models built with DV-TrioTrain become an alternative checkpoint with DeepVariant's one-step, single-sample variant caller.
+Specifically, TrioTrain builds upon the existing DV model for short-read (Illumina) Whole Genome Sequence (WGS) data and, optionally, adds population-level allele frequency data from published samples. During model development, DV-TrioTrain iteratively feeds labeled examples from parent-offspring duos. Intuitively, a model trained on both parents should better predict inherited variants in the offspring; therefore, two training rounds are performed for each trio. After re-training, any models built with DV-TrioTrain become an alternative checkpoint with DeepVariant's one-step, single-sample variant caller.
 
-**Assuming the necessary training data for your favorite species already exist, TrioTrain automatically enables creating a custom model.** [Additional details about the required data can be found here.](./docs/user-guide/usage_guide.md)
+**Assuming the necessary training data for your favorite species already exist, TrioTrain automatically enables customizing the DeepVariant model.** [Additional details about the required data can be found here.](./docs/user-guide/usage_guide.md)
 
 ### Why TrioTrain?
 
@@ -48,7 +48,7 @@ Detailed user guides for installation, configuration, and a tutorial walk-throug
 Ryan Poplin, Pi-Chuan Chang, David Alexander, Scott Schwartz, Thomas Colthurst, Alexander Ku, Dan Newburger, Jojo Dijamco, Nam Nguyen, Pegah T. Afshar, Sam S. Gross, Lizzie Dorfman, Cory Y. McLean, and Mark A. DePristo.<br/>
 doi: <https://doi.org/10.1038/nbt.4235>
 
-> [Improving variant calling using population data and deep learning. *BMC Bioinformaticsy* 24, 197 (2023).](https://doi.org/10.1186/s12859-023-05294-0) <br/>
+> [Improving variant calling using population data and deep learning. *BMC Bioinformatics* 24, 197 (2023).](https://doi.org/10.1186/s12859-023-05294-0) <br/>
 Nae-Chyun Chen, Alexey Kolesnikov, Sidharth Goel, Taedong Yun, Pi-Chuan Chang, and Andrew Carroll.<br/>
 doi: <https://doi.org/10.1186/s12859-023-05294-0>
 
