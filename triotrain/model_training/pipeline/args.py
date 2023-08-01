@@ -191,7 +191,7 @@ def collect_args() -> argparse.ArgumentParser:
     parser.add_argument(
         "--use-DT",
         dest="use_deeptrio",
-        help="if True, call_variants and benchmarking will expect trios",
+        help="[WIP] if True, call_variants and benchmarking will expect trios",
         action="store_true",
     )
     # hidden argument
