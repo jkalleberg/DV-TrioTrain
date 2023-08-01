@@ -56,7 +56,10 @@ TrioTrain builds new models by starting with an existing DeepVariant model. The 
 
 Getting started with TrioTrain is straight-foward, but requires some configuration to work on your SLURM-based HPC cluster. The user guides below will walk you through what components require tweaking, depending on your system.
 
-First, change directories to your working directory.
+!!! warning
+  The tutorial walk-through intentionally uses complete human genomes, and will produce ~2 TB of intermediate / output data within the chosen working directory. However, the last step of the tutorial will clean up any temporary files.
+
+First, change directories to your working directory, where DV-TrioTrain will be installed.
 
 ```bash
 cd /path/to/working_dir
