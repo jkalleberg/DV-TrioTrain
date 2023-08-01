@@ -103,6 +103,11 @@ Additionally, there are (3) optional phase names for TrioTrain's supplementary a
 
 The value for each `phase_name` is a nested dictionary that contains key:value pairs of parameters for running SBATCH job files. [You can view valid SBATCH options in the SLURM documentation.](https://slurm.schedmd.com/sbatch.html)
 
+??? example "Example | Resource Config File"
+    ``` title="triotrain/model_training/tutorial/resources_used.json"
+    --8<-- "./triotrain/model_training/tutorial/resources_used.json"
+    ```
+
 ### Providing required data to TrioTrain
 
 Input files are handled by the primary input file for TrioTrain, a metadata file in `.csv` format. This input file includes trio pedigree information, and the absolute file paths for the local data you want to give DeepVariant.
