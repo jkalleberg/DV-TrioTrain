@@ -41,14 +41,14 @@ def collect_args():
         description=__doc__,
         formatter_class=argparse.RawTextHelpFormatter,
     )
-    parser.add_argument(
-        "-M",
-        "--metadata",
-        dest="metadata",
-        type=str,
-        help="[REQUIRED]\ninput file (.csv)\nprovides the list of VCFs to find or produce summary stats",
-        metavar="</path/file>",
-    )
+    # parser.add_argument(
+    #     "-M",
+    #     "--metadata",
+    #     dest="metadata",
+    #     type=str,
+    #     help="[REQUIRED]\ninput file (.csv)\nprovides the list of VCFs to find or produce summary stats",
+    #     metavar="</path/file>",
+    # )
     parser.add_argument(
         "-O",
         "--output",
@@ -106,9 +106,9 @@ def check_args(args: argparse.Namespace, logger: Logger):
     if args.dry_run:
         logger.info("[DRY RUN]: output will display to screen and not write to a file")
 
-    assert (
-        args.metadata
-    ), "missing --metadata; Please provide a file with descriptive data for test samples."
+    # assert (
+    #     args.metadata
+    # ), "missing --metadata; Please provide a file with descriptive data for test samples."
 
     assert (
         args.resource_config
@@ -154,8 +154,8 @@ class Stats:
         """
         Define python variables.
         """
-        self._metadata_input = Path(self.args.metadata)
         self._logger_msg = f"[{self._phase}]"
+        # self._metadata_input = Path(self.args.metadata)
         output = Path(self.args.outpath)
         self._output_path = str(output.parent)
         self._output_name = output.name
@@ -209,19 +209,19 @@ class Stats:
         )
         self._clean_filename = remove_suffixes(self._vcf_file.path)
     
-    def execute(self, command_list: list, type: str, keep_output: bool = False) -> None:
+    def execute(self, command_list: list, type: str, run_interactive: bool = False, keep_output: bool = False) -> None:
         """
         Run a command line subprocess and check the output.
         """
         command_str = " ".join(command_list)
-        if not self.run_iteractively:
+        if not run_interactive:
             self._command_list.append(command_str)
             if self.args.dry_run:
                 self.logger.info(
                     f"[DRY_RUN] - {self._logger_msg}: pretending to add the following line(s) to a SLURM job file |\n'{command_str}'"
                 )
             return
-        elif self.args.dry_run:
+        elif self.args.dry_run and not keep_output:
             self.logger.info(
                 f"[DRY RUN] - {self._logger_msg}: pretending to execute the following | '{command_str}'"
             )
@@ -251,7 +251,7 @@ class Stats:
                 self.logger.error(f"{self._logger_msg}: {result.stdout}")
                 raise ChildProcessError(f"unable to complete '{type}'")
             elif keep_output and result.returncode == 0:
-                output_file_contents = str(result.stdout).split("\n")
+                self._output_file_contents = str(result.stdout).strip().split("\n")
                 # self._mie_metrics.write_list(output_file_contents)
                 # self.handle_mie_data(input=output_file_contents)
     
