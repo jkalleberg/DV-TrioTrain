@@ -3,10 +3,10 @@
 description: produce a Trio VCF, then give to 'rtg-tools mendelian' to calculate Mendelian Inheritance Error (MIE) Rate, saved in a log file.
 
 example:
-    python3 triotrain/summarize/mie.py                           \\
-        --metadata metadata/230515_mie_rate_inputs.csv           \\
-        --output ../TRIO_TRAINING_OUTPUTS/final_results/230213_mendelian.csv           \\
-        --resources resource_configs/221205_resources_used.json                        \\
+    python3 triotrain/summarize/mie.py                                                  \\
+        --metadata metadata/230515_mie_rate_inputs.csv                                  \\
+        --output ../TRIO_TRAINING_OUTPUTS/final_results/230213_mendelian.csv            \\
+        --resources resource_configs/221205_resources_used.json                         \\
         --dry-run
 """
 
@@ -43,19 +43,35 @@ def collect_args():
         formatter_class=argparse.RawTextHelpFormatter,
     )
     parser.add_argument(
-        "-m",
-        "--metadata",
-        dest="metadata",
+        "-e",
+        "--env-file",
+        dest="env_file",
+        help="[REQUIRED]\ninput file (.env)\nprovides environment variables",
         type=str,
-        help="[REQUIRED]\ninput file (.csv)\nprovides the list of VCFs to find or produce summary stats",
         metavar="</path/file>",
     )
+    # parser.add_argument(
+    #     "-m",
+    #     "--metadata",
+    #     dest="metadata",
+    #     type=str,
+    #     help="[REQUIRED]\ninput file (.csv)\nprovides the list of VCFs to find or produce summary stats",
+    #     metavar="</path/file>",
+    # )
     parser.add_argument(
         "-o",
         "--output",
         dest="outpath",
         type=str,
         help="[REQUIRED]\noutput file (.csv)\nwhere to save the resulting summary stats",
+        metavar="</path/file>",
+    )
+    parser.add_argument(
+        "-p",
+        "--pedigree",
+        dest="pedigree",
+        type=str,
+        help="[REQUIRED]\ninput file (.csv)\ndefines the pedigree relationships between samples",
         metavar="</path/file>",
     )
     parser.add_argument(
@@ -94,7 +110,17 @@ def collect_args():
         help="if True, display commands to the screen",
         action="store_true",
     )
-    return parser.parse_args()
+    # return parser.parse_args()
+    return parser.parse_args([
+        "-e",
+        "../TUTORIAL/GIAB_Trio/envs/run0.env",
+        "-o",
+        "../TUTORIAL/GIAB_Trio/summary/230731_mie.csv",
+        "-r",
+        "triotrain/model_training/tutorial/resources_used.json",
+        "-p",
+        "triotrain/model_training/tutorial/GIAB.Human_tutorial_pedigree.csv",
+        "--dry-run"])
 
 
 @dataclass
@@ -1126,34 +1152,37 @@ class MIE:
         Combine all the steps into a single command.
         """
         self._stats.load_variables()
-        self._stats.load_metadata()
         self.set_threshold()
-        self.process_multiple_samples()
 
-        if self.args.debug:
-            self.logger.debug(
-                f"[{self._stats._phase}]: MIE SUBMITTED = {self._num_submitted}"
-            )
-            self.logger.debug(
-                f"[{self._stats._phase}]: MIE SKIPPED = {self._num_skipped}"
-            )
-            self.logger.debug(
-                f"[{self._stats._phase}]: MIE PROCESSED = {self._num_processed}"
-            )
-            self.logger.debug(
-                f"[{self._stats._phase}]: STATS SUBMITTED = {self._stats._num_submitted}"
-            )
-            self.logger.debug(
-                f"[{self._stats._phase}]: STATS SKIPPED = {self._stats._num_skipped}"
-            )
-            self.logger.debug(
-                f"[{self._stats._phase}]: STATS PROCESSED = {self._stats._num_processed}"
-            )
-            self.logger.debug(
-                f"[{self._stats._phase}]: MIE TOTAL = {self._stats._total_lines}"
-            )
+        breakpoint()
+        # self._stats.load_metadata()
+        
+        # self.process_multiple_samples()
 
-        self.check_submission()
+        # if self.args.debug:
+        #     self.logger.debug(
+        #         f"[{self._stats._phase}]: MIE SUBMITTED = {self._num_submitted}"
+        #     )
+        #     self.logger.debug(
+        #         f"[{self._stats._phase}]: MIE SKIPPED = {self._num_skipped}"
+        #     )
+        #     self.logger.debug(
+        #         f"[{self._stats._phase}]: MIE PROCESSED = {self._num_processed}"
+        #     )
+        #     self.logger.debug(
+        #         f"[{self._stats._phase}]: STATS SUBMITTED = {self._stats._num_submitted}"
+        #     )
+        #     self.logger.debug(
+        #         f"[{self._stats._phase}]: STATS SKIPPED = {self._stats._num_skipped}"
+        #     )
+        #     self.logger.debug(
+        #         f"[{self._stats._phase}]: STATS PROCESSED = {self._stats._num_processed}"
+        #     )
+        #     self.logger.debug(
+        #         f"[{self._stats._phase}]: MIE TOTAL = {self._stats._total_lines}"
+        #     )
+
+        # self.check_submission()
 
 
 def __init__():
@@ -1166,14 +1195,16 @@ def __init__():
     # Collect start time
     Wrapper(__file__, "start").wrap_script(timestamp())
 
+    print("ENV:", args.env_file)
+
     # Create error log
-    current_file = path.basename(__file__)
-    module_name = path.splitext(current_file)[0]
+    current_file = p.basename(__file__)
+    module_name = p.splitext(current_file)[0]
     logger = get_logger(module_name)
 
     try:
         # Check command line args
-        check_args(args, logger)
+        # check_args(args, logger)
         MIE(args, logger).run()
     except AssertionError as E:
         logger.error(E)

@@ -41,14 +41,14 @@ def collect_args():
         description=__doc__,
         formatter_class=argparse.RawTextHelpFormatter,
     )
-    parser.add_argument(
-        "-M",
-        "--metadata",
-        dest="metadata",
-        type=str,
-        help="[REQUIRED]\ninput file (.csv)\nprovides the list of VCFs to find or produce summary stats",
-        metavar="</path/file>",
-    )
+    # parser.add_argument(
+    #     "-M",
+    #     "--metadata",
+    #     dest="metadata",
+    #     type=str,
+    #     help="[REQUIRED]\ninput file (.csv)\nprovides the list of VCFs to find or produce summary stats",
+    #     metavar="</path/file>",
+    # )
     parser.add_argument(
         "-O",
         "--output",
@@ -106,9 +106,9 @@ def check_args(args: argparse.Namespace, logger: Logger):
     if args.dry_run:
         logger.info("[DRY RUN]: output will display to screen and not write to a file")
 
-    assert (
-        args.metadata
-    ), "missing --metadata; Please provide a file with descriptive data for test samples."
+    # assert (
+    #     args.metadata
+    # ), "missing --metadata; Please provide a file with descriptive data for test samples."
 
     assert (
         args.resource_config
@@ -154,7 +154,7 @@ class Stats:
         """
         Define python variables.
         """
-        self._metadata_input = Path(self.args.metadata)
+        # self._metadata_input = Path(self.args.metadata)
         self._logger_msg = f"[{self._phase}]"
         output = Path(self.args.outpath)
         self._output_path = str(output.parent)
