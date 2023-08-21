@@ -163,3 +163,6 @@ shuffle_tfrecords_beam.py
 *.md5
 *.csi
 *.coverage
+
+# model files
+*model.ckpt.*
