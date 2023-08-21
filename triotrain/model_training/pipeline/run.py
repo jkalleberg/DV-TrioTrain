@@ -858,11 +858,11 @@ class RunTrioTrain:
             [self.est_examples],
         )
 
-        # create the default regions_file for testing, if necessary
-        if not self.itr.default_region_file.is_file():
+        # create the default regions_file for testing, if necessary        
+        if not self.itr.dryrun_mode and (self.itr.default_region_file is None or not self.itr.default_region_file.is_file()):
             regions.write_autosomes_withX_regions(
                 output_file_name=f"{self.itr._reference_genome.stem}_autosomes_withX.bed"
-            )
+            )            
 
         if useDT:
             call_vars_job_nums = None
