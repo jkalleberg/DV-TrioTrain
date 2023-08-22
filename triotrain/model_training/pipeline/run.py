@@ -489,6 +489,19 @@ class RunTrioTrain:
             else:
                 genome = self.itr.eval_genome
 
+            regions = MakeRegions(
+                    self.itr,
+                    self.max_examples,
+                    self.est_examples,
+                    train_mode=use_training_genome,
+                )
+
+            # create the default regions_file for testing, if necessary
+            if self.itr.default_region_file is None or not self.itr.default_region_file.is_file():
+                regions.write_autosomes_withX_regions(
+                    output_file_name=f"{self.itr._reference_genome.stem}_autosomes_withX.bed"
+                )
+
             # --- Create Shuffling Regions for Non-Baseline Runs --- ##
             if (
                 self.itr.current_genome_num != 0
@@ -498,19 +511,6 @@ class RunTrioTrain:
                 self.itr.logger.info(
                     f"{self.itr._mode_string} - [region_shuffling] - [{genome}]: --use-regions-shuffle is set"
                 )
-
-                regions = MakeRegions(
-                    self.itr,
-                    self.max_examples,
-                    self.est_examples,
-                    train_mode=use_training_genome,
-                )
-
-                # create the default regions_file for testing, if necessary
-                if not self.itr.default_region_file.is_file():
-                    regions.write_autosomes_withX_regions(
-                        output_file_name=f"{self.itr._reference_genome.stem}_autosomes_withX.bed"
-                    )
 
                 # make the regions_shuffling bed files
                 current_itr = regions.run()
@@ -858,11 +858,14 @@ class RunTrioTrain:
             [self.est_examples],
         )
 
-        # create the default regions_file for testing, if necessary        
-        if not self.itr.dryrun_mode and (self.itr.default_region_file is None or not self.itr.default_region_file.is_file()):
+        # create the default regions_file for testing, if necessary
+        if not self.itr.dryrun_mode and (
+            self.itr.default_region_file is None
+            or not self.itr.default_region_file.is_file()
+        ):
             regions.write_autosomes_withX_regions(
                 output_file_name=f"{self.itr._reference_genome.stem}_autosomes_withX.bed"
-            )            
+            )
 
         if useDT:
             call_vars_job_nums = None
@@ -899,7 +902,7 @@ class RunTrioTrain:
                 else:
                     self.itr.logger.info(
                         f"============ SKIPPING {self.itr._mode_string} - [test_model] - [{self.itr.train_genome}] ============"
-                    ) 
+                    )
                 return
             elif self.test_model._outputs_exist is False:
                 self.test_model.find_outputs(find_all=True)
