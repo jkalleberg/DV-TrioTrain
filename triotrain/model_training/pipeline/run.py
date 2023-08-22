@@ -579,7 +579,6 @@ class RunTrioTrain:
                         )
 
                     examples_job_nums = self.make_examples.run()
-                    breakpoint()
 
                     # Determine if any 'make_examples' jobs were submitted
                     if examples_job_nums is None:
@@ -637,7 +636,6 @@ class RunTrioTrain:
                         self.check_next_phase(total_jobs=self._n_regions, genome=genome)
 
                     beam_job_nums = self.shuffle_examples.run()
-                    breakpoint()
 
                     if beam_job_nums is None:
                         no_dependencies_required = True
@@ -693,7 +691,6 @@ class RunTrioTrain:
                             self.check_next_phase(total_jobs=1, genome=genome)
 
                         output = self.re_shuffle.run()
-                        breakpoint()
 
                         if output is not None:
                             self.itr = output
@@ -798,7 +795,6 @@ class RunTrioTrain:
                 exit(1)
 
         train_job_num = self.re_training.run()
-        breakpoint()
 
         # Determine if a 'train_eval' job was submitted
         if train_job_num is not None:
@@ -831,7 +827,6 @@ class RunTrioTrain:
             self.check_next_phase(total_jobs=1, genome=self.itr.train_genome)
 
         self.itr = self.select_ckpt.run()
-        breakpoint()
 
         # Determine if a 'select-ckpt' job was submitted
         no_dependencies_required = check_if_all_same(
@@ -913,7 +908,6 @@ class RunTrioTrain:
                 )
 
             call_vars_job_nums = self.test_model.run()
-            breakpoint()
 
         # Determine if any 'call_variants' jobs were submitted
         if call_vars_job_nums is None:
@@ -954,7 +948,6 @@ class RunTrioTrain:
             )
 
         compare_job_nums = self.compare_tests.run()
-        breakpoint()
 
         # Determine if any 'compare_happy' jobs were submitted
         if compare_job_nums is None:
@@ -987,7 +980,6 @@ class RunTrioTrain:
         self.convert_results.double_check(phase_to_check="process_happy", find_all=True)
 
         convert_job_nums = self.convert_results.run()
-        breakpoint()
 
         # Determine if any 'convert_happy' jobs were submitted
         no_dependencies_required = check_if_all_same(convert_job_nums, None)
