@@ -154,7 +154,7 @@ class ReShuffle:
             itr=self.itr, slurm_resources={}, model_label="", train_mode=self.train_mode
         )
         self.re_shuffling.set_genome()
-        self.re_shuffling.find_outputs(phase="find_outputs", find_all=True)
+        self.re_shuffling.find_outputs(phase="find_outputs")
 
         if self.itr.demo_mode:
             self._total_regions = 1
