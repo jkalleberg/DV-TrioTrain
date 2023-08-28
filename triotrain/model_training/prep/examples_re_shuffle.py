@@ -208,7 +208,7 @@ class ReShuffleExamples:
 
         if slurm_job.check_sbatch_file():
             if (
-                self.re_shuffle_job_num[0] is not None
+                not self._ignoring_restart_jobs
                 or not self._ignoring_beam_shuffle
             ) and self.overwrite:
                 self.itr.logger.info(
