@@ -276,19 +276,27 @@ class TrainEval:
         if self._gpu_mem is None:
             self._per_gpu_mem = None
             self._ntasks_per_gpu = int(floor(int(self._total_ntasks) / 2))
-        elif int(self._gpu_mem) == 0:
-            self._per_gpu_mem = "50G"
-            if self.itr.debug_mode:
-                self.itr.logger.debug(
-                    f"{self.logger_msg}: exclusively using all mem across 2 GPU cards"
-                )
         elif isinstance(self._gpu_mem, str):
             mem_value = digits_only.search(self._gpu_mem)
-            mem_unit = letters_only.search(self._gpu_mem)
-            if mem_value and mem_unit:
-                unit = str(mem_unit.group())
+            if mem_value:
                 total_mem = int(mem_value.group())
+            else:
+                total_mem = 0
+
+            mem_unit = letters_only.search(self._gpu_mem)
+            if mem_unit:
+                unit = str(mem_unit.group())
+
+            if total_mem == 0:
+                self._per_gpu_mem = "50G"
+                if self.itr.debug_mode:
+                    self.itr.logger.debug(
+                        f"{self.logger_msg}: dividing 100G mem across 2 GPU cards to ensure exclusive usage"
+                    )
+            elif mem_value and mem_unit:
                 self._per_gpu_mem = f"{int(total_mem/ 2)}{unit}"
+            elif mem_value:
+                self._per_gpu_mem = f"{int(total_mem/ 2)}"
             else:
                 self.itr.logger.warning(
                     f"{self.logger_msg}: unexpected input format for gpu_mem: [{type(self._gpu_mem)}={self._gpu_mem}]"
@@ -297,7 +305,9 @@ class TrainEval:
         else:
             self._per_gpu_mem = int(self._gpu_mem / 2)
 
-        if self._cpu_mem is not None:
+        if self._cpu_mem is None:
+            self._per_cpu_mem = None
+        else:
             if isinstance(self._cpu_mem, str):
                 mem_value = digits_only.search(self._cpu_mem)
                 mem_unit = letters_only.search(self._cpu_mem)
@@ -467,6 +477,7 @@ class TrainEval:
                 slurm_job.display_job()
             else:
                 slurm_job.write_job()
+        breakpoint()
 
         if not self.overwrite and self._ignoring_re_shuffle:
             self.itr.logger.info(
