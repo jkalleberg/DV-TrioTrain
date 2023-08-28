@@ -477,7 +477,6 @@ class TrainEval:
                 slurm_job.display_job()
             else:
                 slurm_job.write_job()
-        breakpoint()
 
         if not self.overwrite and self._ignoring_re_shuffle:
             self.itr.logger.info(
