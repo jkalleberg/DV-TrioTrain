@@ -16,6 +16,7 @@ from typing import Union
 from helpers.environment import Env
 from helpers.utils import create_deps
 from helpers.outputs import check_if_output_exists, check_expected_outputs
+from model_training.pipeline.setup import Setup
 
 
 @dataclass
@@ -25,6 +26,7 @@ class Iteration:
     """
 
     # required values
+    pipeline: Setup
     current_trio_num: Union[int, str, None]
     next_trio_num: Union[int, str, None]
     current_genome_num: Union[int, None]
