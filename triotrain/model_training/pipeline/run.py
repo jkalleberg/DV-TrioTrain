@@ -491,8 +491,9 @@ class RunTrioTrain:
 
             # skip the child on the second parent for multi-iteration runs only!
             if (self.itr.pipeline.meta.num_of_iterations > 2 and self.itr.current_genome_num % 2 == 0 and not use_training_genome):
-                print("SKIPPING CHILD NOW!")
-                breakpoint()
+                self.itr.logger.info(
+                    f"{self.itr._mode_string} - [data_prep_jobs] - [{genome}]: avoiding duplicate Child jobs... SKIPPING AHEAD"
+                )
                 return
 
             regions = MakeRegions(
