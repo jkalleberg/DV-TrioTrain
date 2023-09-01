@@ -606,8 +606,8 @@ class MakeExamples:
                     )  # THIS HAS TO BE +1 to avoid starting with a region0
 
                     self.set_region(current_region=self.job_num)
-                    if not self.itr.demo_mode:
-                        self.find_outputs()
+                    # if not self.itr.demo_mode:
+                    #     self.find_outputs()
                     if skip_re_runs or not self._outputs_exist:
                         self.submit_job(
                             msg=msg,
@@ -633,8 +633,8 @@ class MakeExamples:
                     r + 1
                 )  # THIS HAS TO BE +1 to avoid starting with a region0
                 self.set_region(current_region=self.job_num)
-                if not self.itr.demo_mode:
-                    self.find_outputs()
+                # if not self.itr.demo_mode:
+                #     self.find_outputs()
                 self.submit_job(
                     msg=msg,
                     dependency_index=r, total_jobs=int(self._total_regions)

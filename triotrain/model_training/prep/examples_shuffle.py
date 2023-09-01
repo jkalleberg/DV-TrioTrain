@@ -721,8 +721,8 @@ class BeamShuffleExamples:
                     )  # THIS HAS TO BE +1 to avoid starting with a region0
 
                     self.set_region(current_region=self.job_num)
-                    if not self.itr.demo_mode:
-                        self.find_outputs()
+                    # if not self.itr.demo_mode:
+                    #     self.find_outputs()
 
                     if not check_if_all_same(self.make_examples_jobs, None):
                         self.submit_job(
@@ -757,7 +757,7 @@ class BeamShuffleExamples:
                     r + 1
                 )  # THIS HAS TO BE +1 to avoid starting with a region0
                 self.set_region(current_region=self.job_num)
-                self.find_outputs()
+                # self.find_outputs()
                 self.submit_job(msg=msg, dependency_index=r, total_jobs=int(self._total_regions))
 
         self.check_submissions()
