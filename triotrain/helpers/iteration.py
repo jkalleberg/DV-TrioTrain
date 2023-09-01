@@ -120,11 +120,11 @@ class Iteration:
             self.default_region_file = Path(
                 str(self.env.contents["RegionsFile_Path"])
             ) / str(self.env.contents["RegionsFile_File"])
-        else:
-
-            _regex = r"\w+_autosomes_withX.bed"
+        elif self.default_region_file is None:
             reference_dir = Path(self.env.contents["RefFASTA_Path"])
             self._reference_genome = reference_dir / self.env.contents["RefFASTA_File"]
+            _regex = r"\w+_autosomes_withX.bed"
+
             (
                 default_exists,
                 outputs_found,
