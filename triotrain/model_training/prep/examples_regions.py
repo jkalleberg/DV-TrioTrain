@@ -348,6 +348,7 @@ class MakeRegions:
                 f"{self._genome}_NumRegionFiles",
                 str(self._num_outputs),
                 dryrun_mode=self.itr.dryrun_mode,
+                msg=f"{self.itr._mode_string} - [{self._phase}] - [{self._genome}]: "
             )
 
             self.itr.logger.info(
@@ -499,9 +500,7 @@ class MakeRegions:
                 f"{self._genome}_TotalTruth",
                 str(self._total_pass_variants),
                 dryrun_mode=self.itr.dryrun_mode,
-            )
-            self.itr.logger.info(
-                f"{self.itr._mode_string} - [{self._phase}] - [{self._genome}]: adding '{self._genome}_TotalTruth={self._total_pass_variants}' to env file"
+                msg=f"{self.itr._mode_string} - [{self._phase}] - [{self._genome}]: "
             )
         else:
             self.itr.logger.error(

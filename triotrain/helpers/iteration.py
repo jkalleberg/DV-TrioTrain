@@ -105,6 +105,9 @@ class Iteration:
 
         if self.train_genome == "None":
             self.train_genome = None
+            logging_msg = f"{self._mode_string} - [region_shuffling]"
+        else:
+            logging_msg = f"{self._mode_string} - [region_shuffling] - [{self.train_genome}]"
 
         # THIS IS THE REGION FILE THAT WILL BE USED FOR CALLING VARIANTS
         # either provided as part of the metadata.csv,
@@ -116,6 +119,7 @@ class Iteration:
                 str(self.env.contents["RegionsFile_Path"])
             ) / str(self.env.contents["RegionsFile_File"])
         else:
+
             _regex = r"\w+_autosomes_withX.bed"
             reference_dir = Path(self.env.contents["RefFASTA_Path"])
             self._reference_genome = reference_dir / self.env.contents["RefFASTA_File"]
@@ -124,39 +128,24 @@ class Iteration:
                 outputs_found,
                 files,
             ) = check_if_output_exists(
-                _regex,
-                "default region file",
-                reference_dir,
-                f"{self._mode_string} - [region_shuffling]",
-                self.logger,
+                match_pattern=_regex,
+                file_type="default region file",
+                search_path=reference_dir,
+                msg=logging_msg,
+                logger=self.logger,
                 debug_mode=self.debug_mode,
                 dryrun_mode=self.dryrun_mode,
             )
             if default_exists:
                 missing_default_file = check_expected_outputs(
-                    outputs_found,
-                    1,
-                    f"{self._mode_string} - [region_shuffling]",
-                    "default region file",
-                    self.logger,
+                    outputs_found=outputs_found,
+                    outputs_expected=1,
+                    msg=logging_msg,
+                    file_type="default region file",
+                    logger=self.logger,
                 )
                 if not missing_default_file:
                     self.default_region_file = reference_dir / files[0]
-        
-        if self.debug_mode:
-            self.logger.debug(
-                f"{self._mode_string}: current_genome_num | {self.current_genome_num}"
-            )
-            self.logger.debug(
-                f"{self._mode_string}: train_genome | {self.train_genome}"
-            )
-            self.logger.debug(
-                f"{self._mode_string}: current_trio_num | {self.current_trio_num}"
-            )
-            examples = self.env.contents["ExamplesDir"]
-            self.logger.debug(
-                f"{self._mode_string}: examples_dir | {examples}"
-            )
 
         if self.demo_mode and self.current_trio_num is not None:
             self.train_num_regions = 1

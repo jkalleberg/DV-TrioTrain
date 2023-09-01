@@ -112,11 +112,15 @@ class Env:
         msg : Union[str, None], optional
             label for logging, by default None
         """
+        if msg is not None:
+            logging_msg = msg
+        else:
+            logging_msg = self._logger_msg
         if update and key in self.contents:
             old_value = get_key(self.env_file, key)
             if old_value == value:
                 if self.debug_mode:
-                    self.logger.debug(f"{self._logger_msg}{self._logger_msg}SKIPPING {key}='{value}'")
+                    self.logger.debug(f"{logging_msg}SKIPPING {key}='{value}'")
                 return
             else:
                 self.updated_keys[key] = value
@@ -131,7 +135,7 @@ class Env:
 
         # Either save the variable within the Env object,
         # Or write it to the .env file
-        self.logger.info(f"{self._logger_msg}{description}")
+        self.logger.info(f"{logging_msg}{description}")
         if dryrun_mode:
             self.contents[key] = value
         else:            
@@ -147,7 +151,7 @@ class Env:
 
             if dotenv_output is None:
                 self.logger.error(
-                    f"{self._logger_msg}{key}='{value}' was not added to '{Path(self.env_file).name}'"
+                    f"{logging_msg}{key}='{value}' was not added to '{Path(self.env_file).name}'"
                 )
 
     def load(
