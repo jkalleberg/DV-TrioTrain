@@ -256,7 +256,7 @@ def run_trio_train(eval_genome="Child") -> None:
             output_file = None
 
         # Determine which model checkpoint to use as initial weights
-        initalize_weights(setup=pipeline, itr=current_itr, logging_msg=logging_msg)
+        initalize_weights(setup=pipeline, itr=current_itr, logging_msg=f"{logging_msg}: ")
 
         ### Create GIAB Benchmarkinging Runs --------------------------###
         if current_itr.args.first_genome is None:
