@@ -105,13 +105,15 @@ class Iteration:
 
         if self.train_genome == "None":
             self.train_genome = None
-            logging_msg = f"{self._mode_string} - [region_shuffling]"
-        else:
-            logging_msg = f"{self._mode_string} - [region_shuffling] - [{self.train_genome}]"
 
         # THIS IS THE REGION FILE THAT WILL BE USED FOR CALLING VARIANTS
         # either provided as part of the metadata.csv,
         # or create species-specific defaults
+        if self.train_genome is None:
+            logging_msg = f"{self._mode_string} - [setup]"
+        else:
+            logging_msg = f"{self._mode_string} - [setup] - [{self.train_genome}]"
+
         if all(
             key in self.env.contents for key in ("RegionsFile_Path", "RegionsFile_File")
         ):
@@ -129,7 +131,7 @@ class Iteration:
                 files,
             ) = check_if_output_exists(
                 match_pattern=_regex,
-                file_type="default region file",
+                file_type="default BED file",
                 search_path=reference_dir,
                 msg=logging_msg,
                 logger=self.logger,
@@ -141,7 +143,7 @@ class Iteration:
                     outputs_found=outputs_found,
                     outputs_expected=1,
                     msg=logging_msg,
-                    file_type="default region file",
+                    file_type="default BED file",
                     logger=self.logger,
                 )
                 if not missing_default_file:
