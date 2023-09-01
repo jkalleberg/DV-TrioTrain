@@ -205,7 +205,7 @@ def run_trio_train(eval_genome="Child") -> None:
             "TotalTests",
             str(pipeline.meta.num_tests),
             dryrun_mode=current_itr.dryrun_mode,
-            msg=f"{logging_msg}: ",
+            msg=logging_msg,
         )
 
         current_itr.check_working_dir()
@@ -256,7 +256,7 @@ def run_trio_train(eval_genome="Child") -> None:
             output_file = None
 
         # Determine which model checkpoint to use as initial weights
-        initalize_weights(setup=pipeline, itr=current_itr, logging_msg=f"{logging_msg}: ")
+        initalize_weights(setup=pipeline, itr=current_itr, logging_msg=logging_msg)
 
         ### Create GIAB Benchmarkinging Runs --------------------------###
         if current_itr.args.first_genome is None:

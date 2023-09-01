@@ -113,9 +113,9 @@ class Env:
             label for logging, by default None
         """
         if msg is not None:
-            logging_msg = msg
+            logging_msg = f"{msg}: "
         else:
-            logging_msg = self._logger_msg
+            logging_msg = f"{self._logger_msg}: "
         if update and key in self.contents:
             old_value = get_key(self.env_file, key)
             if old_value == value:
