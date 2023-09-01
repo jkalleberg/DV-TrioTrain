@@ -205,7 +205,7 @@ def run_trio_train(eval_genome="Child") -> None:
             "TotalTests",
             str(pipeline.meta.num_tests),
             dryrun_mode=current_itr.dryrun_mode,
-            msg=logging_msg,
+            msg=f"{logging_msg}: ",
         )
 
         current_itr.check_working_dir()
