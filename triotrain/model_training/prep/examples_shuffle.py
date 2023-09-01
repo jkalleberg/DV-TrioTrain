@@ -457,7 +457,7 @@ class BeamShuffleExamples:
             missing_shuffled_files1 = True
 
         if find_all:
-            if missing_shuffled_files1:
+            if missing_shuffled_files1 and self._num_shuff_tfrecords_found > 0:
                 self.itr.logger.info(
                     f"{log_msg}: double-checking if last region produced very few examples...",
                 )
