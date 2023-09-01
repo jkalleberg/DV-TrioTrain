@@ -143,9 +143,6 @@ class Iteration:
                 if not missing_default_file:
                     self.default_region_file = reference_dir / files[0]
         
-        if not self.demo_mode:
-            assert self.default_region_file.is_file, f"{self._mode_string}: missing default regions file | '{self.default_region_file}'"
-
         if self.debug_mode:
             self.logger.debug(
                 f"{self._mode_string}: current_genome_num | {self.current_genome_num}"
