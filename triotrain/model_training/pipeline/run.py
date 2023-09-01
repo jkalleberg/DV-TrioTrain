@@ -531,7 +531,7 @@ class RunTrioTrain:
                     f"{self.itr._mode_string} - [region_shuffling] - [{genome}]: --use-regions-shuffle is set"
                 )
                 self.create_default_region(use_train_genome=use_training_genome)
-                breakpoint()
+                
                 # make the regions_shuffling bed files
                 current_itr = self.regions.run()
 
@@ -868,9 +868,8 @@ class RunTrioTrain:
         Make and submit model testing jobs
         """
         phase_skipped_counter = 0
-
-        self.create_default_region()
-        breakpoint()
+        
+        self.create_default_region()        
 
         if useDT:
             call_vars_job_nums = None

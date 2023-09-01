@@ -288,6 +288,11 @@ class MakeRegions:
             self._autosome_BED_data.to_csv(
                 output_file.path / output_file.file, sep="\t", index=False, header=False
             )
+            output_file.check_missing()
+            if output_file.file_exists:
+                self.itr.logger.info(
+                f"{self.itr._mode_string} - [{self._phase}]: created a default region file | '{output_file.file_path}'"
+            )
         else:
             self.itr.logger.info(
                 f"{self.itr._mode_string} - [{self._phase}]: found default region file | '{output_file.file_path}'"
