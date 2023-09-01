@@ -12,6 +12,7 @@ from os import environ, path
 # Custom helper modules
 from helpers.wrapper import timestamp, Wrapper
 from helpers.environment import Env
+from helpers.iteration import Iteration
 
 
 def collect_args():
@@ -108,7 +109,7 @@ def __init__():
         current_trio_num=12,
         next_trio_num="None",
         current_genome_num=0,
-        total_num_genomes=None,
+        total_num_iterations=None,
         total_num_tests=16,
         train_genome=None,
         eval_genome=None,

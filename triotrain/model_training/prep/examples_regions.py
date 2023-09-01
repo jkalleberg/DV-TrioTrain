@@ -10,7 +10,6 @@ import os
 import subprocess
 from sys import exit
 from dataclasses import dataclass, field, fields, replace
-from logging import Logger
 from pathlib import Path
 from typing import Dict, List, Union
 
@@ -798,9 +797,9 @@ class MakeRegions:
 
         if (
             self.itr.current_genome_num is not None
-            and self.itr.total_num_genomes is not None
+            and self.itr.total_num_iterations is not None
         ):
-            if 0 < self.itr.current_genome_num <= self.itr.total_num_genomes:
+            if 0 < self.itr.current_genome_num <= self.itr.total_num_iterations:
                 self.find_regions()
                 self.update_iteration()
 

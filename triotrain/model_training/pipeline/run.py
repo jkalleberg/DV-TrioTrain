@@ -490,7 +490,7 @@ class RunTrioTrain:
                 genome = self.itr.eval_genome
 
             # skip the child on the second parent for multi-iteration runs only!
-            if (self.itr.pipeline.meta.num_of_iterations > 2 and self.itr.current_genome_num % 2 == 0 and not use_training_genome):
+            if (self.itr.total_num_iterations > 2 and self.itr.current_genome_num % 2 == 0 and not use_training_genome):
                 self.itr.logger.info(
                     f"{self.itr._mode_string} - [data_prep_jobs] - [{genome}]: avoiding duplicate Child jobs... SKIPPING AHEAD"
                 )

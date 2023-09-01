@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 """
-description: collects all the data used for an Iteration of the TrioTrain pipeline.
+description: collects all the data used for an Iteration.
 
 usage:
     from iteration import Iteration
@@ -16,21 +16,19 @@ from typing import Union
 from helpers.environment import Env
 from helpers.utils import create_deps
 from helpers.outputs import check_if_output_exists, check_expected_outputs
-from model_training.pipeline.setup import Setup
 
 
 @dataclass
 class Iteration:
     """
-    Define what data to store for an Iteration of the TrioTrain Pipeline.
+    Defines what data to store for an Iteration.
     """
 
     # required values
-    pipeline: Setup
     current_trio_num: Union[int, str, None]
     next_trio_num: Union[int, str, None]
     current_genome_num: Union[int, None]
-    total_num_genomes: Union[int, None]
+    total_num_iterations: Union[int, None]
     train_genome: Union[str, None]
     eval_genome: Union[str, None]
     env: Union[Env, None]
@@ -138,7 +136,7 @@ class Iteration:
                 missing_default_file = check_expected_outputs(
                     outputs_found,
                     1,
-                    f"{self._mode_string} - [region_shuffling] - [{self.train_genome}]",
+                    f"{self._mode_string} - [region_shuffling]",
                     "default region file",
                     self.logger,
                 )

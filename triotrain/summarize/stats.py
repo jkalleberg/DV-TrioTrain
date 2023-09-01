@@ -630,7 +630,7 @@ class Stats:
                     current_trio_num="None",
                     next_trio_num="None",
                     current_genome_num=None,
-                    total_num_genomes=None,
+                    total_num_iterations=None,
                     train_genome=None,
                     eval_genome=None,
                     env=None,
