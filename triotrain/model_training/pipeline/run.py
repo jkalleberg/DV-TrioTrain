@@ -535,7 +535,7 @@ class RunTrioTrain:
                 # make the regions_shuffling bed files
                 current_itr = self.regions.run()
 
-                if self.current_itr.default_region_file.is_file:
+                if current_itr.default_region_file.is_file:
                     self.itr = current_itr
                 else:
                     self.itr.logger.error(f"{self._mode_string}: missing default regions file | '{self.default_region_file}'")
