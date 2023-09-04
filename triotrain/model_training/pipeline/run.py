@@ -477,10 +477,38 @@ class RunTrioTrain:
                     f"{self.itr._mode_string} - [check_next_phase]: either remove the '--restart-jobs' flag, or edit to include '{current_phase_str}'\nValid options include:\n\t1. Running SLURM job numbers\n\t\tNOTE: when including running SLURM job numbers, the list for '{current_phase_str}' MUST have a length={total_jobs}; however, 'None' values can be used to skip any completed jobs.\n\t\tExample: '{{\"{current_phase_str}\": {jobs_list}, \"{next_phase_str}\": {self._phase_jobs}}}'\n\t2. Index value(s) the {n_jobs}-of-{total_jobs} SLURM jobs re-submit to the queue.\n\t\tNOTE: including '0' triggers 0-based indexing, while excluding '0' assumes 1-based indexes were provided.\n\t\tExample: '{{\"{current_phase_str}\": {self._phase_jobs}, \"{next_phase_str}\": {self._phase_jobs}}}')\n\t3. A mix of both SLURM job numbers and index values. "
                 )
                 exit(1)
+    
+    def create_default_region(
+            self,
+            use_train_genome: bool = True) -> None:
+        """
+        Create a BED file with only autosomes and the X chromosome.
+        """
+        # --- Create Shuffling Regions for Baseline Runs --- ##
+        if self.itr.current_genome_num == 0:
+            self.regions = MakeRegions(
+                self.itr,
+                [self.max_examples],
+                [self.est_examples],
+            )
+        else:
+            # --- Create Shuffling Regions for Non-Baseline Runs --- ##
+            self.regions = MakeRegions(
+                        self.itr,
+                        self.max_examples,
+                        self.est_examples,
+                        train_mode=use_train_genome,
+                    )
+
+        # create the default regions_file for testing, if necessary
+        if self.itr.default_region_file is None or not self.itr.default_region_file.is_file():
+            self.regions.write_autosomes_withX_regions(
+                output_file_name=f"{self.itr._reference_genome.stem}_autosomes_withX.bed"
+            )
 
     def data_prep_jobs(self) -> None:
         """
-        Make and submit data prep jobs
+        Make and submit SLURM jobs.
         """
         self._data_prep_phases = ["make_examples", "beam_shuffle", "re_shuffle"]
         for index, use_training_genome in enumerate([True, False]):
@@ -496,37 +524,25 @@ class RunTrioTrain:
                 )
                 return
 
-            regions = MakeRegions(
-                    self.itr,
-                    self.max_examples,
-                    self.est_examples,
-                    train_mode=use_training_genome,
-                )
-
-            # create the default regions_file for testing, if necessary
-            if self.itr.default_region_file is None or not self.itr.default_region_file.is_file():
-                regions.write_autosomes_withX_regions(
-                    output_file_name=f"{self.itr._reference_genome.stem}_autosomes_withX.bed"
-                )
-
-            # --- Create Shuffling Regions for Non-Baseline Runs --- ##
-            if (
-                self.itr.current_genome_num != 0
-                and self.use_regions_shuffle
+            if (self.use_regions_shuffle
                 and self.itr.demo_mode is False
             ):
                 self.itr.logger.info(
                     f"{self.itr._mode_string} - [region_shuffling] - [{genome}]: --use-regions-shuffle is set"
                 )
-
+                self.create_default_region(use_train_genome=use_training_genome)
+                
                 # make the regions_shuffling bed files
-                current_itr = regions.run()
-                if current_itr is not None:
+                current_itr = self.regions.run()
+
+                if current_itr.default_region_file.is_file:
                     self.itr = current_itr
                 else:
+                    self.itr.logger.error(f"{self._mode_string}: missing default regions file | '{self.default_region_file}'")
                     self.itr.logger.error(
-                        f"{self.itr._mode_string} - [region_shuffling] - [{genome}]: expected regions to be created, but they were not"
+                        f"{self.itr._mode_string} - [region_shuffling] - [{genome}]: expected regions to be created, but they were not\nExiting..."
                     )
+                    exit(1)
 
             # Update the internal variable
             if self.train_mode:
@@ -852,22 +868,8 @@ class RunTrioTrain:
         Make and submit model testing jobs
         """
         phase_skipped_counter = 0
-
-        # create the default regions_file for testing, if necessary
-        regions = MakeRegions(
-            self.itr,
-            [self.max_examples],
-            [self.est_examples],
-        )
-
-        # create the default regions_file for testing, if necessary
-        if not self.itr.dryrun_mode and (
-            self.itr.default_region_file is None
-            or not self.itr.default_region_file.is_file()
-        ):
-            regions.write_autosomes_withX_regions(
-                output_file_name=f"{self.itr._reference_genome.stem}_autosomes_withX.bed"
-            )
+        
+        self.create_default_region()        
 
         if useDT:
             call_vars_job_nums = None
@@ -906,8 +908,8 @@ class RunTrioTrain:
                         f"============ SKIPPING {self.itr._mode_string} - [test_model] - [{self.itr.train_genome}] ============"
                     )
                 return
-            elif self.test_model._outputs_exist is False:
-                self.test_model.find_outputs(find_all=True)
+            # elif self.test_model._outputs_exist is False:
+            #     self.test_model.find_outputs(find_all=True)
 
             if self.restart_jobs and self._phase_jobs is None:
                 self.check_next_phase(

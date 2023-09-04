@@ -294,7 +294,7 @@ class BeamShuffleExamples:
                 self.itr.logger.debug(f"{self.logger_msg}: creating job file now... ")
 
         command_list = slurm_job._start_conda + [
-            f"conda run --no-capture-output -p ./miniconda_envs/beam_v2.30 python3 triotrain/model_training/prep/shuffle_tfrecords_beam.py --input_pattern_list={self.itr.examples_dir}/{self.prefix}.labeled.tfrecords-?????-of-000??.gz --output_pattern_prefix={self.itr.examples_dir}/{self.prefix}.labeled.shuffled [--output_dataset_config_pbtxt={self.itr.examples_dir}/{self.prefix}.labeled.shuffled.dataset_config.pbtxt --output_dataset_name={self.genome} --runner=DirectRunner --direct_num_workerop[fs]={self.n_parts} --direct_running_mode='in_memory'",
+            f"conda run --no-capture-output -p ./miniconda_envs/beam_v2.30 python3 triotrain/model_training/prep/shuffle_tfrecords_beam.py --input_pattern_list={self.itr.examples_dir}/{self.prefix}.labeled.tfrecords-?????-of-000??.gz --output_pattern_prefix={self.itr.examples_dir}/{self.prefix}.labeled.shuffled --output_dataset_config_pbtxt={self.itr.examples_dir}/{self.prefix}.labeled.shuffled.dataset_config.pbtxt --output_dataset_name={self.genome} --runner=DirectRunner --direct_num_workers={self.n_parts} --direct_running_mode='in_memory'",
         ]
         # --direct_running_mode='in_memory'
         # --direct_running_mode='multi_processing'
@@ -335,6 +335,9 @@ class BeamShuffleExamples:
                 rf"{self.genome}\.labeled\.shuffled-\d+-of-\d+\.tfrecord\.gz"
             )
 
+        # self.itr.logger.info(f"SHUFFLE PATTERN:{shuff_examples_pattern}")
+        # breakpoint()
+        
         if phase is None:
             log_msg = self.logger_msg
         else:
@@ -457,7 +460,7 @@ class BeamShuffleExamples:
             missing_shuffled_files1 = True
 
         if find_all:
-            if missing_shuffled_files1:
+            if missing_shuffled_files1 and self._num_shuff_tfrecords_found > 0:
                 self.itr.logger.info(
                     f"{log_msg}: double-checking if last region produced very few examples...",
                 )
@@ -721,8 +724,8 @@ class BeamShuffleExamples:
                     )  # THIS HAS TO BE +1 to avoid starting with a region0
 
                     self.set_region(current_region=self.job_num)
-                    if not self.itr.demo_mode:
-                        self.find_outputs()
+                    # if not self.itr.demo_mode:
+                    #     self.find_outputs()
 
                     if not check_if_all_same(self.make_examples_jobs, None):
                         self.submit_job(
@@ -757,7 +760,7 @@ class BeamShuffleExamples:
                     r + 1
                 )  # THIS HAS TO BE +1 to avoid starting with a region0
                 self.set_region(current_region=self.job_num)
-                self.find_outputs()
+                # self.find_outputs()
                 self.submit_job(msg=msg, dependency_index=r, total_jobs=int(self._total_regions))
 
         self.check_submissions()

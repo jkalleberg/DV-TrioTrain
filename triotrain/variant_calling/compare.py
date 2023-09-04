@@ -610,7 +610,7 @@ class CompareHappy:
                 if self.test_genome is None:
                     continue
                 else:
-                    self.find_outputs()
+                    # self.find_outputs()
                     self.submit_job(
                         msg=msg,
                         dependency_index=t,

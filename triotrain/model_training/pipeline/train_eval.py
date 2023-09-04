@@ -601,7 +601,7 @@ class TrainEval:
 
         # or running it for the first time
         else:
-            self.find_outputs()
+            # self.find_outputs()
             self.submit_job(msg=msg)
 
         self.check_submission()
