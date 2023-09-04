@@ -1,0 +1,5 @@
+*.csv
+*.out
+*.download
+*.run
+/reference/rtg_tools/
