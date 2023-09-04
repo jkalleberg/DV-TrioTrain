@@ -294,7 +294,7 @@ class BeamShuffleExamples:
                 self.itr.logger.debug(f"{self.logger_msg}: creating job file now... ")
 
         command_list = slurm_job._start_conda + [
-            f"conda run --no-capture-output -p ./miniconda_envs/beam_v2.30 python3 triotrain/model_training/prep/shuffle_tfrecords_beam.py --input_pattern_list={self.itr.examples_dir}/{self.prefix}.labeled.tfrecords-?????-of-000??.gz --output_pattern_prefix={self.itr.examples_dir}/{self.prefix}.labeled.shuffled [--output_dataset_config_pbtxt={self.itr.examples_dir}/{self.prefix}.labeled.shuffled.dataset_config.pbtxt --output_dataset_name={self.genome} --runner=DirectRunner --direct_num_workerop[fs]={self.n_parts} --direct_running_mode='in_memory'",
+            f"conda run --no-capture-output -p ./miniconda_envs/beam_v2.30 python3 triotrain/model_training/prep/shuffle_tfrecords_beam.py --input_pattern_list={self.itr.examples_dir}/{self.prefix}.labeled.tfrecords-?????-of-000??.gz --output_pattern_prefix={self.itr.examples_dir}/{self.prefix}.labeled.shuffled --output_dataset_config_pbtxt={self.itr.examples_dir}/{self.prefix}.labeled.shuffled.dataset_config.pbtxt --output_dataset_name={self.genome} --runner=DirectRunner --direct_num_workers={self.n_parts} --direct_running_mode='in_memory'",
         ]
         # --direct_running_mode='in_memory'
         # --direct_running_mode='multi_processing'
@@ -335,6 +335,9 @@ class BeamShuffleExamples:
                 rf"{self.genome}\.labeled\.shuffled-\d+-of-\d+\.tfrecord\.gz"
             )
 
+        # self.itr.logger.info(f"SHUFFLE PATTERN:{shuff_examples_pattern}")
+        # breakpoint()
+        
         if phase is None:
             log_msg = self.logger_msg
         else:
