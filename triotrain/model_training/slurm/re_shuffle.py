@@ -154,7 +154,7 @@ class ReShuffle:
             itr=self.itr, slurm_resources={}, model_label="", train_mode=self.train_mode
         )
         self.re_shuffling.set_genome()
-        self.re_shuffling.find_outputs(phase="find_outputs", find_all=True)
+        self.re_shuffling.find_outputs(phase="find_outputs")
 
         if self.itr.demo_mode:
             self._total_regions = 1
@@ -355,8 +355,8 @@ def __init__() -> None:
         current_trio_num=trio_num,
         next_trio_num="None",
         current_genome_num=args.restart,
-        total_num_genomes=(args.restart + 1),
         total_num_tests=19,
+        total_num_iterations=(args.restart + 1),
         train_genome=train_genome,
         eval_genome=eval_genome,
         train_num_regions=int(train_regions),

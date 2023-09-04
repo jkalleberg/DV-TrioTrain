@@ -357,7 +357,7 @@ class VariantCaller:
                 current_trio_num="None",
                 next_trio_num="None",
                 current_genome_num=None,
-                total_num_genomes=None,
+                total_num_iterations=None,
                 train_genome=None,
                 eval_genome=None,
                 env=None,
@@ -372,7 +372,7 @@ class VariantCaller:
                 current_trio_num="None",
                 next_trio_num="None",
                 current_genome_num=None,
-                total_num_genomes=None,
+                total_num_iterations=None,
                 train_genome=None,
                 eval_genome=None,
                 env=None,
@@ -449,7 +449,7 @@ class VariantCaller:
                 bindings.append(f"{self._itr.default_region_file.parent}/:/region_dir/")
             else:
                 self.logger.warning(
-                    f"{self._test_logger_msg}: missing the default region file | {self._itr.default_region_file}... SKIPPING AHEAD"
+                    f"{self._test_logger_msg}: missing the default BED file | {self._itr.default_region_file}... SKIPPING AHEAD"
                 )
                 return
 
@@ -497,7 +497,7 @@ class VariantCaller:
                 )
             else:
                 self.logger.warning(
-                    f"{self._test_logger_msg}: missing the default region file | {self._itr.default_region_file}... SKIPPING AHEAD"
+                    f"{self._test_logger_msg}: missing the default BED file | {self._itr.default_region_file}... SKIPPING AHEAD"
                 )
                 return
 

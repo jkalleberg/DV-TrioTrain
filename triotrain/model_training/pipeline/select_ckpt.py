@@ -462,7 +462,6 @@ class SelectCheckpoint:
             self.itr.logger.info(
                 f"{self.logger_msg}: prior iteration select-ckpt job number | '{self.itr.current_genome_dependencies[2]}'"
             )
-            breakpoint()
 
         self.find_restart_jobs()
 
@@ -486,9 +485,6 @@ class SelectCheckpoint:
                     )
                     self.itr.current_genome_dependencies[3] = self._model_testing_dependency[0]
                     self.itr.next_genome_dependencies[2] = self._model_testing_dependency[0]
-                    print("CURRENT DEPENDENCIES:", self.itr.current_genome_dependencies)
-                    print("NEXT DEPENDENCIES:", self.itr.next_genome_dependencies)
-                    breakpoint() 
                 else:
                     self._model_testing_dependency[0] = None
             else:
@@ -511,7 +507,7 @@ class SelectCheckpoint:
 
         # or running it for the first time
         else:
-            self.find_outputs()
+            # self.find_outputs()
             self.submit_job(msg=msg)
 
         self.check_submission()

@@ -165,4 +165,4 @@ shuffle_tfrecords_beam.py
 *.coverage
 
 # model files
-*model.ckpt.*
+*model.ckpt*

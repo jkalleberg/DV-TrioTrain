@@ -3,11 +3,11 @@
 
 echo "=== scripts/setup/modules.sh start > $(date)"
 
-echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: Wipe Lewis Modules... "
+echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: Wiping modules... "
 module purge
-echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: Done Wipe Lewis Modules"
+echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: Done wipe modules"
 
-echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: Loading Lewis Modules... "
+echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: Loading modules... "
 
 # Enable loading of pkgs from prior manager
 module load rss/rss-2020
@@ -40,7 +40,7 @@ module load htslib/1.14
 module load samtools/1.14
 module load gcc/10.2.0
 
-echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: Done Loading Lewis Modules"
+echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: Done Loading Modules"
 
 echo -e "$(date '+%Y-%m-%d %H:%M:%S') INFO: Conda Base Environment:\n${CONDA_BASE}"
 echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: Python Version:"

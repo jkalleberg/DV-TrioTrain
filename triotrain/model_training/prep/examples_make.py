@@ -283,7 +283,7 @@ class MakeExamples:
         )
 
         if slurm_job.check_sbatch_file():
-            if self.make_examples_job_nums[index] is not None and self.overwrite:
+            if self.make_examples_job_nums and self.make_examples_job_nums[index] is not None and self.overwrite:
                 self.itr.logger.info(
                     f"{self.logger_msg}: --overwrite=True, re-writing the existing SLURM job now..."
                 )
@@ -606,8 +606,8 @@ class MakeExamples:
                     )  # THIS HAS TO BE +1 to avoid starting with a region0
 
                     self.set_region(current_region=self.job_num)
-                    if not self.itr.demo_mode:
-                        self.find_outputs()
+                    # if not self.itr.demo_mode:
+                    #     self.find_outputs()
                     if skip_re_runs or not self._outputs_exist:
                         self.submit_job(
                             msg=msg,
@@ -633,8 +633,8 @@ class MakeExamples:
                     r + 1
                 )  # THIS HAS TO BE +1 to avoid starting with a region0
                 self.set_region(current_region=self.job_num)
-                if not self.itr.demo_mode:
-                    self.find_outputs()
+                # if not self.itr.demo_mode:
+                #     self.find_outputs()
                 self.submit_job(
                     msg=msg,
                     dependency_index=r, total_jobs=int(self._total_regions)

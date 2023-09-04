@@ -10,7 +10,6 @@ import os
 import subprocess
 from sys import exit
 from dataclasses import dataclass, field, fields, replace
-from logging import Logger
 from pathlib import Path
 from typing import Dict, List, Union
 
@@ -276,22 +275,27 @@ class MakeRegions:
             output_file_path,
             output_file_name,
             self.itr.logger,
-            logger_msg=f"{self.itr._mode_string} - [{self._phase}]: default call_variants",
+            logger_msg=f"{self.itr._mode_string} - [setup]: default call_variants",
         )
         output_file.check_missing()
 
         if not output_file.file_exists:
             if self.itr.debug_mode:
                 self.itr.logger.debug(
-                    f"{self.itr._mode_string} - [{self._phase}]: creating the default region file now..."
+                    f"{self.itr._mode_string} - [setup]: creating the default BED file now..."
                 )
             self.transform_dictionary()
             self._autosome_BED_data.to_csv(
                 output_file.path / output_file.file, sep="\t", index=False, header=False
             )
+            output_file.check_missing()
+            if output_file.file_exists:
+                self.itr.logger.info(
+                f"{self.itr._mode_string} - [setup]: created a default BED file | '{output_file.file_path}'"
+                )
         else:
             self.itr.logger.info(
-                f"{self.itr._mode_string} - [{self._phase}]: found default region file | '{output_file.file_path}'"
+                f"{self.itr._mode_string} - [setup]: found default BED file | '{output_file.file_path}'"
             )
 
     def set_genome(
@@ -344,10 +348,7 @@ class MakeRegions:
                 f"{self._genome}_NumRegionFiles",
                 str(self._num_outputs),
                 dryrun_mode=self.itr.dryrun_mode,
-            )
-
-            self.itr.logger.info(
-                f"{self.itr._mode_string} - [{self._phase}] - [{self._genome}]: adding '{self._genome}_NumRegionFiles={new_parameters[self._parameter_name]}' to env file"
+                msg=f"{self.itr._mode_string} - [{self._phase}] - [{self._genome}]"
             )
 
     def find_regions(self) -> None:
@@ -408,7 +409,7 @@ class MakeRegions:
             region_files,
         ) = check_if_output_exists(
             region_file_pattern,
-            "region shuffling BED files",
+            "shuffling BED files",
             self.itr.examples_dir / "regions",
             self._logger_msg,
             self.itr.logger,
@@ -430,7 +431,7 @@ class MakeRegions:
                 regions_found,
                 expected_num_outputs,
                 self._logger_msg,
-                "region shuffling BED files",
+                "shuffling BED files",
                 self.itr.logger,
             )
         else:
@@ -495,9 +496,7 @@ class MakeRegions:
                 f"{self._genome}_TotalTruth",
                 str(self._total_pass_variants),
                 dryrun_mode=self.itr.dryrun_mode,
-            )
-            self.itr.logger.info(
-                f"{self.itr._mode_string} - [{self._phase}] - [{self._genome}]: adding '{self._genome}_TotalTruth={self._total_pass_variants}' to env file"
+                msg=f"{self.itr._mode_string} - [{self._phase}] - [{self._genome}]"
             )
         else:
             self.itr.logger.error(
@@ -798,9 +797,9 @@ class MakeRegions:
 
         if (
             self.itr.current_genome_num is not None
-            and self.itr.total_num_genomes is not None
+            and self.itr.total_num_iterations is not None
         ):
-            if 0 < self.itr.current_genome_num <= self.itr.total_num_genomes:
+            if 0 < self.itr.current_genome_num <= self.itr.total_num_iterations:
                 self.find_regions()
                 self.update_iteration()
 
