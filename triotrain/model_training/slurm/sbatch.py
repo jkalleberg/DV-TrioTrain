@@ -9,7 +9,7 @@ from dataclasses import dataclass, field
 from logging import Logger
 from pathlib import Path
 from random import random
-from subprocess import run
+from subprocess import run, CalledProcessError
 from sys import exit
 from time import sleep
 from typing import Union
@@ -327,13 +327,29 @@ class SubmitSBATCH:
         # before opening another
         if debug_mode:
             self.logger.debug(f"{self.logger_msg}: submitting a SLURM job to SLURM... ")
-        result = run(self.cmd, capture_output=True, text=True, check=True)
-        self.status = result.returncode
+        
+        try:
+            _result = run(
+                self.cmd,
+                capture_output=True,
+                text=True,
+                check=True
+                )
+            self.status = _result.returncode
+        except CalledProcessError as err:
+            error_lines = err.stderr.strip().split("\n")
+            for l in error_lines:
+                self.logger.error(f"{self.logger_msg}: {l}"
+                )
+            self.logger.error(
+                f"{self.logger_msg}: unable to submit SLURM Job | '{self.job_file.name}'\nExiting... ")
+            exit(err.returncode)
+        
         if self.status == 0:
             self.logger.info(
                 f"{self.logger_msg}: submitted SLURM job {current_job}-of-{total_jobs}"
             )
-            match = self.jobnum_pattern.search(result.stdout)
+            match = self.jobnum_pattern.search(_result.stdout)
             if match:
                 self.job_number = str(match.group())
                 if debug_mode:
@@ -342,14 +358,8 @@ class SubmitSBATCH:
                     )
             else:
                 self.logger.warning(
-                    f"{self.logger_msg}: unable to detect SLURM Job Number during submission of: [{self.job_label}]",
+                    f"{self.logger_msg}: unable to detect SLURM Job Number during submission | '{self.job_file.name}'",
                 )
                 self.logger.info(
-                    f"{self.logger_msg}: skipping SLURM job [{self.job_file}]"
+                    f"{self.logger_msg}: skipping SLURM job | '{self.job_file}'"
                 )
-        else:
-            self.logger.error(
-                f"{self.logger_msg}: unable to submit SLURM Job [{self.job_label}]"
-            )
-            self.logger.error(f"{self.logger_msg}: process stdout:\n{result}")
-            self.logger.info(f"{self.logger_msg}: skipping job [{self.job_file}]")
