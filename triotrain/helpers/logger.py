@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 """
-description: creates a Logger for the TrioTrain pipeline.
+description: creates a Logger object.
 
 usage:
     from helpers.logger import LogFormatter
@@ -57,6 +57,3 @@ def get_stream_handler() -> logging.StreamHandler:
     stream_handler.setLevel(logging.DEBUG)
     stream_handler.setFormatter(LogFormatter())
     return stream_handler
-
-
-
