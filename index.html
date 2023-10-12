@@ -319,8 +319,8 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#why-use-triotrain" class="md-nav__link">
-    Why use TrioTrain?
+  <a href="#models-built-by-dv-triotrain-do-not-require-trio-binned-data-for-variant-calling" class="md-nav__link">
+    Models built by DV-TrioTrain do not require trio-binned data for variant calling.
   </a>
   
 </li>
@@ -611,17 +611,14 @@
 
 
 <h1 id="dv-triotrain-v08">DV-TrioTrain v0.8</h1>
-<p>TrioTrain (DV-TT) is an automated pipeline for extending DeepVariant, a deep-learning-based germline variant caller. To learn more about DeepVariant, <a href="https://github.com/google/deepvariant">see the original GitHub page.</a></p>
-<hr />
-<h2 id="why-use-triotrain">Why use TrioTrain?</h2>
-<p>The unique re-training approach enables the model to incorporate inheritance expectations; <strong>however, models built by DV-TrioTrain do not require trio-binned data for variant calling.</strong> While the DV-TT pipeline assumes re-training data are from trio-binned samples, models are trained to prioritize features of inherited variants to produce fewer Mendelian Inheritance Errors (MIE) in individual samples.</p>
-<hr />
+<p>DV-TrioTrain is a model development framework for <a href="https://github.com/google/deepvariant">DeepVariant</a>: a deep-learning-based germline variant caller. Here we provide an automated pipeline for extending DeepVariant v1.4.0 in new species.</p>
+<h3 id="models-built-by-dv-triotrain-do-not-require-trio-binned-data-for-variant-calling"><strong>Models built by DV-TrioTrain do not require trio-binned data for variant calling.</strong></h3>
+<p>Our unique re-training approach enables the model to incorporate inheritance expectations. Using TrioTrain to build new versions of DeepVariant models requires trio-binned genomes, the final model produced by TrioTrain works on individual genomes, while prioritizing features of inherited variants. </p>
 <p><a class="md-button md-button--primary" href="getting-started/getting-started/">Get Started with TrioTrain</a></p>
 <hr />
-<h2 id="contributing-to-triotrain">Contributing to TrioTrain</h2>
+<h3 id="contributing-to-triotrain">Contributing to TrioTrain</h3>
 <p>Please <a href="https://github.com/jkalleberg/DV-TrioTrain/pulls">open a Github pull request</a> if you wish to contribute to TrioTrain.</p>
-<hr />
-<h2 id="license">License</h2>
+<h3 id="license">License</h3>
 <p><a href="about/license/">GPL-3.0 license</a></p>
 
   <hr>
@@ -629,7 +626,7 @@
   <small>
     
       Last update:
-      <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date">July 31, 2023</span>
+      <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date">October 12, 2023</span>
       
     
   </small>

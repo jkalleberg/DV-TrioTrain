@@ -613,17 +613,30 @@
 
 
 <h1 id="installing-triotrain">Installing TrioTrain</h1>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>If you're unfamiliar with SLURM, navigating your computing cluster, or what shared software is available to you, reach out to your HPC system's Cluster Administrator for trouble-shooting these dependencies.</p>
+</div>
 <h2 id="prerequisites">Prerequisites</h2>
 <ul>
 <li>Unix-like operating system (cannot run on Windows)</li>
 <li>Python 3.8</li>
-<li>Access to a SLURM-based High Performance Computing Cluster that has both CPU and GPU resources<ul>
-<li>If you're unfamiliar with SLURM, navigating your computing cluster, or what shared software is available to you, reach out to your HPC system's Cluster Administrator.</li>
+<li>Access to a SLURM-based High Performance Computing Cluster<ul>
+<li>TrioTrain uses both CPU and GPU resources</li>
+<li><strong>You must have at least 2 GPU cards on a single compute node to execute re-training effectively!</strong></li>
 </ul>
 </li>
 </ul>
 <h2 id="system-requirements">System Requirements</h2>
-<p>The following software are required:</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Deviating from these versions will likely cause errors with TrioTrain. Proceed with caution! </p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>If you have to manually install any tools, be sure to add <code>export PATH=/cluster/path/to/local/software/bin/:$PATH</code> to your edited <code>modules.sh</code> file.</p>
+</div>
+<p>TrioTrain expects the software listed below to be pre-built, and available locally on your SLURM-based HPC cluster. The following minimum software versions are required:</p>
 <table>
 <thead>
 <tr>
@@ -635,6 +648,13 @@
 </tr>
 </thead>
 <tbody>
+<tr>
+<td><code>DeepVariant</code></td>
+<td>1.4.0</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
 <tr>
 <td><code>gcc</code></td>
 <td>10.2.0</td>
@@ -672,30 +692,98 @@
 </tr>
 </tbody>
 </table>
-<p>TrioTrain expects the software listed above, referred to as modules, to be pre-built, and available locally on your SLURM-based HPC cluster.</p>
-<p>For example, on the MU Lewis Computing cluster, we can:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># Search for modules with:</span>
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>module<span class="w"> </span>avail<span class="w"> </span>&lt;tool_search_string&gt;
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="c1"># or</span>
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>module<span class="w"> </span>spider<span class="w"> </span>&lt;tool_search_string&gt;
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>
-<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="c1"># After confirming a tool is pre-built,</span>
-<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="c1"># these modules are loaded in with:</span>
-<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>module<span class="w"> </span>load<span class="w"> </span>&lt;module_name&gt;
+<p>TrioTrain assumes that the default <code>modules.sh</code> script works for your cluster, as this is how the pipeline finds all required software. <strong>YOU WILL NEED TO EDIT THIS FILE TO MATCH YOUR CLUSTER</strong>, or specify an alternative helper script by adding the following flag with your cluster-specific script.</p>
+<div class="highlight"><span class="filename">Add the following flag whenever you run TrioTrain:</span><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>python3<span class="w"> </span>triotrain/model_train/run_trio_train.py<span class="w"> </span>--modules<span class="w"> </span>&lt;/path/to/your/module.sh&gt;<span class="w"> </span>
 </code></pre></div>
-<p>These locally-available software are loaded by TrioTrain via an executable bash helper script, referred to as <code>modules.sh</code>.</p>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>TrioTrain assumes that the default <code>modules.sh</code> script works for your cluster.</p>
-</div>
+<details class="example">
+<summary>Example | <code>modules.sh</code></summary>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>#!/usr/bin/bash
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>## scripts/setup/modules.sh
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>echo &quot;=== scripts/setup/modules.sh start &gt; $(date)&quot;
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>echo &quot;$(date &#39;+%Y-%m-%d %H:%M:%S&#39;) INFO: Wiping modules... &quot;
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>module purge
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>echo &quot;$(date &#39;+%Y-%m-%d %H:%M:%S&#39;) INFO: Done wipe modules&quot;
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>echo &quot;$(date &#39;+%Y-%m-%d %H:%M:%S&#39;) INFO: Loading modules... &quot;
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a># Enable loading of pkgs from prior manager
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>module load rss/rss-2020
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a># Update to a newer, but still old, version of Curl
+<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>module load curl/7.72.0
+<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>
+<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a># Update to a newer version of git,
+<a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a># Required for Git extensions on VSCode
+<a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>module load git/2.29.0
+<a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a>
+<a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a># Enable &quot;conda activate&quot; rather than,
+<a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a># using &quot;source activate&quot;
+<a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a>module load miniconda3/4.9
+<a id="__codelineno-1-25" name="__codelineno-1-25" href="#__codelineno-1-25"></a>export CONDA_BASE=$(conda info --base)
+<a id="__codelineno-1-26" name="__codelineno-1-26" href="#__codelineno-1-26"></a>
+<a id="__codelineno-1-27" name="__codelineno-1-27" href="#__codelineno-1-27"></a># System Requirement to use &#39;conda activate&#39; 
+<a id="__codelineno-1-28" name="__codelineno-1-28" href="#__codelineno-1-28"></a>source ${CONDA_BASE}/etc/profile.d/conda.sh
+<a id="__codelineno-1-29" name="__codelineno-1-29" href="#__codelineno-1-29"></a>conda deactivate
+<a id="__codelineno-1-30" name="__codelineno-1-30" href="#__codelineno-1-30"></a>
+<a id="__codelineno-1-31" name="__codelineno-1-31" href="#__codelineno-1-31"></a># Modules required for re-training
+<a id="__codelineno-1-32" name="__codelineno-1-32" href="#__codelineno-1-32"></a>module load java/openjdk/java-1.8.0-openjdk
+<a id="__codelineno-1-33" name="__codelineno-1-33" href="#__codelineno-1-33"></a>module load singularity/singularity
+<a id="__codelineno-1-34" name="__codelineno-1-34" href="#__codelineno-1-34"></a>module load picard/2.26.10
+<a id="__codelineno-1-35" name="__codelineno-1-35" href="#__codelineno-1-35"></a>
+<a id="__codelineno-1-36" name="__codelineno-1-36" href="#__codelineno-1-36"></a># Modules required for post-procesing variants
+<a id="__codelineno-1-37" name="__codelineno-1-37" href="#__codelineno-1-37"></a>module load cuda/11.1.0
+<a id="__codelineno-1-38" name="__codelineno-1-38" href="#__codelineno-1-38"></a>module load bcftools/1.14
+<a id="__codelineno-1-39" name="__codelineno-1-39" href="#__codelineno-1-39"></a>module load htslib/1.14
+<a id="__codelineno-1-40" name="__codelineno-1-40" href="#__codelineno-1-40"></a>module load samtools/1.14
+<a id="__codelineno-1-41" name="__codelineno-1-41" href="#__codelineno-1-41"></a>module load gcc/10.2.0
+<a id="__codelineno-1-42" name="__codelineno-1-42" href="#__codelineno-1-42"></a>
+<a id="__codelineno-1-43" name="__codelineno-1-43" href="#__codelineno-1-43"></a>echo &quot;$(date &#39;+%Y-%m-%d %H:%M:%S&#39;) INFO: Done Loading Modules&quot;
+<a id="__codelineno-1-44" name="__codelineno-1-44" href="#__codelineno-1-44"></a>
+<a id="__codelineno-1-45" name="__codelineno-1-45" href="#__codelineno-1-45"></a>echo -e &quot;$(date &#39;+%Y-%m-%d %H:%M:%S&#39;) INFO: Conda Base Environment:\n${CONDA_BASE}&quot;
+<a id="__codelineno-1-46" name="__codelineno-1-46" href="#__codelineno-1-46"></a>echo &quot;$(date &#39;+%Y-%m-%d %H:%M:%S&#39;) INFO: Python Version:&quot;
+<a id="__codelineno-1-47" name="__codelineno-1-47" href="#__codelineno-1-47"></a>python3 --version
+<a id="__codelineno-1-48" name="__codelineno-1-48" href="#__codelineno-1-48"></a>echo &quot;$(date &#39;+%Y-%m-%d %H:%M:%S&#39;) INFO: Java Version:&quot;
+<a id="__codelineno-1-49" name="__codelineno-1-49" href="#__codelineno-1-49"></a>java -version
+<a id="__codelineno-1-50" name="__codelineno-1-50" href="#__codelineno-1-50"></a>echo &quot;$(date &#39;+%Y-%m-%d %H:%M:%S&#39;) INFO: Apptainer Version:&quot;
+<a id="__codelineno-1-51" name="__codelineno-1-51" href="#__codelineno-1-51"></a>apptainer --version
+<a id="__codelineno-1-52" name="__codelineno-1-52" href="#__codelineno-1-52"></a>
+<a id="__codelineno-1-53" name="__codelineno-1-53" href="#__codelineno-1-53"></a># Source DeepVariant version and CACHE Dir
+<a id="__codelineno-1-54" name="__codelineno-1-54" href="#__codelineno-1-54"></a>echo &quot;$(date &#39;+%Y-%m-%d %H:%M:%S&#39;) INFO: Adding Apptainer variables... &quot;
+<a id="__codelineno-1-55" name="__codelineno-1-55" href="#__codelineno-1-55"></a>echo &quot;$(date &#39;+%Y-%m-%d %H:%M:%S&#39;) INFO: This step is required to build DeepVariant image(s)&quot;
+<a id="__codelineno-1-56" name="__codelineno-1-56" href="#__codelineno-1-56"></a>
+<a id="__codelineno-1-57" name="__codelineno-1-57" href="#__codelineno-1-57"></a>if [ -z &quot;$1&quot; ]
+<a id="__codelineno-1-58" name="__codelineno-1-58" href="#__codelineno-1-58"></a>then
+<a id="__codelineno-1-59" name="__codelineno-1-59" href="#__codelineno-1-59"></a>    echo &quot;$(date &#39;+%Y-%m-%d %H:%M:%S&#39;) INFO: Using defaults, DeepVariant version 1.4.0&quot;
+<a id="__codelineno-1-60" name="__codelineno-1-60" href="#__codelineno-1-60"></a>    export BIN_VERSION_DV=&quot;1.4.0&quot;
+<a id="__codelineno-1-61" name="__codelineno-1-61" href="#__codelineno-1-61"></a>    export BIN_VERSION_DT=&quot;1.4.0&quot;
+<a id="__codelineno-1-62" name="__codelineno-1-62" href="#__codelineno-1-62"></a>else
+<a id="__codelineno-1-63" name="__codelineno-1-63" href="#__codelineno-1-63"></a>    echo &quot;$(date &#39;+%Y-%m-%d %H:%M:%S&#39;) INFO: Using inputs, DeepVariant version $1&quot;
+<a id="__codelineno-1-64" name="__codelineno-1-64" href="#__codelineno-1-64"></a>    export BIN_VERSION_DV=&quot;$1&quot;
+<a id="__codelineno-1-65" name="__codelineno-1-65" href="#__codelineno-1-65"></a>    export BIN_VERSION_DT=&quot;$1&quot;
+<a id="__codelineno-1-66" name="__codelineno-1-66" href="#__codelineno-1-66"></a>fi
+<a id="__codelineno-1-67" name="__codelineno-1-67" href="#__codelineno-1-67"></a>
+<a id="__codelineno-1-68" name="__codelineno-1-68" href="#__codelineno-1-68"></a>export APPTAINER_CACHEDIR=&quot;${PWD}/APPTAINER_CACHE&quot;
+<a id="__codelineno-1-69" name="__codelineno-1-69" href="#__codelineno-1-69"></a>export APPTAINER_TMPDIR=&quot;${PWD}/APPTAINER_TMPDIR&quot;
+<a id="__codelineno-1-70" name="__codelineno-1-70" href="#__codelineno-1-70"></a>echo &quot;$(date &#39;+%Y-%m-%d %H:%M:%S&#39;) INFO: Done adding Apptainer variables&quot;
+<a id="__codelineno-1-71" name="__codelineno-1-71" href="#__codelineno-1-71"></a>
+<a id="__codelineno-1-72" name="__codelineno-1-72" href="#__codelineno-1-72"></a># Confirm that it worked
+<a id="__codelineno-1-73" name="__codelineno-1-73" href="#__codelineno-1-73"></a>echo &quot;$(date &#39;+%Y-%m-%d %H:%M:%S&#39;) INFO: DeepVariant Version: ${BIN_VERSION_DV}&quot;
+<a id="__codelineno-1-74" name="__codelineno-1-74" href="#__codelineno-1-74"></a>echo &quot;$(date &#39;+%Y-%m-%d %H:%M:%S&#39;) INFO: Apptainer Cache: ${APPTAINER_CACHEDIR}&quot;
+<a id="__codelineno-1-75" name="__codelineno-1-75" href="#__codelineno-1-75"></a>echo &quot;$(date &#39;+%Y-%m-%d %H:%M:%S&#39;) INFO: Apptainer Tmp: ${APPTAINER_TMPDIR}&quot;
+<a id="__codelineno-1-76" name="__codelineno-1-76" href="#__codelineno-1-76"></a>
+<a id="__codelineno-1-77" name="__codelineno-1-77" href="#__codelineno-1-77"></a># Activating the Bash Sub-Routine to handle errors
+<a id="__codelineno-1-78" name="__codelineno-1-78" href="#__codelineno-1-78"></a>echo &quot;$(date &#39;+%Y-%m-%d %H:%M:%S&#39;) INFO: Loading bash helper functions... &quot;
+<a id="__codelineno-1-79" name="__codelineno-1-79" href="#__codelineno-1-79"></a>source scripts/setup/helper_functions.sh
+<a id="__codelineno-1-80" name="__codelineno-1-80" href="#__codelineno-1-80"></a>echo &quot;$(date &#39;+%Y-%m-%d %H:%M:%S&#39;) INFO: Done Loading bash helper functions&quot;
+<a id="__codelineno-1-81" name="__codelineno-1-81" href="#__codelineno-1-81"></a>
+<a id="__codelineno-1-82" name="__codelineno-1-82" href="#__codelineno-1-82"></a>echo &quot;=== scripts/setup/modules.sh &gt; end $(date)&quot;
+</code></pre></div>
+</details>
 <hr />
 <h2 id="install-triotrain">Install TrioTrain</h2>
-<p>Install  DV-TrioTrain by cloning from GitHub:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>git<span class="w"> </span>clone<span class="w"> </span>git@github.com:jkalleberg/DV-TrioTrain.git
-</code></pre></div>
-<p>Then, either edit <a href="https://github.com/jkalleberg/DV-TrioTrain/blob/f54f83be2aee1b6a39d8e6ca7b2b02dd0e1fa6eb/scripts/setup/modules.sh">the default modules script</a>, or specify an alternative helper script by adding the following flag with need to specify an alternative helper script using:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>python3<span class="w"> </span>triotrain/model_train/run_trio_train.py<span class="w"> </span>--modules<span class="w"> </span>&lt;/path/to/your/module.sh&gt;<span class="w"> </span>
+<div class="highlight"><span class="filename">Run the following at the command line:</span><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>git<span class="w"> </span>clone<span class="w"> </span>git@github.com:jkalleberg/DV-TrioTrain.git
 </code></pre></div>
 <hr />
 <p><a class="md-button" href="../configuration/">Configure TrioTrain <span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M5 21a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5m1-8h8.5L11 16.5l1.42 1.42L18.34 12l-5.92-5.92L11 7.5l3.5 3.5H6v2Z"/></svg></span></a></p>
@@ -705,7 +793,7 @@
   <small>
     
       Last update:
-      <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date">July 31, 2023</span>
+      <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date">October 12, 2023</span>
       
     
   </small>

@@ -367,45 +367,12 @@
     Model Users
   </a>
   
-    <nav class="md-nav" aria-label="Model Users">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#quick-start" class="md-nav__link">
-    Quick Start
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
       
         <li class="md-nav__item">
   <a href="#model-builders" class="md-nav__link">
     Model Builders
   </a>
-  
-    <nav class="md-nav" aria-label="Model Builders">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#setup-triotrain" class="md-nav__link">
-    Setup TrioTrain
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#other-commands-and-options" class="md-nav__link">
-    Other Commands and Options
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -650,8 +617,7 @@
 </ol>
 <hr />
 <h2 id="model-users">Model Users</h2>
-<p>A major benefit of using DeepVariant over GATK is that once you've chosen a model checkpoint, you're ready to go! The models created by DV-TrioTrain can be used as an alternative checkpoint with DeepVariant's one-step, single-sample variant caller. <a href="../../user-guide/existing_models/">An index of published models can be found here</a>.</p>
-<h3 id="quick-start">Quick Start</h3>
+<p>Once you've identified your preferred model checkpoint, you're ready to go! Any model created by DV-TrioTrain can be used as an alternative checkpoint with the one-step, single-sample variant caller. <a href="../../user-guide/existing_models/">An index of published models can be found here</a>.</p>
 <p><font size= "4"> 
 <strong>Customizing DeepVariant with a TrioTrain model</strong>
 </font></p>
@@ -680,28 +646,28 @@
 </code></pre></div>
 <hr />
 <h2 id="model-builders">Model Builders</h2>
-<p>TrioTrain provides a model development framework for DeepVariant, and is therefore compatible with <strong>any diploid species without NIST-GIAB reference materials.</strong> The current version of DV-TT extends DeepVariant for use with cattle, bison, and yak genomes, and can be applied for other domesticated animal species with the requisite data.</p>
-<p>TrioTrain builds new models by starting with an existing DeepVariant model. The current version of TT uses DV-v1.4's short-read Whole Genome Sequence (WGS) model trained with the human GIAB samples. TrioTrain can optionally add the allele frequency channel, if given population-level allele frequency data (PopVCF).</p>
-<h3 id="setup-triotrain">Setup TrioTrain</h3>
-<p>Getting started with TrioTrain is straight-foward, but requires some configuration to work on your SLURM-based HPC cluster. The user guides below will walk you through what components require tweaking, depending on your system.</p>
+<p><strong>We designed TrioTrain to be compatible with any diploid species without NIST-GIAB reference materials.</strong> The current version of TrioTrain extends DeepVariant with cattle, bison, and yak genomes, and can be applied for other domesticated animal species with the requisite data.</p>
+<p>TrioTrain builds new models by starting with an existing DeepVariant model, specifically DeepVariant v1.4 short-read Whole Genome Sequence (WGS) models trained with the human GIAB samples. TrioTrain can optionally add the allele frequency channel, if given population-level allele frequency data (PopVCF).</p>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
+<p>The tutorial walk-through intentionally uses complete human genomes, and will produce <strong>~2 TB of intermediate / output data</strong> within the chosen working directory. However, the last step of the tutorial will clean up any temporary files.</p>
 </div>
-<p>The tutorial walk-through intentionally uses complete human genomes, and will produce ~2 TB of intermediate / output data within the chosen working directory. However, the last step of the tutorial will clean up any temporary files.</p>
-<p>First, change directories to your working directory, where DV-TrioTrain will be installed.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nb">cd</span><span class="w"> </span>/path/to/working_dir
-</code></pre></div>
+<p><font size= "5"> 
+<strong>TrioTrain Setup</strong>
+</font></p>
+<p>Getting started with TrioTrain is straight-foward, but requires careful configuration to work on your SLURM-based HPC cluster. The user guides below will walk you through what components require tweaking, depending on your system.</p>
+<p>First, change directories to your working directory, where TrioTrain will be run: <code>cd /path/to/working_dir</code></p>
 <p>Then, complete these guides in the following order:</p>
 <p><a class="md-button md-button--primary" href="../installation/"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14 17h-2V9h-2V7h4m5-4H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2Z"/></svg></span> Installation Guide</a>
 <a class="md-button md-button--primary" href="../configuration/"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M15 11a2 2 0 0 1-2 2h-2v2h4v2H9v-4a2 2 0 0 1 2-2h2V9H9V7h4a2 2 0 0 1 2 2m4-6H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2Z"/></svg></span> Configuration Guide</a>
 <a class="md-button md-button--primary" href="../walk-through/"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M15 10.5a1.5 1.5 0 0 1-1.5 1.5c.84 0 1.5.67 1.5 1.5V15c0 1.11-.89 2-2 2H9v-2h4v-2h-2v-2h2V9H9V7h4c1.11 0 2 .89 2 2m4-6H5c-1.09 0-2 .9-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2Z"/></svg></span> Human GIAB Tutorial</a></p>
-<h3 id="other-commands-and-options">Other Commands and Options</h3>
+<hr />
+<p><font size= "4"> 
+Other Commands and Options
+</font></p>
 <p>There are various other commands and options available. For a complete list of
 commands, use the <code>--help</code> flag:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>python3<span class="w"> </span>triotrain/run_trio_train.py<span class="w"> </span>--help
-</code></pre></div>
-<p>To view a list of options available on a given script, use the <code>--help</code> flag with that command. For example, to get a list of all options available for the <code>make_examples</code> script, run the following:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>python3<span class="w"> </span>triotrain/model_training/slurm/make_examples.py<span class="w"> </span>-h
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>python3<span class="w"> </span>triotrain/run_trio_train.py<span class="w"> </span>--help
 </code></pre></div>
 <p><a class="md-button" href="../../user-guide/get-help/">Got a question <span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm8-6.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM6.92 6.085h.001a.749.749 0 1 1-1.342-.67c.169-.339.436-.701.849-.977C6.845 4.16 7.369 4 8 4a2.756 2.756 0 0 1 1.637.525c.503.377.863.965.863 1.725 0 .448-.115.83-.329 1.15-.205.307-.47.513-.692.662-.109.072-.22.138-.313.195l-.006.004a6.24 6.24 0 0 0-.26.16.952.952 0 0 0-.276.245.75.75 0 0 1-1.248-.832c.184-.264.42-.489.692-.661.103-.067.207-.132.313-.195l.007-.004c.1-.061.182-.11.258-.161a.969.969 0 0 0 .277-.245C8.96 6.514 9 6.427 9 6.25a.612.612 0 0 0-.262-.525A1.27 1.27 0 0 0 8 5.5c-.369 0-.595.09-.74.187a1.01 1.01 0 0 0-.34.398ZM9 11a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"/></svg></span></a></p>
 
@@ -710,7 +676,7 @@ commands, use the <code>--help</code> flag:</p>
   <small>
     
       Last update:
-      <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date">August 1, 2023</span>
+      <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date">October 12, 2023</span>
       
     
   </small>
