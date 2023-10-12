@@ -5,26 +5,21 @@ hide:
 
 # DV-TrioTrain v0.8
 
-TrioTrain (DV-TT) is an automated pipeline for extending DeepVariant, a deep-learning-based germline variant caller. To learn more about DeepVariant, [see the original GitHub page.](https://github.com/google/deepvariant)
+DV-TrioTrain is a model development framework for [DeepVariant](https://github.com/google/deepvariant): a deep-learning-based germline variant caller. Here we provide an automated pipeline for extending DeepVariant v1.4.0 in new species.
 
----
+### **Models built by DV-TrioTrain do not require trio-binned data for variant calling.** 
 
-## Why use TrioTrain?
+Our unique re-training approach enables the model to incorporate inheritance expectations. Using TrioTrain to build new versions of DeepVariant models requires trio-binned genomes, the final model produced by TrioTrain works on individual genomes, while prioritizing features of inherited variants. 
 
-The unique re-training approach enables the model to incorporate inheritance expectations; **however, models built by DV-TrioTrain do not require trio-binned data for variant calling.** While the DV-TT pipeline assumes re-training data are from trio-binned samples, models are trained to prioritize features of inherited variants to produce fewer Mendelian Inheritance Errors (MIE) in individual samples.
-
----
 
 [Get Started with TrioTrain](./getting-started/getting-started.md){ .md-button .md-button--primary }
 
 ---
 
-## Contributing to TrioTrain
+### Contributing to TrioTrain
 
 Please [open a Github pull request](https://github.com/jkalleberg/DV-TrioTrain/pulls) if you wish to contribute to TrioTrain.
 
----
-
-## License
+### License
 
 [GPL-3.0 license](about/license.md)

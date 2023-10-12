@@ -10,9 +10,7 @@ There are two main audiences of DV-TrioTrain:
 
 ## Model Users
 
-A major benefit of using DeepVariant over GATK is that once you've chosen a model checkpoint, you're ready to go! The models created by DV-TrioTrain can be used as an alternative checkpoint with DeepVariant's one-step, single-sample variant caller. [An index of published models can be found here](../user-guide/existing_models.md).
-
-### Quick Start
+Once you've identified your preferred model checkpoint, you're ready to go! Any model created by DV-TrioTrain can be used as an alternative checkpoint with the one-step, single-sample variant caller. [An index of published models can be found here](../user-guide/existing_models.md).
 
 <font size= "4"> 
 **Customizing DeepVariant with a TrioTrain model**
@@ -48,22 +46,20 @@ apptainer run \
 
 ## Model Builders
 
-TrioTrain provides a model development framework for DeepVariant, and is therefore compatible with **any diploid species without NIST-GIAB reference materials.** The current version of DV-TT extends DeepVariant for use with cattle, bison, and yak genomes, and can be applied for other domesticated animal species with the requisite data.
+**We designed TrioTrain to be compatible with any diploid species without NIST-GIAB reference materials.** The current version of TrioTrain extends DeepVariant with cattle, bison, and yak genomes, and can be applied for other domesticated animal species with the requisite data.
 
-TrioTrain builds new models by starting with an existing DeepVariant model. The current version of TT uses DV-v1.4's short-read Whole Genome Sequence (WGS) model trained with the human GIAB samples. TrioTrain can optionally add the allele frequency channel, if given population-level allele frequency data (PopVCF).
-
-### Setup TrioTrain
-
-Getting started with TrioTrain is straight-foward, but requires some configuration to work on your SLURM-based HPC cluster. The user guides below will walk you through what components require tweaking, depending on your system.
+TrioTrain builds new models by starting with an existing DeepVariant model, specifically DeepVariant v1.4 short-read Whole Genome Sequence (WGS) models trained with the human GIAB samples. TrioTrain can optionally add the allele frequency channel, if given population-level allele frequency data (PopVCF).
 
 !!! warning
-  The tutorial walk-through intentionally uses complete human genomes, and will produce ~2 TB of intermediate / output data within the chosen working directory. However, the last step of the tutorial will clean up any temporary files.
+    The tutorial walk-through intentionally uses complete human genomes, and will produce **~2 TB of intermediate / output data** within the chosen working directory. However, the last step of the tutorial will clean up any temporary files.
 
-First, change directories to your working directory, where DV-TrioTrain will be installed.
+<font size= "5"> 
+**TrioTrain Setup**
+</font>
 
-```bash
-cd /path/to/working_dir
-```
+Getting started with TrioTrain is straight-foward, but requires careful configuration to work on your SLURM-based HPC cluster. The user guides below will walk you through what components require tweaking, depending on your system.
+
+First, change directories to your working directory, where TrioTrain will be run: `cd /path/to/working_dir`
 
 Then, complete these guides in the following order:
 
@@ -71,19 +67,17 @@ Then, complete these guides in the following order:
 [:material-numeric-2-box: Configuration Guide](configuration.md){ .md-button .md-button--primary}
 [:material-numeric-3-box: Human GIAB Tutorial](walk-through.md){ .md-button .md-button--primary}
 
-### Other Commands and Options
+---
+
+<font size= "4"> 
+Other Commands and Options
+</font>
 
 There are various other commands and options available. For a complete list of
 commands, use the `--help` flag:
 
 ```bash
 python3 triotrain/run_trio_train.py --help
-```
-
-To view a list of options available on a given script, use the `--help` flag with that command. For example, to get a list of all options available for the `make_examples` script, run the following:
-
-```bash
-python3 triotrain/model_training/slurm/make_examples.py -h
 ```
 
 [Got a question :octicons-question-16:](../user-guide/get-help.md){ .md-button }

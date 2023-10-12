@@ -70,6 +70,12 @@ format
 ### Configuring SLURM Resources
 
 SLURM resources are handled by TrioTrain via a resource configuration file (`.json`).
+
+??? example "Example | Resource Config File"
+    ``` title="triotrain/model_training/tutorial/resources_used.json"
+    --8<-- "./triotrain/model_training/tutorial/resources_used.json"
+    ```
+
 #### Resource Config Format
 
 Contains nested dictionaries in the following format:

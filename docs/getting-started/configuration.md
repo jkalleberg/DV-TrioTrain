@@ -1,55 +1,68 @@
 # Configuration
 
-To ensure reproducibility, all configuration steps described below are included in a helper script, `build.sh`. However, proper configuration requires some system-specific edits for your HPC cluster.
+!!! warning
+    Steps that require some system-specific edits for your HPC cluster will have a warning label.
 
-You can view a [template `build.sh` script for automatically building TrioTrain on Github.](https://github.com/jkalleberg/DV-TrioTrain/blob/131498cd919b0f5c93da648e928d96a7fa06b8bc/scripts/setup/build.sh)
+To ensure reproducibility, all configuration steps described below are included in a helper script, `build.sh`.
 
-Each configuration step during the build process uses a separate helper script. Examples these can also found on [Github, under the scripts/ directory](https://github.com/jkalleberg/DV-TrioTrain/tree/131498cd919b0f5c93da648e928d96a7fa06b8bc/scripts).
+??? example "Example | `build.sh`"
+    ```
+    --8<-- "./scripts/setup/build.sh"
+    ```
+
+<a name="interactive"></a>
 
 ## 1. Begin an interactive session first
 
-!!! warning
-    You will need to tailor this step to match your HPC cluster. Reach out to your system admin with any questions.
+!!! warning "Requires Customization"
 
 We request resource in a SLURM "interactive session" to allow us to run code at the command line and avoid running resource-intensive code on the login node, which could negatively impact other users.
 
-There are two options:
+<font size= "4"> 
+**Option 1: Manual**
+</font>
 
-??? example "Option 1: Manual"
-    Edit the following SLURM command to match your system's resources (i.e. add a valid partition and fair-share account), and run at the command line.
+Use the following command template, make edits to match your system's resources (i.e. add a valid partition and fair-share account).
 
-    ```bash
-    srun --pty -p <partition_name> --time=0-06:00:00 --exclusive --mem=0 -A <account_name> /bin/bash
+```bash title="Run the following at the command line:"
+srun --pty -p <partition_name> --time=0-06:00:00 --exclusive --mem=0 -A <account_name> /bin/bash
+```
+
+<font size= "4"> 
+**Option 2: Automated**
+</font>
+
+For repeatedly switching between different interactive session, we use the same syntax as above, but editing the provided template to match your system's resources (i.e. add a valid partition and fair-share account).
+
+```bash title="Run the following at the command line:"
+source scripts/start_interactive.sh
+```
+
+??? example "Example | `start_interactive.sh`"
+    ```
+    --8<-- "./scripts/start_interactive.sh"
     ```
 
-??? example "Option 2: Automated"
-    Using the same syntax as in Option 1 above, edit the [template script](https://github.com/jkalleberg/DV-TrioTrain/blob/bac33c732065fa7fa1e92097e8f31da383261f4f/scripts/start_interactive.sh) to match your system's resources.
-
-    Then, run the following at the command line:
-
-    ```bash
-    source scripts/start_interactive.sh
-    ```
-
+<a name="modules"></a>
 ## 2. Load cluster-specific modules
 
-!!! warning
-    You will need to tailor this step to match your HPC cluster. Reach out to your system admin with any questions.
+!!! warning "Requires Customization"
 
-This executable is how TrioTrain finds the [required software](installation.md#system-requirements) on your local HPC. TrioTrain will repeatedly use this script to load all modules and the required bash helper functions. [You can view the template script on GitHub.](https://github.com/jkalleberg/DV-TrioTrain/blob/bac33c732065fa7fa1e92097e8f31da383261f4f/scripts/setup/modules.sh)
+This executable is how TrioTrain finds the [required software](installation.md#system-requirements) on your local HPC. TrioTrain will repeatedly use this script to load all modules and the required bash helper functions. Edit the provided template to match your system (i.e. add a valid module name).
 
-Within the template, edit the lines with `module load <module_name/version>` to match your system (i.e. add a valid module name).
-
-Then, run the following at the command line:
-
-```bash
+```bash title="Run the following at the command line:"
 source scripts/setup/modules.sh 
 ```
 
-## 3. Install Apptainer/Singularity containers
+??? example "Example | `modules.sh`"
+    ```
+    --8<-- "./scripts/setup/modules.sh"
+    ```
 
-!!! note
-    Both the GPU and CPU containers are required, since you can't run the GPU version used for training on a non-GPU hardware.
+??? note "Alternate Versions of DeepVariant"
+    Providing a valid version number as the first argument to `modules.sh` will change the version used. Using any version greater than v1.4.0 is untested!
+
+## 3. Install Apptainer/Singularity containers
 
 We need local copies of the two (2) versions of DeepVariant containers, and one (1) container for `hap.py`:
 
@@ -57,7 +70,7 @@ We need local copies of the two (2) versions of DeepVariant containers, and one 
 2. CPU-specific container used for all other steps
 3. `hap.py` - we strongly recommend using a containerized version as this tool uses the depreciated Python v2.7 making it incompatible with either DeepVariant containers, and the TrioTrain conda environment.
 
-```bash
+```bash title="Run the following at the command line:"
 # Install GPU-specific DV apptainer container
 bash scripts/setup/build_containers.sh DeepVariant-GPU
 
@@ -68,24 +81,50 @@ bash scripts/setup/build_containers.sh DeepVariant-CPU
 bash scripts/setup/build_happy.sh
 ```
 
+??? example "Example | `build_containers.sh`"
+    ```
+    --8<-- "./scripts/setup/build_containers.sh"
+    ```
+
+??? example "Example | `build_happy.sh`"
+    ```
+    --8<-- "./scripts/setup/build_happy.sh"
+    ```
+
+??? note "Container Versions"
+    Both the GPU and CPU containers are required, since you can't run the GPU version used for training on a non-GPU hardware.
+
 ## 4. Install the Conda environment
 
-This conda environment includes the DeepVariant requirements, such as Apache Beam, Tensorflow, etc. The conda environment can take awhile to build. We recommend requesting ample memory during your interactive session before proceeding.
+!!! warning
+    **CAUTION:** TrioTrain and DeepVariant require highly specific package versions, and TrioTrain assumes that a pre-built conda environment is located here: `./miniconda_envs/beam_v2.30`. We are unable to support users opt to make significant changes, or deviate the conda env path at this time.
 
-??? note
-    `source` is used instead of `bash` to by-pass system issues with `conda activate` specific to MU Lewis, which may not be required for your system.
+This conda environment includes the DeepVariant requirements, such as Apache Beam, Tensorflow, etc. The conda environment can take awhile to build. We recommend requesting ample memory during your interactive session before proceeding. 
 
-```bash
+```bash title="Run the following at the command line:"
 source scripts/setup/build_beam.sh
+
+# `source` is used instead of `bash` to by-pass system issues with `conda activate` 
+# specific to MU Lewis, which may not be required for your system.
 ```
+
+??? example "Example | `build_beam.sh`"
+    ```
+    --8<-- "./scripts/setup/build_beam.sh"
+    ```
 
 ## 5. Download the Beam shuffling script
 
-Create a local copy of the appropriate shuffling script from Google Genomoics Health Group.
+Creates a local copy of the appropriate shuffling script from Google Genomoics Health Group.
 
-```bash
+```bash title="Run the following at the command line:"
 bash scripts/setup/download_shuffle.sh
 ```
+
+??? example "Example | `download_shuffle.sh`"
+    ```
+    --8<-- "./scripts/setup/download_shuffle.sh"
+    ```
 
 ---
 
