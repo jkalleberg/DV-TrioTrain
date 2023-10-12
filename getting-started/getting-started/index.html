@@ -684,7 +684,11 @@
 <p>TrioTrain builds new models by starting with an existing DeepVariant model. The current version of TT uses DV-v1.4's short-read Whole Genome Sequence (WGS) model trained with the human GIAB samples. TrioTrain can optionally add the allele frequency channel, if given population-level allele frequency data (PopVCF).</p>
 <h3 id="setup-triotrain">Setup TrioTrain</h3>
 <p>Getting started with TrioTrain is straight-foward, but requires some configuration to work on your SLURM-based HPC cluster. The user guides below will walk you through what components require tweaking, depending on your system.</p>
-<p>First, change directories to your working directory.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+</div>
+<p>The tutorial walk-through intentionally uses complete human genomes, and will produce ~2 TB of intermediate / output data within the chosen working directory. However, the last step of the tutorial will clean up any temporary files.</p>
+<p>First, change directories to your working directory, where DV-TrioTrain will be installed.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nb">cd</span><span class="w"> </span>/path/to/working_dir
 </code></pre></div>
 <p>Then, complete these guides in the following order:</p>
@@ -706,7 +710,7 @@ commands, use the <code>--help</code> flag:</p>
   <small>
     
       Last update:
-      <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date">July 31, 2023</span>
+      <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date">August 1, 2023</span>
       
     
   </small>

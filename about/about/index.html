@@ -607,8 +607,8 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#authors" class="md-nav__link">
-    Authors
+  <a href="#author" class="md-nav__link">
+    Author
   </a>
   
 </li>
@@ -669,30 +669,14 @@
 
 <h1 id="dv-triotrain-v08">DV-TrioTrain v0.8</h1>
 <h2 id="background">Background</h2>
-<p>Default DeepVariant models were only trained on human data. Our work developing DeepVariant-TrioTrain (DV-TT) illustrates the limitations of applying models built exclusively with human-genome datasets in other species. Species-specific DeepVariant models exist for <a href="https://google.github.io/deepvariant/posts/2018-12-05-improved-non-human-variant-calling-using-species-specific-deepvariant-models/">mosquito genomes</a>, and the <a href="https://www.biorxiv.org/content/10.1101/2022.10.22.513130v1.full">endangered Kākāpō parot</a>. However, DV-TrioTrain is the first tool to reproducably expand training DV into non-human, mammalian genomes from multiple species.</p>
-<p>We built the DV-TT pipeline to extend DeepVariant with cattle, bison, and yak genomes. Specifically, TrioTrain builds upon the existing DV model for short-read (Illumina) Whole Genome Sequence (WGS) data, while adding population-level allele frequency data from over 5,500 published cattle samples from SRA. Currently, population-scale, long-read data is scarce in non-human species, but the DV-TT framework enables continued extension of DV as those data become available.</p>
-<p><strong>TrioTrain provides a model development template for any diploid species without NIST-GIAB reference materials.</strong> Our goal is to motivate adoption of scalable, data-driven variant calling models in domestic animal species. We propose that comparative genomics approaches in deep learning model development offers performance benefits over species-specific models.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>DV-TT produces new DV model(s) for germline variant-calling in diploid organisms. However, there are some species-dependent behaviors in the pipeline.  </p>
-<p><strong>The current species supported include:</strong></p>
-<ul>
-<li>humans</li>
-<li>cows</li>
-<li>mosquitoes</li>
-<li><em>your favorite species could go here!</em><ul>
-<li>The DV-TT pipeline can be easily re-configured for your favorite species, assuming the necessary training data exist.</li>
-<li>See the [User Guide] for more details.</li>
-</ul>
-</li>
-</ul>
-</div>
+<p>The exisiting DeepVariant models were only trained on human data. Species-specific DeepVariant models exist for <a href="https://google.github.io/deepvariant/posts/2018-12-05-improved-non-human-variant-calling-using-species-specific-deepvariant-models/">mosquito genomes</a>, and the <a href="https://www.biorxiv.org/content/10.1101/2022.10.22.513130v1.full">endangered Kākāpō parot</a>. We built TrioTrain (DV-TT) to enable us to build custom DeepVariant models for cattle, bison, and yak genomes. Our custom models incorporate allele frequency data from over 5,500 published Bovine samples, making DV-TT the first tool to expand the existing Allele Frequency model into non-human, mammalian genomes. Our work illustrates the limitations of applying models built exclusively with human-genome datasets in other species. Our findings suggest that comparative genomics approaches in deep learning model development offer performance benefits over species-specific models.</p>
 <hr />
 <h2 id="how-triotrain-works">How TrioTrain works</h2>
-<p>DV-TrioTrain is designed for <a href="https://machinelearningmastery.com/transfer-learning-for-deep-learning/">transfer learning</a>, relying on new data sources and context to expand on prior experience. During model development, DV-TrioTrain iteratively feeds labeled examples from parent-offspring duos, enabling the model to incorporate inheritance expectations.</p>
+<p>DV-TT is a SLURM-based, automated pipeline that produces new DV model(s) for germline variant-calling in any diploid organism, <strong>focusing on species without NIST-GIAB reference materials.</strong></p>
 <p><img alt="workflow diagram" src="../../img/Workflow_Sm_Horizontal.png" /></p>
+<p><strong>Assuming the necessary training data for your favorite species already exist, TrioTrain automatically enables customizing the DeepVariant model.</strong> <a href="https://github.com/jkalleberg/DV-TrioTrain/blob/62ec43dba06e8004abda1b09242ea4a3450048ad/docs/user-guide/usage_guide.md">Additional details about the required data can be found here.</a></p>
 <h3 id="initialization">Initialization</h3>
-<p>TrioTrain begins by initalizing with weights from an exisiting DeepVariant Model, using one of the following options:</p>
+<p>Currently, TrioTrain supports initializing training  with weights from an exisiting DeepVariant Model, using one of the following options:</p>
 <ul>
 <li>Human WGS DeepVariant-v1.4 formats<ol>
 <li>Default model - includes the insert size channel</li>
@@ -701,8 +685,9 @@
 </li>
 <li>Any custom model satisfying the channel expectations below</li>
 </ul>
+<p><a href="https://github.com/jkalleberg/DV-TrioTrain/blob/62ec43dba06e8004abda1b09242ea4a3450048ad/docs/user-guide/existing_models.md">An index of compatible models can be found here.</a></p>
 <h3 id="training">Training</h3>
-<p>For each trio provided, TrioTrain will perform 2 iterations of re-training, one for each parent. The starting parent is a user-specified parameter, either <code>Mother</code> or <code>Father</code>. With the first iteration, an existing DeepVariant model is used to initalize the weights and build upon prior learning. Subsequent iterations begin with a prior iteration's selected checkpoint.</p>
+<p>For each trio provided, TrioTrain will perform two (2) iterations of re-training, one for each parent. The starting parent is a user-specified parameter, either <code>Mother</code> or <code>Father</code>. With the first iteration an existing DeepVariant model is used to initalize the weights and build upon prior learning. Subsequent iterations begin with a prior iteration's selected checkpoint.</p>
 <h3 id="evaluation">Evaluation</h3>
 <p>As a training iteration proceeds, learning is evaluated using labeled examples from the parents' offspring. The same individual's genome is used for both iterations run for a trio. Our assumption is that a model trained on a parent genome will be better at genotyping variants inherited from that parent in the offspring's genome.</p>
 <h3 id="selection">Selection</h3>
@@ -711,17 +696,17 @@
 <p>Testing occurs for all model iterations with a set of genomes previously unseen by the model. Variants are called with the model iterations by providing a custom checkpoint to the single-step variant caller.</p>
 <h3 id="comparision">Comparision</h3>
 <p>Variants produced during a training iteration by a candidate model are compared against a user-defined benchmark set with hap.py, a standardized benchmarking tool recommended by the Global Alliance for Genomic Health (GA4GH). See GA4GH's resources on <a href="https://github.com/ga4gh/benchmarking-tools">Germline Small Variant Benchmarking Tools and Standards</a>, or the <a href="https://github.com/Illumina/hap.py">original Illumina hap.py github page</a> to learn more.</p>
-<h2 id="authors">Authors</h2>
+<h2 id="author">Author</h2>
 <p>Jenna Kalleberg (<a href="&#109;&#97;&#105;&#108;&#116;&#111;&#58;&#106;&#97;&#107;&#116;&#104;&#50;&#64;&#109;&#97;&#105;&#108;&#46;&#109;&#105;&#115;&#115;&#111;&#117;&#114;&#105;&#46;&#111;&#114;&#103;">&#106;&#97;&#107;&#116;&#104;&#50;&#64;&#109;&#97;&#105;&#108;&#46;&#109;&#105;&#115;&#115;&#111;&#117;&#114;&#105;&#46;&#111;&#114;&#103;</a>)</p>
 <h2 id="acknowledgements">Acknowledgements</h2>
-<p>Many thanks to the developers and contributors of the many open source packages used by TrioTrain:</p>
+<p>Many thanks to the developers and contributors of the many open source packages used by TrioTrain.</p>
 
   <hr>
 <div class="md-source-file">
   <small>
     
       Last update:
-      <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date">May 26, 2023</span>
+      <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date">July 31, 2023</span>
       
     
   </small>
