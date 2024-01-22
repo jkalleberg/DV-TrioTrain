@@ -11,13 +11,14 @@ example:
 """
 
 import argparse
-from logging import Logger
-from sys import exit, path
 from dataclasses import dataclass, field
 from json import load
-from os import getcwd, path as p
+from logging import Logger
+from os import getcwd
+from os import path as p
 from pathlib import Path
 from re import sub
+from sys import exit, path
 from typing import List, TextIO, Union
 
 from regex import compile
@@ -26,15 +27,16 @@ abs_path = Path(__file__).resolve()
 module_path = str(abs_path.parent.parent)
 path.append(module_path)
 
-from model_training.slurm.suffix import remove_suffixes
 from helpers.files import TestFile, WriteFiles
-from model_training.slurm.sbatch import SBATCH, SubmitSBATCH
-from stats import Stats, check_args
 from helpers.iteration import Iteration
 from helpers.outputs import check_if_output_exists
-from helpers.utils import generate_job_id, check_if_all_same
+from helpers.utils import check_if_all_same, generate_job_id
+from model_training.slurm.sbatch import SBATCH, SubmitSBATCH
+from model_training.slurm.suffix import remove_suffixes
+from stats import Stats, check_args
 
-def collect_args():
+
+def collect_args() -> argparse.Namespace:
     """
     Process command line argument to execute script.
     """
@@ -299,7 +301,7 @@ class MIE:
                 f"[{self._stats._phase}]: TRIO VCF_FILE | '{self._trio_vcf.file}'"
             )
 
-    def find_mie(self, pass_only: bool = True):
+    def find_mie(self, pass_only: bool = True) -> None:
         """
         Determine if 'rtg-tools mendelian' needs to be run.
         """
@@ -418,7 +420,6 @@ class MIE:
                         exit(1)
 
             elif "incorrect pedigree" in row.lower():
-                
                 if self._stats._species.lower() == "human":
                     self.logger.error(
                         f"{self._stats._logger_msg}: {self._concordance_msg}"
@@ -824,7 +825,7 @@ class MIE:
                 self._trio_vcf.file,
                 self._child_bcf.file,
                 self._father_bcf.file,
-                self._mother_bcf.file
+                self._mother_bcf.file,
             ]
 
             if self._regions_file.file_exists:
@@ -1091,11 +1092,10 @@ class MIE:
                         continue
                     else:
                         if self._merge_inputs and not self._trio_vcf.file_exists:
-                            
                             for index, indv in enumerate(self._vcf_inputs):
                                 self.find_bcf(vcf_path=indv.path, index=index)
                                 # self.find_indexed_inputs()
-                            
+
                             self.merge_trio_bcfs()
 
                     self.calc_trio_errors()
@@ -1156,7 +1156,7 @@ class MIE:
         self.check_submission()
 
 
-def __init__():
+def __init__() -> None:
     from helpers.utils import get_logger
     from helpers.wrapper import Wrapper, timestamp
 
