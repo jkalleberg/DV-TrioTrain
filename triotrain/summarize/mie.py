@@ -1167,8 +1167,8 @@ def __init__() -> None:
     Wrapper(__file__, "start").wrap_script(timestamp())
 
     # Create error log
-    current_file = path.basename(__file__)
-    module_name = path.splitext(current_file)[0]
+    current_file = p.basename(__file__)
+    module_name = p.splitext(current_file)[0]
     logger = get_logger(module_name)
 
     try:
