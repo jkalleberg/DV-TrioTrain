@@ -42,7 +42,7 @@ def collect_args() -> argparse.ArgumentParser:
         "-v",
         "--version",
         action="version",
-        version="%(prog)s 0.7",
+        version="%(prog)s 0.8",
         help="show program's version number and exit",
     )
     parser.add_argument(
