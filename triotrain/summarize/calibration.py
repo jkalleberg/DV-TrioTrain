@@ -12,6 +12,8 @@ from os import environ
 from os import path as p
 from pathlib import Path
 from sys import path
+from subprocess import run as run_sub
+from typing import Union
 
 abs_path = Path(__file__).resolve()
 module_path = str(abs_path.parent.parent)
@@ -55,14 +57,14 @@ def collect_args() -> argparse.Namespace:
     return parser.parse_args(
         [
             "--input",
-            "/storage/hpc/group/UMAG_test/WORKING/jakth2/VARIANT_CALLING_OUTPUTS/230313_GIAB/DT1.4_default_human/Human.Trio1.PASS.MIE.vcf.gz",
+            "/storage/hpc/group/UMAG_test/WORKING/jakth2/VARIANT_CALLING_OUTPUTS/230312_GIAB/DT1.4_default_human/Human.Trio1.PASS.MIE.vcf.gz",
             "--debug",
             "--dry-run",
         ]
     )
 
 
-def check_args(args: argparse.Namespace, logger: Logger) -> str:
+def check_args(args: argparse.Namespace, logger: Logger) -> Union[str, None]:
     """
     With "--debug", display command line args provided.
     With "--dry-run", display a msg.
@@ -78,15 +80,60 @@ def check_args(args: argparse.Namespace, logger: Logger) -> str:
         logger.debug(f"using DeepVariant version | {_version}")
 
     if args.dry_run:
-        logger_msg = f"[DRY_RUN]: "
-        logger.info(f"{logger_msg }output will display to screen and not write to a file")
+        _logger_msg = f"[DRY_RUN]"
+        logger.info(
+            f"{_logger_msg}: output will display to screen and not write to a file"
+        )
     else:
-        logger_msg = ""
+        _logger_msg = None
 
     assert (
         args.vcf_input
-    ), "missing --input; Please provide a Trio VCF file produced by rtg-mendelian"
-    return logger_msg
+    ), "missing --input; Please provide a Trio VCF file produced by rtg-mendelian."
+
+    _input_file = TestFile(file=args.vcf_input, logger=logger)
+    _input_file.check_existing(logger_msg=_logger_msg, debug_mode=args.debug)
+    assert (
+        _input_file.file_exists
+    ), f"non-existant file provided | '{_input_file.file}'\nPlease provide a valid MIE VCF."
+    return _logger_msg
+
+
+# def convert_to_tsv() -> None:
+#     """
+#     Run 'bcftools query' as a Python Subprocess, and write the output to an intermediate file.
+#     """
+#     bcftools_query = run_sub(
+#         [
+#             "bcftools",
+#             "query",
+#             "-f",
+#             "%CHROM\t%POS[\t%BD\t%GT\t%BVT\t%BLT\t%BI]\n",
+#             # str(self.happy_vcf_file_path),
+#         ],  # type: ignore
+#         capture_output=True,
+#         text=True,
+#         check=True,
+#     )
+
+#     if self.args.debug:
+#         self.logger.debug(
+#             f"{self._logger_msg}: writing TSV metrics file using | '{self.happy_vcf_file_path.name}'"
+#         )
+
+#     if not self.args.dry_run:
+#         file = open(str(self.file_tsv), mode="w")
+#         # Add custom header to the new TSV
+#         file.write("\t".join(self._custom_header[0:]) + "\n")
+#         file.close()
+#         contents = open(str(self.file_tsv), mode="a")
+#         contents.write(bcftools_query.stdout)
+#         contents.close()
+#     else:
+#         self.tsv_format = bcftools_query.stdout.splitlines()
+
+#     if self.args.debug:
+#         self.logger.debug(f"{self._logger_msg}: done converting to TSV file")
 
 
 def __init__() -> None:
@@ -107,7 +154,7 @@ def __init__() -> None:
     try:
         # Check command line args
         logger_msg = check_args(args, logger)
-        logger.info(f"{logger_msg}DO STUFF HERE!")
+        logger.info(f"{logger_msg}: DO STUFF HERE!")
         # bcftools query -f '%CHROM\t%POS\t%REF\t%ALT\t%INFO/MCU\t%INFO/MCV[\t%GT\t%GQ]\n' Human.Trio1.PASS.MIE.vcf.gz
     except AssertionError as E:
         logger.error(E)
