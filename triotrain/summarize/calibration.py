@@ -127,14 +127,55 @@ def __init__() -> None:
             logger_msg=_logger_msg,
         )
         mie_vcf.run()
+
+        _edited_tsv_dict_array = []
+        _num_Non_Ref_Family_Records = 0
+        _num_MissingRef_Records = 0
         for itr, row in enumerate(mie_vcf._tsv_dict_array):
+            # print(f"ROW#{itr}: {row}")
+            
+            # Identify when all samples are either "./." or "0/0"
+            gt_values = [val for key, val in row.items() if key.startswith("GT")]
+            if gt_values[0] == "./.":
+                _num_MissingRef_Records += 1
+                continue
+            else:
+                contains_gt = [s for s in gt_values if "." not in s and "0/0" not in s]
+                if len(contains_gt) == 0:
+                    _num_MissingRef_Records += 1
+                    continue
+                else:
+                    _num_Non_Ref_Family_Records += 1
+
+            # Calculate minimum GQ value per site for all samples
+            _row_copy = row.copy()
+            gq_values = [
+                None if val == "." else int(val)
+                for key, val in row.items()
+                if key.startswith("GQ")
+            ]
+            min_gq = (
+                min(filter(lambda x: x is not None, gq_values))
+                if any(gq_values)
+                else None
+            )
+            _row_copy["INFO/MIN_GQ"] = min_gq
+            _edited_tsv_dict_array.insert(itr, _row_copy)
+
+        print("NUM NON REF FAMILY RECORDS:", _num_Non_Ref_Family_Records)
+        print("NUM MISSING / REF ONLY RECORDS:", _num_MissingRef_Records)
+        print("NUM MIN GQ RECORDS:", len(_edited_tsv_dict_array))
+        breakpoint()
+        # Sort by Min. GQ
+        sorted_dict_array = sorted(
+            _edited_tsv_dict_array, key=lambda x: x["INFO/MIN_GQ"]
+        )
+        for itr, row in enumerate(sorted_dict_array):
             if itr < 5:
                 print(f"ROW{itr}: {row}")
-                gq_values = [key.startswith("GQ") for key in row.keys()]
-                print("GQ VALUES:", gq_values)
-                breakpoint()
             else:
                 return
+
     except AssertionError as E:
         logger.error(E)
 
