@@ -51,10 +51,18 @@ def collect_args() -> argparse.Namespace:
         help="if True, display commands to the screen",
         action="store_true",
     )
-    return parser.parse_args()
+    # return parser.parse_args()
+    return parser.parse_args(
+        [
+            "--input",
+            "/storage/hpc/group/UMAG_test/WORKING/jakth2/VARIANT_CALLING_OUTPUTS/230313_GIAB/DT1.4_default_human/Human.Trio1.PASS.MIE.vcf.gz",
+            "--debug",
+            "--dry-run",
+        ]
+    )
 
 
-def check_args(args: argparse.Namespace, logger: Logger) -> None:
+def check_args(args: argparse.Namespace, logger: Logger) -> str:
     """
     With "--debug", display command line args provided.
     With "--dry-run", display a msg.
@@ -70,11 +78,15 @@ def check_args(args: argparse.Namespace, logger: Logger) -> None:
         logger.debug(f"using DeepVariant version | {_version}")
 
     if args.dry_run:
-        logger.info("[DRY RUN]: output will display to screen and not write to a file")
+        logger_msg = f"[DRY_RUN]: "
+        logger.info(f"{logger_msg }output will display to screen and not write to a file")
+    else:
+        logger_msg = ""
 
     assert (
         args.vcf_input
     ), "missing --input; Please provide a Trio VCF file produced by rtg-mendelian"
+    return logger_msg
 
 
 def __init__() -> None:
@@ -94,8 +106,8 @@ def __init__() -> None:
 
     try:
         # Check command line args
-        check_args(args, logger)
-        logger.info("DO STUFF HERE!")
+        logger_msg = check_args(args, logger)
+        logger.info(f"{logger_msg}DO STUFF HERE!")
         # bcftools query -f '%CHROM\t%POS\t%REF\t%ALT\t%INFO/MCU\t%INFO/MCV[\t%GT\t%GQ]\n' Human.Trio1.PASS.MIE.vcf.gz
     except AssertionError as E:
         logger.error(E)
