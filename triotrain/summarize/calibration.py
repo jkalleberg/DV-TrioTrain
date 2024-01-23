@@ -13,6 +13,7 @@ from os import path as p
 from pathlib import Path
 from sys import path
 from typing import Union
+import pandas as pd
 
 abs_path = Path(__file__).resolve()
 module_path = str(abs_path.parent.parent)
@@ -118,6 +119,8 @@ def __init__() -> None:
     try:
         # Check command line args
         _logger_msg = check_args(args, logger)
+
+        # Transform the Trio VCF output from RTG mendelian into a TSV file
         mie_vcf = Convert_VCF(
             vcf_input=args.vcf_input,
             tsv_output=args.output,
@@ -127,57 +130,69 @@ def __init__() -> None:
             logger_msg=_logger_msg,
         )
         mie_vcf.run()
+    except AssertionError as E:
+        logger.error(E)
 
-        _edited_tsv_dict_array = []
-        _num_Non_Ref_Family_Records = 0
-        _num_MissingRef_Records = 0
-        for itr, row in enumerate(mie_vcf._tsv_dict_array):
-            # print(f"ROW#{itr}: {row}")
-            
-            # Identify when all samples are either "./." or "0/0"
-            gt_values = [val for key, val in row.items() if key.startswith("GT")]
-            if gt_values[0] == "./.":
+    _edited_tsv_dict_array = []
+    _num_Non_Ref_Family_Records = 0
+    # NOTE: This number should match the value in the RTG-mendelian log file for
+    #       the number of sites "checked for Mendelian constraints"
+
+    _num_MissingRef_Records = 0
+    for itr, row in enumerate(mie_vcf._tsv_dict_array):
+        # print(f"ROW#{itr}: {row}")
+        # breakpoint()
+
+        gt_values = [val for key, val in row.items() if key.startswith("GT")]
+
+        # First, skip uncalled in offspring
+        if gt_values[0] == "./.":
+            _num_MissingRef_Records += 1
+            continue
+        # Remove sites where complete trio is either "./." or "0/0"
+        else:
+            contains_gt = [s for s in gt_values if "." not in s and "0/0" not in s]
+            if len(contains_gt) == 0:
                 _num_MissingRef_Records += 1
                 continue
             else:
-                contains_gt = [s for s in gt_values if "." not in s and "0/0" not in s]
-                if len(contains_gt) == 0:
-                    _num_MissingRef_Records += 1
-                    continue
-                else:
-                    _num_Non_Ref_Family_Records += 1
+                _num_Non_Ref_Family_Records += 1
 
-            # Calculate minimum GQ value per site for all samples
-            _row_copy = row.copy()
-            gq_values = [
-                None if val == "." else int(val)
-                for key, val in row.items()
-                if key.startswith("GQ")
-            ]
-            min_gq = (
-                min(filter(lambda x: x is not None, gq_values))
-                if any(gq_values)
-                else None
-            )
-            _row_copy["INFO/MIN_GQ"] = min_gq
-            _edited_tsv_dict_array.insert(itr, _row_copy)
-
-        print("NUM NON REF FAMILY RECORDS:", _num_Non_Ref_Family_Records)
-        print("NUM MISSING / REF ONLY RECORDS:", _num_MissingRef_Records)
-        print("NUM MIN GQ RECORDS:", len(_edited_tsv_dict_array))
-        breakpoint()
-        # Sort by Min. GQ
-        sorted_dict_array = sorted(
-            _edited_tsv_dict_array, key=lambda x: x["INFO/MIN_GQ"]
+        # Calculate minimum GQ value per site for all samples
+        _row_copy = row.copy()
+        gq_values = [
+            None if val == "." else int(val)
+            for key, val in row.items()
+            if key.startswith("GQ")
+        ]
+        min_gq = (
+            min(filter(lambda x: x is not None, gq_values))
+            if any(gq_values)
+            else None
         )
-        for itr, row in enumerate(sorted_dict_array):
-            if itr < 5:
-                print(f"ROW{itr}: {row}")
-            else:
-                return
+        _row_copy["INFO/MIN_GQ"] = min_gq
 
-    except AssertionError as E:
-        logger.error(E)
+        # Transfor Mendelian Violations to boolean for efficient counting
+        if row["INFO/MCV"] != ".":
+            _row_copy["IS_MIE"] = 1
+        else:
+            _row_copy["IS_MIE"] = 0
+
+        # Save transformations to the copy made
+        _edited_tsv_dict_array.insert(itr, _row_copy)
+
+    # Sort the Min. GQ from smallest to largest
+    sorted_dict_array = sorted(
+        _edited_tsv_dict_array, key=lambda x: x["INFO/MIN_GQ"]
+    )
+    
+    vcf_df = pd.DataFrame(sorted_dict_array)
+    print(vcf_df.head())
+    # for itr, row in enumerate(sorted_dict_array):
+    #     if itr < 5:
+    #         print(f"ROW{itr}: {row}")
+    #     else:
+    #         return
 
     Wrapper(__file__, "end").wrap_script(timestamp())
 
