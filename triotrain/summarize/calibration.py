@@ -20,6 +20,7 @@ module_path = str(abs_path.parent.parent)
 path.append(module_path)
 
 from helpers.vcf_to_tsv import Convert_VCF
+from helpers.files import TestFile
 
 
 def collect_args() -> argparse.Namespace:
@@ -118,7 +119,11 @@ def __init__() -> None:
 
     try:
         # Check command line args
-        _logger_msg = check_args(args, logger)
+        _log_msg = check_args(args, logger)
+        if _log_msg is None:
+            _logger_msg = ""
+        else:
+            _logger_msg = f"{_log_msg}: "
 
         # Transform the Trio VCF output from RTG mendelian into a TSV file
         mie_vcf = Convert_VCF(
@@ -129,65 +134,95 @@ def __init__() -> None:
             dry_run=args.dry_run,
             logger_msg=_logger_msg,
         )
-        mie_vcf.run()
+        mie_vcf.check_files()
     except AssertionError as E:
         logger.error(E)
 
-    _edited_tsv_dict_array = []
-    _num_Non_Ref_Family_Records = 0
-    # NOTE: This number should match the value in the RTG-mendelian log file for
-    #       the number of sites "checked for Mendelian constraints"
+    # Check for exisiting output
+    _processed_file = TestFile(file=f"{mie_vcf._prefix_path}.sorted.tsv", logger=logger)
+    _processed_file.check_existing(logger_msg=_logger_msg, debug_mode=args.debug)
 
-    _num_MissingRef_Records = 0
-    for itr, row in enumerate(mie_vcf._tsv_dict_array):
-        # print(f"ROW#{itr}: {row}")
-        # breakpoint()
+    if _processed_file.file_exists:
+        logger.info(
+            f"{_logger_msg}loading in processed TSV | '{_processed_file.path.name}'"
+        )
+        vcf_df = pd.read_csv(str(_processed_file.path), sep="\t")
+        logger.info(
+            f"{_logger_msg}done loading in processed TSV | '{_processed_file.path.name}'"
+        )
+    else:
+        # PROCESS TSV FORMAT
+        mie_vcf.run()
+        logger.info(
+            f"{_logger_msg}processing contents from VCF -> TSV | '{mie_vcf._output_file.path.name}'"
+        )
+        _edited_tsv_dict_array = []
+        _num_Non_Ref_Family_Records = 0
+        # NOTE: This number should match the value in the RTG-mendelian log file for
+        #       the number of sites "checked for Mendelian constraints"
 
-        gt_values = [val for key, val in row.items() if key.startswith("GT")]
+        _num_MissingRef_Records = 0
+        for itr, row in enumerate(mie_vcf._tsv_dict_array):
+            # print(f"ROW#{itr}: {row}")
+            # breakpoint()
 
-        # First, skip uncalled in offspring
-        if gt_values[0] == "./.":
-            _num_MissingRef_Records += 1
-            continue
-        # Remove sites where complete trio is either "./." or "0/0"
-        else:
-            contains_gt = [s for s in gt_values if "." not in s and "0/0" not in s]
-            if len(contains_gt) == 0:
+            gt_values = [val for key, val in row.items() if key.startswith("GT")]
+
+            # First, skip uncalled in offspring
+            if gt_values[0] == "./.":
                 _num_MissingRef_Records += 1
                 continue
+            # Remove sites where complete trio is either "./." or "0/0"
             else:
-                _num_Non_Ref_Family_Records += 1
+                contains_gt = [s for s in gt_values if "." not in s and "0/0" not in s]
+                if len(contains_gt) == 0:
+                    _num_MissingRef_Records += 1
+                    continue
+                else:
+                    _num_Non_Ref_Family_Records += 1
 
-        # Calculate minimum GQ value per site for all samples
-        _row_copy = row.copy()
-        gq_values = [
-            None if val == "." else int(val)
-            for key, val in row.items()
-            if key.startswith("GQ")
-        ]
-        min_gq = (
-            min(filter(lambda x: x is not None, gq_values))
-            if any(gq_values)
-            else None
+            # Calculate minimum GQ value per site for all samples
+            _row_copy = row.copy()
+            gq_values = [
+                None if val == "." else int(val)
+                for key, val in row.items()
+                if key.startswith("GQ")
+            ]
+            min_gq = (
+                min(filter(lambda x: x is not None, gq_values))
+                if any(gq_values)
+                else None
+            )
+            _row_copy["INFO/MIN_GQ"] = min_gq
+
+            # Transfor Mendelian Violations to boolean for efficient counting
+            if row["INFO/MCV"] != ".":
+                _row_copy["IS_MIE"] = 1
+            else:
+                _row_copy["IS_MIE"] = 0
+
+            # Save transformations to the copy made
+            _edited_tsv_dict_array.insert(itr, _row_copy)
+
+        # Sort the Min. GQ from smallest to largest
+        sorted_dict_array = sorted(
+            _edited_tsv_dict_array, key=lambda x: x["INFO/MIN_GQ"]
         )
-        _row_copy["INFO/MIN_GQ"] = min_gq
+        vcf_df = pd.DataFrame(sorted_dict_array)
+        logger.info(
+            f"{_logger_msg}done processing contents from VCF -> TSV | '{mie_vcf._output_file.path.name}'"
+        )
 
-        # Transfor Mendelian Violations to boolean for efficient counting
-        if row["INFO/MCV"] != ".":
-            _row_copy["IS_MIE"] = 1
+        # Save processed intermediate to a file
+        if args.dry_run:
+            logger.info(
+                f"{_logger_msg}pretending to write processed TSV file | '{_processed_file.path.name}'"
+            )
         else:
-            _row_copy["IS_MIE"] = 0
-
-        # Save transformations to the copy made
-        _edited_tsv_dict_array.insert(itr, _row_copy)
-
-    # Sort the Min. GQ from smallest to largest
-    sorted_dict_array = sorted(
-        _edited_tsv_dict_array, key=lambda x: x["INFO/MIN_GQ"]
-    )
-    
-    vcf_df = pd.DataFrame(sorted_dict_array)
+            vcf_df.to_csv(_processed_file.path, sep="\t", index=False)
+            
     print(vcf_df.head())
+    print(vcf_df["INFO/MIN_GQ"].describe())
     # for itr, row in enumerate(sorted_dict_array):
     #     if itr < 5:
     #         print(f"ROW{itr}: {row}")
