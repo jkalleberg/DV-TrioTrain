@@ -17,7 +17,7 @@ class TestFile:
 
     def check_missing(
         self, logger_msg: Union[str, None] = None, debug_mode: bool = False
-    ):
+    ) -> None:
         """
         Confirms if a file is non-existant.
         """
@@ -38,7 +38,7 @@ class TestFile:
 
     def check_existing(
         self, logger_msg: Union[str, None] = None, debug_mode: bool = False
-    ):
+    ) -> None:
         """
         Confirms if a file exists already.
         """
@@ -91,7 +91,7 @@ class WriteFiles:
 
     def check_missing(
         self,
-    ):
+    ) -> None:
         """
         Confirm that file is non-existant.
         """
@@ -99,7 +99,7 @@ class WriteFiles:
         file.check_missing(logger_msg=self.logger_msg, debug_mode=self.debug_mode)
         self.file_exists = file.file_exists
 
-    def write_list(self, line_list: List[str]):
+    def write_list(self, line_list: List[str]) -> None:
         """
         Take an iterable list of lines and write them to a text file.
         """
@@ -131,7 +131,7 @@ class WriteFiles:
                 self.file_lines
             ), f"expected {len(line_list)} lines in {self.file}, but there were {len(self.file_lines)} found"
 
-    def add_rows(self, col_names: List[str], data_dict: Dict[str, str]):
+    def add_rows(self, col_names: List[str], data_dict: Dict[str, str]) -> None:
         """
         Append rows to a csv.
         """
