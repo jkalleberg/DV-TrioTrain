@@ -33,12 +33,20 @@ class Convert_VCF:
     debug: bool = False
     dry_run: bool = False
     logger_msg: Union[str, None] = None
-    query_format: str = field(
+    output_format: str = field(
         default="%CHROM\t%POS\t%REF\t%ALT\t%INFO/MCU\t%INFO/MCV[\t%GT\t%GQ]\n"
     )
     tsv_column_names: List[str] = field(default_factory=list)
 
     # internal parameters
+    _bcftools_query: run_sub = field(default=None, init=False, repr=False)
+    _custom_header_list: List[str] = field(default_factory=list, init=False, repr=False)
+    _input_header: List[str] = field(
+        default_factory=list, init=False, repr=False
+    )
+    _intermediate_header: List[str] = field(
+        default_factory=list, init=False, repr=False
+    )
     _tsv_dict_array: List[Dict[str, str]] = field(
         default_factory=list, init=False, repr=False
     )
@@ -83,6 +91,46 @@ class Convert_VCF:
             logger_msg=self.logger_msg, debug_mode=self.debug
         )
 
+    def get_vcf_headers(self) -> None:
+        """
+        Run 'bcftools view' as a Python Subprocess to identify the header row only. Transform into a list, and identify sample names.
+        """
+        self.logger.info(
+            f"{self.logger_msg}: identifying VCF headers | '{self._input_file.path.name}'"
+        )
+        bcftools_view = run_sub(
+            [
+                "bcftools",
+                "view",
+                "-h",
+                str(self._input_file.path),
+            ],  # type: ignore
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        self.logger.info(
+            f"{self.logger_msg}: done identifying VCF headers | '{self._input_file.path.name}'"
+        )
+        self._input_header = bcftools_view.stdout.splitlines()[-1].strip("#").split()
+        self._samples = self._input_header[9:]
+
+    def get_tsv_headers(self) -> None:
+        """
+        Identify output headers based on user input (i.e. 'bcftools query' format entered).
+        """
+        _output_format = self.output_format.replace("%", "").replace("]\n", "")
+        _format_cols = _output_format.split("[")
+
+        self._per_site_cols = _format_cols[0].split("\t")
+        self._per_sample_cols = _format_cols[1].strip().split()
+
+        _updated_sample_cols = []
+        for s in self._samples:
+            for col in self._per_sample_cols:
+                _updated_sample_cols.append(f"{col}_{s}")
+        self._custom_header_list = self._per_site_cols + _updated_sample_cols
+
     def convert_to_tsv(self) -> None:
         """
         Run 'bcftools query' as a Python Subprocess, and write the output to an intermediate file.
@@ -90,12 +138,12 @@ class Convert_VCF:
         self.logger.info(
             f"{self.logger_msg}: converting VCF -> TSV file | '{self._output_file.path.name}'"
         )
-        bcftools_query = run_sub(
+        self._bcftools_query = run_sub(
             [
                 "bcftools",
                 "query",
                 "-f",
-                self.query_format,
+                self.output_format,
                 str(self._input_file.path),
             ],  # type: ignore
             capture_output=True,
@@ -106,32 +154,23 @@ class Convert_VCF:
             f"{self.logger_msg}: done converting VCF -> TSV file | '{self._output_file.path.name}'"
         )
 
-        # make entering a list of column names automatic if not provided by user
-        _first_line = bcftools_query.stdout.splitlines()[0:1]
-        _first_line_list = _first_line[0].split("\t")
-        _total_cols = len(_first_line_list)
-
-        if self.tsv_column_names:
-            self._custom_header_list = self.tsv_column_names
-        else:
-            _query_fmt_cols = self.query_format.replace("%", "")
-            _format_cols = _query_fmt_cols.split("[")
-            _per_site_cols = _format_cols[0].split("\t")
-            _per_sample_cols = _format_cols[1].strip().strip("]").split()
-            _n_samples = int(
-                (_total_cols - len(_per_site_cols)) / len(_per_sample_cols)
-            )
-            updated_sample_cols = []
-            for itr in range(0, _n_samples):
-                for col in _per_sample_cols:
-                    updated_sample_cols.append(f"{col}_{itr}")
-
-            self._custom_header_list = _per_site_cols + updated_sample_cols
-
-        _custom_header_str = "\t".join(self._custom_header_list[0:]) + "\n"
-        assert _total_cols == len(
+        _header_line = self._bcftools_query.stdout.splitlines()[0:1]
+        self._intermediate_header = _header_line[0].split("\t")
+    
+    def test_output_headers(self) -> None:
+        """
+        Confirm number of columns matches expectations.
+        """
+        _n_cols_found = len(self._intermediate_header)
+        assert _n_cols_found == len(
             self._custom_header_list
-        ), f"unexpected column headers | {_total_cols} != {len(self._custom_header_list)}"
+        ), f"unexpected column headers | {_n_cols_found} != {len(self._custom_header_list)}"
+
+    def save_output(self) -> None:
+        """
+        Either write output to disk, or store within the dataclass for use by another python class.
+        """
+        _custom_header_str = "\t".join(self._custom_header_list[0:]) + "\n"
 
         if not self.dry_run:
             if self.debug:
@@ -139,11 +178,12 @@ class Convert_VCF:
                     f"{self.logger_msg}: saving converted VCF file | '{self._output_file.path.name}'"
                 )
             file = open(str(self._output_file.path), mode="w")
+
             # Add custom header to the new TSV
             file.write(_custom_header_str)
             file.close()
             contents = open(str(self._output_file.path), mode="a")
-            contents.write(bcftools_query.stdout)
+            contents.write(self._bcftools_query.stdout)
             contents.close()
             if self.debug:
                 self.logger.debug(f"{self.logger_msg}: done saving converted VCF file")
@@ -151,7 +191,7 @@ class Convert_VCF:
             self.logger.info(
                 f"{self.logger_msg}: pretending to write converted VCF file | '{self._output_file.path.name}'"
             )
-            self.tsv_format = bcftools_query.stdout.splitlines()
+            self.tsv_format = self._bcftools_query.stdout.splitlines()
 
     def load_raw_data(self) -> None:
         """
@@ -161,7 +201,7 @@ class Convert_VCF:
 
         Each dict represents a row in the input file, with column names as keys.
         """
-        # Confirm input data is an existing file
+        # Confirm converted TSV is an existing file
         if self._output_file.path.exists():
             print("HERE!")
             breakpoint()
@@ -170,8 +210,8 @@ class Convert_VCF:
                 for itr, line in enumerate(DictReader(data, delimiter="\t")):
                     self._tsv_dict_array.insert(itr, line)
         else:
+            # Stream in the convert-tsv stdout to process without writing an intermediate file
             if self.dry_run:
-                # stream in the convert-tsv stdout to process without writing an intermediate file
                 for itr, line in enumerate(
                     DictReader(
                         self.tsv_format,
@@ -195,5 +235,15 @@ class Convert_VCF:
             )
             return
         else:
+            self.get_vcf_headers()
+
+            # Make entering a list of column names automatic if not provided by user
+            if self.tsv_column_names:
+                self._custom_header_list = self.tsv_column_names
+            else:
+                self.get_tsv_headers()
+
             self.convert_to_tsv()
+            self.test_output_headers()
+            self.save_output()
             self.load_raw_data()
