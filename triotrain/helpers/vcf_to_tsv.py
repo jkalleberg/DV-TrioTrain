@@ -205,38 +205,38 @@ class Convert_VCF:
 
         Each dict represents a row in the input file, with column names as keys.
         """
-        # Confirm converted TSV is an existing file
-        if self._output_file.path.exists():
+        # Stream in the convert-tsv stdout to process without writing an intermediate file
+        if self.dry_run and not self._output_file.path.exists():
             self.logger.info(
-                f"{self._internal_msg}loading exisiting TSV file | '{self._output_file.path.name}'"
+                f"{self._internal_msg}loading contents from converted VCF | '{self._input_file.path.name}'"
             )
-            with open(str(self._output_file.path), mode="r") as data:
-                # Open the file as read only
-                for itr, line in enumerate(DictReader(data, delimiter="\t")):
-                    if self.debug and itr % 15000 == 0:
-                        self.logger.info(
-                            f"{self._internal_msg}completed {itr} records..."
-                        )
-                    self._tsv_dict_array.insert(itr, line)
+            for itr, line in enumerate(
+                DictReader(
+                    self.tsv_format,
+                    fieldnames=self._custom_header_list,
+                    delimiter="\t",
+                )
+            ):
+                self._tsv_dict_array.insert(itr, line)
             self.logger.info(
-                f"{self._internal_msg}done loading exisiting TSV file | '{self._output_file.path.name}'"
+                f"{self._internal_msg}done loading contents from converted VCF | '{self._input_file.path.name}'"
             )
         else:
-            # Stream in the convert-tsv stdout to process without writing an intermediate file
-            if self.dry_run:
+            # Confirm converted TSV is an existing file
+            if self._output_file.path.exists():
                 self.logger.info(
-                    f"{self._internal_msg}loading contents from converted VCF | '{self._input_file.path.name}'"
+                    f"{self._internal_msg}loading exisiting TSV file | '{self._output_file.path.name}'"
                 )
-                for itr, line in enumerate(
-                    DictReader(
-                        self.tsv_format,
-                        fieldnames=self._custom_header_list,
-                        delimiter="\t",
-                    )
-                ):
-                    self._tsv_dict_array.insert(itr, line)
+                with open(str(self._output_file.path), mode="r") as data:
+                    # Open the file as read only
+                    for itr, line in enumerate(DictReader(data, delimiter="\t")):
+                        if self.debug and itr % 15000 == 0:
+                            self.logger.info(
+                                f"{self._internal_msg}completed {itr} records..."
+                            )
+                        self._tsv_dict_array.insert(itr, line)
                 self.logger.info(
-                    f"{self._internal_msg}done loading contents from converted VCF | '{self._input_file.path.name}'"
+                    f"{self._internal_msg}done loading exisiting TSV file | '{self._output_file.path.name}'"
                 )
             else:
                 self.logger.error(
@@ -244,13 +244,12 @@ class Convert_VCF:
                 )
                 exit(1)
 
-    def run(self) -> None:
+    def check_files(self) -> None:
         self.check_input()
         self.check_output()
-        if not self.dry_run and self._output_file.file_exists:
-            self.logger.info(
-                f"{self._internal_msg}found exisiting TSV file | '{self._output_file.path}'"
-            )
+
+    def run(self) -> None:
+        if self._output_file.file_exists:
             self.load_raw_data()
             return
         else:
