@@ -66,7 +66,7 @@ def collect_args() -> argparse.Namespace:
             "--input",
             "/storage/hpc/group/UMAG_test/WORKING/jakth2/VARIANT_CALLING_OUTPUTS/230313_GIAB/DT1.4_default_human/Human.Trio1.PASS.MIE.vcf.gz",
             # "--debug",
-            "--dry-run",
+            # "--dry-run",
         ]
     )
 
