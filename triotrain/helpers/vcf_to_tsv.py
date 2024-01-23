@@ -41,9 +41,7 @@ class Convert_VCF:
     # internal parameters
     _bcftools_query: run_sub = field(default=None, init=False, repr=False)
     _custom_header_list: List[str] = field(default_factory=list, init=False, repr=False)
-    _input_header: List[str] = field(
-        default_factory=list, init=False, repr=False
-    )
+    _input_header: List[str] = field(default_factory=list, init=False, repr=False)
     _intermediate_header: List[str] = field(
         default_factory=list, init=False, repr=False
     )
@@ -51,13 +49,19 @@ class Convert_VCF:
         default_factory=list, init=False, repr=False
     )
 
+    def __post_init__(self) -> None:
+        if self.logger_msg is None:
+            self._internal_msg = ""
+        else:
+            self._internal_msg = f"{self.logger_msg}: "
+
     def check_input(self) -> None:
         """
         Confirm the VCF input file exists.
         """
         self._input_file = TestFile(file=self.vcf_input, logger=self.logger)
         self._input_file.check_existing(
-            logger_msg=self.logger_msg, debug_mode=self.debug
+            logger_msg=self._internal_msg, debug_mode=self.debug
         )
         assert (
             self._input_file.file_exists
@@ -73,22 +77,22 @@ class Convert_VCF:
         if self.tsv_output and self.tsv_output != self._input_file.path.parent:
             _output_path = self.tsv_output
             if self.dry_run:
-                self.logger.info(f"{self.logger_msg}: using new output directory...'")
+                self.logger.info(f"{self._internal_msg}using new output directory...'")
         else:
             _output_path = self._input_file.path.parent
             if self.dry_run:
                 self.logger.info(
-                    f"{self.logger_msg}: using existing output directory..."
+                    f"{self._internal_msg}using existing output directory..."
                 )
         if self.dry_run:
             self.logger.info(
-                f"{self.logger_msg}: output file | '{_output_path / self._prefix_name}.tsv'"
+                f"{self._internal_msg}output file | '{_output_path / self._prefix_name}.tsv'"
             )
         self._output_file = TestFile(
             file=_output_path / f"{self._prefix_name}.tsv", logger=self.logger
         )
         self._output_file.check_missing(
-            logger_msg=self.logger_msg, debug_mode=self.debug
+            logger_msg=self._internal_msg, debug_mode=self.debug
         )
 
     def get_vcf_headers(self) -> None:
@@ -96,7 +100,7 @@ class Convert_VCF:
         Run 'bcftools view' as a Python Subprocess to identify the header row only. Transform into a list, and identify sample names.
         """
         self.logger.info(
-            f"{self.logger_msg}: identifying VCF headers | '{self._input_file.path.name}'"
+            f"{self._internal_msg}identifying VCF headers | '{self._input_file.path.name}'"
         )
         bcftools_view = run_sub(
             [
@@ -110,7 +114,7 @@ class Convert_VCF:
             check=True,
         )
         self.logger.info(
-            f"{self.logger_msg}: done identifying VCF headers | '{self._input_file.path.name}'"
+            f"{self._internal_msg}done identifying VCF headers | '{self._input_file.path.name}'"
         )
         self._input_header = bcftools_view.stdout.splitlines()[-1].strip("#").split()
         self._samples = self._input_header[9:]
@@ -136,7 +140,7 @@ class Convert_VCF:
         Run 'bcftools query' as a Python Subprocess, and write the output to an intermediate file.
         """
         self.logger.info(
-            f"{self.logger_msg}: converting VCF -> TSV file | '{self._output_file.path.name}'"
+            f"{self._internal_msg}converting VCF -> TSV file | '{self._output_file.path.name}'"
         )
         self._bcftools_query = run_sub(
             [
@@ -151,12 +155,12 @@ class Convert_VCF:
             check=True,
         )
         self.logger.info(
-            f"{self.logger_msg}: done converting VCF -> TSV file | '{self._output_file.path.name}'"
+            f"{self._internal_msg}done converting VCF -> TSV file | '{self._output_file.path.name}'"
         )
 
         _header_line = self._bcftools_query.stdout.splitlines()[0:1]
         self._intermediate_header = _header_line[0].split("\t")
-    
+
     def test_output_headers(self) -> None:
         """
         Confirm number of columns matches expectations.
@@ -175,7 +179,7 @@ class Convert_VCF:
         if not self.dry_run:
             if self.debug:
                 self.logger.debug(
-                    f"{self.logger_msg}: saving converted VCF file | '{self._output_file.path.name}'"
+                    f"{self._internal_msg}saving converted VCF file | '{self._output_file.path.name}'"
                 )
             file = open(str(self._output_file.path), mode="w")
 
@@ -186,10 +190,10 @@ class Convert_VCF:
             contents.write(self._bcftools_query.stdout)
             contents.close()
             if self.debug:
-                self.logger.debug(f"{self.logger_msg}: done saving converted VCF file")
+                self.logger.debug(f"{self._internal_msg}done saving converted VCF file")
         else:
             self.logger.info(
-                f"{self.logger_msg}: pretending to write converted VCF file | '{self._output_file.path.name}'"
+                f"{self._internal_msg}pretending to write converted VCF file | '{self._output_file.path.name}'"
             )
             self.tsv_format = self._bcftools_query.stdout.splitlines()
 
@@ -203,15 +207,26 @@ class Convert_VCF:
         """
         # Confirm converted TSV is an existing file
         if self._output_file.path.exists():
-            print("HERE!")
-            breakpoint()
+            self.logger.info(
+                f"{self._internal_msg}loading exisiting TSV file | '{self._output_file.path.name}'"
+            )
             with open(str(self._output_file.path), mode="r") as data:
                 # Open the file as read only
                 for itr, line in enumerate(DictReader(data, delimiter="\t")):
+                    if self.debug and itr % 15000 == 0:
+                        self.logger.info(
+                            f"{self._internal_msg}completed {itr} records..."
+                        )
                     self._tsv_dict_array.insert(itr, line)
+            self.logger.info(
+                f"{self._internal_msg}done loading exisiting TSV file | '{self._output_file.path.name}'"
+            )
         else:
             # Stream in the convert-tsv stdout to process without writing an intermediate file
             if self.dry_run:
+                self.logger.info(
+                    f"{self._internal_msg}loading contents from converted VCF | '{self._input_file.path.name}'"
+                )
                 for itr, line in enumerate(
                     DictReader(
                         self.tsv_format,
@@ -220,9 +235,12 @@ class Convert_VCF:
                     )
                 ):
                     self._tsv_dict_array.insert(itr, line)
+                self.logger.info(
+                    f"{self._internal_msg}done loading contents from converted VCF | '{self._input_file.path.name}'"
+                )
             else:
                 self.logger.error(
-                    f"{self._logger_msg}: unable to find existing TSV file | '{self._output_file.path}'\nExiting..."
+                    f"{self._internal_msg}unable to find existing TSV file | '{self._output_file.path}'\nExiting..."
                 )
                 exit(1)
 
@@ -231,8 +249,9 @@ class Convert_VCF:
         self.check_output()
         if not self.dry_run and self._output_file.file_exists:
             self.logger.info(
-                f"{self.logger_msg}: found exisiting converted VCF file | '{self._output_file.path.name}'"
+                f"{self._internal_msg}found exisiting TSV file | '{self._output_file.path}'"
             )
+            self.load_raw_data()
             return
         else:
             self.get_vcf_headers()
