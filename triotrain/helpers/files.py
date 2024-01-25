@@ -6,8 +6,7 @@ from typing import Dict, List, Union
 
 
 class TestFile:
-    """Confirm if a file already exists or not.
-    """
+    """Confirm if a file already exists or not."""
 
     def __init__(self, file: Union[str, Path], logger: Logger):
         self.file = str(file)
@@ -130,6 +129,41 @@ class WriteFiles:
             assert len(line_list) == len(
                 self.file_lines
             ), f"expected {len(line_list)} lines in {self.file}, but there were {len(self.file_lines)} found"
+
+    def write_list_of_dicts(
+        self, line_list: List[Dict[str, str]], delim: Union[str, None] = None
+    ) -> None:
+        """
+        Take an iterable list of dictionaries and write them to a text file.
+        """
+        keys = line_list[0].keys()
+        if delim is None:
+            _delim = ","
+        else:
+            _delim = delim
+
+        if self.dryrun_mode:
+            if self.logger_msg is None:
+                self.logger.info(
+                    f"[DRY_RUN]: pretending to write a list of dictionaries | '{str(self.file_path)}'"
+                )
+            else:
+                self.logger.info(
+                    f"{self.logger_msg}: pretending to write a list of dictionaries | '{str(self.file_path)}'"
+                )
+
+            print("---------------------------------------------")
+            header = f"{_delim}".join(keys)
+            print(header)
+            for dict in line_list[0:10]:
+                line = f"{_delim}".join([str(value) for value in dict.values()])
+                print(line)
+            print("---------------------------------------------")
+        else:
+            with open(f"{self.path}/{self.file}", mode="a", encoding="UTF-8") as file:
+                dict_writer = DictWriter(file, fieldnames=keys, delimiter=_delim)
+                dict_writer.writeheader()
+                dict_writer.writerows()
 
     def add_rows(self, col_names: List[str], data_dict: Dict[str, str]) -> None:
         """
