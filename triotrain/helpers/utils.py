@@ -11,6 +11,7 @@ from typing import List, Union
 
 from helpers.logger import get_stream_handler
 
+
 def get_logger(name: str) -> logging.Logger:
     """
     Inializes a logging object to handle any print messages
@@ -44,7 +45,9 @@ def generate_job_id() -> str:
     return f"{random_with_N_digits(8)}"
 
 
-def check_if_all_same(list_of_elem: List[Union[str, int]], item: Union[str, int]) -> bool:
+def check_if_all_same(
+    list_of_elem: List[Union[str, int]], item: Union[str, int]
+) -> bool:
     """
     Using List comprehension, check if all elements in list are same and matches the given item.
     """
@@ -72,3 +75,19 @@ def create_deps(num: int = 4) -> List[None]:
     Create a list of None of a certain length.
     """
     return [None] * num
+
+
+def phredGQ_to_Eprob(gq_value: int) -> float:
+    """
+    Convert reported GQ values back to error probabilities.
+
+    Parameters
+    ----------
+    gq_value : int
+        phred-scaled GQ value
+    """
+    error_prob = 10 ** (gq_value / -10)
+    prop_error_prob = error_prob * 100
+    print(f"ERROR PROB @ GQ={gq_value}:\t{prop_error_prob:.09f}%")
+    
+    return error_prob
