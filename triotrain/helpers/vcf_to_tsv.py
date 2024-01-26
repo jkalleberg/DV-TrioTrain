@@ -51,6 +51,7 @@ class Convert_VCF:
 
     def __post_init__(self) -> None:
         if self.logger_msg is None:
+            self.logger_msg = ""
             self._internal_msg = ""
         else:
             self._internal_msg = f"{self.logger_msg}: "
@@ -61,7 +62,7 @@ class Convert_VCF:
         """
         self._input_file = TestFile(file=self.vcf_input, logger=self.logger)
         self._input_file.check_existing(
-            logger_msg=self._internal_msg, debug_mode=self.debug
+            logger_msg=self.logger_msg, debug_mode=self.debug
         )
         assert (
             self._input_file.file_exists
@@ -92,7 +93,7 @@ class Convert_VCF:
             file=_output_path / f"{self._prefix_name}.tsv", logger=self.logger
         )
         self._output_file.check_missing(
-            logger_msg=self._internal_msg, debug_mode=self.debug
+            logger_msg=self.logger_msg, debug_mode=self.debug
         )
 
     def get_vcf_headers(self) -> None:
@@ -208,7 +209,7 @@ class Convert_VCF:
         # Stream in the convert-tsv stdout to process without writing an intermediate file
         if self.dry_run and not self._output_file.path.exists():
             self.logger.info(
-                f"{self._internal_msg}loading contents from converted VCF | '{self._input_file.path.name}'"
+                f"{self._internal_msg}loading contents from converting VCF -> TSV | '{self._output_file.path.name}'"
             )
             for itr, line in enumerate(
                 DictReader(
@@ -219,7 +220,7 @@ class Convert_VCF:
             ):
                 self._tsv_dict_array.insert(itr, line)
             self.logger.info(
-                f"{self._internal_msg}done loading contents from converted VCF | '{self._input_file.path.name}'"
+                f"{self._internal_msg}done loading contents from converting VCF -> TSV | '{self._output_file.path.name}'"
             )
         else:
             # Confirm converted TSV is an existing file
