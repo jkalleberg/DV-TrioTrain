@@ -34,7 +34,7 @@ conda config --env --set channel_priority flexible
 
 # Install the project-specific packages
 # in the currently active env
-conda install -p ./miniconda_envs/dev -y -c conda-forge python=3.8 pandas numpy python-dotenv regex spython natsort rtg-tools mkdocs mkdocs-material black
+conda install -p ./miniconda_envs/dev -y -c conda-forge python=3.8 pandas numpy python-dotenv regex spython natsort rtg-tools mkdocs mkdocs-material black sortedconatiners
 
 # Deactivate the conda env to continue with build process
 conda deactivate

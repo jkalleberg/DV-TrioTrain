@@ -11,32 +11,29 @@ example:
 """
 
 import argparse
-import subprocess
 from csv import DictReader
 from dataclasses import dataclass, field
-from json import load
 from logging import Logger
-from os import environ
-from os import path as p
+from os import environ, path as p
 from pathlib import Path
-from sys import path
 from typing import List, TextIO, Union
-
 from regex import compile
+from json import load
+import subprocess
+from sys import path
 
 abs_path = Path(__file__).resolve()
 module_path = str(abs_path.parent.parent)
 path.append(module_path)
 
-from helpers.files import TestFile, WriteFiles
-from helpers.iteration import Iteration
-from helpers.utils import check_if_all_same, generate_job_id
-from model_training.prep.count import count_variants
 from model_training.slurm.sbatch import SBATCH, SubmitSBATCH
+from helpers.iteration import Iteration
 from model_training.slurm.suffix import remove_suffixes
+from model_training.prep.count import count_variants
+from helpers.files import TestFile, WriteFiles
+from helpers.utils import generate_job_id, check_if_all_same
 
-
-def collect_args() -> argparse.Namespace:
+def collect_args():
     """
     Process command line argument to execute script.
     """
@@ -44,14 +41,14 @@ def collect_args() -> argparse.Namespace:
         description=__doc__,
         formatter_class=argparse.RawTextHelpFormatter,
     )
-    parser.add_argument(
-        "-M",
-        "--metadata",
-        dest="metadata",
-        type=str,
-        help="[REQUIRED]\ninput file (.csv)\nprovides the list of VCFs to find or produce summary stats",
-        metavar="</path/file>",
-    )
+    # parser.add_argument(
+    #     "-M",
+    #     "--metadata",
+    #     dest="metadata",
+    #     type=str,
+    #     help="[REQUIRED]\ninput file (.csv)\nprovides the list of VCFs to find or produce summary stats",
+    #     metavar="</path/file>",
+    # )
     parser.add_argument(
         "-O",
         "--output",
@@ -91,7 +88,7 @@ def collect_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def check_args(args: argparse.Namespace, logger: Logger) -> None:
+def check_args(args: argparse.Namespace, logger: Logger):
     """
     With "--debug", display command line args provided.
     With "--dry-run", display a msg.
@@ -109,16 +106,18 @@ def check_args(args: argparse.Namespace, logger: Logger) -> None:
     if args.dry_run:
         logger.info("[DRY RUN]: output will display to screen and not write to a file")
 
-    assert (
-        args.metadata
-    ), "missing --metadata; Please provide a file with descriptive data for test samples."
+    # assert (
+    #     args.metadata
+    # ), "missing --metadata; Please provide a file with descriptive data for test samples."
 
     assert (
         args.resource_config
     ), "Missing --resources; Please designate a path to pipeline compute resources in JSON format"
 
     # if not args.dry_run:
-    assert args.outpath, "missing --output; Please provide a file name to save results."
+    assert (
+        args.outpath
+    ), "missing --output; Please provide a file name to save results."
 
 
 @dataclass
@@ -139,13 +138,13 @@ class Stats:
     _command_list: List = field(default_factory=list, repr=False, init=False)
     _digits_only = compile(r"\d+")
     _filter_applied: Union[str, None] = field(default=None, init=False, repr=False)
-    _job_nums: List = field(default_factory=list, repr=False, init=False)
+    _job_nums: List = field(default_factory=list, repr=False, init=False) 
     _num_processed: int = field(default=0, init=False, repr=False)
     _num_skipped: int = field(default=0, init=False, repr=False)
-    _num_submitted: int = field(default=0, init=False, repr=False)
+    _num_submitted: int = field(default=0, init=False, repr=False) 
     _output_lines: dict = field(default_factory=dict, init=False, repr=False)
     _phase: str = "summary_stats"
-    _sample_stats: dict = field(default_factory=dict, init=False, repr=False)
+    _sample_stats: dict = field(default_factory=dict, init=False, repr=False) 
 
     def __post_init__(self) -> None:
         with open(str(self.args.resource_config), mode="r") as file:
@@ -155,8 +154,8 @@ class Stats:
         """
         Define python variables.
         """
-        self._metadata_input = Path(self.args.metadata)
         self._logger_msg = f"[{self._phase}]"
+        # self._metadata_input = Path(self.args.metadata)
         output = Path(self.args.outpath)
         self._output_path = str(output.parent)
         self._output_name = output.name
@@ -185,18 +184,7 @@ class Stats:
     def save_metadata(self) -> None:
         """ """
         # identify important information to keep
-        metadata_cols = [
-            "sort",
-            "type",
-            "filter",
-            "label",
-            "info",
-            "average_coverage",
-            "variant_caller",
-            "sampleID",
-            "labID",
-            "sex",
-        ]
+        metadata_cols = ["sort", "type", "filter", "label", "info", "average_coverage", "variant_caller", "sampleID", "labID", "sex"]
         self._sample_metadata = {
             k.strip(): v.strip() for k, v in self._data.items() if k in metadata_cols
         }
@@ -209,9 +197,7 @@ class Stats:
             else:
                 self._species = info
                 self._description = None
-        self._logger_msg = (
-            f"[{self._phase}] - [{self._caller}] - [{self._sample_metadata['label']}]"
-        )
+        self._logger_msg = f"[{self._phase}] - [{self._caller}] - [{self._sample_metadata['label']}]"
 
     def find_vcf_input(self) -> None:
         """
@@ -222,20 +208,20 @@ class Stats:
             logger_msg=self._logger_msg, debug_mode=self.args.debug
         )
         self._clean_filename = remove_suffixes(self._vcf_file.path)
-
-    def execute(self, command_list: list, type: str, keep_output: bool = False) -> None:
+    
+    def execute(self, command_list: list, type: str, run_interactive: bool = False, keep_output: bool = False) -> None:
         """
         Run a command line subprocess and check the output.
         """
         command_str = " ".join(command_list)
-        if not self.run_iteractively:
+        if not run_interactive:
             self._command_list.append(command_str)
             if self.args.dry_run:
                 self.logger.info(
                     f"[DRY_RUN] - {self._logger_msg}: pretending to add the following line(s) to a SLURM job file |\n'{command_str}'"
                 )
             return
-        elif self.args.dry_run:
+        elif self.args.dry_run and not keep_output:
             self.logger.info(
                 f"[DRY RUN] - {self._logger_msg}: pretending to execute the following | '{command_str}'"
             )
@@ -259,26 +245,30 @@ class Stats:
                 self.logger.debug(f"{self._logger_msg}: done with '{type}'")
 
             if result.returncode != 0:
-                self.logger.error(f"{self._logger_msg}: command used | '{command_str}'")
+                self.logger.error(
+                    f"{self._logger_msg}: command used | '{command_str}'"
+                )
                 self.logger.error(f"{self._logger_msg}: {result.stdout}")
                 raise ChildProcessError(f"unable to complete '{type}'")
             elif keep_output and result.returncode == 0:
-                output_file_contents = str(result.stdout).split("\n")
+                self._output_file_contents = str(result.stdout).strip().split("\n")
                 # self._mie_metrics.write_list(output_file_contents)
                 # self.handle_mie_data(input=output_file_contents)
-
+    
     def filter(self, filter_flag: str, input: str, output: str) -> None:
         """
         Filter the contents of a VCF and create a new VCF file
         """
         # Determine if filtered VCF files exist
         _vcf = TestFile(file=output, logger=self.logger)
-        _vcf.check_existing(logger_msg=self._logger_msg, debug_mode=self.args.debug)
+        _vcf.check_existing(
+            logger_msg=self._logger_msg, debug_mode=self.args.debug
+        )
         if _vcf.file_exists:
             if self.args.debug:
                 self.logger.debug(
                     f"{self._logger_msg}: filtered VCF '{_vcf.file}' already exists... SKIPPING AHEAD"
-                )
+                    )
         else:
             self.logger.info(
                 f"{self._logger_msg}: using 'bcftools view' to create a filtered VCF | '{output}'",
@@ -298,19 +288,21 @@ class Stats:
             ]
 
             self.execute(command_list=convert_cmd, type="bcftools view")
-
+    
     def index_vcf(self, vcf_input: Union[str, Path]) -> None:
         """
         Create the required TABIX index file for 'bcftools +smpl-stats'
         """
         # Determine if indexed VCF files exist
         _tbi = TestFile(file=f"{vcf_input}.tbi", logger=self.logger)
-        _tbi.check_existing(logger_msg=self._logger_msg, debug_mode=self.args.debug)
+        _tbi.check_existing(
+            logger_msg=self._logger_msg, debug_mode=self.args.debug
+        )
         if _tbi.file_exists:
             if self.args.debug:
                 self.logger.debug(
                     f"{self._logger_msg}: tabix-indexed VCF '{_tbi.file}' already exists... SKIPPING AHEAD"
-                )
+                    )
         else:
             self.logger.info(
                 f"{self._logger_msg}: using 'tabix index' to create .TBI index file | '{str(vcf_input)}.tbi'",
@@ -323,7 +315,7 @@ class Stats:
                 str(vcf_input),
             ]
             self.execute(command_list=index_cmd, type="tabix index")
-
+    
     def find_filter(self, file_input: str) -> Union[str, None]:
         """
         Identify the 'GQ##' pattern in an input string.
@@ -333,8 +325,7 @@ class Stats:
         if match:
             if self.args.debug:
                 self.logger.debug(
-                    f"{self._logger_msg}: INPUT CLEAN_FILENAME | '{match.group()}'"
-                )
+                        f"{self._logger_msg}: INPUT CLEAN_FILENAME | '{match.group()}'")
             return match.group()
 
     def stats(self, input: str, create_job: bool) -> None:
@@ -347,8 +338,7 @@ class Stats:
             self._filter_applied = self.find_filter(stats_output)
             if self.args.debug:
                 self.logger.debug(
-                    f"{self._logger_msg}: FILTER | '{self._filter_applied}'"
-                )
+                        f"{self._logger_msg}: FILTER | '{self._filter_applied}'")
 
         self._stats_file = TestFile(stats_output, self.logger)
         self._stats_file.check_existing(
@@ -362,8 +352,8 @@ class Stats:
             return
         else:
             self._stats_file.check_missing(
-                logger_msg=self._logger_msg, debug_mode=self.args.debug
-            )
+                    logger_msg=self._logger_msg, debug_mode=self.args.debug
+                )
 
             if create_job:
                 stats_cmd = [
@@ -371,7 +361,7 @@ class Stats:
                     "+smpl-stats",
                     "--output",
                     str(stats_output),
-                    input,
+                    input
                 ]
                 self.execute(command_list=stats_cmd, type="bcftools +smpl-stats")
                 return
@@ -391,7 +381,7 @@ class Stats:
 
                 self.handle_stats(input=bcftools_smpl_stats_output)  # type: ignore
                 self._output_lines[self._num_processed] = self._sample_stats
-
+            
                 if not self.args.dry_run:
                     output_path = str(Path(stats_output).parent)
                     output_name = Path(stats_output).name
@@ -413,8 +403,8 @@ class Stats:
                     )
                     print("---------------------------------------------")
                     print(",".join(self._sample_stats.keys()))
-            self.write_output(unique_records_only=True)
-
+            self.write_output(unique_records_only=True)       
+    
     def handle_stats(self, input: Union[list, TextIO]) -> None:
         """
         Search for the .STATS file and save only the FLT0 line values as a dictionary.
@@ -444,7 +434,7 @@ class Stats:
                     input_line_dict[self._header_keys[i]] = v
             else:
                 pass
-
+        
         # make sure no sampleID values are 'default'
         if input_line_dict["sampleID"] == "default":
             input_line_dict["sampleID"] = self._sample_metadata["sampleID"]
@@ -452,17 +442,13 @@ class Stats:
         if int(input_line_dict["num_hom_alt"]) == 0:
             input_line_dict["hets_homalts"] = ""
         else:
-            het_homalt_ratio = int(input_line_dict["num_het"]) / int(
-                input_line_dict["num_hom_alt"]
-            )
+            het_homalt_ratio = int(input_line_dict["num_het"]) / int(input_line_dict["num_hom_alt"])
             input_line_dict["hets_homalts"] = f"{het_homalt_ratio:.2f}"
-
+        
         if int(input_line_dict["num_indel"]) == 0:
             input_line_dict["snvs_indels"] = ""
         else:
-            snv_indel_ratio = int(input_line_dict["num_snv"]) / int(
-                input_line_dict["num_indel"]
-            )
+            snv_indel_ratio = int(input_line_dict["num_snv"]) / int(input_line_dict["num_indel"])
             input_line_dict["snvs_indels"] = f"{snv_indel_ratio:.2f}"
 
         # merge the user-provided metadata with sample_stats
@@ -473,8 +459,8 @@ class Stats:
             label = self._sample_stats["label"]
             new_label = f"{label}.{self._filter_applied}"
             self._sample_stats["label"] = new_label
-            self._filter_applied = None
-
+            self._filter_applied = None 
+    
     def make_job(self) -> Union[SBATCH, None]:
         """
         Define the contents of the SLURM job for the rtg-mendelian phase for TrioTrain Pipeline.
@@ -482,16 +468,12 @@ class Stats:
         # initialize a SBATCH Object
         vcf_name = Path(self._clean_filename).name
         if self._sampleID not in vcf_name:
-            self.logger.warning(
-                f"{self._logger_msg}: discrepancy between sampleID '{self._sampleID}' and file name '{vcf_name}'"
-            )
+            self.logger.warning(f"{self._logger_msg}: discrepancy between sampleID '{self._sampleID}' and file name '{vcf_name}'")
             # if "-" in vcf_name:
             #     self.logger.info(f"{self._logger_msg}: job name will use vcf_name | '{vcf_name}'")
             #     self.job_name = f"stats.{vcf_name}.{self._caller}"
             # else:
-            self.logger.info(
-                f"{self._logger_msg}: job name will use sampleID | '{self._sampleID}'"
-            )
+            self.logger.info(f"{self._logger_msg}: job name will use sampleID | '{self._sampleID}'")
             self.job_name = f"stats.{self._sampleID}.{self._caller}"
         else:
             self.job_name = f"stats.{vcf_name}.{self._caller}"
@@ -521,7 +503,7 @@ class Stats:
         else:
             if self.itr.debug_mode:
                 self.itr.logger.debug(f"{self._logger_msg}: creating file job now... ")
-
+        
         slurm_job.create_slurm_job(
             None,
             command_list=self._command_list,
@@ -529,15 +511,15 @@ class Stats:
             **self._slurm_resources[self._phase],
         )
         return slurm_job
-
+    
     def submit_job(self, index: int = 0) -> None:
         """
         Submit SLURM jobs to queue.
         """
         # only submit a job if a new SLURM job file was created
         if self._slurm_job is None:
-            return
-
+            return 
+        
         if self.itr.dryrun_mode:
             self._slurm_job.display_job()
         else:
@@ -551,26 +533,17 @@ class Stats:
             self.logger,
             self._logger_msg,
         )
-
+        
         submit_slurm_job.build_command(
             prior_job_number=self.itr.current_genome_dependencies
         )
-        submit_slurm_job.display_command(
-            current_job=(index + 1),
-            total_jobs=self._total_lines,
-            display_mode=self.itr.dryrun_mode,
-            debug_mode=self.itr.debug_mode,
-        )
+        submit_slurm_job.display_command(current_job=(index+1), total_jobs=self._total_lines, display_mode=self.itr.dryrun_mode, debug_mode=self.itr.debug_mode)
 
         if self.itr.dryrun_mode:
             self._job_nums.append(generate_job_id())
             self._num_submitted += 1
         else:
-            submit_slurm_job.get_status(
-                debug_mode=self.itr.debug_mode,
-                current_job=(index + 1),
-                total_jobs=self._total_lines,
-            )
+            submit_slurm_job.get_status(debug_mode=self.itr.debug_mode, current_job=(index+1), total_jobs=self._total_lines)
 
             if submit_slurm_job.status == 0:
                 self._num_submitted += 1
@@ -580,7 +553,7 @@ class Stats:
                     f"{self._logger_msg}: unable to submit SLURM job",
                 )
                 self._job_nums.append(None)
-
+    
     def write_output(self, unique_records_only: bool = False) -> None:
         """
         Save the combined metrics to a new CSV output, or display to screen.
@@ -603,14 +576,12 @@ class Stats:
                     if self.args.debug:
                         self.logger.debug(
                             f"{self._logger_msg}: skipping a previously processed file | '{self._vcf_file.file}'"
-                        )
-                    self.logger.info(
-                        f"{self._logger_msg}: data has been written previously... SKIPPING AHEAD"
-                    )
+                    )   
+                    self.logger.info(f"{self._logger_msg}: data has been written previously... SKIPPING AHEAD")
                     return
                 else:
                     continue
-
+            
         # ensure that output doesn't have duplicat sampleID column
         col_names = list(self._sample_stats.keys())
         results.add_rows(col_names=col_names, data_dict=self._sample_stats)
@@ -634,7 +605,7 @@ class Stats:
         elif self._num_skipped == self._total_lines:
             self.logger.info(
                 f"{self._logger_msg}: no SLURM jobs were submitted... SKIPPING AHEAD"
-            )
+                ) 
         else:
             self.logger.warning(
                 f"{self._logger_msg}: expected SLURM jobs to be submitted, but they were not",
@@ -656,17 +627,16 @@ class Stats:
         for i, item in enumerate(itr):
             self._data = item
             self.itr = Iteration(
-                current_trio_num="None",
-                next_trio_num="None",
-                current_genome_num=None,
-                total_num_iterations=None,
-                train_genome=None,
-                eval_genome=None,
-                env=None,
-                logger=self.logger,
-                args=self.args,
-            )
-
+                    current_trio_num="None",
+                    next_trio_num="None",
+                    current_genome_num=None,
+                    total_num_genomes=None,
+                    train_genome=None,
+                    eval_genome=None,
+                    env=None,
+                    logger=self.logger,
+                    args=self.args)
+            
             self.save_metadata()
             self.find_vcf_input()
 
@@ -674,10 +644,8 @@ class Stats:
             if self._vcf_file.file_exists:
                 self.stats(input=str(self._vcf_file.file), create_job=True)
             else:
-                self.logger.warning(
-                    f"{self._logger_msg}: missing the input VCF file | '{self._vcf_file.file}'... SKIPPING AHEAD"
-                )
-
+                self.logger.warning(f"{self._logger_msg}: missing the input VCF file | '{self._vcf_file.file}'... SKIPPING AHEAD")
+            
             # Exclude based on GQ
             if self.args.filter_GQ:
                 GQ_scores = [10, 13, 20, 30]
@@ -691,18 +659,17 @@ class Stats:
                     if _gq_vcf.file_exists:
                         if self.args.debug:
                             self.logger.debug(
-                                f"{self._logger_msg}: GQ.VCF file '{_gq_vcf.file}' already exists... SKIPPING AHEAD"
+                            f"{self._logger_msg}: GQ.VCF file '{_gq_vcf.file}' already exists... SKIPPING AHEAD"
                             )
                         self.stats(label, create_job=False)
                         continue
                     else:
                         self.logger.info(
-                            f"{self._logger_msg}: missing GQ.VCF file | '{_gq_vcf.file}'"
-                        )
+                            f"{self._logger_msg}: missing GQ.VCF file | '{_gq_vcf.file}'")
                         self.filter(f"--exclude 'GQ<{g}'", self._vcf_file.file, label)
                         self.index_vcf(label)
                         self.stats(label, create_job=True)
-
+                
                 self._slurm_job = self.make_job()
                 self.submit_job(index=i)
                 self._command_list.clear()
@@ -711,7 +678,7 @@ class Stats:
                     completed = f"skipped {self._num_skipped}"
                 else:
                     completed = f"processed {self._num_processed}"
-
+            
                 if (self._num_processed % 5) == 0:
                     self.logger.info(
                         f"{self._logger_msg}: {completed}-of-{self._total_lines} records"
@@ -726,15 +693,15 @@ class Stats:
                     completed = f"skipped {self._num_skipped}"
                 else:
                     completed = f"processed {self._num_processed}"
-
+            
                 if (self._num_processed % 5) == 0:
                     self.logger.info(
                         f"{self._logger_msg}: {completed}-of-{self._total_lines} records"
                     )
-
+                
         if self.args.dry_run:
             print("---------------------------------------------")
-
+    
     def run(self) -> None:
         """
         Combine all the steps into a single command.
@@ -750,7 +717,6 @@ class Stats:
         self.logger.info(
             f"[{self._phase}]: processed {completed}-of-{self._total_lines} VCFs from '{str(self._metadata_input)}'"
         )
-
 
 def __init__():
     from helpers.utils import get_logger
@@ -770,7 +736,7 @@ def __init__():
     try:
         # Check command line args
         check_args(args, logger)
-        Stats(args, logger).run()
+        Stats(args, logger).run() 
     except AssertionError as E:
         logger.error(E)
 

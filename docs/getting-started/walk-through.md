@@ -1,115 +1,82 @@
 # Human GIAB Tutorial
 
-This DV-TrioTrain tutorial completes one round of re-training with a Human trio from GIAB.
+<font size= "4"> 
+**This tutorial completes one round of re-training with a Human trio from GIAB.**
+</font>
 
 !!! warning "Warning | Storage Needs"
     Completing this tutorial will produce ~2T of intermediate and output data. Ensure you  have sufficient space before proceeding!
 
-## 1. Confirm Successful Install / Configuration
+## 1. Confirm Successful Configuration
 
-If you haven't already, go back and complete the previous two guides:  
-  
-[:material-numeric-1-box: Installation Guide](installation.md){ .md-button }
-[:material-numeric-2-box: Configuration Guide](configuration.md){ .md-button }
+??? success "Check | Installation"
+    ```bash title="Run the following at the command line:"
+    cd DV-TrioTrain
+    ls
+    ```
 
----
-
-Then, run the following at the command line:
-
-```bash
-cd DV-TrioTrain
-ls
-```
-
-??? success "Expected Output"
-    ```bash
-    APPTAINER_CACHE   deepvariant_1.4.0-gpu.sif  docs    hap.py_v0.3.12.sif  miniconda_envs  README.md  triotrain
-    APPTAINER_TMPDIR  deepvariant_1.4.0.sif      errors  LICENSE             mkdocs.yml      scripts
+    ```bash title="Expected outputs:"
+    deepvariant_1.4.0-gpu.sif  docs    hap.py_v0.3.12.sif  miniconda_envs  README.md  triotrain
+    deepvariant_1.4.0.sif      errors  LICENSE             mkdocs.yml      scripts
     ```
 
     * `triotrain/` directory contains Python modules for the DV-TrioTrain package
 
     * `scripts/` directory contains Bash helper scripts and functions that can be used as templates
 
-## 2. Begin an interactive session
+## 2. Activate Environment
 
-!!! warning
-    You will need to tailor this step to match your HPC cluster. Reach out to your system admin with any questions.
+Repeat the first two steps of Configuration:
 
-The GIAB raw data we will be using for this tutorial is relatively large  and thus needs ample memory. We request resources in a SLURM "interactive session" to allow us to run code at the command line and avoid running resource-intensive code on the login node, which could negatively impact other users. Details about the memory/CPUs requested for this tutorial when run on the MU Lewis Computing Cluster can be found in the [User Guide](../user-guide/compute.md).
+- [Step 1: Interactive Session](configuration.md#interactive)
+- [Step 2: Load Modules](configuration.md#modules)
 
-There are two options:
-
-??? example "Option 1: Manual"
-    Edit the following SLURM command to match your system's resources (i.e. add a valid partition and fair-share account), and run at the command line.
-
-    ```bash
-    srun --pty -p <partition_name> --time=0-06:00:00 --exclusive --mem=0 -A <account_name> /bin/bash
-    ```
-
-??? example "Option 2: Automated"
-    Using the same syntax as in Option 1 above, edit the [template script](https://github.com/jkalleberg/DV-TrioTrain/blob/bac33c732065fa7fa1e92097e8f31da383261f4f/scripts/start_interactive.sh) to match your system's resources.
-
-    Then, run the following at the command line:
-
-    ```bash
-    source scripts/start_interactive.sh
-    ```
-
-## 3. Load cluster-specific modules
-
-!!! warning
-    You will need to tailor this step to match your HPC cluster. Reach out to your system admin with any questions.
-
-This executable is how TrioTrain finds the [required software](installation.md#system-requirements) on your local HPC. TrioTrain will repeatedly use this script to load all modules and the required bash helper functions. [You can view the template script on GitHub.](https://github.com/jkalleberg/DV-TrioTrain/blob/bac33c732065fa7fa1e92097e8f31da383261f4f/scripts/setup/modules.sh)
-
-Within the template, edit the lines with `module load <module_name/version>` to match your system (i.e. add a valid module name).
-
-Then, run the following at the command line:
-
-```bash
-source scripts/setup/modules.sh 
-```
 
 ## 4. Download pre-trained models
 
-Running a local copy of a container requires us to create a local copy of the `model.ckpt` files from v1.4 of DeepVariant. These checkpoints are the human-trained models produced by Google Genomics Health Group. [An index with source links for the published models compatible with TrioTrain can be found here](../user-guide/existing_models.md).
+!!! warning "Warning | Download Size"
 
-We are downloading two model checkpoints:
+Running a local copy of a container requires us to create a local copy of the `model.ckpt` files from v1.4.0 of DeepVariant. These checkpoints are the human-trained models produced by Google Genomics Health Group. [Details about published models compatible with TrioTrain can be found here](../user-guide/existing_models.md).
+
+We need to download (2) two model checkpoints:
 
 * the default human model
 * the WGS.AF human model
 
-All the steps to download these data are contained in a single script, which [you can view on Github.](https://github.com/jkalleberg/DV-TrioTrain/blob/bac33c732065fa7fa1e92097e8f31da383261f4f/scripts/setup/download_models.sh)
 
-Run the following at the command line:
-
-```bash
+```bash title="Run the following at the command line:"
 bash scripts/setup/download_models.sh
 ```
 
-??? success "Expected Output: Default human model"
-    ```bash title="Run at the command line"
+??? example "Example | `download_models.sh`"
+    ```
+    --8<-- "./scripts/setup/download_models.sh"
+    ```
+
+??? success "Check | Default human model"
+    ```bash title="Run the following at the command line:"
     ls triotrain/model_training/pretrained_models/v1.4.0_withIS_noAF/
     ```
 
-    ```bash title="Check outputs"
+    ```bash title="Expected outputs:"
     model.ckpt.data-00000-of-00001  model.ckpt.example_info.json  model.ckpt.index  model.ckpt.meta
     ```
 
-??? success "Expected Output: WGS.AF human model"
-    ```bash title="Run at the command line"
+??? success "Check | WGS.AF human model"
+    ```bash title="Run the following at the command line:"
     ls triotrain/model_training/pretrained_models/v1.4.0_withIS_withAF/
     ```
 
-    ```bash title="Check outputs"
+    ```bash title="Expected outputs:"
     wgs_af.model.ckpt.data-00000-of-00001  wgs_af.model.ckpt.index
     wgs_af.model.ckpt.example_info.json    wgs_af.model.ckpt.meta
     ```
 
 ## 5. Download Raw Data
 
-We will be using two Human trios from the v4.2.1 GIAB benchmarking data.
+!!! warning "Warning | Download Size"
+
+We are using two Human trios from the v4.2.1 GIAB benchmarking data.
 
 | TrioNumber | TrioName     | CommonID | SampleID | Relationship |
 | ---------- | ------------ | -------- | -------- | ------------ |
@@ -120,41 +87,47 @@ We will be using two Human trios from the v4.2.1 GIAB benchmarking data.
 |            |              | HG006    | NA24694  | Father       |
 |            |              | HG007    | NA24695  | Mother       |
 
-We will be downloading (5) types of raw data:
+We need (5) types of raw data:
 
-1. the per-chromosome 1kGP Population Allele Frequency (`.vcf.gz`) with corresponding index file (`.tbi`)
-2. sequence data &mdash; checksums (`.md5`) and index files (`.txt`) containing the download paths for:
-    1. the aligned reads files (`.bam`)
-    1. the corresponding index file (`.bai`)
-3. a benchmarking callset (`.vcf.gz`) with corresponding index file (`.tbi`) for each sample
-4. a benchmarking regions file (`.bed`) for each sample
-5. the GRCh38 reference genome (`.fasta`) with corresponding index file (`.fai`)
+| Number | Description | Extension | 
+| ------ | ----------- | --------- |
+| 1.     | the GRCh38 reference genome | `.fasta`, `.fai` | 
+| 2.     | 1kGP Population Allele Frequency, with index file | `.vcf.gz`, `vcf.gz.tbi` | 
+| 3.     | benchmarking files | |
+|        | per-genome truth callsets, with index files | `.vcf.gz`, `vcf.gz.tbi` | 
+|        | per genome truth regions file | `.bed` |
+| 4.     | sample metadata | |
+|        | checksums file  | `.md5` |
+|        | index files | `.txt` | 
+| 5.     | the aligned reads files, with index file | `.bam`, `.bai` |
 
-All the steps to download these data are contained in a single script, which [you can view on Github.](https://github.com/jkalleberg/DV-TrioTrain/blob/bac33c732065fa7fa1e92097e8f31da383261f4f/scripts/setup/download_GIAB.sh)
 
-Run the following at the command line:
-
-```bash
+```bash title="Run the following at the command line:"
 bash scripts/setup/download_GIAB.sh
 ```
 
-??? success "Expected Output: GIAB Directories"
+??? example "Example | `download_GIAB.sh`"
+    ```
+    --8<-- "./scripts/setup/download_GIAB.sh"
+    ```
 
-    ```bash title="Run at the command line"
+??? success "Check | Data Directories"
+
+    ```bash title="Run the following at the command line:"
     ls triotrain/variant_calling/data/GIAB
     ```
 
-    ```bash title="Check output directories"
+    ```bash title="Expected new directories:"
     allele_freq  bam  benchmark  reference
     ```
 
-??? success "Expected Raw Data: `allele_freq/`"
+??? success "Check | `allele_freq/`"
 
-    ```bash title="Run at the command line"
+    ```bash title="Run the following at the command line:"
     ls triotrain/variant_calling/data/GIAB/allele_freq/
     ```
 
-    ```bash title="Check outputs"
+    ```bash title="Expected outputs:"
     cohort-chr10.release_missing2ref.no_calls.vcf.gz      cohort-chr21.release_missing2ref.no_calls.vcf.gz.tbi
     cohort-chr10.release_missing2ref.no_calls.vcf.gz.tbi  cohort-chr22.release_missing2ref.no_calls.vcf.gz
     cohort-chr11.release_missing2ref.no_calls.vcf.gz      cohort-chr22.release_missing2ref.no_calls.vcf.gz.tbi
@@ -182,25 +155,25 @@ bash scripts/setup/download_GIAB.sh
     cohort-chr21.release_missing2ref.no_calls.vcf.gz      PopVCF.merge.list
     ```
 
-??? success "Expected Raw Data: `bam/`"
+??? success "Check | `bam/`"
 
-    ```bash title="Run at the command line"
+    ```bash title="Run the following at the command line:"
     ls triotrain/variant_calling/data/GIAB/bam
     ```
 
-    ```bash title="Check outputs"
+    ```bash title="Expected outputs:"
     AJtrio.download                                        HCtrio.download  
     AJtrio_Illumina_2x250bps_novoaligns_GRCh37_GRCh38.txt  HCtrio_Illumina300X100X_wgs_novoalign_GRCh37_GRCh38.txt
     HG002_corrected_md5sums.feb19upload.txt
     ```
 
-??? success "Expected Raw Data: `benchmark/`"
+??? success "Check | `benchmark/`"
 
-    ```bash title="Run at the command line"
+    ```bash title="Run the following at the command line:"
     ls triotrain/variant_calling/data/GIAB/benchmark/
     ```
 
-    ```bash title="Check outputs"
+    ```bash title="Expected outputs:"
     HG002_GRCh38_1_22_v4.2.1_benchmark.bed         HG005_GRCh38_1_22_v4.2.1_benchmark.vcf.gz
     HG002_GRCh38_1_22_v4.2.1_benchmark.vcf.gz      HG005_GRCh38_1_22_v4.2.1_benchmark.vcf.gz.tbi
     HG002_GRCh38_1_22_v4.2.1_benchmark.vcf.gz.tbi  HG005_README_v4.2.1.txt
@@ -217,67 +190,79 @@ bash scripts/setup/download_GIAB.sh
     HG005_GRCh38_1_22_v4.2.1_benchmark.bed
     ```
 
-??? success "Expected Raw Data: `reference/`"
+??? success "Check | `reference/`"
 
-    ```bash title="Run at the command line"
+    ```bash title="Run the following at the command line:"
     ls triotrain/variant_calling/data/GIAB/reference/
     ```
 
-    ```bash title="Check outputs"
+    ```bash title="Expected outputs:"
     GRCh38_no_alt_analysis_set.fasta  GRCh38_no_alt_analysis_set.fasta.fai  md5checksums.txt
     ```
+
+??? success "Check | Processing Raw Data Scripts"
+    In addition to the raw data, `download_GIAB.sh` also creates (3) bash scripts to process raw data into the formats expected by the tutorial:
+
+    1. `concat_PopVCFs.sh` + input file `PopVCF.merge.list` &mdash; merges the per-chr VCFs into a single file
+    2. `AJtrio.download` &mdash; downloads GIAB Trio1
+    3. `HCtrio.download` &mdash; downloads GIAB Trio2
 
 ## 6. Process Raw Data
 
 !!! note
     These scripts can either be wrapped with SBATCH, or run interactively at the command line if you have enough memory. However, each script can take awhile to complete, particularly the `.download` scripts (1hr+).
 
-In addition to the raw data, `download_GIAB.sh` also creates (3) bash scripts to process raw data into the formats expected by the tutorial:
-
-1. `concat_PopVCFs.sh` + input file `PopVCF.merge.list` &mdash; merges the per-chr VCFs into a single file
-2. `AJtrio.download` &mdash; downloads GIAB Trio1
-3. `HCtrio.download` &mdash; downloads GIAB Trio2
-
 ### a. Merge the PopVCF
+
+!!! warning "Warning | Download Size"
 
 We need to create a single, genome-wide PopVCF from the raw per-chromosome PopVCF files. The per-chr Population VCFs were produced by the One Thousand Genomes Project (1kGP) and used to train the Human WGS.AF model. [You can view the raw files on Google Cloud Platform.](https://console.cloud.google.com/storage/browser/brain-genomics-public/research/cohort/1KGP/cohort_dv_glnexus_opt/v3_missing2ref?pageState=(%22StorageObjectListTable%22:(%22f%22:%22%255B%255D%22))&prefix=&forceOnObjectsSortingFiltering=false)
 
-Run the following at the command line:
 
-```bash
+```bash title="Run the following at the command line:"
 bash triotrain/variant_calling/data/GIAB/allele_freq/concat_PopVCFs.sh
 ```
 
-??? success "Expected Intermediate Data: `allele_freq/`"
+??? example "Example | `concat_PopVCFs.sh`"
+    ```
+    --8<-- "./triotrain/variant_calling/data/GIAB/allele_freq/concat_PopVCFs.sh"
+    ```
 
-    ```bash title="Run at the command line"
+??? success "Check Intermediate Data | `allele_freq/`"
+
+    ```bash title="Run the following at the command line:"
     ls triotrain/variant_calling/data/GIAB/allele_freq/ | grep cohort.release
     ```
 
-    ```bash title="Check outputs"
+    ```bash title="Expected outputs:"
     cohort.release_missing2ref.no_calls.vcf.gz
     cohort.release_missing2ref.no_calls.vcf.gz.csi
     ```
 
-### b. Download GIAB Sequence Data
+### b. Download Sequence Data
+
+!!! warning "Warning | Download Size"
 
 !!! warning
     Given the large file size, the NIST FTP server runs slowly causing `curl` to timeout. **You may need to run these scripts repeatedly until all data is transfered completely.**
 
-We need to download the large sequence data files, and confirm they are not corrupted by checking the MD5 checksums, where available. These `BAM/BAI` files orginate from the GIAB FTP site. [An index of GIAB data created with these samples can be found on GitHub.](https://github.com/genome-in-a-bottle/giab_data_indexes)
+We need to download the large sequence data files, and confirm they are not corrupted by checking the MD5 checksums. These `BAM/BAI` files orginate from the GIAB FTP site. [An index of GIAB data created with these samples can be found on GitHub.](https://github.com/genome-in-a-bottle/giab_data_indexes)
 
-Run the following at the command line:
-
-```bash
+```bash title="1. Run the following at the command line:"
 bash triotrain/variant_calling/data/GIAB/bam/AJtrio.download
 ```
 
-??? success "Expected Raw Data | HG002:"
-    ```bash title="Run at the command line"
+??? example "Example | `AJtrio.download`"
+    ```
+    --8<-- "./triotrain/variant_calling/data/GIAB/bam/AJtrio.download"
+    ```
+
+??? success "Check Intermediate Data | HG002:"
+    ```bash title="Run the following at the command line:"
     ls triotrain/variant_calling/data/GIAB/bam/ | grep HG002
     ```
 
-    ```bash title="Check outputs"
+    ```bash title="Expected outputs:"
     HG002_corrected_md5sums.feb19upload.txt
     HG002.GRCh38.2x250.bam
     HG002.GRCh38.2x250.bam.bai
@@ -285,65 +270,69 @@ bash triotrain/variant_calling/data/GIAB/bam/AJtrio.download
     HG002.GRCh38.2x250.bam.md5
     ```
 
-??? success "Expected Raw Data | HG003:"
-    ```bash title="Run at the command line"
+??? success "Check Intermediate Data | HG003:"
+    ```bash title="Run the following at the command line:"
     ls triotrain/variant_calling/data/GIAB/bam/ | grep HG003
     ```
 
-    ```bash title="Check outputs"
+    ```bash title="Expected outputs:"
     HG003.GRCh38.2x250.bam
     HG003.GRCh38.2x250.bam.bai
     HG003.GRCh38.2x250.bam.bai.md5
     HG003.GRCh38.2x250.bam.md5
     ```
 
-??? success "Expected Raw Data | HG004:"
-    ```bash title="Run at the command line"
+??? success "Check Intermediate Data | HG004:"
+    ```bash title="Run the following at the command line:"
     ls triotrain/variant_calling/data/GIAB/bam/ | grep HG004
     ```
 
-    ```bash title="Check outputs"
+    ```bash title="Expected outputs:"
     HG004.GRCh38.2x250.bam
     HG004.GRCh38.2x250.bam.bai
     HG004.GRCh38.2x250.bam.bai.md5
     HG004.GRCh38.2x250.bam.md5
     ```
 
-And, run the following at the command line:
-
-```bash
+```bash title="2. Run the following at the command line:"
 bash triotrain/variant_calling/data/GIAB/bam/HCtrio.download
 ```
 
-??? success "Expected Raw Data | HG005:"
-    ```bash title="Run at the command line"
+??? example "Example | `HCtrio.download`"
+    ```
+    --8<-- "./triotrain/variant_calling/data/GIAB/bam/HCtrio.download"
+    ```
+
+??? success "Check Intermediate Data | HG005:"
+    ```bash title="Run the following at the command line:"
     ls triotrain/variant_calling/data/GIAB/bam/ | grep HG005
     ```
 
-    ```bash title="Check outputs"
+    ```bash title="Expected outputs:"
     HG005.GRCh38_full_plus_hs38d1_analysis_set_minus_alts.300x.bam
     HG005.GRCh38_full_plus_hs38d1_analysis_set_minus_alts.300x.bam.bai
     HG005.GRCh38_full_plus_hs38d1_analysis_set_minus_alts.300x.bam.bai.md5
     HG005.GRCh38_full_plus_hs38d1_analysis_set_minus_alts.300x.bam.md5
     ```
-??? success "Expected Raw Data | HG006:"
-    ```bash title="Run at the command line"
+
+??? success "Check Intermediate Data | HG006:"
+    ```bash title="Run the following at the command line:"
     ls triotrain/variant_calling/data/GIAB/bam/ | grep HG006
     ```
 
-    ```bash title="Check outputs"
+    ```bash title="Expected outputs:"
     HG006.GRCh38_full_plus_hs38d1_analysis_set_minus_alts.100x.bam
     HG006.GRCh38_full_plus_hs38d1_analysis_set_minus_alts.100x.bam.bai
     HG006.GRCh38_full_plus_hs38d1_analysis_set_minus_alts.100x.bam.bai.md5
     HG006.GRCh38_full_plus_hs38d1_analysis_set_minus_alts.100x.bam.md5
     ```
 
-??? success "Expected Raw Data | HG007:"
-    ```bash title="Run at the command line"
+??? success "Check Intermediate Data | HG007:"
+    ```bash title="Run the following at the command line:"
     ls triotrain/variant_calling/data/GIAB/bam/ | grep HG007
     ```
 
-    ```bash title="Check outputs"
+    ```bash title="Expected outputs:"
     HG007.GRCh38_full_plus_hs38d1_analysis_set_minus_alts.100x.bam
     HG007.GRCh38_full_plus_hs38d1_analysis_set_minus_alts.100x.bam.bai
     HG007.GRCh38_full_plus_hs38d1_analysis_set_minus_alts.100x.bam.bai.md5
@@ -354,30 +343,28 @@ bash triotrain/variant_calling/data/GIAB/bam/HCtrio.download
 
 There are (3) required input files we must create before we can run TrioTrain. [Complete details about all required data can be found in the TrioTrain User Guide.](../user-guide/usage_guide.md#assumptions)
 
-### a. Reference Dictionary File (`.dict`)
+### a. [Reference Dictionary File (`.dict`)](../user-guide/usage_guide.md#reference)
 
 !!! warning
     This step is specific to the Human reference genome GRCh38 since cattle-specific input files are pre-packaged with TrioTrain. **If you are working with a new species, you will need to create this file for your reference genome.**
 
-We need a reference dictionary file in the same directory as the reference genome. [Details about this required input can be found in the TrioTrain User Guide.](../user-guide/usage_guide.md#reference)
+We need a reference dictionary file in the same directory as the reference genome. This file defines the valid genomic coordinates for TrioTrain's region shuffling. 
 
-This file defines the valid genomic coordinates for TrioTrain's region shuffling. By default, region shuffling will only use the autosomes and X chromosome. However, you can expand or contract the shuffling area by providing an alternative region file for a particular trio by providing an existing `BED` file under the `RegionsFile` column within the [metadata file (`.csv`).](#b-metadata-file-csv)
+By default, region shuffling will only use the autosomes and X chromosome. However, you can expand or contract the shuffling area by providing an alternative region file for a particular trio by providing an existing `BED` file under the `RegionsFile` column within the [metadata file (`.csv`).](#b-metadata-file-csv)
 
-Run at the command line:
-
-```bash
+```bash title="Run the following at the command line:"
 picard CreateSequenceDictionary \
     --REFERENCE ./triotrain/variant_calling/data/GIAB/reference/GRCh38_no_alt_analysis_set.fasta \
     --OUTPUT ./triotrain/variant_calling/data/GIAB/reference/GRCh38_no_alt_analysis_set.dict \
     --SPECIES human
 ```
 
-??? success "Expected Output:"
-    ```bash title="Run at the command line"
+??? success "Check | Dictionary File "
+    ```bash title="Run the following at the command line:"
     ls triotrain/variant_calling/data/GIAB/reference/ | grep .dict
     ```
 
-    ```bash title="Check output"
+    ```bash title="Expected output:"
     GRCh38_no_alt_analysis_set.dict
     ```
 
@@ -387,25 +374,29 @@ We also need a metadata file to tell TrioTrain where to find all of previously d
 
 For the tutorial, we've created a helper script to automatically create an example of this file. This script uses expectations of where the tutorial data are stored to add local paths. **However, outside of the tutorial this file is a user-created input.**
 
-Run the following at the command line:
-
-```bash
+```bash title="Run the following at the command line:"
+source ./scripts/setup/modules.sh
 source ./scripts/start_conda.sh                 # Ensure the previously built conda env is active
-python triotrain/model_training/tutorial/create_metadata.py
+python3 ./triotrain/model_training/tutorial/create_metadata.py
 ```
 
-??? success "Expected Output:"
-    ```bash title="Run at the command line"
+??? example "Example | `create_metadata.py`"
+    ```
+    --8<-- "./triotrain/model_training/tutorial/create_metadata.py"
+    ```
+
+??? success "Check | Tutorial Metadata File"
+    ```bash title="Run the following at the command line:"
     ls triotrain/model_training/tutorial
     ```
 
-    ```bash title="Check output"
+    ```bash title="Expected output:"
     create_metadata.py  estimate.py  GIAB.Human_tutorial_metadata.csv  __init__.py  resources_used.json
     ```
 
-### c. SLURM Resource Config File (`.json`)
+### c. [SLURM Resource Config File (`.json`)](../user-guide/usage_guide.md#resource-config-format)
 
-The last required input we need for TrioTrain is the SLURM resource config file (`.json`). This file tells TrioTrain what resources to request from your HPC cluster when submitting SLURM jobs. [Formatting specifications for this required input can be found in the TrioTrain User Guide.](../user-guide/usage_guide.md#resource-config-format)
+The last required input we need for TrioTrain is the SLURM resource config file (`.json`). This file tells TrioTrain what resources to request from your HPC cluster when submitting SLURM jobs. [
 
 ??? example "Example | Resource Config File"
     ``` title="triotrain/model_training/tutorial/resources_used.json"
@@ -414,18 +405,7 @@ The last required input we need for TrioTrain is the SLURM resource config file 
 
 The hardware listed above for each phase (e.g. `mem`, `ntasks` , `gpus`, etc.) vary, as some phases are memory intensive. These values should not be interpreted as the minimum or the optimum resources required for each phase. The MU Lewis Research Computing Cluster is heterogenous, the example config file requests resources to maximize the number of compute nodes when running memory-intensive phases.
 
-For the tutorial, copy the above example into a new file, and manually edit the SBATCH parameters to match your HPC cluster (i.e. changing the partition list, account, and email address).
-
-```bash
-cp ./triotrain/model_training/tutorial/resources_used.json </path/to/new_file.json>
-vi </path/to/new_file.json>     # update resources manually 
-```
-
-This new resource config file is passed to TrioTrain via 
-
-```bash
--r </path/to/new_file.json>
-```
+For the tutorial, copy the above example into a new file, and manually edit the SBATCH parameters to match your HPC cluster (i.e. changing the partition list, account, and email address). This new resource config file is passed to TrioTrain via `-r </path/to/new_file.json>`
 
 ---
 
@@ -447,7 +427,7 @@ Our alternative approach, referred to as "Region Shuffling", splits the autosome
     Use the `--unmapped-reads` flag to provide a contig prefix pattern to exclude. The default value (NKLS) is approprate for the `ARS-UCD1.2_Btau5.0.1Y` reference genome.
 
 ??? note "Note | Identifying Contig Labels"
-    ```bash title="Run at the command line"
+    ```bash title="Run the following at the command line:"
     cat ARS-UCD1.2_Btau5.0.1Y.dict | awk '{if($1 ~ "@SQ") print $2}' | cut -c4-7 | sort | uniq -c | sort -k1
     ```
 
@@ -528,8 +508,10 @@ Additionally, TrioTrain bases the Region Shuffling calculations on the total num
 
 For this tutorial, complete the demo for Human genomes by **editing the following at the command to include your new SLURM config file**:
 
-```bash
+```bash title="Run the following at the command line:"
 # You can add the --dry-run flag to this command to confirm the TrioTrain pipeline runs smoothly before submitting jobs to the queue
+source ./scripts/setup/modules.sh
+source ./scripts/start_conda.sh                 # Ensure the previously built conda env is active
 python3 triotrain/run_trio_train.py                                                                         \
     -g Father                                                                                               \
     --unmapped-reads chrUn                                                                                  \
@@ -567,7 +549,7 @@ There are (6) types of output files from running the demo:
 | *N = number of CPUs requested in your `resources_used.json` file, shards are numbered 0 &mdash; (N - 1).* | |
 
 ??? success "Expected Output | Father Shuffling:"
-    ```bash title="Run at the command line"
+    ```bash title="Run the following at the command line:"
     ls ../TUTORIAL/demo/Human_tutorial/examples/ | grep Father
     ```
 
@@ -694,7 +676,7 @@ There are (6) types of output files from running the demo:
     ```
 
     **Confirm that SLURM jobs completed successfully**
-    ```bash title="Run at the command line"
+    ```bash title="Run the following at the command line:"
     cat ../TUTORIAL/demo/Human_tutorial/logs/tracking-Baseline-v1.4.0.log | grep SUCCESS | grep Father | wc -l
     ```
 
@@ -703,7 +685,7 @@ There are (6) types of output files from running the demo:
     ```
 
 ??? success "Expected Output | Child Shuffling:"
-    ```bash title="Run at the command line"
+    ```bash title="Run the following at the command line:"
     ls ../TUTORIAL/demo/Human_tutorial/examples/ | grep Child
     ```
 
@@ -832,7 +814,7 @@ There are (6) types of output files from running the demo:
     ```
 
     **Confirm that SLURM jobs completed successfully**
-    ```bash title="Run at the command line"
+    ```bash title="Run the following at the command line:"
     cat ../TUTORIAL/demo/Human_tutorial/logs/tracking-Baseline-v1.4.0.log | grep SUCCESS | grep Child | wc -l
     ```
 
@@ -841,7 +823,7 @@ There are (6) types of output files from running the demo:
     ```
 
 ??? success "Expected Output | Benchmarking:"
-    ```bash title="Run at the command line"
+    ```bash title="Run the following at the command line:"
     less ../TUTORIAL/demo/summary/Human_tutorial.SLURM.job_numbers.csv
     ```
 
@@ -856,9 +838,9 @@ There are (6) types of output files from running the demo:
 
 **The following will provide a conservative estimate for the `--max-examples` and `--est-examples` parameters to ensure shuffling easily fits within your available memory.**
 
-After confirming all (7) jobs complete successfully, run the following at the command line:
-
-```bash
+```bash title="Run the following at the command line:"
+source ./scripts/setup/modules.sh
+source ./scripts/start_conda.sh                 # Ensure the previously built conda env is active
 python3 triotrain/model_training/tutorial/estimate.py                           \
     --vcf-file ../TUTORIAL/demo/Human_tutorial/test_Father/test1_chr21.vcf.gz   \
     -g Father                                                                   \
@@ -892,8 +874,10 @@ Now that we know how to tailor TrioTrain for our non-bovine species (human), we 
 
 Complete the GIAB TrioTrain by **editing the following at the command to include your new SLURM config file**:
 
-```bash
+```bash title="Run the following at the command line:"
 # You can add the --dry-run flag to this command to confirm the TrioTrain pipeline runs smoothly prior to submitting jobs to the queue
+source ./scripts/setup/modules.sh
+source ./scripts/start_conda.sh                 # Ensure the previously built conda env is active
 python3 triotrain/run_trio_train.py                                                                         \
     -g Father                                                                                               \
     --unmapped-reads chrUn                                                                                  \
@@ -909,34 +893,34 @@ python3 triotrain/run_trio_train.py                                             
 
 [Need to Re-Submit a SLURM job :octicons-question-16:](../user-guide/resubmit.md){ .md-button }
 
-??? success "Expected Outputs | Baseline WGS.AF:"
-    ```bash title="Run at the command line"
+??? success "Check | Baseline WGS.AF:"
+    ```bash title="Run the following at the command line:"
     ls ../TUTORIAL/baseline_v1.4.0_withIS_withAF/ | grep total | grep total
     ```
 
-    ```bash title="Check outputs"
+    ```bash title="Expected outputs:"
     Test1.total.metrics.csv
     Test2.total.metrics.csv
     Test3.total.metrics.csv
     ```
 
-??? success "Expected Outputs | Father:"
-    ```bash title="Run at the command line"
+??? success "Check | Father:"
+    ```bash title="Run the following at the command line:"
     ls ../TUTORIAL/GIAB_Trio/Human_tutorial/compare_Father/ | grep total
     ```
 
-    ```bash title="Check outputs"
+    ```bash title="Expected outputs:"
     Test1.total.metrics.csv
     Test2.total.metrics.csv
     Test3.total.metrics.csv
     ```
 
-??? success "Expected Outputs | Mother:"
-    ```bash title="Run at the command line"
+??? success "Check | Mother:"
+    ```bash title="Run the following at the command line:"
     ls ../TUTORIAL/GIAB_Trio/Human_tutorial/compare_Mother/ | grep total
     ```
 
-    ```bash title="Check outputs"
+    ```bash title="Expected outputs:"
     Test1.total.metrics.csv
     Test2.total.metrics.csv
     Test3.total.metrics.csv
@@ -944,9 +928,11 @@ python3 triotrain/run_trio_train.py                                             
 
 ## Merge Results | Per-Iteration
 
-Each `TestX.total.metrics.csv` output file should contain 57 rows and 2 columns. The metrics within are the raw and proprotional performance metrics from hap.py. After all `convert_happy` jobs complete, we will separately merge the results from running the baseline iteration, and both training iterations completed during the GIAB tutorial:
+Each `Test#.total.metrics.csv` output file should contain 57 rows and 2 columns. The metrics within are the raw and proprotional performance metrics from hap.py. After all `convert_happy` jobs complete, we will separately merge the results from running the baseline iteration, and both training iterations completed during the GIAB tutorial:
 
-```bash
+```bash title="Run the following at the command line:"
+source ./scripts/setup/modules.sh
+source ./scripts/start_conda.sh                 # Ensure the previously built conda env is active
 for start_i in $(seq 0 1); do
     echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: merging processed results from hap.py for GIAB run#${start_i}"
     python3 triotrain/summarize/merge_results.py --env ../TUTORIAL/GIAB_Trio/envs/run${start_i}.env -g Father -m triotrain/summarize/data/tutorial_metadata.csv
@@ -954,21 +940,21 @@ for start_i in $(seq 0 1); do
 done
 ```
 
-??? success "Expected Outputs | Baseline WGS.AF"
-    ```bash title="Run at the command line"
+??? success "Check | Baseline WGS.AF"
+    ```bash title="Run the following at the command line:"
     ls ../TUTORIAL/baseline_v1.4.0_withIS_withAF/ | grep All
     ```
 
-    ```bash title="Check outputs"
+    ```bash title="Expected outputs:"
     DV1.4_WGS.AF_human.AllTests.total.metrics.csv
     ```
 
-??? success "Expected Outputs | GIAB Trio1"
-    ```bash title="Run at the command line"
+??? success "Check | GIAB Trio1"
+    ```bash title="Run the following at the command line:"
     ls ../TUTORIAL/GIAB_Trio/summary | grep All
     ```
 
-    ```bash title="Check outputs"
+    ```bash title="Expected outputs:"
     Trio1.AllTests.total.metrics.csv
     ```
 
@@ -976,7 +962,9 @@ done
 
 Running TrioTrain produces a large volume of temporary files. Run the following at the command line to free up space:
 
-```bash
+```bash title="Run the following at the command line:"
+source ./scripts/setup/modules.sh
+source ./scripts/start_conda.sh                 # Ensure the previously built conda env is active
 for start_i in $(seq 0 1); do
     echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: removing temp files for GIAB run#${start_i}"
     python3 triotrain/model_training/slurm/clean_tmp.py --env ../TUTORIAL/GIAB_Trio/envs/run${start_i}.env
@@ -984,21 +972,21 @@ for start_i in $(seq 0 1); do
 done
 ```
 
-??? success "Expected Outputs | Baseline WGS.AF"
-    ```bash title="Run at the command line"
+??? success "Check | Baseline WGS.AF"
+    ```bash title="Run the following at the command line:"
     du -h ../TUTORIAL/baseline_v1.4.0_withIS_withAF/
     ```
 
-    ```bash title="Check outputs"
+    ```bash title="Expected outputs:"
     700M    ../TUTORIAL/baseline_v1.4.0_withIS_withAF/
     ```
 
-??? success "Expected Outputs | GIAB Trio1"
-    ```bash title="Run at the command line"
+??? success "Check | GIAB Trio1"
+    ```bash title="Run the following at the command line:"
     du -h ../TUTORIAL/GIAB_Trio
     ``
 
-    ```bash title="Check outputs"
+    ```bash title="Expected outputs:"
     141M    ../TUTORIAL/GIAB_Trio/Human_tutorial/logs
     402M    ../TUTORIAL/GIAB_Trio/Human_tutorial/compare_Mother
     1.1M    ../TUTORIAL/GIAB_Trio/Human_tutorial/train_Mother/eval_Child

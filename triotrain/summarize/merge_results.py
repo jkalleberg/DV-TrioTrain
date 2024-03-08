@@ -211,7 +211,7 @@ class MergedTests:
         self._model_version = f"DV{version_clean}"
 
         if self._custom_model:
-            training_species = "bovine"
+            # training_species = "bovine"
             model_type = "custom"
     
             if self.args.first_genome is None:
@@ -231,7 +231,7 @@ class MergedTests:
                     self.env.contents[f"{self._next_genome}TestCkptName"],
                 ]
         else:
-            training_species = "human"
+            # training_species = "human"
             model_type = "default"
 
             self._expected_num_tests = self._total_num_tests
@@ -240,7 +240,7 @@ class MergedTests:
             self._ckpts_list = [self.env.contents["BaselineTestCkptName"]]
 
         self._model_used = {
-            "training_species": training_species,
+            # "training_species": training_species,
             "type": model_type,
             "version": self._model_version,
         }

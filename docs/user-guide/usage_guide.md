@@ -70,6 +70,12 @@ format
 ### Configuring SLURM Resources
 
 SLURM resources are handled by TrioTrain via a resource configuration file (`.json`).
+
+??? example "Example | Resource Config File"
+    ``` title="triotrain/model_training/tutorial/resources_used.json"
+    --8<-- "./triotrain/model_training/tutorial/resources_used.json"
+    ```
+
 #### Resource Config Format
 
 Contains nested dictionaries in the following format:
@@ -102,6 +108,11 @@ Additionally, there are (3) optional phase names for TrioTrain's supplementary a
 3. `mie_summary` &mdash; for calculating Mendelian Inheritance Error rate in trio-binned test genomes
 
 The value for each `phase_name` is a nested dictionary that contains key:value pairs of parameters for running SBATCH job files. [You can view valid SBATCH options in the SLURM documentation.](https://slurm.schedmd.com/sbatch.html)
+
+??? example "Example | Resource Config File"
+    ``` title="triotrain/model_training/tutorial/resources_used.json"
+    --8<-- "./triotrain/model_training/tutorial/resources_used.json"
+    ```
 
 ### Providing required data to TrioTrain
 
