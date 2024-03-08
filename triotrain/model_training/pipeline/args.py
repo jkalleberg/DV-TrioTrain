@@ -33,7 +33,6 @@ def collect_args() -> argparse.ArgumentParser:
     doc = get_docstring(
         script_name="run_trio_train.py", script_path=str(h_path / "run_trio_train.py")
     )
-
     parser = argparse.ArgumentParser(
         description=doc,
         formatter_class=argparse.RawTextHelpFormatter,
@@ -389,7 +388,7 @@ def check_args(args: argparse.Namespace, logger: Logger, default_channels: str) 
         logger.debug(str_args)
 
     if args.dry_run:
-        logger.info("option --dry-run set; display commands without runnning them")
+        logger.info("option --dry-run set; display commands without running them")
 
     try:
         assert (
