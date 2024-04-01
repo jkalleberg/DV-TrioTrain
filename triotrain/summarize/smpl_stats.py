@@ -172,21 +172,34 @@ class Stats:
         Save the combined metrics to a new CSV output, or display to screen.
         """
         self.pickled_data.output_file._test_file.check_existing()
+
         if unique_records_only and self.pickled_data.output_file._test_file.file_exists:
             with open(str(self.pickled_data.output_file.file_path), "r") as file:
                 dict_reader = DictReader(file)
                 current_records = list(dict_reader)
 
             for r in current_records:
-                if self._merged_data == r:
-                    if self.args.debug:
-                        self.logger.debug(
-                            f"{self._logger_msg}: skipping a previously processed file | '{self._vcf_file.file}'"
-                    )
-                    self.logger.info(f"{self._logger_msg}: data has been written previously... SKIPPING AHEAD")
-                    return
+                if isinstance(self._merged_data, list):
+                    if r in self._merged_data:
+                        if self.pickled_data._input_file.debug_mode:
+                            self.pickled_data._input_file.logger.debug(
+                                f"{self.pickled_data._input_file.logger_msg}: skipping a previously processed file | '{self.pickled_data._input_file.file}'"
+                        )
+                        self.pickled_data._input_file.logger.info(f"{self.pickled_data._input_file.logger_msg}: data has been written previously... SKIPPING AHEAD")
+                        return
+                    else:
+                        continue
+
                 else:
-                    continue
+                    if self._merged_data == r:
+                        if self.args.debug:
+                            self.pickled_data._input_file.logger.debug(
+                                f"{self.pickled_data._input_file.logger_msg}: skipping a previously processed file | '{self.pickled_data._input_file.file}'"
+                        )
+                        self.pickled_data._input_file.logger.info(f"{self.pickled_data._input_file.logger_msg}: data has been written previously... SKIPPING AHEAD")
+                        return
+                    else:
+                        continue
 
         # ensure that output doesn't have duplicate sampleID column
         if isinstance(self._merged_data, dict):
@@ -227,7 +240,7 @@ class Stats:
                 return
 
         self.add_metadata()
-        
+
         if self.pickled_data._input_file.dryrun_mode:
             self.pickled_data._input_file.logger.info(
                 f"[DRY RUN] - {self.pickled_data._input_file.logger_msg}: pretending to add {self._num_samples} rows to a CSV | '{self.pickled_data.output_file.file}'"

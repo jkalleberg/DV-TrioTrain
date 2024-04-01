@@ -254,14 +254,14 @@ class Summary:
     #         f"[{self._phase}] - [{self._caller}] - [{self._data['label']}]"
     #     )
 
-    # def process_multiple_samples(self) -> None:
-    #         """
-    #         Iterate through multiple VCF files
-    #         """
-    #         if self.args.debug:
-    #             itr = self._data_list[0:3]
-    #         else:
-    #             itr = self._data_list
+    def process_multiple_samples(self) -> None:
+            """
+            Iterate through multiple VCF files
+            """
+            if self.args.debug:
+                itr = self._data_list[0:3]
+            else:
+                itr = self._data_list
 
     #         for i, item in enumerate(itr):
     #             self._data = item
@@ -285,29 +285,7 @@ class Summary:
     #             else:
     #                 self.logger.warning(f"{self._logger_msg}: missing the input VCF file | '{self._vcf_file.file}'... SKIPPING AHEAD")
 
-    #             # Exclude based on GQ
-    #             if self.args.filter_GQ:
-    #                 GQ_scores = [10, 13, 20, 30]
-    #                 for g in GQ_scores:
-    #                     label = f"{self._clean_filename}.GQ{g}.vcf.gz"
-
-    #                     _gq_vcf = TestFile(label, self.logger)
-    #                     _gq_vcf.check_existing(
-    #                         logger_msg=self._logger_msg, debug_mode=self.args.debug
-    #                     )
-    #                     if _gq_vcf.file_exists:
-    #                         if self.args.debug:
-    #                             self.logger.debug(
-    #                             f"{self._logger_msg}: GQ.VCF file '{_gq_vcf.file}' already exists... SKIPPING AHEAD"
-    #                             )
-    #                         self.stats(label, create_job=False)
-    #                         continue
-    #                     else:
-    #                         self.logger.info(
-    #                             f"{self._logger_msg}: missing GQ.VCF file | '{_gq_vcf.file}'")
-    #                         self.filter(f"--exclude 'GQ<{g}'", self._vcf_file.file, label)
-    #                         self.index_vcf(label)
-    #                         self.stats(label, create_job=True)
+    
 
     #                 self._slurm_job = self.make_job()
     #                 self.submit_job(index=i)
@@ -349,8 +327,8 @@ class Summary:
         self.load_metadata()
 
         # Process a single sample
-        # self._index = 0
-        self._index = 53
+        self._index = 0
+        # self._index = 53
         self._data = self._data_list[self._index]
         self.find_trios()
         # self.get_sample_info()
@@ -370,7 +348,6 @@ class Summary:
         new_data = prepare(pickled_path=_pickle_file)
         run_stats = Stats(pickled_data=new_data, run_iteractively=True)
         run_stats.save_stats()
-        breakpoint()
         # self.process_multiple_samples()
         # self.check_submission()
         # if self._num_processed != 0:
