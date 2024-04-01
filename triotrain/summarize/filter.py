@@ -126,3 +126,28 @@
 #                 self.logger.debug(
 #                         f"{self._logger_msg}: INPUT CLEAN_FILENAME | '{match.group()}'")
 #             return match.group()
+
+
+#             # Exclude based on GQ
+#             if self.args.filter_GQ:
+#                 GQ_scores = [10, 13, 20, 30]
+#                 for g in GQ_scores:
+#                     label = f"{self._clean_filename}.GQ{g}.vcf.gz"
+
+#                     _gq_vcf = TestFile(label, self.logger)
+#                     _gq_vcf.check_existing(
+#                         logger_msg=self._logger_msg, debug_mode=self.args.debug
+#                     )
+#                     if _gq_vcf.file_exists:
+#                         if self.args.debug:
+#                             self.logger.debug(
+#                             f"{self._logger_msg}: GQ.VCF file '{_gq_vcf.file}' already exists... SKIPPING AHEAD"
+#                             )
+#                         self.stats(label, create_job=False)
+#                         continue
+#                     else:
+#                         self.logger.info(
+#                             f"{self._logger_msg}: missing GQ.VCF file | '{_gq_vcf.file}'")
+#                         self.filter(f"--exclude 'GQ<{g}'", self._vcf_file.file, label)
+#                         self.index_vcf(label)
+#                         self.stats(label, create_job=True)
