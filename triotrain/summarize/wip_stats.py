@@ -18,7 +18,9 @@ from os import environ
 from os import path as p
 from pathlib import Path
 from sys import path
-from typing import Dict, List
+from typing import Dict, Union, List
+
+from regex import compile
 
 abs_path = Path(__file__).resolve()
 module_path = str(abs_path.parent.parent)
@@ -93,7 +95,6 @@ def check_args(args: argparse.Namespace, logger: Logger):
         args.metadata
     ), "missing --metadata; Please provide a file with descriptive data for test samples."
 
-
     # if not args.dry_run:
     assert args.outpath, "missing --output; Please provide a file name to save results."
 
@@ -104,23 +105,34 @@ class SummarizeResults:
     Data to pickle for processing the summary stats from a VCF/BCF output.
     """
 
-    sample_metadata: Dict[str, str]
+    sample_metadata: Union[List[Dict[str, str]], Dict[str, str]] 
     output_file: WriteFiles
 
-    # optional values
-    contains_trio: bool = False
-
     # imutable, internal parameters
+    _contains_trio: bool = field(default=False, init=False, repr=False)
     _input_file: WriteFiles = field(default=None, init=False, repr=False)
+
+    def __post_init__(self) -> None:
+        if isinstance(self.sample_metadata, dict):
+            self.total_samples = 1
+            self._file_path = Path(self.sample_metadata["file_path"])
+        else:
+            self.total_samples = len(self.sample_metadata)
+            self._file_path = Path(self.sample_metadata[0]["file_path"])
+
+        if self.total_samples == 3:
+            self._contains_trio = True
+        else:
+            print("TOTAL SAMPLES:", self.total_samples)
+            breakpoint()
 
     def check_file_path(self) -> None:
         """
         Confirm that the VCF file in the metadata file exists.
         """
-        path = Path(self.sample_metadata["file_path"])
         self._input_file = WriteFiles(
-            path_to_file=path.parent,
-            file=path.name,
+            path_to_file=self._file_path.parent,
+            file=self._file_path.name,
             logger=self.output_file.logger,
             logger_msg=self.output_file.logger_msg,
             dryrun_mode=self.output_file.dryrun_mode,
@@ -132,7 +144,6 @@ class SummarizeResults:
             debug_mode=self.output_file.debug_mode,
         )
         self._input_file.file_exists = self._input_file._test_file.file_exists
-        print("INPUT FILE EXISTS:", self._input_file.file_exists)
 
 
 @dataclass
@@ -150,9 +161,8 @@ class Summary:
     overwrite: bool = False
 
     # imutable, internal parameters
-    _command_list: List = field(default_factory=list, repr=False, init=False)
-
-    _output_lines: dict = field(default_factory=dict, init=False, repr=False)
+    _trio_counter: int = field(default=0, init=False, repr=False)
+    _digits_only: compile = field(default=compile(r"\d+"), init=False, repr=False)
 
     def load_variables(self) -> None:
         """
@@ -192,24 +202,55 @@ class Summary:
             )
             raise ValueError("Invalid Input File")
 
-        print(f"TOTAL LINES:{self._total_lines}")
-        print(f"LINE1: {self._data_list[1]}")
-        # print(f"LINE53: {self._data_list[4]}")
+    def find_trios(self) -> None:
+        """
+        Determine if a trio VCF was provided.
 
-    def get_sample_info(self) -> None:
-        """ """
-        self._sampleID = self._data["sampleID"]
-        self._caller = self._data["variant_caller"]
-        info = self._data["info"]
-        if info:
-            if "_" in info:
-                self._species, self._description = info.split("_")
+        If so, save 3 rows of metadata, rather than one.
+        """
+        input_name = Path(self._data["file_path"]).name
+
+        if "trio" in input_name.lower():
+            match = self._digits_only.search(input_name)
+            if match:
+                trio_num = int(match.group())
             else:
-                self._species = info
-                self._description = None
-        self._logger_msg = (
-            f"[{self._phase}] - [{self._caller}] - [{self._data['label']}]"
-        )
+                self._trio_counter += 1
+                trio_num = self._trio_counter
+
+            self.logger.info(
+                f"{self._phase}: input file contains a family | Trio{trio_num}"
+            )
+            trio_vcf_exists = True
+        else:
+            trio_vcf_exists = False
+            print("TRIO VCF & PEDIGREE WILL NEED TO BE CREATED FOR MIE STATS!")
+
+        pedigree = {
+            key: value
+            for key, value in self._data.items()
+            if key in ["sampleID", "paternalID", "maternalID", "sex"]
+        }
+        _missing_pedigree = not any(pedigree.values())
+
+        if _missing_pedigree or trio_vcf_exists is False:
+            return
+        else:
+            self._data = self._data_list[self._index : (self._index + 3)]
+
+    # def get_sample_info(self) -> None:
+    #     self._sampleID = self._data["sampleID"]
+    #     self._caller = self._data["variant_caller"]
+    #     info = self._data["info"]
+    #     if info:
+    #         if "_" in info:
+    #             self._species, self._description = info.split("_")
+    #         else:
+    #             self._species = info
+    #             self._description = None
+    #     self._logger_msg = (
+    #         f"[{self._phase}] - [{self._caller}] - [{self._data['label']}]"
+    #     )
 
     # def process_multiple_samples(self) -> None:
     #         """
@@ -304,15 +345,17 @@ class Summary:
         """
         self.load_variables()
         self.load_metadata()
-        
+
         # Process a single sample
-        self._data = self._data_list[1]
-        self.get_sample_info()
+        # self._index = 0
+        self._index = 53
+        self._data = self._data_list[self._index]
+        self.find_trios()
+        # self.get_sample_info()
 
         pickled_data = SummarizeResults(
             sample_metadata=self._data, output_file=self._csv_output
         )
-
         pickled_data.check_file_path()
 
         _pickle_file = TestFile(
