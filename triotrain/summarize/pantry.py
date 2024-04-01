@@ -47,7 +47,7 @@ def preserve(item: object, pickled_path: TestFile, overwrite: bool = False) -> N
             pickled_path.logger.error(f"Unable to pickle an item | '{object}'")
 
 
-def prepare(pickled_path: TestFile) -> object:
+def prepare(pickled_path: Path) -> object:
     """
     Unpack a pickled item.
 
@@ -61,12 +61,11 @@ def prepare(pickled_path: TestFile) -> object:
     object
         something needed by a command-line Python script
     """
-    pickled_path.check_existing()
-    if pickled_path.file_exists:
+    if pickled_path.is_file():
         try:
-            return pickle.load(open(pickled_path.file, "rb"))
+            return pickle.load(open(str(pickled_path), "rb"))
 
         except pickle.UnpicklingError:
-            pickled_path.logger.error(f"Unable to unpickle an item | '{pickled_path.file}'")
+            print(f"Unable to unpickle an item | '{pickled_path.file}'")
     else:
-        pickled_path.logger.error(f"Missing the pickled item | '{pickled_path.file}'")
+        print(f"Missing the pickled item | '{pickled_path.file}'")

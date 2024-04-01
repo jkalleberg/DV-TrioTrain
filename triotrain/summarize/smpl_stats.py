@@ -5,21 +5,26 @@ description:
 """
 from __future__ import annotations
 
+import argparse
+from collections import OrderedDict
 from csv import DictReader
 from dataclasses import dataclass, field
+
+
 from pathlib import Path
 from sys import path
-from typing import TYPE_CHECKING, Dict, List, TextIO, Union
-from collections import defaultdict, OrderedDict
-
+from typing import Dict, List, TextIO, Union, TYPE_CHECKING
 if TYPE_CHECKING:
-    from wip_stats import SummarizeResults
+    from logging import Logger
+
+from wip_stats import SummarizeResults
 
 abs_path = Path(__file__).resolve()
 module_path = str(abs_path.parent.parent)
 path.append(module_path)
 from helpers.files import WriteFiles
 from model_training.prep.count import count_variants
+from pantry import prepare
 
 
 @dataclass
@@ -42,6 +47,10 @@ class Stats:
         _new_file = Path(
             f"{self.pickled_data._input_file._test_file.clean_filename}.STATS"
         )
+
+        self.pickled_data.output_file.logger.info(
+            f"{self.pickled_data.output_file.logger_msg}: searching for existing file | '{_new_file}'"
+        )
         self._output = WriteFiles(
             _new_file.parent,
             _new_file.name,
@@ -60,6 +69,9 @@ class Stats:
         Produce bcftools +smpl-stats for each sample in metadata file, if missing the .STATS file.
         """
         if self.run_iteractively:
+            self.pickled_data.output_file.logger.info(
+                f"{self.pickled_data.output_file.logger_msg}: running 'bcftools +smpl-stats' | '{self.pickled_data._input_file.file_path.name}'"
+            )
             self._smpl_stats = count_variants(
                 self.pickled_data._input_file.file_path,
                 self.pickled_data._input_file.logger_msg,
@@ -150,13 +162,20 @@ class Stats:
         Merge the user-provided metadata with sample_stats
         """
         if isinstance(self.pickled_data.sample_metadata, dict):
-            clean_metadata = {key: val for key,val in self.pickled_data.sample_metadata.items() if key != "file_path"}
+            clean_metadata = {
+                key: val
+                for key, val in self.pickled_data.sample_metadata.items()
+                if key != "file_path"
+            }
             clean_stats = self._stats[0]
             self._merged_data = {**clean_metadata, **clean_stats}
         else:
-            clean_metadata = [{key: val for key, val in d.items() if key != "file_path"} for d in self.pickled_data.sample_metadata]
+            clean_metadata = [
+                {key: val for key, val in d.items() if key != "file_path"}
+                for d in self.pickled_data.sample_metadata
+            ]
 
-            rekeyed_metadata = OrderedDict({d['sampleID']: d for d in clean_metadata})
+            rekeyed_metadata = OrderedDict({d["sampleID"]: d for d in clean_metadata})
             rekeyed_statsdata = {d["sampleID"]: d for d in self._stats}
             combined = OrderedDict()
 
@@ -184,8 +203,10 @@ class Stats:
                         if self.pickled_data._input_file.debug_mode:
                             self.pickled_data._input_file.logger.debug(
                                 f"{self.pickled_data._input_file.logger_msg}: skipping a previously processed file | '{self.pickled_data._input_file.file}'"
+                            )
+                        self.pickled_data._input_file.logger.info(
+                            f"{self.pickled_data._input_file.logger_msg}: data has been written previously... SKIPPING AHEAD"
                         )
-                        self.pickled_data._input_file.logger.info(f"{self.pickled_data._input_file.logger_msg}: data has been written previously... SKIPPING AHEAD")
                         return
                     else:
                         continue
@@ -195,8 +216,10 @@ class Stats:
                         if self.args.debug:
                             self.pickled_data._input_file.logger.debug(
                                 f"{self.pickled_data._input_file.logger_msg}: skipping a previously processed file | '{self.pickled_data._input_file.file}'"
+                            )
+                        self.pickled_data._input_file.logger.info(
+                            f"{self.pickled_data._input_file.logger_msg}: data has been written previously... SKIPPING AHEAD"
                         )
-                        self.pickled_data._input_file.logger.info(f"{self.pickled_data._input_file.logger_msg}: data has been written previously... SKIPPING AHEAD")
                         return
                     else:
                         continue
@@ -204,7 +227,9 @@ class Stats:
         # ensure that output doesn't have duplicate sampleID column
         if isinstance(self._merged_data, dict):
             col_names = list(self._merged_data.keys())
-            self.pickled_data.output_file.add_rows(col_names=col_names, data_dict=self._merged_data)
+            self.pickled_data.output_file.add_rows(
+                col_names=col_names, data_dict=self._merged_data
+            )
         else:
             for row in self._merged_data:
                 col_names = list(row.keys())
@@ -256,3 +281,100 @@ class Stats:
 
         else:
             self.write_output(unique_records_only=True)
+
+
+def collect_args() -> argparse.Namespace:
+    """
+    Process command line argument to execute script.
+    """
+    parser = argparse.ArgumentParser(
+        description=__doc__,
+        formatter_class=argparse.RawTextHelpFormatter,
+    )
+    parser.add_argument(
+        "-P",
+        "--pickle-file",
+        dest="pickle_file",
+        type=str,
+        help="[REQUIRED]\ninput file (.p)\ncontains necessary data to process summary stats for a single sample, as a pickled SummarizeResults object.",
+        metavar="</path/file>",
+    )
+    parser.add_argument(
+        "-d",
+        "--debug",
+        dest="debug",
+        help="if True, enables printing detailed messages",
+        default=False,
+        action="store_true",
+    )
+    parser.add_argument(
+        "--dry-run",
+        dest="dry_run",
+        help="if True, display +smpl-stats metrics to the screen",
+        action="store_true",
+    )
+    return parser.parse_args()
+
+
+def check_args(args: argparse.Namespace, logger: Logger) -> None:
+    """
+    With "--debug", display command line args provided.
+    With "--dry-run", display a msg.
+    Then, check to make sure all required flags are provided.
+    """
+    from os import environ
+
+    if args.debug:
+        str_args = "COMMAND LINE ARGS USED: "
+        for key, val in vars(args).items():
+            str_args += f"{key}={val} | "
+
+        logger.debug(str_args)
+        _version = environ.get("BIN_VERSION_DV")
+        logger.debug(f"using DeepVariant version | {_version}")
+
+    if args.dry_run:
+        logger.info("[DRY RUN]: output will display to screen and not write to a file")
+
+    assert (
+        args.pickle_file
+    ), "missing --pickle-file; Please provide a path to a pickled SummarizeResults object."
+
+
+def __init__() -> None:
+    from os import path as p
+
+    from helpers.utils import get_logger
+    from helpers.wrapper import Wrapper, timestamp
+
+    # Collect command line arguments
+    args = collect_args()
+
+    # Collect start time
+    Wrapper(__file__, "start").wrap_script(timestamp())
+
+    # Create error log
+    current_file = p.basename(__file__)
+    module_name = p.splitext(current_file)[0]
+    logger = get_logger(module_name)
+
+    # Check command line args
+    check_args(args, logger=logger)
+
+    try:
+        new_data = prepare(pickled_path=Path(args.pickle_file))
+        new_data.output_file.logger = logger
+        new_data.output_file.debug_mode = args.debug
+        new_data.output_file.dryrun_mode = args.dry_run
+        new_data.check_file_path()
+        run_stats = Stats(pickled_data=new_data, run_iteractively=True)
+        run_stats.save_stats()
+    except AssertionError as E:
+        logger.error(E)
+
+    Wrapper(__file__, "end").wrap_script(timestamp())
+
+
+# Execute functions created
+if __name__ == "__main__":
+    __init__()
