@@ -38,10 +38,15 @@ def count_variants(
         filter = None
         command = None
 
+    if debug_mode and filter is not None:
+        logger.debug(
+            f"{logger_msg}: applying a filter  | '{filter}'",
+        )
+
     if use_bcftools:
         if debug_mode:
             logger.debug(
-                f"{logger_msg}: using 'bcftools +smpl-stats' to count {filter} records | '{truth_vcf.name}'",
+                f"{logger_msg}: using 'bcftools +smpl-stats' to count records | '{truth_vcf.name}'",
             )
         if command is None:
             bcftools_smpl_stats = run(
@@ -111,7 +116,7 @@ def count_variants(
     else:
         if debug_mode:
             logger.debug(
-                f"{logger_msg}: counting {filter} records in [{truth_vcf.name}] using awk {command}",
+                f"{logger_msg}: counting records in [{truth_vcf.name}] using awk {command}",
             )
         count = 0
         with open(str(truth_vcf), "r") as count_file:

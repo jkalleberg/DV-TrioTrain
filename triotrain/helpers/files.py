@@ -4,15 +4,18 @@ from logging import Logger
 from pathlib import Path
 from typing import Dict, List, Union
 
+from model_training.slurm.suffix import remove_suffixes
+
 
 class TestFile:
     """Confirm if a file already exists or not."""
 
-    def __init__(self, file: Union[str, Path], logger: Logger):
+    def __init__(self, file: Union[str, Path], logger: Logger) -> None:
         self.file = str(file)
         self.path = Path(file)
         self.file_exists: bool
         self.logger = logger
+        self.clean_filename = remove_suffixes(self.path)
 
     def check_missing(
         self, logger_msg: Union[str, None] = None, debug_mode: bool = False
@@ -55,7 +58,7 @@ class TestFile:
         else:
             self.file_exists = False
             if debug_mode:
-                self.logger.debug(f"{msg}unexpectedly missing a file | '{self.path}'")
+                self.logger.debug(f"{msg}unexpectedly missing a file | '{self.path}'")       
 
 
 @dataclass
@@ -84,9 +87,10 @@ class WriteFiles:
     file_lines: List[str] = field(default_factory=list, init=False, repr=False)
     file_dict: Dict[str, str] = field(default_factory=dict, init=False, repr=False)
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         self.path = Path(self.path_to_file)
         self.file_path = self.path / self.file
+        self._test_file = TestFile(self.file_path, self.logger)
 
     def check_missing(
         self,
@@ -94,9 +98,8 @@ class WriteFiles:
         """
         Confirm that file is non-existant.
         """
-        file = TestFile(self.file_path, self.logger)
-        file.check_missing(logger_msg=self.logger_msg, debug_mode=self.debug_mode)
-        self.file_exists = file.file_exists
+        self._test_file.check_missing(logger_msg=self.logger_msg, debug_mode=self.debug_mode)
+        self.file_exists = self._test_file.file_exists
 
     def write_list(self, line_list: List[str]) -> None:
         """
