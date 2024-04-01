@@ -194,7 +194,9 @@ class Summary:
                 str(self._metadata_input), mode="r", encoding="utf-8-sig"
             ) as data:
                 dict_reader = DictReader(data)
-                self._data_list = list(dict_reader)
+
+                # removes whitespace within the CSV input
+                self._data_list = [dict((k.strip(), v.strip()) for k, v in row.items() if v) for row in dict_reader]
                 self._total_lines = len(self._data_list)
         else:
             self.logger.error(
