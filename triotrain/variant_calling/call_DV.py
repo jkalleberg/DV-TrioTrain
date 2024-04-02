@@ -354,13 +354,6 @@ class VariantCaller:
         breakpoint()
         if self._species.lower() == "cow":
             self._itr = Iteration(
-                current_trio_num="None",
-                next_trio_num="None",
-                current_genome_num=None,
-                total_num_iterations=None,
-                train_genome=None,
-                eval_genome=None,
-                env=None,
                 logger=self.logger,
                 args=self.args,
                 default_region_file=Path(
@@ -369,16 +362,8 @@ class VariantCaller:
             )
         else:
             self._itr = Iteration(
-                current_trio_num="None",
-                next_trio_num="None",
-                current_genome_num=None,
-                total_num_iterations=None,
-                train_genome=None,
-                eval_genome=None,
-                env=None,
                 logger=self.logger,
                 args=self.args,
-                default_region_file=None,
             )
 
     def find_output(self, index: int = 0) -> None:

@@ -353,7 +353,6 @@ def __init__() -> None:
 
     current_itr = Iteration(
         current_trio_num=trio_num,
-        next_trio_num="None",
         current_genome_num=args.restart,
         total_num_tests=19,
         total_num_iterations=(args.restart + 1),

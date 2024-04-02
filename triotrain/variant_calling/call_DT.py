@@ -283,13 +283,6 @@ class DTVariantCaller:
                 return
 
             self._itr = Iteration(
-                current_trio_num="None",
-                next_trio_num="None",
-                current_genome_num=None,
-                total_num_iterations=None,
-                train_genome=None,
-                eval_genome=None,
-                env=None,
                 logger=self.logger,
                 args=self.args,
                 default_region_file=self._regions.path,
@@ -297,16 +290,8 @@ class DTVariantCaller:
         else:
             self._regions = None
             self._itr = Iteration(
-                current_trio_num="None",
-                next_trio_num="None",
-                current_genome_num=None,
-                total_num_iterations=None,
-                train_genome=None,
-                eval_genome=None,
-                env=None,
                 logger=self.logger,
                 args=self.args,
-                default_region_file=None,
             )
 
         # INITIALIZE Pedigree ------------------------------------

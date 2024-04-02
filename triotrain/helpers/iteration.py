@@ -25,25 +25,30 @@ class Iteration:
     """
 
     # required values
-    current_trio_num: Union[int, str, None]
-    next_trio_num: Union[int, str, None]
-    current_genome_num: Union[int, None]
-    total_num_iterations: Union[int, None]
-    train_genome: Union[str, None]
-    eval_genome: Union[str, None]
-    env: Union[Env, None]
-    logger: Logger
     args: Namespace
+    logger: Logger
 
     # optional values
-    prior_genome: Union[str, None] = None
     current_genome_dependencies: list = field(default_factory=create_deps)
+    current_genome_num: Union[int, None] = None
+    current_trio_num: Union[int, str, None] = None
+
+    default_region_file: Union[Path, None] = None
+    env: Union[Env, None] = None
+    eval_genome: Union[str, None] = None
+    eval_num_regions: Union[int, None] = None
+
     next_genome: Union[str, None] = None
     next_genome_dependencies: list = field(default_factory=create_deps)
-    total_num_tests: int = 1
+    next_trio_num: Union[int, str, None] = None
+
+    prior_genome: Union[str, None] = None
+
+    train_genome: Union[str, None] = None
     train_num_regions: Union[int, None] = None
-    eval_num_regions: Union[int, None] = None
-    default_region_file: Union[Path, None] = None
+
+    total_num_iterations: Union[int, None] = None
+    total_num_tests: int = 1
 
     # internal, imutable values
     _mode_string: str = field(init=False, repr=False)

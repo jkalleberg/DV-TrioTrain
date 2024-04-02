@@ -1055,12 +1055,6 @@ class MIE:
                 self.find_input_file()
                 self.itr = Iteration(
                     current_trio_num=self._trio_num,
-                    next_trio_num="None",
-                    current_genome_num=None,
-                    total_num_iterations=None,
-                    train_genome=None,
-                    eval_genome=None,
-                    env=None,
                     logger=self.logger,
                     args=self.args,
                 )

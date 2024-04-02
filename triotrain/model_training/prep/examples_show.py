@@ -583,7 +583,6 @@ def __init__():
         if not args.demo_mode:
             current_itr = Iteration(
                 current_trio_num=itr_num,
-                next_trio_num="None",
                 current_genome_num=itr_num,
                 total_num_tests=total_tests,
                 total_num_iterations=itr_num + 1,
@@ -596,7 +595,6 @@ def __init__():
         else:
             current_itr = Iteration(
                 current_trio_num=1,
-                next_trio_num="None",
                 current_genome_num=itr_num,
                 total_num_tests=total_tests,
                 total_num_iterations=2,

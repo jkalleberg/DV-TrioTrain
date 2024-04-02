@@ -656,13 +656,6 @@ class Stats:
         for i, item in enumerate(itr):
             self._data = item
             self.itr = Iteration(
-                current_trio_num="None",
-                next_trio_num="None",
-                current_genome_num=None,
-                total_num_iterations=None,
-                train_genome=None,
-                eval_genome=None,
-                env=None,
                 logger=self.logger,
                 args=self.args,
             )

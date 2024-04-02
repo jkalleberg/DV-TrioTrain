@@ -144,13 +144,10 @@ def run_trio_train(eval_genome="Child") -> None:
 
         if pipeline.args.first_genome is None:
             current_itr = Iteration(
-                current_trio_num=None,
                 next_trio_num=pipeline.next_trio_num,
                 current_genome_num=pipeline.meta.itr_num,
                 total_num_tests=pipeline.meta.num_tests,
                 total_num_iterations=pipeline.meta.num_of_iterations,
-                train_genome=None,
-                eval_genome=None,
                 env=new_env,
                 logger=logger,
                 args=pipeline.args,
@@ -166,8 +163,6 @@ def run_trio_train(eval_genome="Child") -> None:
                 current_genome_num=pipeline.meta.itr_num,
                 total_num_tests=pipeline.meta.num_tests,
                 total_num_iterations=pipeline.meta.num_of_iterations,
-                train_genome=None,
-                eval_genome=None,
                 env=new_env,
                 logger=logger,
                 args=pipeline.args,

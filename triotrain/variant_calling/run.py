@@ -107,12 +107,8 @@ def __init__():
     check_args(args=args, logger=logger)
     current_itr = Iteration(
         current_trio_num=12,
-        next_trio_num="None",
         current_genome_num=0,
-        total_num_iterations=None,
         total_num_tests=16,
-        train_genome=None,
-        eval_genome=None,
         env=Env(args.env_file, logger, dryrun_mode=args.dry_run),
         logger=logger,
         args=args,
