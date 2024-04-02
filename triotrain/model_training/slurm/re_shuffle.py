@@ -16,7 +16,7 @@ from logging import Logger
 from os import environ
 from os import path as p
 from pathlib import Path
-from random import random, sample
+from random import sample
 from subprocess import getstatusoutput
 from sys import exit, path
 from typing import List, Union
