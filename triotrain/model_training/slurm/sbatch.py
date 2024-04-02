@@ -53,14 +53,15 @@ class SBATCH:
             "conda deactivate",
         ]
 
-        test_modules = TestFile(self.itr.args.modules, logger=self.itr.logger)
-        test_modules.check_existing()
+        if "modules" in self.itr.args:
+            test_modules = TestFile(self.itr.args.modules, logger=self.itr.logger)
+            test_modules.check_existing()
 
-        if not test_modules.file_exists:
-            self.itr.logger.error(
-                f"{self.logger_msg}: module file provide does not exist | '{self.itr.args.modules}'\nExiting..."
-            )
-            exit(1)
+            if not test_modules.file_exists:
+                self.itr.logger.error(
+                    f"{self.logger_msg}: module file provide does not exist | '{self.itr.args.modules}'\nExiting..."
+                )
+                exit(1)
 
         if self.itr.env is not None:
             self._start_sbatch = [
@@ -260,7 +261,7 @@ class SubmitSBATCH:
         self.status: int
 
     def build_command(
-        self, prior_job_number: Union[None, str, list], allow_dep_failure: bool = False
+        self, prior_job_number: Union[None, str, list] = None, allow_dep_failure: bool = False
     ) -> None:
         """
         Creates a 'sbatch <job_file>' subprocess command, depending on if there are job dependencies or not.
