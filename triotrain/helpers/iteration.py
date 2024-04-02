@@ -57,8 +57,13 @@ class Iteration:
     )
 
     def __post_init__(self) -> None:
-        self.demo_mode: bool = self.args.demo_mode
-        self.demo_chromosome: Union[str, int, None] = self.args.demo_chr
+        if "demo_mode" in self.args:
+            self.demo_mode: bool = self.args.demo_mode
+            self.demo_chromosome: Union[str, int, None] = self.args.demo_chr
+        else:
+            self.demo_mode = False
+            self.demo_chromosome = None
+
         self.debug_mode: bool = self.args.debug
         self.dryrun_mode: bool = self.args.dry_run
 
