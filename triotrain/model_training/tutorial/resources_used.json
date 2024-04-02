@@ -81,19 +81,11 @@
         "account": "animalsci",
         "email": "jakth2@mail.missouri.edu"
     },
-    "summary_stats": {
+    "summary": {
         "partition": "hpc5,hpc6,Lewis",
         "nodes": 1,
         "ntasks": 4,
         "mem": "40G",
-        "time": "0-10:00:00",
-        "account": "schnabellab",
-        "email": "jakth2@mail.missouri.edu"
-    },
-    "mie_summary": {
-        "partition": "hpc3,hpc5,hpc6,Lewis",
-        "nodes": 1,
-        "mem": 251421,
         "time": "0-10:00:00",
         "account": "schnabellab",
         "email": "jakth2@mail.missouri.edu"
