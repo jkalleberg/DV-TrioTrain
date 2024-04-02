@@ -213,7 +213,7 @@ class Stats:
 
                 else:
                     if self._merged_data == r:
-                        if self.args.debug:
+                        if self.pickled_data._input_file.debug_mode:
                             self.pickled_data._input_file.logger.debug(
                                 f"{self.pickled_data._input_file.logger_msg}: skipping a previously processed file | '{self.pickled_data._input_file.file}'"
                             )
