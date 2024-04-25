@@ -7,6 +7,8 @@ hide:
 
 DV-TrioTrain is a model development framework for [DeepVariant](https://github.com/google/deepvariant): a deep-learning-based germline variant caller. Here we provide an automated pipeline for extending DeepVariant v1.4.0 in new species.
 
+Hello!
+
 ### **Models built by DV-TrioTrain do not require trio-binned data for variant calling.** 
 
 Our unique re-training approach enables the model to incorporate inheritance expectations. Using TrioTrain to build new versions of DeepVariant models requires trio-binned genomes, the final model produced by TrioTrain works on individual genomes, while prioritizing features of inherited variants. 
