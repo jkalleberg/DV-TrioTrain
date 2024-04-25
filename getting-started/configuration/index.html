@@ -1,0 +1,1080 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Extend DeepVariant automatically for species without GIAB-quality benchmark truth sets.">
+      
+      
+        <meta name="author" content="Jenna Kalleberg">
+      
+      
+      
+        <link rel="prev" href="../installation/">
+      
+      
+        <link rel="next" href="../walk-through/">
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-9.1.14">
+    
+    
+      
+        <title>Configuration Guide - DeepVariant-TrioTrain</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.85bb2934.min.css">
+      
+      
+
+    
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&"object"==typeof palette.color)for(var key of Object.keys(palette.color))document.body.setAttribute("data-md-color-"+key,palette.color[key])</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#configuration" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="DeepVariant-TrioTrain" class="md-header__button md-logo" aria-label="DeepVariant-TrioTrain" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            DeepVariant-TrioTrain
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Configuration Guide
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/jkalleberg/DV-TrioTrain" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    jkalleberg/DV-TrioTrain
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+
+
+  <li class="md-tabs__item">
+    <a href="../.." class="md-tabs__link">
+      Home
+    </a>
+  </li>
+
+      
+        
+  
+  
+    
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../getting-started/" class="md-tabs__link md-tabs__link--active">
+        Getting Started
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../user-guide/usage_guide/" class="md-tabs__link">
+        User Guide
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../about/about/" class="md-tabs__link">
+        About
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="DeepVariant-TrioTrain" class="md-nav__button md-logo" aria-label="DeepVariant-TrioTrain" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    DeepVariant-TrioTrain
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/jkalleberg/DV-TrioTrain" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    jkalleberg/DV-TrioTrain
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        Home
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+          Getting Started
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          Getting Started
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/" class="md-nav__link">
+        Start Here
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../installation/" class="md-nav__link">
+        Installation Guide
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Configuration Guide
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        Configuration Guide
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-begin-an-interactive-session-first" class="md-nav__link">
+    1. Begin an interactive session first
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-load-cluster-specific-modules" class="md-nav__link">
+    2. Load cluster-specific modules
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-install-apptainersingularity-containers" class="md-nav__link">
+    3. Install Apptainer/Singularity containers
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-install-the-conda-environment" class="md-nav__link">
+    4. Install the Conda environment
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-download-the-beam-shuffling-script" class="md-nav__link">
+    5. Download the Beam shuffling script
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../walk-through/" class="md-nav__link">
+        Human GIAB Tutorial
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+          User Guide
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          User Guide
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/usage_guide/" class="md-nav__link">
+        Overview
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/existing_models/" class="md-nav__link">
+        Models
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/get-help/" class="md-nav__link">
+        Getting help
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/citation/" class="md-nav__link">
+        How to cite
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+          About
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_4">
+          <span class="md-nav__icon md-icon"></span>
+          About
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../about/about/" class="md-nav__link">
+        Learn more
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../about/license/" class="md-nav__link">
+        License
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="configuration">Configuration</h1>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Steps that require some system-specific edits for your HPC cluster will have a warning label.</p>
+</div>
+<p>To ensure reproducibility, all configuration steps described below are included in a helper script, <code>build.sh</code>.</p>
+<details class="example">
+<summary>Example | <code>build.sh</code></summary>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>#!/bin/bash
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a># scripts/setup/build.sh
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a># NOTE: Begin an interactive session first!
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a># source scripts/start_interactive.sh
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>echo -e &quot;=== scripts/setup/build.sh &gt; start $(date)&quot;
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a># Load cluster-specific modules
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a># NOTE: You will need to change this bash script to 
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a># match your own system modules available
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a># Reach out to your cluster&#39;s sys admin for 
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a># installation guidelines
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>source scripts/setup/modules.sh
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a># NOTE: both are required, since can&#39;t run the 
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a># GPU version used for training 
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a># on a non-GPU hardware
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a># Install GPU-specific apptainer container
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>bash scripts/setup/build_containers.sh DeepVariant-GPU
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a># Install CPU-specific apptainer container
+<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>bash scripts/setup/build_containers.sh DeepVariant-CPU
+<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>
+<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a># Install the happ.py apptainer container
+<a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a>bash scripts/setup/build_happy.sh
+<a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a>
+<a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a># Install the conda env needed for python package &#39;triotrain&#39;
+<a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a>source scripts/setup/build_beam.sh
+<a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a>
+<a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a># Download the appropriate shuffling script from Google Genomoics Health Group
+<a id="__codelineno-0-33" name="__codelineno-0-33" href="#__codelineno-0-33"></a>bash scripts/setup/download_shuffle.sh
+<a id="__codelineno-0-34" name="__codelineno-0-34" href="#__codelineno-0-34"></a>
+<a id="__codelineno-0-35" name="__codelineno-0-35" href="#__codelineno-0-35"></a># Download pre-trained models
+<a id="__codelineno-0-36" name="__codelineno-0-36" href="#__codelineno-0-36"></a>bash scripts/setup/download_models.sh
+<a id="__codelineno-0-37" name="__codelineno-0-37" href="#__codelineno-0-37"></a>
+<a id="__codelineno-0-38" name="__codelineno-0-38" href="#__codelineno-0-38"></a># Download GIAB trio data v4.2.1 for benchmarking
+<a id="__codelineno-0-39" name="__codelineno-0-39" href="#__codelineno-0-39"></a>bash scripts/setup/download_GIAB.sh
+<a id="__codelineno-0-40" name="__codelineno-0-40" href="#__codelineno-0-40"></a>
+<a id="__codelineno-0-41" name="__codelineno-0-41" href="#__codelineno-0-41"></a># RUN INTERACTIVELY TO MAKE SURE IT WORKS!
+<a id="__codelineno-0-42" name="__codelineno-0-42" href="#__codelineno-0-42"></a>bash triotrain/variant_calling/data/GIAB/bam/AJtrio.download 
+<a id="__codelineno-0-43" name="__codelineno-0-43" href="#__codelineno-0-43"></a>
+<a id="__codelineno-0-44" name="__codelineno-0-44" href="#__codelineno-0-44"></a>bash triotrain/variant_calling/data/GIAB/bam/HCtrio.download 
+<a id="__codelineno-0-45" name="__codelineno-0-45" href="#__codelineno-0-45"></a>
+<a id="__codelineno-0-46" name="__codelineno-0-46" href="#__codelineno-0-46"></a># then calculate coverage with an SBATCH job 
+<a id="__codelineno-0-47" name="__codelineno-0-47" href="#__codelineno-0-47"></a># bash triotrain/scripts/setup/run_jobs.sh
+<a id="__codelineno-0-48" name="__codelineno-0-48" href="#__codelineno-0-48"></a>
+<a id="__codelineno-0-49" name="__codelineno-0-49" href="#__codelineno-0-49"></a># Create the rtg-tools reference files for the Human ref genome GRCh38
+<a id="__codelineno-0-50" name="__codelineno-0-50" href="#__codelineno-0-50"></a># NOTE: this must be run after download_GIAB!
+<a id="__codelineno-0-51" name="__codelineno-0-51" href="#__codelineno-0-51"></a>bash scripts/setup/setup_rtg_tools.sh
+<a id="__codelineno-0-52" name="__codelineno-0-52" href="#__codelineno-0-52"></a>
+<a id="__codelineno-0-53" name="__codelineno-0-53" href="#__codelineno-0-53"></a>echo -e &quot;=== scripts/setup/build.sh &gt; end $(date)&quot;
+</code></pre></div>
+</details>
+<p><a name="interactive"></a></p>
+<h2 id="1-begin-an-interactive-session-first">1. Begin an interactive session first</h2>
+<div class="admonition warning">
+<p class="admonition-title">Requires Customization</p>
+</div>
+<p>We request resource in a SLURM "interactive session" to allow us to run code at the command line and avoid running resource-intensive code on the login node, which could negatively impact other users.</p>
+<p><font size= "4"> 
+<strong>Option 1: Manual</strong>
+</font></p>
+<p>Use the following command template, make edits to match your system's resources (i.e. add a valid partition and fair-share account).</p>
+<div class="highlight"><span class="filename">Run the following at the command line:</span><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>srun<span class="w"> </span>--pty<span class="w"> </span>-p<span class="w"> </span>&lt;partition_name&gt;<span class="w"> </span>--time<span class="o">=</span><span class="m">0</span>-06:00:00<span class="w"> </span>--exclusive<span class="w"> </span>--mem<span class="o">=</span><span class="m">0</span><span class="w"> </span>-A<span class="w"> </span>&lt;account_name&gt;<span class="w"> </span>/bin/bash
+</code></pre></div>
+<p><font size= "4"> 
+<strong>Option 2: Automated</strong>
+</font></p>
+<p>For repeatedly switching between different interactive session, we use the same syntax as above, but editing the provided template to match your system's resources (i.e. add a valid partition and fair-share account).</p>
+<div class="highlight"><span class="filename">Run the following at the command line:</span><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nb">source</span><span class="w"> </span>scripts/start_interactive.sh
+</code></pre></div>
+<details class="example">
+<summary>Example | <code>start_interactive.sh</code></summary>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>#!/bin/bash
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a># scripts/start_interactive.sh
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a># An example script of requesting interactive resources for the Lewis SLURM Cluster
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a># NOTE: You will need to change this to match your own setup, such as 
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a># altering the partition name  and qos (i.e. &#39;Interactive&#39;) or,
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a># altering your account (i.e. &#39;schnabellab&#39;)
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a># srun --pty -p gpu3 --time=0-04:00:00 -A animalsci /bin/bash
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a># srun --pty -p hpc6 --time=0-04:00:00 --mem=0 --exclusive -A animalsci /bin/bash
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a># srun --pty -p Interactive --qos=Interactive --time=0-04:00:00 --mem=0 --exclusive -A animalsci /bin/bash
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a># srun --pty -p Interactive --qos=Interactive --time=0-04:00:00 --mem=30G -A schnabellab /bin/bash
+<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>srun --pty -p Lewis --time=0-04:00:00 --mem=30G -A schnabellab /bin/bash
+<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a># srun --pty -p BioCompute --time=0-06:00:00 --exclusive --mem=0 -A schnabellab /bin/bash
+</code></pre></div>
+</details>
+<p><a name="modules"></a></p>
+<h2 id="2-load-cluster-specific-modules">2. Load cluster-specific modules</h2>
+<div class="admonition warning">
+<p class="admonition-title">Requires Customization</p>
+</div>
+<p>This executable is how TrioTrain finds the <a href="../installation/#system-requirements">required software</a> on your local HPC. TrioTrain will repeatedly use this script to load all modules and the required bash helper functions. Edit the provided template to match your system (i.e. add a valid module name).</p>
+<div class="highlight"><span class="filename">Run the following at the command line:</span><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nb">source</span><span class="w"> </span>scripts/setup/modules.sh<span class="w"> </span>
+</code></pre></div>
+<details class="example">
+<summary>Example | <code>modules.sh</code></summary>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>#!/usr/bin/bash
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>## scripts/setup/modules.sh
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>echo &quot;=== scripts/setup/modules.sh start &gt; $(date)&quot;
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>echo &quot;$(date &#39;+%Y-%m-%d %H:%M:%S&#39;) INFO: Wiping modules... &quot;
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>module purge
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>echo &quot;$(date &#39;+%Y-%m-%d %H:%M:%S&#39;) INFO: Done wipe modules&quot;
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>
+<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>echo &quot;$(date &#39;+%Y-%m-%d %H:%M:%S&#39;) INFO: Loading modules... &quot;
+<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>
+<a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a># Enable loading of pkgs from prior manager
+<a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a>module load rss/rss-2020
+<a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a>
+<a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a># Update to a newer, but still old, version of Curl
+<a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a>module load curl/7.72.0
+<a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a>
+<a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a># Update to a newer version of git,
+<a id="__codelineno-5-19" name="__codelineno-5-19" href="#__codelineno-5-19"></a># Required for Git extensions on VSCode
+<a id="__codelineno-5-20" name="__codelineno-5-20" href="#__codelineno-5-20"></a>module load git/2.29.0
+<a id="__codelineno-5-21" name="__codelineno-5-21" href="#__codelineno-5-21"></a>
+<a id="__codelineno-5-22" name="__codelineno-5-22" href="#__codelineno-5-22"></a># Enable &quot;conda activate&quot; rather than,
+<a id="__codelineno-5-23" name="__codelineno-5-23" href="#__codelineno-5-23"></a># using &quot;source activate&quot;
+<a id="__codelineno-5-24" name="__codelineno-5-24" href="#__codelineno-5-24"></a>module load miniconda3/4.9
+<a id="__codelineno-5-25" name="__codelineno-5-25" href="#__codelineno-5-25"></a>export CONDA_BASE=$(conda info --base)
+<a id="__codelineno-5-26" name="__codelineno-5-26" href="#__codelineno-5-26"></a>
+<a id="__codelineno-5-27" name="__codelineno-5-27" href="#__codelineno-5-27"></a># System Requirement to use &#39;conda activate&#39; 
+<a id="__codelineno-5-28" name="__codelineno-5-28" href="#__codelineno-5-28"></a>source ${CONDA_BASE}/etc/profile.d/conda.sh
+<a id="__codelineno-5-29" name="__codelineno-5-29" href="#__codelineno-5-29"></a>conda deactivate
+<a id="__codelineno-5-30" name="__codelineno-5-30" href="#__codelineno-5-30"></a>
+<a id="__codelineno-5-31" name="__codelineno-5-31" href="#__codelineno-5-31"></a># Modules required for re-training
+<a id="__codelineno-5-32" name="__codelineno-5-32" href="#__codelineno-5-32"></a>module load java/openjdk/java-1.8.0-openjdk
+<a id="__codelineno-5-33" name="__codelineno-5-33" href="#__codelineno-5-33"></a>module load singularity/singularity
+<a id="__codelineno-5-34" name="__codelineno-5-34" href="#__codelineno-5-34"></a>module load picard/2.26.10
+<a id="__codelineno-5-35" name="__codelineno-5-35" href="#__codelineno-5-35"></a>
+<a id="__codelineno-5-36" name="__codelineno-5-36" href="#__codelineno-5-36"></a># Modules required for post-procesing variants
+<a id="__codelineno-5-37" name="__codelineno-5-37" href="#__codelineno-5-37"></a>module load cuda/11.1.0
+<a id="__codelineno-5-38" name="__codelineno-5-38" href="#__codelineno-5-38"></a>module load bcftools/1.14
+<a id="__codelineno-5-39" name="__codelineno-5-39" href="#__codelineno-5-39"></a>module load htslib/1.14
+<a id="__codelineno-5-40" name="__codelineno-5-40" href="#__codelineno-5-40"></a>module load samtools/1.14
+<a id="__codelineno-5-41" name="__codelineno-5-41" href="#__codelineno-5-41"></a>module load gcc/10.2.0
+<a id="__codelineno-5-42" name="__codelineno-5-42" href="#__codelineno-5-42"></a>
+<a id="__codelineno-5-43" name="__codelineno-5-43" href="#__codelineno-5-43"></a>echo &quot;$(date &#39;+%Y-%m-%d %H:%M:%S&#39;) INFO: Done Loading Modules&quot;
+<a id="__codelineno-5-44" name="__codelineno-5-44" href="#__codelineno-5-44"></a>
+<a id="__codelineno-5-45" name="__codelineno-5-45" href="#__codelineno-5-45"></a>echo -e &quot;$(date &#39;+%Y-%m-%d %H:%M:%S&#39;) INFO: Conda Base Environment:\n${CONDA_BASE}&quot;
+<a id="__codelineno-5-46" name="__codelineno-5-46" href="#__codelineno-5-46"></a>echo &quot;$(date &#39;+%Y-%m-%d %H:%M:%S&#39;) INFO: Python Version:&quot;
+<a id="__codelineno-5-47" name="__codelineno-5-47" href="#__codelineno-5-47"></a>python3 --version
+<a id="__codelineno-5-48" name="__codelineno-5-48" href="#__codelineno-5-48"></a>echo &quot;$(date &#39;+%Y-%m-%d %H:%M:%S&#39;) INFO: Java Version:&quot;
+<a id="__codelineno-5-49" name="__codelineno-5-49" href="#__codelineno-5-49"></a>java -version
+<a id="__codelineno-5-50" name="__codelineno-5-50" href="#__codelineno-5-50"></a>echo &quot;$(date &#39;+%Y-%m-%d %H:%M:%S&#39;) INFO: Apptainer Version:&quot;
+<a id="__codelineno-5-51" name="__codelineno-5-51" href="#__codelineno-5-51"></a>apptainer --version
+<a id="__codelineno-5-52" name="__codelineno-5-52" href="#__codelineno-5-52"></a>
+<a id="__codelineno-5-53" name="__codelineno-5-53" href="#__codelineno-5-53"></a># Source DeepVariant version and CACHE Dir
+<a id="__codelineno-5-54" name="__codelineno-5-54" href="#__codelineno-5-54"></a>echo &quot;$(date &#39;+%Y-%m-%d %H:%M:%S&#39;) INFO: Adding Apptainer variables... &quot;
+<a id="__codelineno-5-55" name="__codelineno-5-55" href="#__codelineno-5-55"></a>echo &quot;$(date &#39;+%Y-%m-%d %H:%M:%S&#39;) INFO: This step is required to build DeepVariant image(s)&quot;
+<a id="__codelineno-5-56" name="__codelineno-5-56" href="#__codelineno-5-56"></a>
+<a id="__codelineno-5-57" name="__codelineno-5-57" href="#__codelineno-5-57"></a>if [ -z &quot;$1&quot; ]
+<a id="__codelineno-5-58" name="__codelineno-5-58" href="#__codelineno-5-58"></a>then
+<a id="__codelineno-5-59" name="__codelineno-5-59" href="#__codelineno-5-59"></a>    echo &quot;$(date &#39;+%Y-%m-%d %H:%M:%S&#39;) INFO: Using defaults, DeepVariant version 1.4.0&quot;
+<a id="__codelineno-5-60" name="__codelineno-5-60" href="#__codelineno-5-60"></a>    export BIN_VERSION_DV=&quot;1.4.0&quot;
+<a id="__codelineno-5-61" name="__codelineno-5-61" href="#__codelineno-5-61"></a>    export BIN_VERSION_DT=&quot;1.4.0&quot;
+<a id="__codelineno-5-62" name="__codelineno-5-62" href="#__codelineno-5-62"></a>else
+<a id="__codelineno-5-63" name="__codelineno-5-63" href="#__codelineno-5-63"></a>    echo &quot;$(date &#39;+%Y-%m-%d %H:%M:%S&#39;) INFO: Using inputs, DeepVariant version $1&quot;
+<a id="__codelineno-5-64" name="__codelineno-5-64" href="#__codelineno-5-64"></a>    export BIN_VERSION_DV=&quot;$1&quot;
+<a id="__codelineno-5-65" name="__codelineno-5-65" href="#__codelineno-5-65"></a>    export BIN_VERSION_DT=&quot;$1&quot;
+<a id="__codelineno-5-66" name="__codelineno-5-66" href="#__codelineno-5-66"></a>fi
+<a id="__codelineno-5-67" name="__codelineno-5-67" href="#__codelineno-5-67"></a>
+<a id="__codelineno-5-68" name="__codelineno-5-68" href="#__codelineno-5-68"></a>export APPTAINER_CACHEDIR=&quot;${PWD}/APPTAINER_CACHE&quot;
+<a id="__codelineno-5-69" name="__codelineno-5-69" href="#__codelineno-5-69"></a>export APPTAINER_TMPDIR=&quot;${PWD}/APPTAINER_TMPDIR&quot;
+<a id="__codelineno-5-70" name="__codelineno-5-70" href="#__codelineno-5-70"></a>echo &quot;$(date &#39;+%Y-%m-%d %H:%M:%S&#39;) INFO: Done adding Apptainer variables&quot;
+<a id="__codelineno-5-71" name="__codelineno-5-71" href="#__codelineno-5-71"></a>
+<a id="__codelineno-5-72" name="__codelineno-5-72" href="#__codelineno-5-72"></a># Confirm that it worked
+<a id="__codelineno-5-73" name="__codelineno-5-73" href="#__codelineno-5-73"></a>echo &quot;$(date &#39;+%Y-%m-%d %H:%M:%S&#39;) INFO: DeepVariant Version: ${BIN_VERSION_DV}&quot;
+<a id="__codelineno-5-74" name="__codelineno-5-74" href="#__codelineno-5-74"></a>echo &quot;$(date &#39;+%Y-%m-%d %H:%M:%S&#39;) INFO: Apptainer Cache: ${APPTAINER_CACHEDIR}&quot;
+<a id="__codelineno-5-75" name="__codelineno-5-75" href="#__codelineno-5-75"></a>echo &quot;$(date &#39;+%Y-%m-%d %H:%M:%S&#39;) INFO: Apptainer Tmp: ${APPTAINER_TMPDIR}&quot;
+<a id="__codelineno-5-76" name="__codelineno-5-76" href="#__codelineno-5-76"></a>
+<a id="__codelineno-5-77" name="__codelineno-5-77" href="#__codelineno-5-77"></a># Activating the Bash Sub-Routine to handle errors
+<a id="__codelineno-5-78" name="__codelineno-5-78" href="#__codelineno-5-78"></a>echo &quot;$(date &#39;+%Y-%m-%d %H:%M:%S&#39;) INFO: Loading bash helper functions... &quot;
+<a id="__codelineno-5-79" name="__codelineno-5-79" href="#__codelineno-5-79"></a>source scripts/setup/helper_functions.sh
+<a id="__codelineno-5-80" name="__codelineno-5-80" href="#__codelineno-5-80"></a>echo &quot;$(date &#39;+%Y-%m-%d %H:%M:%S&#39;) INFO: Done Loading bash helper functions&quot;
+<a id="__codelineno-5-81" name="__codelineno-5-81" href="#__codelineno-5-81"></a>
+<a id="__codelineno-5-82" name="__codelineno-5-82" href="#__codelineno-5-82"></a>echo &quot;=== scripts/setup/modules.sh &gt; end $(date)&quot;
+</code></pre></div>
+</details>
+<details class="note">
+<summary>Alternate Versions of DeepVariant</summary>
+<p>Providing a valid version number as the first argument to <code>modules.sh</code> will change the version used. Using any version greater than v1.4.0 is untested!</p>
+</details>
+<h2 id="3-install-apptainersingularity-containers">3. Install Apptainer/Singularity containers</h2>
+<p>We need local copies of the two (2) versions of DeepVariant containers, and one (1) container for <code>hap.py</code>:</p>
+<ol>
+<li>GPU-specific container used for training</li>
+<li>CPU-specific container used for all other steps</li>
+<li><code>hap.py</code> - we strongly recommend using a containerized version as this tool uses the depreciated Python v2.7 making it incompatible with either DeepVariant containers, and the TrioTrain conda environment.</li>
+</ol>
+<div class="highlight"><span class="filename">Run the following at the command line:</span><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="c1"># Install GPU-specific DV apptainer container</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>bash<span class="w"> </span>scripts/setup/build_containers.sh<span class="w"> </span>DeepVariant-GPU
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="c1"># Install CPU-specific DV apptainer container</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>bash<span class="w"> </span>scripts/setup/build_containers.sh<span class="w"> </span>DeepVariant-CPU
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="c1"># Install the happ.py apptainer container</span>
+<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>bash<span class="w"> </span>scripts/setup/build_happy.sh
+</code></pre></div>
+<details class="example">
+<summary>Example | <code>build_containers.sh</code></summary>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>#!/bin/bash
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a># scripts/setup/build_containers.sh
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>echo &quot;=== scripts/setup/build_containers.sh &gt; start $(date)&quot; $1
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>
+<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>echo &quot;$(date &#39;+%Y-%m-%d %H:%M:%S&#39;) INFO: Creating Apptainer CACHE/ and TMP/, if needed&quot;
+<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>install --directory --verbose ${APPTAINER_CACHEDIR}
+<a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>install --directory --verbose ${APPTAINER_TMPDIR}
+<a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a>
+<a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a># Only want to build these Apptainer Image(s) once!
+<a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a>echo &quot;$(date &#39;+%Y-%m-%d %H:%M:%S&#39;) INFO: Installing Container Image(s), if necessary&quot;
+<a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a>
+<a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a>if [[ $1 == &#39;DeepVariant-CPU&#39; ]]; then
+<a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a>  version=&quot;${BIN_VERSION_DV}&quot;
+<a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a>  image_name=&quot;deepvariant_${version}&quot;
+<a id="__codelineno-7-16" name="__codelineno-7-16" href="#__codelineno-7-16"></a>  docker_name=&quot;${version}&quot;
+<a id="__codelineno-7-17" name="__codelineno-7-17" href="#__codelineno-7-17"></a>  command=&quot;run_deepvariant&quot;
+<a id="__codelineno-7-18" name="__codelineno-7-18" href="#__codelineno-7-18"></a>elif [[ $1 == &#39;DeepVariant-GPU&#39; ]]; then
+<a id="__codelineno-7-19" name="__codelineno-7-19" href="#__codelineno-7-19"></a>  version=&quot;${BIN_VERSION_DV}&quot;
+<a id="__codelineno-7-20" name="__codelineno-7-20" href="#__codelineno-7-20"></a>  image_name=&quot;deepvariant_${version}-gpu&quot;
+<a id="__codelineno-7-21" name="__codelineno-7-21" href="#__codelineno-7-21"></a>  docker_name=&quot;${version}-gpu&quot;
+<a id="__codelineno-7-22" name="__codelineno-7-22" href="#__codelineno-7-22"></a>  command=&quot;run_deepvariant&quot;
+<a id="__codelineno-7-23" name="__codelineno-7-23" href="#__codelineno-7-23"></a>elif [[ $1 == &#39;DeepTrio-CPU&#39; ]]; then
+<a id="__codelineno-7-24" name="__codelineno-7-24" href="#__codelineno-7-24"></a>  version=&quot;${BIN_VERSION_DT}&quot;
+<a id="__codelineno-7-25" name="__codelineno-7-25" href="#__codelineno-7-25"></a>  image_name=&quot;deepvariant_deeptrio-${version}&quot;
+<a id="__codelineno-7-26" name="__codelineno-7-26" href="#__codelineno-7-26"></a>  docker_name=&quot;deeptrio-${version}&quot;
+<a id="__codelineno-7-27" name="__codelineno-7-27" href="#__codelineno-7-27"></a>  command=&quot;deeptrio/run_deeptrio&quot;
+<a id="__codelineno-7-28" name="__codelineno-7-28" href="#__codelineno-7-28"></a>elif [[ $1 == &#39;DeepTrio-GPU&#39; ]]; then
+<a id="__codelineno-7-29" name="__codelineno-7-29" href="#__codelineno-7-29"></a>  version=&quot;${BIN_VERSION_DT}&quot;
+<a id="__codelineno-7-30" name="__codelineno-7-30" href="#__codelineno-7-30"></a>  image_name=&quot;deepvariant_deeptrio-${version}-gpu&quot;
+<a id="__codelineno-7-31" name="__codelineno-7-31" href="#__codelineno-7-31"></a>  docker_name=&quot;deeptrio-${BIN_VERSION_DT}-gpu&quot;
+<a id="__codelineno-7-32" name="__codelineno-7-32" href="#__codelineno-7-32"></a>  command=&quot;deeptrio/run_deeptrio&quot;
+<a id="__codelineno-7-33" name="__codelineno-7-33" href="#__codelineno-7-33"></a>else
+<a id="__codelineno-7-34" name="__codelineno-7-34" href="#__codelineno-7-34"></a>  echo -e &quot;$(date &#39;+%Y-%m-%d %H:%M:%S&#39;) ERROR: Invalid argument [$1] provided.\n$(date &#39;+%Y-%m-%d %H:%M:%S&#39;) INFO: Choices: [ DeepVariant-CPU, DeepTrio-CPU, DeepVariant-GPU, DeepTrio-GPU ]\nExiting... &quot;
+<a id="__codelineno-7-35" name="__codelineno-7-35" href="#__codelineno-7-35"></a>  exit 1
+<a id="__codelineno-7-36" name="__codelineno-7-36" href="#__codelineno-7-36"></a>fi
+<a id="__codelineno-7-37" name="__codelineno-7-37" href="#__codelineno-7-37"></a>
+<a id="__codelineno-7-38" name="__codelineno-7-38" href="#__codelineno-7-38"></a>if test -x ./${image_name}.sif; then
+<a id="__codelineno-7-39" name="__codelineno-7-39" href="#__codelineno-7-39"></a>  echo -e &quot;$(date &#39;+%Y-%m-%d %H:%M:%S&#39;) INFO: Image [${image_name}.sif] has already been installed&quot;
+<a id="__codelineno-7-40" name="__codelineno-7-40" href="#__codelineno-7-40"></a>  apptainer run -B /usr/lib/locale/:/usr/lib/locale/ ${image_name}.sif /&quot;opt/deepvariant/bin/${command}&quot; --version
+<a id="__codelineno-7-41" name="__codelineno-7-41" href="#__codelineno-7-41"></a>else
+<a id="__codelineno-7-42" name="__codelineno-7-42" href="#__codelineno-7-42"></a>  echo -e &quot;$(date &#39;+%Y-%m-%d %H:%M:%S&#39;) INFO: Image [${image_name}.sif] needs to be installed&quot;
+<a id="__codelineno-7-43" name="__codelineno-7-43" href="#__codelineno-7-43"></a>  echo &quot;$(date &#39;+%Y-%m-%d %H:%M:%S&#39;) INFO: Apptainer Image will go here: ${PWD}&quot;
+<a id="__codelineno-7-44" name="__codelineno-7-44" href="#__codelineno-7-44"></a>  echo &quot;$(date &#39;+%Y-%m-%d %H:%M:%S&#39;) INFO: Building Apptainer Image now... &quot;
+<a id="__codelineno-7-45" name="__codelineno-7-45" href="#__codelineno-7-45"></a>  apptainer pull docker://google/deepvariant:&quot;${docker_name}&quot;
+<a id="__codelineno-7-46" name="__codelineno-7-46" href="#__codelineno-7-46"></a>  echo &quot;Done: Building Apptainer Image&quot;
+<a id="__codelineno-7-47" name="__codelineno-7-47" href="#__codelineno-7-47"></a>fi
+<a id="__codelineno-7-48" name="__codelineno-7-48" href="#__codelineno-7-48"></a>
+<a id="__codelineno-7-49" name="__codelineno-7-49" href="#__codelineno-7-49"></a>echo &quot;=== scripts/setup/build_containers.sh &gt; end $(date)&quot;
+</code></pre></div>
+</details>
+<details class="example">
+<summary>Example | <code>build_happy.sh</code></summary>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>#!/bin/bash
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a># build_happy.sh
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>echo &quot;=== scripts/setup/build_happy.sh &gt; start $(date)&quot;
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>
+<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>echo &quot;$(date &#39;+%Y-%m-%d %H:%M:%S&#39;) INFO: Creating Apptainer CACHE/ and TMP/, if needed&quot;
+<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>install --directory --verbose ${APPTAINER_CACHEDIR}
+<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>install --directory --verbose ${APPTAINER_TMPDIR}
+<a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>
+<a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a># Only want to build these Apptainer Image(s) once!
+<a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a>echo &quot;$(date &#39;+%Y-%m-%d %H:%M:%S&#39;) INFO: Installing Hap.py Container Image(s), if necessary...&quot;
+<a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a>
+<a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a>if test -x ./hap.py_v0.3.12.sif; then
+<a id="__codelineno-8-14" name="__codelineno-8-14" href="#__codelineno-8-14"></a>  echo &quot;$(date &#39;+%Y-%m-%d %H:%M:%S&#39;) INFO: Image [hap.py_v0.3.12.sif] has already been installed&quot;
+<a id="__codelineno-8-15" name="__codelineno-8-15" href="#__codelineno-8-15"></a>  apptainer run -B /usr/lib/locale/:/usr/lib/locale/ hap.py_v0.3.12.sif /opt/hap.py/bin/hap.py --help
+<a id="__codelineno-8-16" name="__codelineno-8-16" href="#__codelineno-8-16"></a>else
+<a id="__codelineno-8-17" name="__codelineno-8-17" href="#__codelineno-8-17"></a>  echo &quot;$(date &#39;+%Y-%m-%d %H:%M:%S&#39;)INFO: Image [hap.py_v0.3.12.sif] needs to be installed&quot;
+<a id="__codelineno-8-18" name="__codelineno-8-18" href="#__codelineno-8-18"></a>  echo &quot;$(date &#39;+%Y-%m-%d %H:%M:%S&#39;) INFO: Apptainer Image will go here: ${PWD}&quot;
+<a id="__codelineno-8-19" name="__codelineno-8-19" href="#__codelineno-8-19"></a>  echo &quot;$(date &#39;+%Y-%m-%d %H:%M:%S&#39;) INFO: Building Apptainer Image now... &quot;
+<a id="__codelineno-8-20" name="__codelineno-8-20" href="#__codelineno-8-20"></a>  apptainer pull docker://jmcdani20/hap.py:v0.3.12
+<a id="__codelineno-8-21" name="__codelineno-8-21" href="#__codelineno-8-21"></a>  echo &quot;$(date &#39;+%Y-%m-%d %H:%M:%S&#39;) INFO: Done Building Hap.py Apptainer Image&quot;
+<a id="__codelineno-8-22" name="__codelineno-8-22" href="#__codelineno-8-22"></a>fi
+<a id="__codelineno-8-23" name="__codelineno-8-23" href="#__codelineno-8-23"></a>
+<a id="__codelineno-8-24" name="__codelineno-8-24" href="#__codelineno-8-24"></a>echo &quot;=== scripts/setup/build_happy.sh &gt; end $(date)&quot;
+</code></pre></div>
+</details>
+<details class="note">
+<summary>Container Versions</summary>
+<p>Both the GPU and CPU containers are required, since you can't run the GPU version used for training on a non-GPU hardware.</p>
+</details>
+<h2 id="4-install-the-conda-environment">4. Install the Conda environment</h2>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p><strong>CAUTION:</strong> TrioTrain and DeepVariant require highly specific package versions, and TrioTrain assumes that a pre-built conda environment is located here: <code>./miniconda_envs/beam_v2.30</code>. We are unable to support users opt to make significant changes, or deviate the conda env path at this time.</p>
+</div>
+<p>This conda environment includes the DeepVariant requirements, such as Apache Beam, Tensorflow, etc. The conda environment can take awhile to build. We recommend requesting ample memory during your interactive session before proceeding. </p>
+<div class="highlight"><span class="filename">Run the following at the command line:</span><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="nb">source</span><span class="w"> </span>scripts/setup/build_beam.sh
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="c1"># `source` is used instead of `bash` to by-pass system issues with `conda activate` </span>
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="c1"># specific to MU Lewis, which may not be required for your system.</span>
+</code></pre></div>
+<details class="example">
+<summary>Example | <code>build_beam.sh</code></summary>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>#!/bin/bash
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a># scripts/setup/build_beam.sh
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>echo -e &quot;=== scripts/setup/build_beam.sh &gt; start $(date)&quot;
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>
+<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>##--- NOTE: ----##
+<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>##  You must have an interactive session
+<a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a>##  with more mem than defaults to work!
+<a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a>##--------------##
+<a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a>
+<a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a>if [ ! -d ./miniconda_envs/beam_v2.30 ] ; then
+<a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a>     # If missing an enviornment called &quot;beam_v2.30&quot;, 
+<a id="__codelineno-10-13" name="__codelineno-10-13" href="#__codelineno-10-13"></a>     # initalize this env with only the anaconda package 
+<a id="__codelineno-10-14" name="__codelineno-10-14" href="#__codelineno-10-14"></a>     conda create --yes --prefix ./miniconda_envs/beam_v2.30
+<a id="__codelineno-10-15" name="__codelineno-10-15" href="#__codelineno-10-15"></a>fi
+<a id="__codelineno-10-16" name="__codelineno-10-16" href="#__codelineno-10-16"></a>
+<a id="__codelineno-10-17" name="__codelineno-10-17" href="#__codelineno-10-17"></a># Then, activate the new environment
+<a id="__codelineno-10-18" name="__codelineno-10-18" href="#__codelineno-10-18"></a>source ${CONDA_BASE}/etc/profile.d/conda.sh
+<a id="__codelineno-10-19" name="__codelineno-10-19" href="#__codelineno-10-19"></a>conda deactivate
+<a id="__codelineno-10-20" name="__codelineno-10-20" href="#__codelineno-10-20"></a>conda activate ./miniconda_envs/beam_v2.30
+<a id="__codelineno-10-21" name="__codelineno-10-21" href="#__codelineno-10-21"></a>
+<a id="__codelineno-10-22" name="__codelineno-10-22" href="#__codelineno-10-22"></a>##--- Configure an environment-specific .condarc file ---##
+<a id="__codelineno-10-23" name="__codelineno-10-23" href="#__codelineno-10-23"></a>## NOTE: Only performed once:
+<a id="__codelineno-10-24" name="__codelineno-10-24" href="#__codelineno-10-24"></a># Changes the (env) prompt to avoid printing the full path
+<a id="__codelineno-10-25" name="__codelineno-10-25" href="#__codelineno-10-25"></a>conda config --env --set env_prompt &#39;({name})&#39;
+<a id="__codelineno-10-26" name="__codelineno-10-26" href="#__codelineno-10-26"></a>
+<a id="__codelineno-10-27" name="__codelineno-10-27" href="#__codelineno-10-27"></a># Put the package download channels in a specific order
+<a id="__codelineno-10-28" name="__codelineno-10-28" href="#__codelineno-10-28"></a>conda config --env --add channels defaults
+<a id="__codelineno-10-29" name="__codelineno-10-29" href="#__codelineno-10-29"></a>conda config --env --add channels bioconda
+<a id="__codelineno-10-30" name="__codelineno-10-30" href="#__codelineno-10-30"></a>conda config --env --add channels conda-forge
+<a id="__codelineno-10-31" name="__codelineno-10-31" href="#__codelineno-10-31"></a>
+<a id="__codelineno-10-32" name="__codelineno-10-32" href="#__codelineno-10-32"></a># Download packages flexibly
+<a id="__codelineno-10-33" name="__codelineno-10-33" href="#__codelineno-10-33"></a>conda config --env --set channel_priority flexible
+<a id="__codelineno-10-34" name="__codelineno-10-34" href="#__codelineno-10-34"></a>
+<a id="__codelineno-10-35" name="__codelineno-10-35" href="#__codelineno-10-35"></a># Install the project-specific packages
+<a id="__codelineno-10-36" name="__codelineno-10-36" href="#__codelineno-10-36"></a># in the currently active env
+<a id="__codelineno-10-37" name="__codelineno-10-37" href="#__codelineno-10-37"></a>conda install -p ./miniconda_envs/beam_v2.30 -y -c conda-forge python=3.8 pandas numpy python-dotenv python-snappy tensorflow=2.5 apache-beam=2.30 regex spython natsort rtg-tools
+<a id="__codelineno-10-38" name="__codelineno-10-38" href="#__codelineno-10-38"></a>
+<a id="__codelineno-10-39" name="__codelineno-10-39" href="#__codelineno-10-39"></a># Deactivate the conda env to continue with build process
+<a id="__codelineno-10-40" name="__codelineno-10-40" href="#__codelineno-10-40"></a>conda deactivate
+<a id="__codelineno-10-41" name="__codelineno-10-41" href="#__codelineno-10-41"></a>
+<a id="__codelineno-10-42" name="__codelineno-10-42" href="#__codelineno-10-42"></a>###===== Notes about Beam specific packages =====###
+<a id="__codelineno-10-43" name="__codelineno-10-43" href="#__codelineno-10-43"></a>### Python = Apache Beam Python SDK only supports v3.6-3.8
+<a id="__codelineno-10-44" name="__codelineno-10-44" href="#__codelineno-10-44"></a>### Scipy = scientific libraries for Python
+<a id="__codelineno-10-45" name="__codelineno-10-45" href="#__codelineno-10-45"></a>### DotEnv = enables environment variable configuration across bash and python
+<a id="__codelineno-10-46" name="__codelineno-10-46" href="#__codelineno-10-46"></a>### Snappy = A fast compressor/decompressor (required)
+<a id="__codelineno-10-47" name="__codelineno-10-47" href="#__codelineno-10-47"></a>### Apache-Beam = unified programming model for batch and stream processes
+<a id="__codelineno-10-48" name="__codelineno-10-48" href="#__codelineno-10-48"></a>### Tensorflow = eval metrics visualizations via TensorBoard for CPU, use v2.5.0 for DV v1.4
+<a id="__codelineno-10-49" name="__codelineno-10-49" href="#__codelineno-10-49"></a>### Regex = required for update regular expression handling
+<a id="__codelineno-10-50" name="__codelineno-10-50" href="#__codelineno-10-50"></a>### Spython = interface between Singularity/Apptainer bash commands and Python
+<a id="__codelineno-10-51" name="__codelineno-10-51" href="#__codelineno-10-51"></a>### Natsort = enables sorting of file iterators
+<a id="__codelineno-10-52" name="__codelineno-10-52" href="#__codelineno-10-52"></a>### RTG-Tools = required for Mendelian Inhertiance Error calculations performed for summarize
+<a id="__codelineno-10-53" name="__codelineno-10-53" href="#__codelineno-10-53"></a>
+<a id="__codelineno-10-54" name="__codelineno-10-54" href="#__codelineno-10-54"></a>echo -e &quot;=== scripts/setup/build_beam.sh &gt; end $(date)&quot;
+</code></pre></div>
+</details>
+<h2 id="5-download-the-beam-shuffling-script">5. Download the Beam shuffling script</h2>
+<p>Creates a local copy of the appropriate shuffling script from Google Genomoics Health Group.</p>
+<div class="highlight"><span class="filename">Run the following at the command line:</span><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>bash<span class="w"> </span>scripts/setup/download_shuffle.sh
+</code></pre></div>
+<details class="example">
+<summary>Example | <code>download_shuffle.sh</code></summary>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>#!/bin/bash
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a># scripts/setup/download_shuffle.sh
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>echo -e &quot;=== scripts/setup/download_shuffle.sh &gt; start $(date)&quot;
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>##======= Download Shuffle Script =================================##
+<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>export SHUFFLE_VERSION=${BIN_VERSION_DV:0:3}
+<a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a>
+<a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a>echo &quot;$(date &#39;+%Y-%m-%d %H:%M:%S&#39;) INFO: Downloading Google Beam Shuffling Script - v${SHUFFLE_VERSION}&quot;
+<a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a>curl -C - https://raw.githubusercontent.com/google/deepvariant/r${SHUFFLE_VERSION}/tools/shuffle_tfrecords_beam.py -o triotrain/model_training/prep/shuffle_tfrecords_beam.py
+<a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a>
+<a id="__codelineno-12-11" name="__codelineno-12-11" href="#__codelineno-12-11"></a>##=================================================================##
+<a id="__codelineno-12-12" name="__codelineno-12-12" href="#__codelineno-12-12"></a>
+<a id="__codelineno-12-13" name="__codelineno-12-13" href="#__codelineno-12-13"></a>echo -e &quot;=== scripts/setup/download_shuffle.sh &gt; end $(date)&quot;
+</code></pre></div>
+</details>
+<hr />
+<p><a class="md-button" href="../installation/"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-1 8H9.5L13 7.5l-1.42-1.42L5.66 12l5.92 5.92L13 16.5 9.5 13H18v-2Z"/></svg></span> Install TrioTrain</a> <a class="md-button" href="../walk-through/">Complete the Human GIAB Tutorial <span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M5 21a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5m1-8h8.5L11 16.5l1.42 1.42L18.34 12l-5.92-5.92L11 7.5l3.5 3.5H6v2Z"/></svg></span></a></p>
+
+  <hr>
+<div class="md-source-file">
+  <small>
+    
+      Last update:
+      <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date">March 8, 2024</span>
+      
+    
+  </small>
+</div>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12Z"/></svg>
+            Back to top
+          </button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.top", "toc.integrate", "content.code.copy"], "search": "../../assets/javascripts/workers/search.208ed371.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.b4d07000.min.js"></script>
+      
+        <script src="../../js/open_in_new_tab.js"></script>
+      
+    
+  </body>
+</html>
