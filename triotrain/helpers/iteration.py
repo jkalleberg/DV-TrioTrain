@@ -14,8 +14,8 @@ from pathlib import Path
 from typing import Union
 
 from helpers.environment import Env
+from helpers.outputs import check_expected_outputs, check_if_output_exists
 from helpers.utils import create_deps
-from helpers.outputs import check_if_output_exists, check_expected_outputs
 
 
 @dataclass
@@ -133,7 +133,7 @@ class Iteration:
         elif self.default_region_file is None:
             reference_dir = Path(self.env.contents["RefFASTA_Path"])
             self._reference_genome = reference_dir / self.env.contents["RefFASTA_File"]
-            _regex = r"\w+_autosomes_withX.bed"
+            _regex = r".*_autosomes_withX.bed"
 
             (
                 default_exists,
@@ -148,6 +148,7 @@ class Iteration:
                 debug_mode=self.debug_mode,
                 dryrun_mode=self.dryrun_mode,
             )
+
             if default_exists:
                 missing_default_file = check_expected_outputs(
                     outputs_found=outputs_found,
@@ -181,10 +182,7 @@ class Iteration:
             self.results_dir = Path(str(self.env.contents["BaselineModelResultsDir"]))
             self.model_label = f"{self.run_name}-{self._version}"
 
-        elif (
-            self.current_genome_num != 0
-            and self.current_trio_num is not None
-        ):
+        elif self.current_genome_num != 0 and self.current_trio_num is not None:
             self.run_name = self.env.contents["RunName"]
             self.code_path = self.env.contents["CodePath"]
             self.examples_dir = Path(str(self.env.contents["ExamplesDir"]))
