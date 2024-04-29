@@ -220,19 +220,21 @@ class Examples:
             for row in tsv_reader:
                 num_cols = len(row)
                 assert num_cols >= 5 and num_cols < 7, f"unexpected number of columns in the PICARD dict | {num_cols}"
+
                 if num_cols == 6:
                     (sq, chr, l, m5, ur, sp) = row
                     if "human" in sp.lower():
                         chr_name = chr.split(":")[1]
                         if chr_name.isalnum() and "ebv" not in chr_name.lower():
-                            valid_chrs.append(chr_name)                  
-        
-        print("VALID CHRS:", valid_chrs)
+                            valid_chrs.append(chr_name)        
 
         # figure out which chr are NOT included by default
-        chr_set = set(self._chr)
-        exclude_chr = [x for x in valid_chrs if x not in chr_set]
-        self.exclude_chroms = " ".join(exclude_chr)
+        if valid_chrs:
+            chr_set = set(self._chr)
+            exclude_chr = [x for x in valid_chrs if x not in chr_set]
+            self.exclude_chroms = " ".join(exclude_chr)
+        else:
+            self.exclude_chroms = None
 
     def set_genome(self) -> None:
         """
@@ -298,7 +300,10 @@ class Examples:
             "RegionsFile_Path" in self.env.contents
             and "RegionsFile_File" in self.env.contents
         ):
-            self._exclude_flags = ["--exclude_regions", f"{self.exclude_chroms}"]
+            if self.exclude_chroms is not None:
+                self._exclude_flags = ["--exclude_regions", f"{self.exclude_chroms}"]
+            else:
+                self._exclude_flags = None
             # self._output_prefix = f"{self.args.genome}.region_file"
             self._mode = "REGION_FILE"
             self._regions_dir = self.env.contents["RegionsFile_Path"]
@@ -325,7 +330,10 @@ class Examples:
 
         # run 'make_examples' using the regions-shuffling files created by the TrioTrain pipeline
         elif self.args.region_num is not None and self.args.region_num.isdigit():
-            self._exclude_flags = ["--exclude_regions", f"{self.exclude_chroms}"]
+            if self.exclude_chroms is not None:
+                self._exclude_flags = ["--exclude_regions", f"{self.exclude_chroms}"]
+            else:
+                self._exclude_flags = None
             self._output_prefix = f"{self.args.genome}.region{self.args.region_num}"
             self._mode = "REGION_SHUFFLE"
             self._logger_msg = f"TRIO{self._trio_num}] - [{self.args.genome} - [region{self.args.region_num}"
@@ -362,7 +370,10 @@ class Examples:
         #       configuring SLURM + Spark +
         #       'spark_runner'
         else:
-            self._exclude_flags = ["--exclude_regions", f"{self.exclude_chroms}"]
+            if self.exclude_chroms is not None:
+                self._exclude_flags = ["--exclude_regions", f"{self.exclude_chroms}"]
+            else:
+                self._exclude_flags = None
             self._output_prefix = self.args.genome
             self._mode = "genome_wide_shuffling"
             self._logger_msg = self.args.genome
