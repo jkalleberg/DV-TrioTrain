@@ -212,17 +212,22 @@ class Examples:
         ), f"missing the reference Genome PICARD .dict file | '{self._ref_dict.name}'"
 
         valid_chrs = list()
+
         with open(str(self._ref_dict), "r", encoding="utf8") as dict_file:
             tsv_reader = reader(dict_file, delimiter="\t")
             # skip header
             next(tsv_reader)
             for row in tsv_reader:
-                (sq, chr, len, m5, ur, sp) = row
-
-                if "human" in sp.lower():
-                    chr_name = chr.split(":")[1]
-                    if chr_name.isalnum() and "ebv" not in chr_name.lower():
-                        valid_chrs.append(chr_name)
+                num_cols = len(row)
+                assert num_cols >= 5 and num_cols < 7, f"unexpected number of columns in the PICARD dict | {num_cols}"
+                if num_cols == 6:
+                    (sq, chr, l, m5, ur, sp) = row
+                    if "human" in sp.lower():
+                        chr_name = chr.split(":")[1]
+                        if chr_name.isalnum() and "ebv" not in chr_name.lower():
+                            valid_chrs.append(chr_name)                  
+        
+        print("VALID CHRS:", valid_chrs)
 
         # figure out which chr are NOT included by default
         chr_set = set(self._chr)
@@ -385,7 +390,7 @@ class Examples:
                 )
             else:
                 missing_var3 = False
-            
+
             if missing_var1 and missing_var2 and missing_var3:
                 self.logger.info(
                     f"[{self._mode}] - [{self._logger_msg}]: missing at least one of the required options. Exiting... "
