@@ -53,6 +53,14 @@ def collect_args() -> argparse.ArgumentParser:
         type=str,
     )
     parser.add_argument(
+        "--ignore",
+        dest="ignore",
+        help="comma-separated list of prefixes; used to exclude regions during training, such as any unmapped contigs or low-quality sex chrs; uses partial match to @SQ tag from reference genome\n Default based on ARS-UCD1.2_Btau5.0.1Y\n(default: %(default)s)",
+        type=str,
+        metavar="<str>",
+        default="NKLS,Y",
+    )
+    parser.add_argument(
         "-m",
         "--metadata",
         dest="metadata",
@@ -164,14 +172,6 @@ def collect_args() -> argparse.ArgumentParser:
         default="../TRIO_TRAINING_OUTPUTS",
         type=str,
         metavar="</path/dir>",
-    )
-    parser.add_argument(
-        "--unmapped-reads",
-        dest="unmapped_reads",
-        help="prefix for unmapped reads in reference genome; used to exclude from these reads during training\ndefaults to @SQ tag from ARS-UCD1.2_Btau5.0.1Y\n(default: %(default)s)",
-        type=str,
-        metavar="<str>",
-        default="NKLS",
     )
     parser.add_argument(
         "--use-gpu",
@@ -345,6 +345,8 @@ def get_args(parser: argparse.ArgumentParser) -> argparse.Namespace:
         "--stop-itr",
         "2",
         "--dry-run",
+        "--ignore",
+        "NKLS,MSY",
         # "--debug",
         # "--update",
         # "--custom-checkpoint",
@@ -437,6 +439,10 @@ def check_args(args: argparse.Namespace, logger: Logger, default_channels: str) 
                 assert (
                     num_runs_to_overwrite == 1
                 ), f"option --overwrite is set, but attempting to run {num_runs_to_overwrite} iterations.\nPlease adjust either --start-itr or --stop-itr flags so that only one iteration will be overwritten at a time"
+
+        if "," in args.ignore:
+            ignore_list = args.ignore.split(",")
+            args.ignore = ignore_list
 
         # warn the user against phase name typos
         if args.restart_jobs:
