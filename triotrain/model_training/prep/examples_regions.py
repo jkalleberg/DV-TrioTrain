@@ -301,8 +301,6 @@ class MakeRegions:
                 self.itr.logger.info(
                     f"{self.itr._mode_string} - [setup]: created a default BED file | '{output_file.file_path}'"
                 )
-            print("LOOK HERE!")
-            breakpoint()
         else:
             self.itr.logger.info(
                 f"{self.itr._mode_string} - [setup]: found default BED file | '{output_file.file_path}'"

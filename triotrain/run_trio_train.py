@@ -87,8 +87,7 @@ def run_trio_train(eval_genome="Child") -> None:
         for k, v in pipeline.args.restart_jobs.items():
             num_running_phases += 1
             num_jobs = len(v)
-            logger.info(f"phase{num_running_phases} | '{k}'={v}"
-            )
+            logger.info(f"phase{num_running_phases} | '{k}'={v}")
         logger.info("----------------------------------------------")
 
     if pipeline.args.begin is not None:
@@ -111,7 +110,7 @@ def run_trio_train(eval_genome="Child") -> None:
             end = pipeline.args.terminate
     else:
         end = begining + 1
-    
+
     # Define the baseline environment
     new_env = pipeline.process_env(begining)
 
@@ -189,7 +188,9 @@ def run_trio_train(eval_genome="Child") -> None:
             )
 
         if pipeline.current_genome is not None:
-            logging_msg = f"{current_itr._mode_string} - [setup] - [{pipeline.current_genome}]"
+            logging_msg = (
+                f"{current_itr._mode_string} - [setup] - [{pipeline.current_genome}]"
+            )
         else:
             logging_msg = f"{current_itr._mode_string} - [setup]"
 
@@ -232,7 +233,7 @@ def run_trio_train(eval_genome="Child") -> None:
             logger.info(
                 f"{logging_msg}: model includes the {pipeline.meta.additional_channels} channel(s)"
             )
-        
+
         if current_itr.demo_mode:
             current_itr.logger.info(f"{logging_msg}: --demo-mode is active")
 
