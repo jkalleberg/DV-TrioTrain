@@ -28,13 +28,13 @@
         "email": "jakth2@mail.missouri.edu"
     },
     "train_eval": {
-        "partition": "gpu3",
+        "partition": "gpu4",
         "gres": "gpu:2",
         "nodes": 1,
         "ntasks": 16,
         "mem": "0",
         "time": "2-00:00:00",
-        "account": "animalsci",
+        "account": "ans-gpu",
         "email": "jakth2@mail.missouri.edu"
     },
     "select_ckpt": {
