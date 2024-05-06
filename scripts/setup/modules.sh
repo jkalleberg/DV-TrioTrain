@@ -10,18 +10,18 @@ echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: Done wipe modules"
 echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: Loading modules... "
 
 # Enable loading of pkgs from prior manager
-module load rss/rss-2020
+# module load rss/rss-2020
 
 # Update to a newer, but still old, version of Curl
-module load curl/7.72.0
+# module load curl/7.72.0
 
 # Update to a newer version of git,
 # Required for Git extensions on VSCode
-module load git/2.29.0
+# module load git/2.29.0
 
 # Enable "conda activate" rather than,
 # using "source activate"
-module load miniconda3/4.9
+module load miniconda3/4.10.3_gcc_12.3.0
 export CONDA_BASE=$(conda info --base)
 
 # System Requirement to use 'conda activate' 
@@ -29,16 +29,18 @@ source ${CONDA_BASE}/etc/profile.d/conda.sh
 conda deactivate
 
 # Modules required for re-training
-module load java/openjdk/java-1.8.0-openjdk
-module load singularity/singularity
-module load picard/2.26.10
+module load jdk/20_S
+
+# Singularity command is pre-installed, and does not require a module on Hellbender
+# module load singularity/singularity
+module load picard/2.26.2_gcc_12.3.0
 
 # Modules required for post-procesing variants
-module load cuda/11.1.0
-module load bcftools/1.14
-module load htslib/1.14
-module load samtools/1.14
-module load gcc/10.2.0
+module load cuda/11.8.0_gcc_9.5.0
+module load bcftools/1.17
+module load htslib/1.17
+module load samtools/1.17
+module load gcc/12.3.0
 
 echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: Done Loading Modules"
 
