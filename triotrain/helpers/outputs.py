@@ -1,9 +1,10 @@
 from logging import Logger
-from pathlib import Path
-from typing import List, Match
-from natsort import natsorted
-import regex
 from os import listdir
+from pathlib import Path
+from typing import List, Match, Tuple
+
+import regex
+from natsort import natsorted
 
 
 def check_if_output_exists(
@@ -14,7 +15,7 @@ def check_if_output_exists(
     logger: Logger,
     debug_mode: bool = False,
     dryrun_mode: bool = False,
-):
+) -> Tuple[bool, int, List[str]]:
     """Confirms if file(s) matching a regular expression already exist, and counts the number of matches found.
 
     Parameters
@@ -36,7 +37,7 @@ def check_if_output_exists(
 
     Returns
     -------
-    tuple 
+    tuple
 
         output_exists : bool
             if True, files matching the regular expression were found
@@ -50,7 +51,7 @@ def check_if_output_exists(
     if search_path.exists():
         if Path(search_path).is_dir():
             for file in listdir(str(search_path)):
-                match: Match[str] = regex.search(match_pattern, str(file))
+                match = regex.search(match_pattern, str(file))
                 if match:
                     files.append(match.group())
 
@@ -99,7 +100,7 @@ def check_expected_outputs(
     msg: str,
     file_type: str,
     logger: Logger,
-    verbose: bool = True
+    verbose: bool = True,
 ) -> bool:
     """Confirms if expected outputs were made correctly.
 

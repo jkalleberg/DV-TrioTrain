@@ -53,10 +53,26 @@ def collect_args() -> argparse.ArgumentParser:
         type=str,
     )
     parser.add_argument(
+        "--ignore",
+        dest="ignore",
+        help="comma-separated list of prefixes; used to exclude regions during training, such as any unmapped contigs or low-quality sex chrs; uses partial match to @SQ tag from reference genome\n Default based on ARS-UCD1.2_Btau5.0.1Y\n(default: %(default)s)",
+        type=str,
+        metavar="<str>",
+        default="NKLS,Y",
+    )
+    parser.add_argument(
         "-m",
         "--metadata",
         dest="metadata",
         help="[REQUIRED]\ninput file (.csv)\ndescribes each trio to analyze and sets the training order",
+        type=str,
+        metavar="</path/file>",
+    )
+    parser.add_argument(
+        "--modules",
+        dest="modules",
+        help="[REQUIRED]\ninput file (.sh)\nhelper script which loads the local software packages\n(default: %(default)s)",
+        default="./scripts/setup/modules.sh",
         type=str,
         metavar="</path/file>",
     )
@@ -77,15 +93,6 @@ def collect_args() -> argparse.ArgumentParser:
         metavar="</path/file>",
     )
     parser.add_argument(
-        "-o",
-        "--output",
-        dest="output",
-        help="directory path\nre-direct where to save TrioTrain results\n(default: %(default)s)",
-        default="../TRIO_TRAINING_OUTPUTS",
-        type=str,
-        metavar="</path/dir>",
-    )
-    parser.add_argument(
         "-t",
         "--num-tests",
         dest="num_tests",
@@ -93,28 +100,6 @@ def collect_args() -> argparse.ArgumentParser:
         type=int,
         default=13,
         metavar="<int>",
-    )
-    parser.add_argument(
-        "--modules",
-        dest="modules",
-        help="[REQUIRED]\ninput file (.sh)\nhelper script which loads the local software packages\n(default: %(default)s)",
-        default="./scripts/setup/modules.sh",
-        type=str,
-        metavar="</path/file>",
-    )
-    parser.add_argument(
-        "--unmapped-reads",
-        dest="unmapped_reads",
-        help="prefix for unmapped reads in reference genome; used to exclude from these reads during training\ndefaults to @SQ tag from ARS-UCD1.2_Btau5.0.1Y\n(default: %(default)s)",
-        type=str,
-        metavar="<str>",
-        default="NKLS",
-    )
-    parser.add_argument(
-        "--benchmark",
-        dest="benchmark",
-        help="if True, save SLURM job numbers for calculating resource usage",
-        action="store_true",
     )
     parser.add_argument(
         "-d",
@@ -136,7 +121,7 @@ def collect_args() -> argparse.ArgumentParser:
         help="estimated examples created per variant\n(default: %(default)s)",
         default=1.5,
         type=float,
-        metavar="<float>"
+        metavar="<float>",
     )
     parser.add_argument(
         "--max-examples",
@@ -144,7 +129,7 @@ def collect_args() -> argparse.ArgumentParser:
         help="maximum examples include per regions file\n(default: %(default)s)",
         default=200000,
         type=int,
-        metavar="<int>"
+        metavar="<int>",
     )
     parser.add_argument(
         "-B",
@@ -174,6 +159,21 @@ def collect_args() -> argparse.ArgumentParser:
         metavar="<int>",
     )
     parser.add_argument(
+        "--keep-jobids",
+        dest="benchmark",
+        help="if True, save SLURM job numbers for calculating resource usage",
+        action="store_true",
+    )
+    parser.add_argument(
+        "-o",
+        "--output",
+        dest="output",
+        help="directory path\nre-direct where to save TrioTrain results\n(default: %(default)s)",
+        default="../TRIO_TRAINING_OUTPUTS",
+        type=str,
+        metavar="</path/dir>",
+    )
+    parser.add_argument(
         "--use-gpu",
         dest="use_gpu",
         help=f"if True, use the GPU container to accelerate variant calling\n\tNOTE: NOT OPTIMZED; requires running with GPU partition/resources from SLURM\n(default: %(default)s)",
@@ -187,12 +187,12 @@ def collect_args() -> argparse.ArgumentParser:
         action="store_true",
         default=True,
     )
-    parser.add_argument(
-        "--use-DT",
-        dest="use_deeptrio",
-        help="[WIP] if True, call_variants and benchmarking will expect trios",
-        action="store_true",
-    )
+    # parser.add_argument(
+    #     "--use-DT",
+    #     dest="use_deeptrio",
+    #     help="[WIP] if True, call_variants and benchmarking will expect trios",
+    #     action="store_true",
+    # )
     # hidden argument
     parser.add_argument(
         "--phases",
@@ -225,19 +225,19 @@ def collect_args() -> argparse.ArgumentParser:
         dest="demo_chr",
         help="sets which chromosome to use for demo mode\n(default: %(default)s)",
         default="29",
-        metavar="<str>"
+        metavar="<str>",
     )
     demo.add_argument(
         "--show-regions",
         dest="show_regions",
-        help="[beta]\nif True, create PNG images of the multi-channel tensor vector(s)\n(default: %(default)s)",
+        help="[BETA]\nif True, create PNG images of the multi-channel tensor vector(s)\n(default: %(default)s)",
         default=False,
         action="store_true",
     )
     demo.add_argument(
         "--show-regions-file",
         dest="show_regions_file",
-        help="[beta]\ninput file (.bed or .txt)\ncontains location(s) to visualize\n==== .bed format ====\nCHROM\tSTART\tSTOP\n=====================\n==== .txt format ====\nCHROM:START-STOP\n=====================",
+        help="[BETA]\ninput file (.bed or .txt)\ncontains location(s) to visualize\n==== .bed format ====\nCHROM\tSTART\tSTOP\n=====================\n==== .txt format ====\nCHROM:START-STOP\n=====================",
         type=str,
         metavar="</path/to/regions_file>",
     )
@@ -317,59 +317,62 @@ def get_args(parser: argparse.ArgumentParser) -> argparse.Namespace:
     """
     Return the key=value arguments from the command line
     """
-    # manual_args_list = [
-    # "-m",
-    # "metadata/230313_benchmarking.csv",
-    # "metadata/230307_PASS.csv",
-    # "--first-genome",
-    # "Father",
-    # "Mother",
-    # "None",
-    # "--name",
-    # "230313_GIAB",
-    # "220913_NewTrios",
-    # "221118_NewTrios",
-    # "221214_MotherFirst",
-    # "-r",
-    # "resource_configs/221113_resources_used.json",
-    # "resource_configs/221205_resources_used.json",
-    # "--demo-mode",
-    # "--show-regions-file",
-    # "region_files/DEMO_PASS1.show_regions.bed",
-    # "--num-tests",
-    # "19",
-    # "6",
-    # "--start-itr",
-    # "1",
-    # "--stop-itr",
-    # "2",
-    # "--dry-run",
-    # "--debug",
-    # "--update",
-    # "--custom-checkpoint",
-    # "/storage/hpc/group/UMAG_test/WORKING/jakth2/deep-variant/pretrained_models/DV1.4_WGS.AF_cattle2/model.ckpt-120844",
-    # "/storage/hpc/group/UMAG_test/WORKING/jakth2/deep-variant/pretrained_models/DV1.4_WGS.AF_cattle3/model.ckpt-935368",
-    # "/storage/hpc/group/UMAG_test/WORKING/jakth2/deep-variant/pretrained_models/DV1.4_WGS.AF_cattle4/model.ckpt-282383",
-    # "/storage/hpc/group/UMAG_test/WORKING/jakth2/deep-variant/pretrained_models/DV1.4_WGS.AF_cattle5/model.ckpt-336710",
-    # "/storage/hpc/group/UMAG_test/WORKING/jakth2/deep-variant/pretrained_models/v1.4.0-withIS-noPop/model.ckpt",
-    # "/storage/hpc/group/UMAG_test/WORKING/jakth2/deep-variant/pretrained_models/v1.4.0-withIS-withPop/wgs_af.model.ckpt",
-    # "pretrained_models/v1.4.0-withIS-withPop/wgs_af.model.ckpt",
-    # "--channel-info",
-    # '{"channels": [1, 2, 3, 4, 5, 6, 8, 19]}',
-    # "/storage/hpc/group/UMAG_test/WORKING/jakth2/TRIO_TRAINING_OUTPUTS/220913_NewTrios/PASS11/examples/Mother.example_info.json",
-    # "--use-gpu",
-    # "--benchmark",
-    # "--trio-dependencies",
-    # "None,None,None,26144414",
-    # "--overwrite",
-    # "--restart-jobs",
-    # '{"re_shuffle:Father": [1]}',
-    # '{"call_variants": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]}',
-    # '{"convert_happy": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]}',
-    # '{"convert_happy": [2, 3, 4, 5, 6]}',
-    # ]
-    # return parser.parse_args(manual_args_list)
-    return parser.parse_args()
+    manual_args_list = [
+        "-m",
+        "triotrain/model_training/metadata/240429_DeepVariantTriosTRUTH_UMAG1_noPopVCF.csv",
+        # "triotrain/model_training/metadata/230313_benchmarking.csv",
+        # "triotrain/model_training/metadata/230307_PASS.csv",
+        "--first-genome",
+        "Father",
+        # "Mother",
+        # "None",
+        "--name",
+        "240429_NoPopVCF",
+        # "230313_GIAB",
+        # "220913_NewTrios",
+        # "221118_NewTrios",
+        # "221214_MotherFirst",
+        "-r",
+        "triotrain/model_training/tutorial/resources_used.json",
+        # "--demo-mode",
+        # "--show-regions-file",
+        # "region_files/DEMO_PASS1.show_regions.bed",
+        "--num-tests",
+        "19",
+        # "6",
+        "--start-itr",
+        "1",
+        "--stop-itr",
+        "2",
+        # "--dry-run",
+        # "--ignore",
+        # "NKLS,MSY",
+        # "--debug",
+        # "--update",
+        # "--custom-checkpoint",
+        # "/storage/hpc/group/UMAG_test/WORKING/jakth2/deep-variant/pretrained_models/DV1.4_WGS.AF_cattle2/model.ckpt-120844",
+        # "/storage/hpc/group/UMAG_test/WORKING/jakth2/deep-variant/pretrained_models/DV1.4_WGS.AF_cattle3/model.ckpt-935368",
+        # "/storage/hpc/group/UMAG_test/WORKING/jakth2/deep-variant/pretrained_models/DV1.4_WGS.AF_cattle4/model.ckpt-282383",
+        # "/storage/hpc/group/UMAG_test/WORKING/jakth2/deep-variant/pretrained_models/DV1.4_WGS.AF_cattle5/model.ckpt-336710",
+        # "/storage/hpc/group/UMAG_test/WORKING/jakth2/deep-variant/pretrained_models/v1.4.0-withIS-noPop/model.ckpt",
+        # "/storage/hpc/group/UMAG_test/WORKING/jakth2/deep-variant/pretrained_models/v1.4.0-withIS-withPop/wgs_af.model.ckpt",
+        # "pretrained_models/v1.4.0-withIS-withPop/wgs_af.model.ckpt",
+        # "--channel-info",
+        # '{"channels": [1, 2, 3, 4, 5, 6, 8, 19]}',
+        # "/storage/hpc/group/UMAG_test/WORKING/jakth2/TRIO_TRAINING_OUTPUTS/220913_NewTrios/PASS11/examples/Mother.example_info.json",
+        # "--use-gpu",
+        # "--benchmark",
+        # "--trio-dependencies",
+        # "None,None,None,26144414",
+        # "--overwrite",
+        # "--restart-jobs",
+        # '{"re_shuffle:Father": [1]}',
+        # '{"call_variants": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]}',
+        # '{"convert_happy": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]}',
+        # '{"convert_happy": [2, 3, 4, 5, 6]}',
+    ]
+    return parser.parse_args(manual_args_list)
+    # return parser.parse_args()
 
 
 def check_args(args: argparse.Namespace, logger: Logger, default_channels: str) -> None:
@@ -425,15 +428,21 @@ def check_args(args: argparse.Namespace, logger: Logger, default_channels: str) 
             if args.demo_mode is False:
                 if args.begin is None:
                     args.begin = 0
-                
+
                 if args.terminate is None:
-                    logger.warning("missing option --stop-itr; however only one iteration will be overwritten at a time")
+                    logger.warning(
+                        "missing option --stop-itr; however only one iteration will be overwritten at a time"
+                    )
                     args.terminate = args.begin + 1
 
                 num_runs_to_overwrite = int(args.terminate) - int(args.begin)
                 assert (
                     num_runs_to_overwrite == 1
-                    ), f"option --overwrite is set, but attempting to run {num_runs_to_overwrite} iterations.\nPlease adjust either --start-itr or --stop-itr flags so that only one iteration will be overwritten at a time"
+                ), f"option --overwrite is set, but attempting to run {num_runs_to_overwrite} iterations.\nPlease adjust either --start-itr or --stop-itr flags so that only one iteration will be overwritten at a time"
+
+        if "," in args.ignore:
+            ignore_list = args.ignore.split(",")
+            args.ignore = ignore_list
 
         # warn the user against phase name typos
         if args.restart_jobs:

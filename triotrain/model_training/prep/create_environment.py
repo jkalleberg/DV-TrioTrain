@@ -21,6 +21,7 @@ from helpers.files import TestFile
 from helpers.wrapper import timestamp
 from pandas import DataFrame, read_csv
 
+
 @dataclass
 class Environment:
     """
@@ -80,8 +81,10 @@ class Environment:
             self.train_order = ["Mother", "Father"]
 
         output_path_entered = Path(self.output_dir).resolve()
-        output_path_default = Path(path.dirname(self.working_dir)) / self.output_dir_name
-        
+        output_path_default = (
+            Path(path.dirname(self.working_dir)) / self.output_dir_name
+        )
+
         if output_path_entered == output_path_default:
             self.output_dir = output_path_default
         else:
@@ -105,7 +108,7 @@ class Environment:
         if self.dryrun_mode:
             self.logging_msg = f"[DRY_RUN] - [{self.mode}] - [{self._phase}]"
         else:
-            self.logging_msg = f"[{self.mode}] - [{self._phase}]" 
+            self.logging_msg = f"[{self.mode}] - [{self._phase}]"
 
         # set defaults for channels...
         self.use_insert_size = True
@@ -236,7 +239,7 @@ class Environment:
                 "create_iteration_lists() from Metadata failed to create _trio_nums_list and _genome_list items"
             )
 
-    def create_env(self):
+    def create_env(self) -> None:
         """
         initialize an empty h.Env object which variables
         can be added.
@@ -247,14 +250,18 @@ class Environment:
             )
 
         # Set the naming convention
-        env_dir = self.output_dir / self.analysis_name / "envs" 
+        env_dir = self.output_dir / self.analysis_name / "envs"
         if not env_dir.exists():
             if self.dryrun_mode:
-                self.logger.info(f"{self.logging_msg}: env directory would be created | '{env_dir}'")
+                self.logger.info(
+                    f"{self.logging_msg}: env directory would be created | '{env_dir}'"
+                )
             else:
-                self.logger.info(f"{self.logging_msg}: creating env directory | '{env_dir}'") 
+                self.logger.info(
+                    f"{self.logging_msg}: creating env directory | '{env_dir}'"
+                )
                 env_dir.mkdir(parents=True)
-        
+
         env_path = env_dir / f"run{self.trio_num}.env"
 
         # Test for existing ENV file name
@@ -273,7 +280,9 @@ class Environment:
             msg = "create"
 
         if self.dryrun_mode:
-            self.logger.info(f"{self.logging_msg}: pretending to {msg} env file | '{env_path}'")
+            self.logger.info(
+                f"{self.logging_msg}: pretending to {msg} env file | '{env_path}'"
+            )
         else:
             self.logger.info(f"{self.logging_msg}: {msg} env file | '{env_path}'")
 
@@ -283,7 +292,8 @@ class Environment:
             self.logger,
             logger_msg=self.logging_msg,
             debug_mode=self.debug_mode,
-            dryrun_mode=self.dryrun_mode)
+            dryrun_mode=self.dryrun_mode,
+        )
 
         # Define the row index to use
         if self.trio_num == 0:
@@ -293,7 +303,8 @@ class Environment:
 
         if not self.demo_mode:
             if self.dryrun_mode:
-                self.logger.info(f"{self.logging_msg}: {msg} environment file {self.trio_num + 1}-of-{self.num_of_iterations}"
+                self.logger.info(
+                    f"{self.logging_msg}: {msg} environment file {self.trio_num + 1}-of-{self.num_of_iterations}"
                 )
             else:
 
@@ -497,13 +508,13 @@ class Environment:
 
         # handle the baseline model outputs
         if self.conditions_used is not None:
-            self._output_dict[
-                "BaselineModelResultsDir"
-            ] = f"{str(self.output_dir)}/baseline_v{self._version}_{self.conditions_used}"
+            self._output_dict["BaselineModelResultsDir"] = (
+                f"{str(self.output_dir)}/baseline_v{self._version}_{self.conditions_used}"
+            )
         else:
-            self._output_dict[
-                "BaselineModelResultsDir"
-            ] = f"{str(self.output_dir)}/baseline_v{self._version}"
+            self._output_dict["BaselineModelResultsDir"] = (
+                f"{str(self.output_dir)}/baseline_v{self._version}"
+            )
 
         if not self.env.env_path.exists and self.dryrun_mode:
             print(
@@ -516,11 +527,13 @@ class Environment:
             col_num = col_num + 1
             # Record column number working on
             value = self.data[col][self.index]
+            
+            # print(f"COL {col_num}: {value}")
+            # breakpoint()
 
             if col_num >= 10:
                 # Columns 10+ are paths. Confirm that the paths given exist
                 absolute_path = TestFile(str(value), self.logger)
-
                 try:
                     if absolute_path.file in missing_values:
                         raise AssertionError(
@@ -597,6 +610,10 @@ class Environment:
                         ):
                             self.add_empty_variable(col)
                             continue
+                    
+                    if "PopVCF" in col or "Region" in col:
+                        self.add_empty_variable(col)
+                        continue
 
                 except FileNotFoundError as error:
                     # handle a non-existant or empty value for required inputs
@@ -649,9 +666,8 @@ class Environment:
                             "LogDir": f"{str(run_dir / 'logs')}",
                         }
                     else:
-                        more_vars = {
-                            "RunDir": f"{str(run_dir)}"}
-                    
+                        more_vars = {"RunDir": f"{str(run_dir)}"}
+
                     self._output_dict.update(more_vars)
 
                     if None in self.train_order:
@@ -729,7 +745,8 @@ class Environment:
         if self.dryrun_mode:
             for var in vars_list:
                 if not Path(str(self.env.contents[var])).is_dir():
-                    self.logger.info(f"{self.logging_msg}: directory would be created | '{var}'"
+                    self.logger.info(
+                        f"{self.logging_msg}: directory would be created | '{var}'"
                     )
             return
         else:
@@ -792,8 +809,7 @@ class Environment:
         """
         if self.dryrun_mode and self.update is False:
             if self.env.env_path.exists() is False:
-                self.logger.info(f"{self.logging_msg}: no file(s) created, as expected"
-                )
+                self.logger.info(f"{self.logging_msg}: no file(s) created, as expected")
         else:
             assert (
                 self.env.env_path.is_file()  # type: ignore
@@ -808,7 +824,7 @@ class Environment:
                     self.logger,
                     logger_msg=self.logging_msg,
                     debug_mode=self.debug_mode,
-                    dryrun_mode=self.dryrun_mode
+                    dryrun_mode=self.dryrun_mode,
                 )
                 self.logger.info(
                     f"{self.logging_msg}: loaded environment variables from | '{self.env.env_file}'"
@@ -872,4 +888,3 @@ class Environment:
                 self.trio_num = row
                 self.make_a_file()
                 self.create_dirs()
-
