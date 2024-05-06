@@ -8,9 +8,9 @@ usage:
 # Load python libraries
 import os
 import subprocess
-from sys import exit
 from dataclasses import dataclass, field, fields, replace
 from pathlib import Path
+from sys import exit
 from typing import Dict, List, Union
 
 import pandas as pd
@@ -19,6 +19,7 @@ from helpers.iteration import Iteration
 from helpers.outputs import check_expected_outputs, check_if_output_exists
 from model_training.prep.count import count_variants
 from natsort import natsorted
+
 
 @dataclass
 class MakeRegions:
@@ -197,28 +198,35 @@ class MakeRegions:
             chromosome_names = input_data[1].str.split(":", n=1, expand=True)[1]
             exclude_list = ["Y", "MT", "M", "EBV"]
 
-            if self.itr.args.unmapped_reads:
-                exclude_list.append(self.itr.args.unmapped_reads)
+            if isinstance(self.itr.args.ignore, str):
+                exclude_list.append(self.itr.args.ignore)
+            elif isinstance(self.itr.args.ignore, list):
+                merged_list = exclude_list + self.itr.args.ignore
+                exclude_list = merged_list
+
+            # remove any duplicates
+            no_dups = list(set(exclude_list))
 
             # test for 'chr' in chromosome names
-            name_test = chromosome_names.str.match(pat='chr', case=False)
-            
+            name_test = chromosome_names.str.match(pat="chr", case=False)
+
             if len(chromosome_names) == sum(name_test):
-                chr_to_exclude = [f"chr{x}" if "chr" not in x else x for x in exclude_list]
+                chr_to_exclude = [f"chr{x}" if "chr" not in x else x for x in no_dups]
             else:
-                chr_to_exclude = exclude_list
-            
+                chr_to_exclude = no_dups
+
+            # remove any invalid string patterns
             for e in chr_to_exclude:
                 find_exclude = chromosome_names.str.match(pat=e, case=False)
                 if sum(find_exclude) == 0:
                     chr_to_exclude.remove(e)
-            
-            chr_names = [
+
+            chrs_to_keep = [
                 chr
                 for chr in chromosome_names
                 if chr.isalnum() and chr not in chr_to_exclude
             ]
-            num_valid_chrs = len(chr_names)
+            num_valid_chrs = len(chrs_to_keep)
 
             chrs_length = pd.to_numeric(
                 input_data[2].str.split(":", n=1, expand=True)[1]
@@ -231,7 +239,7 @@ class MakeRegions:
             # and the X chr for use with model testing
             self._autosome_BED_data = pd.concat(
                 {
-                    "chromosome": pd.Series(chr_names),
+                    "chromosome": pd.Series(chrs_to_keep),
                     "start": pd.Series(start_pos),
                     "stop": filtered_chrs_length,
                 },
@@ -242,7 +250,7 @@ class MakeRegions:
             # the regions shuffling BED files
             self._clean_data = pd.concat(
                 {
-                    "chromosome": pd.Series(chr_names),
+                    "chromosome": pd.Series(chrs_to_keep),
                     "length_in_bp": filtered_chrs_length,
                 },
                 axis=1,
@@ -291,7 +299,7 @@ class MakeRegions:
             output_file.check_missing()
             if output_file.file_exists:
                 self.itr.logger.info(
-                f"{self.itr._mode_string} - [setup]: created a default BED file | '{output_file.file_path}'"
+                    f"{self.itr._mode_string} - [setup]: created a default BED file | '{output_file.file_path}'"
                 )
         else:
             self.itr.logger.info(
@@ -348,7 +356,7 @@ class MakeRegions:
                 f"{self._genome}_NumRegionFiles",
                 str(self._num_outputs),
                 dryrun_mode=self.itr.dryrun_mode,
-                msg=f"{self.itr._mode_string} - [{self._phase}] - [{self._genome}]"
+                msg=f"{self.itr._mode_string} - [{self._phase}] - [{self._genome}]",
             )
 
     def find_regions(self) -> None:
@@ -496,7 +504,7 @@ class MakeRegions:
                 f"{self._genome}_TotalTruth",
                 str(self._total_pass_variants),
                 dryrun_mode=self.itr.dryrun_mode,
-                msg=f"{self.itr._mode_string} - [{self._phase}] - [{self._genome}]"
+                msg=f"{self.itr._mode_string} - [{self._phase}] - [{self._genome}]",
             )
         else:
             self.itr.logger.error(
@@ -714,10 +722,12 @@ class MakeRegions:
 
         if self.itr.dryrun_mode:
             self.itr.logger.info(
-                f"{self._logger_msg}: start of {self._bed_filename} -------------")
+                f"{self._logger_msg}: start of {self._bed_filename} -------------"
+            )
             print(*self._line_list, sep="\n")
             self.itr.logger.info(
-                f"{self._logger_msg}: end of {self._bed_filename} ---------------")
+                f"{self._logger_msg}: end of {self._bed_filename} ---------------"
+            )
         else:
             outpath = self._region_dir / self._bed_filename
             if outpath.is_file():
@@ -831,4 +841,3 @@ class MakeRegions:
                     )
 
                 return self.itr
-
