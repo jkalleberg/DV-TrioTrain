@@ -1,6 +1,8 @@
 # How to cite
 
-> Citation to go here (FIX ME)
+> [Overcoming Limitations to Deep Learning in Domesticated Animals with TrioTrain](https://www.biorxiv.org/content/10.1101/2024.04.15.589602v1.full) <br/>
+Jenna Kalleberg, Jacob Rissman, Robert D. Schnabel <br/>
+bioRxiv 2024.04.15.589602; doi: https://doi.org/10.1101/2024.04.15.589602
 
 Please also cite:
 

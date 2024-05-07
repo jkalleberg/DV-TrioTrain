@@ -1,11 +1,11 @@
-# Using Mendenian Inheritance Expectations to Assess Models
+# Using Mendelian Inheritance Expectations to Assess Models
 
-If you have trio-binned test genomes, TrioTrain can help calculate Mendelian Inheritance Error rate using `rtg-tools mendelian`. However, you must create a Sequence Data File (SDF) for each reference genome in the same directory as the reference genome in a sub-directory called `rtg_tools/`. Additional details about `rtg-tools` can be [found on GitHub](https://github.com/RealTimeGenomics/rtg-tools), or by [reviewing the PDF documentation here](https://cdn.rawgit.com/RealTimeGenomics/rtg-tools/master/installer/resources/tools/RTGOperationsManual.pdf).
+If you have trio-binned test genomes, TrioTrain can calculate Mendelian Inheritance Error rate using `rtg-tools mendelian`. However, a reference-specific Sequence Data File (SDF) must be created and stored in a sub-directory called `rtg_tools/` (under the same directory as the reference genome). Additional details about `rtg-tools` can be [found on GitHub](https://github.com/RealTimeGenomics/rtg-tools) or by [reviewing the PDF documentation here](https://cdn.rawgit.com/RealTimeGenomics/rtg-tools/master/installer/resources/tools/RTGOperationsManual.pdf).
 
 ## Create a Reference Sequence Data File
 
 !!! warning
-    This step is specific to the Human reference genome GRCh38. Cattle-specific input files are packaged with TrioTrain. **If you are working with a new species, you will need to create this file for your reference genome.**
+    This step is specific to the Human reference genome GRCh38. Cattle-specific input files are packaged with TrioTrain. **For other species, it is crucial to create this file for your reference genome.**
 
 After completing the tutorial walk-through, create the Human reference SDF by running the following at the command line:
 
