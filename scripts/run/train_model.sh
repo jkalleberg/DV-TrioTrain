@@ -105,7 +105,7 @@ fi
 #       on the bovid genome.
 if [ -z "$REGION_PATH" ] ; then
   if [ -z "$REGION_FILE" ]; then
-    echo "$(date '+%Y-%m-%d %H:%M:%S') WARNING: Using the default region (all chromosomes)"
+    echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: Missing a region file; all examples will be used"
     region_file_used=""
     region_path=""
     region_flag=""

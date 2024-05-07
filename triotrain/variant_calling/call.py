@@ -461,7 +461,10 @@ class CallVariants:
             else:
                 extra_args = f'--make_examples_extra_args="{normalize_reads_flag}"'
         else:
-            extra_args = f'--make_examples_extra_args="{pop_flag}"'
+            if pop_flag is not None:
+                extra_args = f'--make_examples_extra_args="{pop_flag}"'
+            else:
+                extra_args = ""
 
         bindings_string = ",".join(bindings)
         apptainer_string = "time apptainer run"
