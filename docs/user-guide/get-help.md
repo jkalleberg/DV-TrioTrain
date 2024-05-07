@@ -1,13 +1,12 @@
 # Get Help
 
-See the [User Guide](usage_guide.md) for more complete documentation of all of TrioTrain's features.
+For more complete documentation of all of TrioTrain's features, see the [User Guide](usage_guide.md).
 
 ## Feedback and technical support
 
 To get help with TrioTrain, please use the [GitHub discussions] or [GitHub issues](https://github.com/jkalleberg/DV-TrioTrain/issues).
 
-For technical feedback, feel free to
-reach out to Jenna Kalleberg at <jakth2@mail.missouri.org>.
+For technical feedback, please reach out to Jenna Kalleberg at <jakth2@mail.missouri.org>.
 
 ## Contributing to TrioTrain
 

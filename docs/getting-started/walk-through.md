@@ -5,7 +5,7 @@
 </font>
 
 !!! warning "Warning | Storage Needs"
-    Completing this tutorial will produce ~2T of intermediate and output data. Ensure you  have sufficient space before proceeding!
+    Completing this tutorial will produce ~2T of intermediate and output data. Ensure you have sufficient space before proceeding!
 
 ## 1. Confirm Successful Configuration
 
@@ -32,7 +32,7 @@ Repeat the first two steps of Configuration:
 - [Step 2: Load Modules](configuration.md#modules)
 
 
-## 4. Download pre-trained models
+## 3. Download pre-trained models
 
 !!! warning "Warning | Download Size"
 
@@ -72,7 +72,7 @@ bash scripts/setup/download_models.sh
     wgs_af.model.ckpt.example_info.json    wgs_af.model.ckpt.meta
     ```
 
-## 5. Download Raw Data
+## 4. Download Raw Data
 
 !!! warning "Warning | Download Size"
 
@@ -207,16 +207,16 @@ bash scripts/setup/download_GIAB.sh
     2. `AJtrio.download` &mdash; downloads GIAB Trio1
     3. `HCtrio.download` &mdash; downloads GIAB Trio2
 
-## 6. Process Raw Data
+## 5. Process Raw Data
 
 !!! note
-    These scripts can either be wrapped with SBATCH, or run interactively at the command line if you have enough memory. However, each script can take awhile to complete, particularly the `.download` scripts (1hr+).
+    These scripts can be run interactively on the command line if enough memory is requested. However, each script can take a while to complete, particularly the `.download` scripts (1hr+). We recommend wrapping them within an SBATCH file.
 
 ### a. Merge the PopVCF
 
 !!! warning "Warning | Download Size"
 
-We need to create a single, genome-wide PopVCF from the raw per-chromosome PopVCF files. The per-chr Population VCFs were produced by the One Thousand Genomes Project (1kGP) and used to train the Human WGS.AF model. [You can view the raw files on Google Cloud Platform.](https://console.cloud.google.com/storage/browser/brain-genomics-public/research/cohort/1KGP/cohort_dv_glnexus_opt/v3_missing2ref?pageState=(%22StorageObjectListTable%22:(%22f%22:%22%255B%255D%22))&prefix=&forceOnObjectsSortingFiltering=false)
+TrioTrain requires a single, genome-wide PopVCF from the raw per-chromosome PopVCF files. The per-chr Population VCFs were produced by the One Thousand Genomes Project (1kGP) and used to train the Human WGS.AF model. [You can view the raw files on Google Cloud Platform.](https://console.cloud.google.com/storage/browser/brain-genomics-public/research/cohort/1KGP/cohort_dv_glnexus_opt/v3_missing2ref?pageState=(%22StorageObjectListTable%22:(%22f%22:%22%255B%255D%22))&prefix=&forceOnObjectsSortingFiltering=false)
 
 
 ```bash title="Run the following at the command line:"
@@ -244,9 +244,9 @@ bash triotrain/variant_calling/data/GIAB/allele_freq/concat_PopVCFs.sh
 !!! warning "Warning | Download Size"
 
 !!! warning
-    Given the large file size, the NIST FTP server runs slowly causing `curl` to timeout. **You may need to run these scripts repeatedly until all data is transfered completely.**
+    Given the large file size, the NIST FTP server runs slowly causing `curl` to timeout. **You may need to run these scripts repeatedly until all data is transferred completely.**
 
-We need to download the large sequence data files, and confirm they are not corrupted by checking the MD5 checksums. These `BAM/BAI` files orginate from the GIAB FTP site. [An index of GIAB data created with these samples can be found on GitHub.](https://github.com/genome-in-a-bottle/giab_data_indexes)
+We need to download the large sequence data files and confirm they are not corrupted by checking the MD5 checksums. These `BAM/BAI` files originate from the GIAB FTP site. [An index of GIAB data created with these samples can be found on GitHub.](https://github.com/genome-in-a-bottle/giab_data_indexes)
 
 ```bash title="1. Run the following at the command line:"
 bash triotrain/variant_calling/data/GIAB/bam/AJtrio.download
@@ -339,14 +339,14 @@ bash triotrain/variant_calling/data/GIAB/bam/HCtrio.download
     HG007.GRCh38_full_plus_hs38d1_analysis_set_minus_alts.100x.bam.md5
     ```
 
-## 7. Create TrioTrain Inputs
+## 6. Create TrioTrain Inputs
 
-There are (3) required input files we must create before we can run TrioTrain. [Complete details about all required data can be found in the TrioTrain User Guide.](../user-guide/usage_guide.md#assumptions)
+There are (3) required input files we must create before we can run TrioTrain. [Complete details about all the necessary data can be found in the TrioTrain User Guide.](../user-guide/usage_guide.md#assumptions)
 
 ### a. [Reference Dictionary File (`.dict`)](../user-guide/usage_guide.md#reference)
 
 !!! warning
-    This step is specific to the Human reference genome GRCh38 since cattle-specific input files are pre-packaged with TrioTrain. **If you are working with a new species, you will need to create this file for your reference genome.**
+    This step is specific to the Human reference genome GRCh38 since cattle-specific input files are pre-packaged with TrioTrain. **This file is reference-specific and must be created for each new species.**
 
 We need a reference dictionary file in the same directory as the reference genome. This file defines the valid genomic coordinates for TrioTrain's region shuffling. 
 
@@ -370,9 +370,9 @@ picard CreateSequenceDictionary \
 
 ### b. [Metadata file (`.csv`)](../user-guide/usage_guide.md#providing-required-data-to-triotrain)
 
-We also need a metadata file to tell TrioTrain where to find all of previously downloaded Human GIAB data. This file contains pedigree information, and the absolute paths for file inputs. Absolute paths are required to help the Apptainer/Singularity containers identify local files. [Formatting specifications for this required input can be found in the TrioTrain User Guide.](../user-guide/usage_guide.md#metadata-format)
+We also need a metadata file to tell TrioTrain where to find all previously downloaded Human GIAB data. This file contains pedigree information and the absolute paths for file inputs. Absolute paths are required to help the Apptainer/Singularity containers identify local files. [Formatting specifications for this required input can be found in the TrioTrain User Guide.](../user-guide/usage_guide.md#metadata-format)
 
-For the tutorial, we've created a helper script to automatically create an example of this file. This script uses expectations of where the tutorial data are stored to add local paths. **However, outside of the tutorial this file is a user-created input.**
+We've created a helper script for the tutorial, which creates an example of this file automatically. This script uses expectations of where the tutorial data are stored to add local paths. **However, this file is a user-created input outside of the tutorial.**
 
 ```bash title="Run the following at the command line:"
 source ./scripts/setup/modules.sh
@@ -403,17 +403,17 @@ The last required input we need for TrioTrain is the SLURM resource config file 
     --8<-- "./triotrain/model_training/tutorial/resources_used.json"
     ```
 
-The hardware listed above for each phase (e.g. `mem`, `ntasks` , `gpus`, etc.) vary, as some phases are memory intensive. These values should not be interpreted as the minimum or the optimum resources required for each phase. The MU Lewis Research Computing Cluster is heterogenous, the example config file requests resources to maximize the number of compute nodes when running memory-intensive phases.
+The resources listed above for each phase (e.g., `mem`, `ntasks` , `gpus`, etc.) varies, as some phases are memory-intensive. These values should not be interpreted as the minimum or optimum resources required for each phase. The MU Lewis Research Computing Cluster is heterogeneous; the example config file requests resources to maximize the number of compute nodes when running memory-intensive phases.
 
-For the tutorial, copy the above example into a new file, and manually edit the SBATCH parameters to match your HPC cluster (i.e. changing the partition list, account, and email address). This new resource config file is passed to TrioTrain via `-r </path/to/new_file.json>`
+For the tutorial, copy the above example into a new file and manually edit the SBATCH parameters to match your HPC cluster (i.e., changing the partition list, account, and email address). This new resource config file is passed to TrioTrain via `-r </path/to/new_file.json>`.
 
 ---
 
-## 8. Run Shuffling Demo
+## 7. Run Shuffling Demo
 
-**Shuffling the labeled examples is a critical step to re-training DeepVariant because the model assumes successive training images are independent of one another.** DeepVariant includes an Apache Beam pipeline that puts training examples in random genomic order. However, in our experience, getting the Python SDK for Beam, Apache Spark and SLURM to cooperate is a dependency nightmare.
+**Shuffling the labeled examples is a critical step to re-training DeepVariant because the model assumes successive training images are independent of one another.** DeepVariant includes an Apache Beam pipeline that puts training examples in random genomic order. However, in our experience, getting the Python SDK for Beam, Apache Spark, and SLURM to cooperate is a dependency nightmare.
 
-Our alternative approach, referred to as "Region Shuffling", splits the autosomes and the X chromosome into subset regions before making the labeled examples. Using the previously created `.dict` file created for the reference, TrioTrain will determine how many regions are required automatically.
+Our alternative approach, "Region Shuffling," splits the autosomes and the X chromosome into subset regions before making the labeled examples. Using the previously created `.dict` file for the reference, TrioTrain will determine how many regions are required automatically.
 
 !!! warning
     For our analyses in bovine genomes, we exclude parts of the genome from our region shuffling, including:
@@ -422,9 +422,9 @@ Our alternative approach, referred to as "Region Shuffling", splits the autosome
 
     2. the unmapped reads &mdash;  due to a large volume of contigs containing a small amount of variants that can not be easily distributed across 60-150+ shuffling regions
 
-    TrioTrain will automatically search the reference genome `.dict` file for contigs labeled with `Y` and `M/MT` and will ignore them prior to defining shuffling regions.
+    TrioTrain will automatically search the reference genome `.dict` file for contigs labels containing `Y` and `M/MT` and ignore them before defining shuffling regions.
     
-    Use the `--unmapped-reads` flag to provide a contig prefix pattern to exclude. The default value (NKLS) is approprate for the `ARS-UCD1.2_Btau5.0.1Y` reference genome.
+    Use the `--unmapped-reads` flag to provide a contig prefix pattern to exclude. The default value (NKLS) is appropriate for the `ARS-UCD1.2_Btau5.0.1Y` reference genome.
 
 ??? note "Note | Identifying Contig Labels"
     ```bash title="Run the following at the command line:"
@@ -469,32 +469,32 @@ Our alternative approach, referred to as "Region Shuffling", splits the autosome
 
 ---
 
-A shuffling region is defined in a non-overlapping, 0-based `BED` file. The goal is to create a subset of labeled examples which are representative of the whole genome, yet small enough to be shuffled within the memory of a single compute node. After defining the shuffling regions, labeled and shuffled examples are created by running parallel SLURM jobs. In our testing with bovine genomes, constraining each region to produce ~200,000 labeled examples works well.
+A shuffling region is defined in a non-overlapping, 0-based `BED` file. The goal is to create a subset of labeled examples representative of the whole genome yet small enough to be shuffled within the memory of a single compute node. After defining the shuffling regions, labeled and shuffled examples are created by running parallel SLURM jobs. In our testing with bovine genomes, constraining each region to produce ~200,000 labeled examples works well.
 
-In our experience, numerous small jobs running quickly minimizes wall time between phases. We also priorize a large number of regions, as this further increases the randomness during the final `re_shuffle` processes that randomizes the order regions are given to the model.
+In our experience, running numerous quick jobs minimizes wall time between phases. We also prioritize creating many regions, which increases the randomness during the final `re_shuffle` process, which randomizes the order of regions are given to the model.
 
 ??? example "Example | Computing Power"
-    Given ~370G mem across 40 cores, DeepVariant will shuffle each region's examples in around 6 minutes, which can be submitted in parallel to reduce wall time.
+    Given ~370G mem across 40 cores, DeepVariant will shuffle each region's examples in around 6 minutes. The process can be submitted in parallel to reduce wall time.
 
 ??? note "Note | Output Volume"
-    A typical cattle genome with ~8 million variants results in around ~65 regions, resulting in (65 regions x 40 cores) tfrecord output files. TrioTrain repeats this process for shuffling, resulting in another (65 regions x 40 cores) shuffled tfrecord output files. This is repeated for all 3 genomes within a trio resulting in a large volume of individual files (65 regions x 40 cores x 2 phases per genome).
+    A typical cattle genome with ~8 million variants divided into ~65 regions. Then, `make_examples` produces 2600 (65 regions x 40 cores) tfrecord output files. Shuffling produces another 2600 (65 regions x 40 cores) shuffled tfrecord output files. These data inputs are created and stored on disk for all three genomes within a trio, resulting in a large volume of individual files (15600 = 2600 files x 2 phases per genome x 3 genomes).
     
-    The final step of our approach, referrred to as `re_shuffle`, condenses the 40 tfrecord files for a region, reducing the number of files fed to DeepVariant per genome back down to 65. To further improve shuffling, we randomize the order regions are provided to DeepVariant.
+    The final step of our approach referred to as `re_shuffle`, condenses the 40 tfrecord files for a region, reducing the number of files fed to DeepVariant per genome back down to 65. To further improve shuffling, we randomize the order in which regions are provided to DeepVariant.
 
-    **If your species of interest produces a large volume of variants (> 8 million / genome), TrioTrain can easily overload your cluster's I/O capabilities, or write more than 10,000 files to a directory, or overwhelm the SLURM scheduler by submitting thousands of jobs simultaneously.** Future versions of TrioTrain will address these challenges, but proceed with caution; your cluster's SysAdmin will thank you!
+    **If your species of interest produces a large volume of variants (> 8 million / genome), TrioTrain can easily overload your cluster's I/O capabilitiesb by writing 10,000+ files to a directory or overwhelming the SLURM scheduler by submitting thousands of jobs simultaneously.** Future versions of TrioTrain will address these challenges, but proceed cautiously; your cluster's SysAdmin will thank you!
 
-**This shuffling demo enables you to adjust TrioTrain's parameters for estimating how many shuffling regions to use for each genome.** The two primary flags which control Region Shuffling are:
+**This shuffling demo enables you to adjust TrioTrain's parameters by estimating the number of shuffling regions for a genome.** The two primary flags which control Region Shuffling are:
 
-1. `--max-examples` &mdash; defines the upper limit of total number of examples to produce for each region; values greater than the default (200,000) will increase the wall time.
+1. `--max-examples` &mdash; defines the upper limit of the examples within each region; larger values than the default (>200,000) will increase the wall time.
 
-2. `--est-examples` &mdash; defines expectations of the number of examples DeepVariant produces per genomic variant; the default value (1.5) is appropriate for bovine genomes, but with the human GIAB samples, we found a value of 1 to be more appropriate.
+2. `--est-examples` &mdash; defines expectations of the number of examples DeepVariant produces per genomic variant; the default value (1.5) is appropriate for bovine genomes, but with the human GIAB samples, we found a value of 1 to be more suitable.
 
-Additionally, TrioTrain bases the Region Shuffling calculations on the total number of variants found in each genome. This value can vary drastically across training genomes, so TrioTrain uses the number of PASS variants within the corresponding TruthVCF. A larger number of truth variants results in more regions made per region.
+Additionally, TrioTrain bases the Region Shuffling calculations on the total number of variants found in each genome. This value can vary drastically across training genomes, so TrioTrain uses the number of PASS variants within the corresponding TruthVCF. More truth variants result in more regions made per genome.
 
-**Before running TrioTrain in a new mamalian genome or on a new HPC cluster, we strongly recommend completing the region shuffling demo using the smallest chromosome possible using the `--demo-chr=<region_literal>` flag.**
+**Before running TrioTrain in a new mammalian genome or on a new HPC cluster, we strongly recommend completing the region shuffling demo using the smallest chromosome possible using the `--demo-chr=<region_literal>` flag.**
 
 ??? note "Note | Working in Other Species"
-    The appropriate values for `max-examples` and `est-examples` may vary widely across species, as the number of examples DeepVariant produces depends on several factors including:
+    The appropriate values for `max-examples` and `est-examples` may vary widely across species, as the number of examples DeepVariant produces depends on several factors, including:
 
     * genome size
 
@@ -502,7 +502,7 @@ Additionally, TrioTrain bases the Region Shuffling calculations on the total num
     
     * how many variants are identified in an individual genome
 
-    For example, the F1-hybrid offspring in cattle are crosses between diverent lineages, resulting in an abnormal amount heterzygous genotypes compared to typical cattle genomes. Instead of typical 8 million variants per genome, these samples produced 20+ million variants per genome.
+    For example, the bovine F1-hybrid offspring are divergent lineage crosses, resulting in an abnormal number of heterozygous genotypes compared to typical cattle genomes. Instead of the usual 8 million variants per genome, these samples produced 20+ million variants per genome.
 
 ---
 
@@ -836,7 +836,7 @@ There are (6) types of output files from running the demo:
     # The JobList column will differ based on SLURM job numbers
     ```
 
-**The following will provide a conservative estimate for the `--max-examples` and `--est-examples` parameters to ensure shuffling easily fits within your available memory.**
+**The following command provides a conservative estimate for the `--max-examples` and `--est-examples` parameters to ensure shuffling fits within your available memory.**
 
 ```bash title="Run the following at the command line:"
 source ./scripts/setup/modules.sh
@@ -868,14 +868,14 @@ python3 triotrain/model_training/tutorial/estimate.py                           
     ===== end of triotrain/model_training/tutorial/estimate.py @ 2023-06-29  11:25:28 =====
     ```
 
-## 9. Run TrioTrain with a Human Trio
+## 8. Run TrioTrain with a Human Trio
 
-Now that we know how to tailor TrioTrain for our non-bovine species (human), we can move forward with starting the re-training pipeline.
+Now that we know how to tailor TrioTrain for our non-bovine species (humans), we can start the re-training pipeline.
 
 Complete the GIAB TrioTrain by **editing the following at the command to include your new SLURM config file**:
 
 ```bash title="Run the following at the command line:"
-# You can add the --dry-run flag to this command to confirm the TrioTrain pipeline runs smoothly prior to submitting jobs to the queue
+# You can add the --dry-run flag to this command to confirm the TrioTrain pipeline runs smoothly before submitting jobs to the queue
 source ./scripts/setup/modules.sh
 source ./scripts/start_conda.sh                 # Ensure the previously built conda env is active
 python3 triotrain/run_trio_train.py                                                                         \
@@ -928,7 +928,7 @@ python3 triotrain/run_trio_train.py                                             
 
 ## Merge Results | Per-Iteration
 
-Each `Test#.total.metrics.csv` output file should contain 57 rows and 2 columns. The metrics within are the raw and proprotional performance metrics from hap.py. After all `convert_happy` jobs complete, we will separately merge the results from running the baseline iteration, and both training iterations completed during the GIAB tutorial:
+Each `Test#.total.metrics.csv` output file should contain 57 rows and 2 columns. The metrics within are the raw and proportional performance metrics from hap.py. After all `convert_happy` jobs are complete, we will separately merge the results from running the baseline iteration and both training iterations completed during the GIAB tutorial:
 
 ```bash title="Run the following at the command line:"
 source ./scripts/setup/modules.sh
