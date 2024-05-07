@@ -1,24 +1,56 @@
 # Installing TrioTrain
 
 !!! warning
-    If you're unfamiliar with SLURM, navigating your computing cluster, or what shared software is available to you, reach out to your HPC system's Cluster Administrator for trouble-shooting these dependencies.
+    If you're unfamiliar with SLURM, navigating your computing cluster, or what shared software is available, contact your HPC system's Cluster Administrator for troubleshoot these dependencies.
+
 ## Prerequisites
 
 * Unix-like operating system (cannot run on Windows)
 * Python 3.8
-* Access to a SLURM-based High Performance Computing Cluster
+* Access to a SLURM-based High-Performance Computing Cluster
     - TrioTrain uses both CPU and GPU resources
     - **You must have at least 2 GPU cards on a single compute node to execute re-training effectively!**
+
+
+<font size= "4"> 
+Confirming the availability of GPU resources on a SLURM cluster:
+</font>
+
+??? success "Confirming the availability of GPU resources on a SLURM cluster:"
+
+    If GPU resources are within a SLURM partition called `Gpu` - 
+    ```bash title="Run the following at the command line:"
+    sinfo -o '|%27n|%15C|%8m|%8z|%35G|' -p Gpu
+    ```
+
+    ```bash title="Expected outputs:"
+    |HOSTNAMES                  |CPUS(A/I/O/T)  |MEMORY  |S:C:T   |GRES                               |
+    |lewis4-z10pg-gpu3-node599  |0/0/16/16      |122534  |2:8:1   |gpu:NVIDIA GeForce GTX 1080 Ti:4   |
+    |lewis4-r740xd-gpu4-node887 |3/37/0/40      |379240  |2:20:1  |gpu:Tesla V100-PCIE-32GB:3         |
+    |lewis4-r740xd-gpu4-node888 |3/37/0/40      |379240  |2:20:1  |gpu:Tesla V100-PCIE-32GB:3         |
+    |lewis4-r740xd-gpu4-node913 |3/41/0/44      |379243  |2:22:1  |gpu:Tesla V100-PCIE-32GB:3         |
+    |lewis4-r7525-gpu4-node1011 |3/93/0/96      |509326  |2:48:2  |gpu:Tesla V100S-PCIE-32GB:3        |
+    |lewis4-r730-gpu4-node426   |0/20/0/20      |122534  |2:10:1  |gpu:Tesla V100-PCIE-32GB:1         |
+    |lewis4-r730-gpu4-node434   |0/20/0/20      |122534  |2:10:1  |gpu:Tesla V100-PCIE-32GB:1         |
+    |lewis4-r730-gpu4-node476   |0/20/0/20      |122534  |2:10:1  |gpu:Tesla V100-PCIE-32GB:1         |
+    ```
+
+    Note - the `:#` output from the GRES column indicates the number of GPU cards on a specific node. If you have heterogeneous resources, specify GPU nodes with 2+ in `train_eval` phase of the `resource_config.json` file. For further details, see [Configuration page](configuration.md).
+
+    To review further details about a specific compute node  - 
+    ```bash title="Run the following at the command line:"
+    scontrol show node <hostname>
+    ```
 
 ## System Requirements
 
 !!! warning
-    Deviating from these versions will likely cause errors with TrioTrain. Proceed with caution! 
+    Deviating from these versions will likely cause TrioTrain errors. Proceed with caution! 
 
 !!! warning
-    If you have to manually install any tools, be sure to add `export PATH=/cluster/path/to/local/software/bin/:$PATH` to your edited `modules.sh` file.
+    If you have to install any tools manually, add `export PATH=/cluster/path/to/local/software/bin/:$PATH` to your edited `modules.sh` file.
 
-TrioTrain expects the software listed below to be pre-built, and available locally on your SLURM-based HPC cluster. The following minimum software versions are required:
+TrioTrain expects the software listed below to be pre-built and available locally on your SLURM-based HPC cluster. The following software versions are expected:
 
 | Tool           | Version     | | Tool           | Version     |
 | ------         | -------     | | ------         | -------     |
