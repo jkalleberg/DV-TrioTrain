@@ -28,7 +28,7 @@
     },
     "train_eval": {
         "partition": "gpu",
-        "gres": "gpu:A100:2",
+        "gres": "gpu:2",
         "nodes": 1,
         "ntasks": 28,
         "mem": 122000,
