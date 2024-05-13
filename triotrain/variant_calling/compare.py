@@ -68,7 +68,10 @@ class CompareHappy:
 
         if "N_Parts" not in self.itr.env.contents:
             self.itr.env.add_to(
-                "N_Parts", str(self.n_parts), self.itr.dryrun_mode, msg=self.logger_msg
+                "N_Parts",
+                str(self.n_parts),
+                dryrun_mode=self.itr.dryrun_mode,
+                msg=self.logger_msg,
             )
 
         if self.track_resources:
@@ -120,7 +123,7 @@ class CompareHappy:
             self._jobs_to_run = find_not_NaN(self.compare_happy_job_nums)
             self._num_to_run = len(self._jobs_to_run)
             self._num_to_ignore = len(find_NaN(self.compare_happy_job_nums))
-        
+
         else:
             self._jobs_to_run = None
             self._num_to_run = 0
@@ -264,7 +267,9 @@ class CompareHappy:
                 return
         else:
             if self.itr.debug_mode:
-                self.itr.logger.debug(f"{self.logger_msg} - [{self.test_logger_msg}]: creating job file now... ")
+                self.itr.logger.debug(
+                    f"{self.logger_msg} - [{self.test_logger_msg}]: creating job file now... "
+                )
 
         ### ----- NOTE TO SELF: DO NOT USE 'CONDA RUN' WITH APPTAINER HAPPY ----- ###
 
@@ -485,7 +490,9 @@ class CompareHappy:
             )
 
             if slurm_job.status == 0:
-                self._convert_happy_dependencies[dependency_index] = slurm_job.job_number
+                self._convert_happy_dependencies[dependency_index] = (
+                    slurm_job.job_number
+                )
             else:
                 self.itr.logger.warning(
                     f"{self.logger_msg} - [{self.test_logger_msg}]: unable to {msg}mit SLURM job",
