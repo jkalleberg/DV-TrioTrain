@@ -356,7 +356,7 @@ class SelectCheckpoint:
             self._skipped_counter += 1
             if resubmission:
                 self.itr.logger.info(
-                    f"{self.logger_msg}: --overwrite=False; skipping job because found best checkpoint file"
+                    f"{self.logger_msg}: --overwrite=False; skipping job because found best checkpoint outputs"
                 )
             return
 
@@ -370,7 +370,7 @@ class SelectCheckpoint:
 
         if not self.overwrite and self._ignoring_training:
             self.itr.logger.info(
-                f"{self.logger_msg}: --overwrite=False; {msg}mitting job because missing best checkpoint file"
+                f"{self.logger_msg}: --overwrite=False; {msg}mitting job because missing best checkpoint outputs"
             )
         elif self.overwrite and self._outputs_exist:
             self.itr.logger.info(

@@ -424,7 +424,7 @@ class MakeRegions:
             debug_mode=self.itr.debug_mode,
             dryrun_mode=self.itr.dryrun_mode,
         )
-
+ 
         if self.itr.demo_mode:
             expected_num_outputs = 1
             regions_found = 0
@@ -444,6 +444,8 @@ class MakeRegions:
             )
         else:
             self.missing_regions_files = True
+        
+        self._num_outputs = regions_found
 
     def check_truth_vcf(self) -> None:
         """

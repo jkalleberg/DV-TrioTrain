@@ -157,8 +157,10 @@ class TrainEval:
                 f"{self.logger_msg}: expected a list of 1 SLURM jobs (or 'None' as a place holder)"
             )
             self._num_to_run = 0
-    
-    def find_outputs(self, number_outputs_expected: int = 2, phase: Union[str, None] = None) -> None:
+
+    def find_outputs(
+        self, number_outputs_expected: int = 2, phase: Union[str, None] = None
+    ) -> None:
         """
         Search for model-ckpts, based on expected output patterns.
 
@@ -182,7 +184,7 @@ class TrainEval:
 
             # Confirm examples do not already exist
             (
-                self.existing_best_ckpt,
+                self.existing_best_ckpt_file,
                 self.best_ckpt_files_found,
                 best_ckpt_files,
             ) = check_if_output_exists(
@@ -197,9 +199,9 @@ class TrainEval:
 
         # if eval dir doesn't exist, then...
         else:
-            self.existing_best_ckpt = False
+            self.existing_best_ckpt_file = False
 
-        if self.existing_best_ckpt:
+        if self.existing_best_ckpt_file:
             missing_files = check_expected_outputs(
                 self.best_ckpt_files_found,
                 number_outputs_expected,
@@ -214,7 +216,9 @@ class TrainEval:
         else:
             self._outputs_exist = False
 
-    def find_all_outputs(self, phase: str = "find_outputs", verbose: bool = False) -> Union[bool, None]:
+    def find_all_outputs(
+        self, phase: str = "find_outputs", verbose: bool = False
+    ) -> Union[bool, None]:
         """
         Determine if re-shuffle or beam outputs already exist, skip ahead if they do.
         """
@@ -228,13 +232,12 @@ class TrainEval:
         )
         if verbose:
             selecting_ckpt.find_outputs(phase=phase)
-        else:
-            selecting_ckpt.find_selected_ckpt_vars(phase=phase)
-
-        if selecting_ckpt._outputs_exist and verbose:
             self.find_outputs(phase=phase)
         else:
+            selecting_ckpt.find_selected_ckpt_vars(phase=phase)
             self._outputs_exist = False
+
+        self._select_ckpt_outputs_exist = selecting_ckpt._outputs_exist
 
     def benchmark(self) -> None:
         """
@@ -257,16 +260,16 @@ class TrainEval:
                 )
             self.benchmarking_file.add_rows(headers, data_dict=data)
         else:
-            self.itr.logger.info(
-                f"{self.logger_msg}: benchmarking is active"
-            )
+            self.itr.logger.info(f"{self.logger_msg}: benchmarking is active")
 
     def process_mem(self) -> None:
         """
         Behave differently if memory is provided in GB vs MB
         """
         if self.itr.debug_mode:
-            self.itr.logger.debug(f"{self.logger_msg}: processing memory inputs now... ")
+            self.itr.logger.debug(
+                f"{self.logger_msg}: processing memory inputs now... "
+            )
 
         # search patterns
         digits_only = compile(r"\d+")
@@ -461,7 +464,9 @@ class TrainEval:
         Submit SLURM jobs to queue.
         """
         if (self._outputs_exist and self.overwrite is False) or (
-            self._outputs_exist and self._ignoring_restart_jobs and self.overwrite is False
+            self._outputs_exist
+            and self._ignoring_restart_jobs
+            and self.overwrite is False
         ):
             self._skipped_counter += 1
             if resubmission:
@@ -567,7 +572,7 @@ class TrainEval:
             msg = "sub"
         else:
             msg = "re-sub"
-        
+
         # Determine if we are re-running training
         if self.train_job_num or not self._ignoring_re_shuffle:
             if self._num_to_run == 0:
