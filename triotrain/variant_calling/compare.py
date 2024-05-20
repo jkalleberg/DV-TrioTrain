@@ -569,6 +569,7 @@ class CompareHappy:
 
                 if self._num_to_run <= self.itr.total_num_tests:
                     if self._expected_outputs > self._outputs_found > 0:
+                        self.converting._outputs_found = self._outputs_found
                         self.converting.double_check(phase_to_check="process_happy")
 
                     self.itr.logger.info(

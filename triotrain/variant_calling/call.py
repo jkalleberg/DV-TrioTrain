@@ -874,6 +874,7 @@ class CallVariants:
                 if self.test_genome is None:
                     continue
                 else:
+                    self.find_outputs()
                     self.submit_job(
                         msg=msg, dependency_index=t, total_jobs=self.itr.total_num_tests
                     )
