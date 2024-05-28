@@ -45,6 +45,7 @@ class MakeRegions:
     _line_list: List = field(default_factory=list, init=False, repr=False)
     _num_outputs: int = field(default=0, init=False, repr=False)
     _phase: str = field(default="region_shuffling", init=False, repr=False)
+    _reference: Union[Path, None] = field(default=None, init=False, repr=False)
     _regions: Dict[str, List] = field(default_factory=dict, init=False, repr=False)
     _total_pass_variants: int = field(default=8000000, init=False, repr=False)
     _total_ref_variants: int = field(default=0, init=False, repr=False)
@@ -63,38 +64,45 @@ class MakeRegions:
         """
         Load input files and confirm they exist before proceeding
         """
-        if self.itr.env is None:
-            return
-        # Env File Variables
-        var_list = ["RefFASTA_Path", "RefFASTA_File"]
+        if self._reference is None:
+            if self.itr.env is None:
+                return
 
-        if self._genome is not None:
-            var_list.extend(
-                [
-                    "ExamplesDir",
-                    f"{self._genome}TruthVCF_Path",
-                    f"{self._genome}TruthVCF_File",
-                ]
-            )
-            (
-                ref_fasta_path,
-                ref_fasta_file,
-                self._examples_dir,
-                truth_path,
-                truth_file,
-            ) = self.itr.env.load(*var_list)
+            # Env File Variables
+            var_list = ["RefFASTA_Path", "RefFASTA_File"]
+
+            if self._genome is not None:
+                var_list.extend(
+                    [
+                        "ExamplesDir",
+                        f"{self._genome}TruthVCF_Path",
+                        f"{self._genome}TruthVCF_File",
+                    ]
+                )
+                (
+                    ref_fasta_path,
+                    ref_fasta_file,
+                    self._examples_dir,
+                    truth_path,
+                    truth_file,
+                ) = self.itr.env.load(*var_list)
+            else:
+                (
+                    ref_fasta_path,
+                    ref_fasta_file,
+                ) = self.itr.env.load(*var_list)
+                truth_path = None
+                truth_file = None
+
+            self._reference = Path(ref_fasta_path) / ref_fasta_file
+
         else:
-            (
-                ref_fasta_path,
-                ref_fasta_file,
-            ) = self.itr.env.load(*var_list)
             truth_path = None
             truth_file = None
-
+        
         # Load Input Files
-        self._reference = Path(ref_fasta_path) / ref_fasta_file
         input_filename = self._reference.stem + ".dict"
-        input_file = Path(ref_fasta_path) / input_filename
+        input_file = Path(self._reference.parent) / input_filename
 
         if truth_path is not None and truth_file is not None:
             self._truth_vcf_path = Path(truth_path) / truth_file
@@ -198,11 +206,12 @@ class MakeRegions:
             chromosome_names = input_data[1].str.split(":", n=1, expand=True)[1]
             exclude_list = ["Y", "MT", "M", "EBV"]
 
-            if isinstance(self.itr.args.ignore, str):
-                exclude_list.append(self.itr.args.ignore)
-            elif isinstance(self.itr.args.ignore, list):
-                merged_list = exclude_list + self.itr.args.ignore
-                exclude_list = merged_list
+            if "ignore" in self.itr.args:
+                if isinstance(self.itr.args.ignore, str):
+                    exclude_list.append(self.itr.args.ignore)
+                elif isinstance(self.itr.args.ignore, list):
+                    merged_list = exclude_list + self.itr.args.ignore
+                    exclude_list = merged_list
 
             # remove any duplicates
             no_dups = list(set(exclude_list))
@@ -424,7 +433,7 @@ class MakeRegions:
             debug_mode=self.itr.debug_mode,
             dryrun_mode=self.itr.dryrun_mode,
         )
- 
+
         if self.itr.demo_mode:
             expected_num_outputs = 1
             regions_found = 0
@@ -444,7 +453,7 @@ class MakeRegions:
             )
         else:
             self.missing_regions_files = True
-        
+
         self._num_outputs = regions_found
 
     def check_truth_vcf(self) -> None:
