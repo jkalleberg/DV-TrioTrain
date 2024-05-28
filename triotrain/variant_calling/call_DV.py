@@ -23,11 +23,14 @@ from typing import List, Union
 from spython.main import Client
 
 abs_path = Path(__file__).resolve()
-module_path = str(abs_path.parent.parent.parent)
+dv_path = Path(abs_path.parent.parent.parent)
+module_path = str(dv_path / "triotrain")
 path.append(module_path)
+
 from helpers.files import TestFile
 from helpers.iteration import Iteration
 from helpers.utils import generate_job_id
+from model_training.prep.examples_regions import MakeRegions
 from model_training.slurm.sbatch import SBATCH, SubmitSBATCH
 
 
@@ -76,7 +79,16 @@ def collect_args() -> argparse.Namespace:
         action="store_true",
         default=False,
     )
-    return parser.parse_args()
+    return parser.parse_args(
+        [
+            "-M",
+            "triotrain/variant_calling/data/metadata/240528_benchmarking_metadata.csv",
+            "-r",
+            "triotrain/model_training/tutorial/resources_used.json",
+            # "--dry-run",
+        ]
+    )
+    # return parser.parse_args()
 
 
 def check_args(args: argparse.Namespace, logger: Logger) -> None:
@@ -350,21 +362,63 @@ class VariantCaller:
         """
         Create an iteration object for downstream modules
         """
-        print("FIX THIS!")
-        breakpoint()
-        if self._species.lower() == "cow":
+
+        _prefix = Path(self._ref_name).stem
+        default_region_file = Path(f"{self._ref_path}/{_prefix}_autosomes_withX.bed")
+
+        if default_region_file.is_file():
+            self.logger.info(
+                f"{self._test_logger_msg}: using the default region file | '{default_region_file}'"
+            )
             self._itr = Iteration(
                 logger=self.logger,
                 args=self.args,
-                default_region_file=Path(
-                    f"{getcwd()}/region_files/{self._species.lower()}_autosomes_withX.bed"
-                ),
+                default_region_file=default_region_file,
             )
         else:
+            self.logger.warning(
+                f"{self._test_logger_msg}: missing a default region file located here | '{self._ref_path}'"
+            )
+
             self._itr = Iteration(
                 logger=self.logger,
                 args=self.args,
             )
+
+            # --- Create Shuffling Regions for Non-Baseline Runs --- ##
+            self.regions = MakeRegions(
+                self._itr,
+                ex_per_file=200000,
+                ex_per_var=1.5,
+                train_mode=False,
+            )
+            self.regions._reference = self._ref_path / self._ref_name
+
+            # create the default regions_file for testing, if necessary
+            if (
+                self._itr.default_region_file is None
+                or not self._itr.default_region_file.is_file()
+            ):
+                try:
+                    self.regions.write_autosomes_withX_regions(
+                        output_file_name=f"{_prefix}_autosomes_withX.bed"
+                    )
+                    self.logger.info(
+                        f"{self._test_logger_msg}: updating Iteration() with the created default region file | '{default_region_file}'"
+                    )
+                    self._itr = Iteration(
+                        logger=self.logger,
+                        args=self.args,
+                        default_region_file=default_region_file,
+                    )
+                except Exception as ex:
+                    self.logger.error(
+                        f"{self._test_logger_msg} - [create_default_region]: unable to create a BED file from the reference Picard .dict file..."
+                    )
+                    self.logger.error(
+                        f"{self._test_logger_msg} - [create_default_region]: an exception occured | Type='{type(ex).__name__}'\nMessage='{ex}'\nExiting..."
+                    )
+                    exit(1)
 
     def find_output(self, index: int = 0) -> None:
         """
@@ -390,6 +444,8 @@ class VariantCaller:
                 self.logger.info(
                     f"{self._test_logger_msg}: output path has changed | '{self._output_path}'"
                 )
+                if not self._output_path.is_dir():
+                    self._output_path.mkdir(parents=True)
 
             if self._output_name != testing_file.path.name:
                 self._output_name = testing_file.path.name
@@ -424,9 +480,7 @@ class VariantCaller:
 
         if self._region_path is not None:
             bindings.append(f"{self._region_path}/:/region_dir/")
-        elif (
-            self._species.lower() == "cow" and self._itr.default_region_file is not None
-        ):
+        elif self._itr.default_region_file is not None:
             # NOTE: when using the new Cattle model, unable to genotype all unmapped contigs due to file num
             # Therefore, by default, only genotype the autosomes + X chromosome only using the default regions file created by the TrioTrain pipeline
             # NOTE: when scaling this up to 6k samples, split up jobs per chromsome, rather than entire genome, and "have the list of unmapped contig names in an array and do "interval" operations on chunks of say 50 contigs single threaded" like Bob does with GATK
@@ -467,12 +521,10 @@ class VariantCaller:
             flags.append(
                 f'--make_examples_extra_args="use_allele_frequency=true,population_vcfs=/popVCF_dir/{self._pop_name}"'
             )
-
+        
         if self._region_name is not None:
             flags.append(f"--region_file=/region_dir/{self._region_name}")
-        elif (
-            self._species.lower() == "cow" and self._itr.default_region_file is not None
-        ):
+        elif self._itr.default_region_file is not None:
             # NOTE: when using the new Cattle model, unable to genotype all unmapped contigs due to file num
             # Therefore, by default, only genotype the autosomes + X chromosome only using the default regions file created by the TrioTrain pipeline
             # NOTE: when scaling this up to 6k samples, split up jobs per chromsome, rather than entire genome, and "have the list of unmapped contig names in an array and do "interval" operations on chunks of say 50 contigs single threaded" like Bob does with GATK
@@ -542,7 +594,7 @@ class VariantCaller:
         if self._output_exists:
             self._skipped_counter += 1
             if self._job_nums:
-                self._job_nums[index] = None
+                self._job_nums.insert(index,None)
         else:
             slurm_job = self.make_job()
 
@@ -578,7 +630,7 @@ class VariantCaller:
                     display_mode=self.args.dry_run,
                 )
                 if self._job_nums:
-                    self._job_nums[index] = generate_job_id()
+                    self._job_nums.insert(index,generate_job_id())
             else:
                 submit_slurm_job.display_command(
                     current_job=(index + 1),
@@ -591,13 +643,13 @@ class VariantCaller:
                     debug_mode=self.args.debug,
                 )
                 if submit_slurm_job.status == 0:
-                    self._job_nums[index] = str(submit_slurm_job.job_number)
+                    self._job_nums.insert(index, str(submit_slurm_job.job_number))
                 else:
                     self.logger.warning(
                         f"{self._test_logger_msg}: unable to submit SLURM job",
                     )
                     if self._job_nums:
-                        self._job_nums[index] = None
+                        self._job_nums.insert(index, None)
 
     def process_samples(self) -> None:
         """
