@@ -1,7 +1,7 @@
 # Reference specification for ARS-UCD1.2_Btau5.0.1Y
 # Chromosome Definitions: http://genome.ucsc.edu/cgi-bin/hgTracks?chromInfoPage=&hgsid=2284666482_HQnhMuYc3A1tqcYRPIq19THoKj5U
 # PAR Definition: https://doi.org/10.3168/jds.2018-15638
-version1
+version 1
 # Default Sequence Settings ----
 # Unless otherwise specified, assume diploid linear. Well-formed
 # chromosomes should be explicitly listed separately so this
@@ -48,6 +48,6 @@ male    seq    Y    haploid    linear    Y
 female    seq    X    diploid    linear
 female    seq    Y    none    linear
 # PAR pseudo-autosomal region
-male	dup	X:133300518-139009144
+male	dup	X:133300518-139009144	Y:25001-43300181
 # And the mitochondria
-either    seq    MT polyploid    circular
+either	seq	MT	polyploid	circular
