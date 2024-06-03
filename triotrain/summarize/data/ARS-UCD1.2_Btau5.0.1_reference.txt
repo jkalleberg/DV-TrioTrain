@@ -1,0 +1,53 @@
+# Reference specification for ARS-UCD1.2_Btau5.0.1Y
+# Chromosome Definitions: http://genome.ucsc.edu/cgi-bin/hgTracks?chromInfoPage=&hgsid=2284666482_HQnhMuYc3A1tqcYRPIq19THoKj5U
+# PAR Definition: https://doi.org/10.3168/jds.2018-15638
+version1
+# Default Sequence Settings ----
+# Unless otherwise specified, assume diploid linear. Well-formed
+# chromosomes should be explicitly listed separately so this
+# applies primarily to unplaced contigs and decoy sequences
+# sex    line-type    ploidy    shape
+either    def    diploid    linear
+# Specific Sequencing Settings ----
+# List the autosomal chromosomes explicitly. These are used to help
+# determine "normal" coverage levels during mapping and variant calling
+# sex    line-type    chr-name    ploidy    shape
+either    seq    1    diploid    linear
+either    seq    2    diploid    linear
+either    seq    3    diploid    linear
+either    seq    4    diploid    linear
+either    seq    5    diploid    linear
+either    seq    6    diploid    linear
+either    seq    7    diploid    linear
+either    seq    8    diploid    linear
+either    seq    9    diploid    linear
+either    seq    10    diploid    linear
+either    seq    11    diploid    linear
+either    seq    12    diploid    linear
+either    seq    13    diploid    linear
+either    seq    14    diploid    linear
+either    seq    15    diploid    linear
+either    seq    16    diploid    linear
+either    seq    17    diploid    linear
+either    seq    18    diploid    linear
+either    seq    19    diploid    linear
+either    seq    20    diploid    linear
+either    seq    21    diploid    linear
+either    seq    22    diploid    linear
+either    seq    23    diploid    linear
+either    seq    24    diploid    linear
+either    seq    25    diploid    linear
+either    seq    26    diploid    linear
+either    seq    27    diploid    linear
+either    seq    28    diploid    linear
+either    seq    29    diploid    linear
+# Define how the male and female get the X and Y chromosomes
+# sex    line-type    chr-name    ploidy    shape    allosome
+male    seq    X    haploid    linear    X
+male    seq    Y    haploid    linear    Y
+female    seq    X    diploid    linear
+female    seq    Y    none    linear
+# PAR pseudo-autosomal region
+male	dup	X:133300518-139009144
+# And the mitochondria
+either    seq    MT polyploid    circular
