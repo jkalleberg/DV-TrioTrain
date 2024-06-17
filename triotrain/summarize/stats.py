@@ -13,13 +13,13 @@ example:
 import argparse
 from csv import DictReader
 from dataclasses import dataclass, field
+from json import load
 from logging import Logger
-from os import environ
+
 from os import path as p
 from pathlib import Path
 from sys import path
-from typing import Dict, List, Union
-from json import load
+from typing import List, Union
 
 from regex import compile
 
@@ -31,167 +31,8 @@ from helpers.iteration import Iteration
 from helpers.utils import check_if_all_same, generate_job_id
 from model_training.slurm.sbatch import SBATCH, SubmitSBATCH
 from pantry import preserve
-
-
-def collect_args() -> argparse.Namespace:
-    """
-    Process command line argument to execute script.
-    """
-    parser = argparse.ArgumentParser(
-        description=__doc__,
-        formatter_class=argparse.RawTextHelpFormatter,
-    )
-    parser.add_argument(
-        "-M",
-        "--metadata",
-        dest="metadata",
-        type=str,
-        help="[REQUIRED]\ninput file (.csv)\nprovides the list of VCFs to find or produce summary stats",
-        metavar="</path/file>",
-    )
-    parser.add_argument(
-        "-O",
-        "--output",
-        dest="outpath",
-        type=str,
-        help="[REQUIRED]\noutput file (.csv)\nwhere to save the resulting summary stats",
-        metavar="</path/file>",
-    )
-    parser.add_argument(
-        "--overwrite",
-        dest="overwrite",
-        help="if True, enable re-writing files",
-        default=False,
-        action="store_true",
-    )
-    parser.add_argument(
-        "-r",
-        "--resources",
-        dest="resource_config",
-        help="[REQUIRED]\ninput file (.json)\ndefines HPC cluster resources for SLURM",
-        type=str,
-        metavar="</path/file>",
-    )
-    parser.add_argument(
-        "-d",
-        "--debug",
-        dest="debug",
-        help="if True, enables printing detailed messages",
-        default=False,
-        action="store_true",
-    )
-    parser.add_argument(
-        "--dry-run",
-        dest="dry_run",
-        help="if True, display +smpl-stats metrics to the screen",
-        action="store_true",
-    )
-
-    return parser.parse_args()
-
-
-def check_args(args: argparse.Namespace, logger: Logger) -> None:
-    """
-    With "--debug", display command line args provided.
-    With "--dry-run", display a msg.
-    Then, check to make sure all required flags are provided.
-    """
-    if args.debug:
-        str_args = "COMMAND LINE ARGS USED: "
-        for key, val in vars(args).items():
-            str_args += f"{key}={val} | "
-
-        logger.debug(str_args)
-        _version = environ.get("BIN_VERSION_DV")
-        logger.debug(f"using DeepVariant version | {_version}")
-
-    if args.dry_run:
-        logger.info("[DRY_RUN]: output will display to screen and not write to a file")
-
-    assert (
-        args.metadata
-    ), "missing --metadata; Please provide a file with descriptive data for test samples."
-
-    assert (
-        args.resource_config
-    ), "Missing --resources; Please designate a path to pipeline compute resources in JSON format"
-
-    # if not args.dry_run:
-    assert args.outpath, "missing --output; Please provide a file name to save results."
-
-
-@dataclass
-class SummarizeResults:
-    """
-    Data to pickle for processing the summary stats from a VCF/BCF output.
-    """
-
-    sample_metadata: Union[List[Dict[str, str]], Dict[str, str]]
-    output_file: WriteFiles
-
-    # imutable, internal parameters
-    _contains_trio: bool = field(default=False, init=False, repr=False)
-    _digits_only: compile = field(default=compile(r"\d+"), init=False, repr=False)
-    _input_file: WriteFiles = field(default=None, init=False, repr=False)
-
-    def __post_init__(self) -> None:
-        if isinstance(self.sample_metadata, dict):
-            self.total_samples = 1
-            self._file_path = Path(self.sample_metadata["file_path"])
-            self._sample_label = self.sample_metadata["label"]
-        else:
-            self.total_samples = len(self.sample_metadata)
-            self._file_path = Path(self.sample_metadata[0]["file_path"])
-            self._sample_label = self.sample_metadata[0]["label"]
-
-        if self.total_samples == 3:
-            match = self._digits_only.search(self._sample_label)
-            if match:
-                self._trio_num = int(match.group())
-            self._contains_trio = True
-        else:
-            self._contains_trio = False
-
-    def check_file_path(self) -> None:
-        """
-        Confirm that the VCF file in the metadata file exists.
-        """
-        self._input_file = WriteFiles(
-            path_to_file=self._file_path.parent,
-            file=self._file_path.name,
-            logger=self.output_file.logger,
-            logger_msg=self.output_file.logger_msg,
-            dryrun_mode=self.output_file.dryrun_mode,
-            debug_mode=self.output_file.debug_mode,
-        )
-
-        self._input_file._test_file.check_existing(
-            logger_msg=self.output_file.logger_msg,
-            debug_mode=self.output_file.debug_mode,
-        )
-        self._input_file.file_exists = self._input_file._test_file.file_exists
-
-    def get_sample_info(self) -> None:
-        input_name = Path(self._input_file._test_file.clean_filename).name
-
-        if self._contains_trio:
-            self._ID = f"Trio{self._trio_num}"
-            self._caller = self.sample_metadata[0]["variant_caller"]
-        else:
-            self._ID = self.sample_metadata["sampleID"]
-            self._caller = self.sample_metadata["variant_caller"]
-
-        if self._ID not in input_name:
-            self.output_file.logger.warning(
-                f"{self.output_file.logger_msg}: discrepancy between ID '{self._ID}' and file name '{input_name}'"
-            )
-            self.output_file.logger.info(
-                f"{self.output_file.logger_msg}: therefore, job name will use ID | '{self._ID}'"
-            )
-            self._job_name = f"stats.{self._ID}.{self._caller}"
-        else:
-            self._job_name = f"stats.{input_name}.{self._caller}"
-
+from _args import collect_args, check_args
+from results import SummarizeResults
 
 @dataclass
 class Summary:
@@ -207,17 +48,19 @@ class Summary:
     run_iteractively: bool = False
 
     # imutable, internal parameters
-    _digits_only: compile = field(default=compile(r"\d+"), init=False, repr=False)
+    _command_list: List[str] = field(default_factory=list, init=False, repr=False)
+    
     _get_sample_stats: bool = field(default=True, init=False, repr=False)
-    _job_nums: List = field(default_factory=list, repr=False, init=False)
+    _job_nums: List = field(default_factory=list, init=False, repr=False)
     _num_processed: int = field(default=0, init=False, repr=False)
     _num_skipped: int = field(default=0, init=False, repr=False)
     _num_submitted: int = field(default=0, init=False, repr=False)
     _trio_counter: int = field(default=0, init=False, repr=False)
 
     def __post_init__(self) -> None:
-        with open(str(self.args.resource_config), mode="r") as file:
-            self._slurm_resources = load(file)
+        if "post_process" not in self.args:
+            with open(str(self.args.resource_config), mode="r") as file:
+                self._slurm_resources = load(file)
 
     def load_variables(self) -> None:
         """
@@ -265,43 +108,6 @@ class Summary:
             )
             raise ValueError("Invalid Input File")
 
-    def find_trios(self) -> bool:
-        """
-        Determine if a trio VCF was provided.
-
-        If so, save 3 rows of metadata, rather than one.
-        """
-        _input_name = Path(self._data["file_path"]).name
-        self._sample_label = self._data["label"]
-
-        pedigree = {
-            key: value
-            for key, value in self._data.items()
-            if key in ["sampleID", "paternalID", "maternalID", "sex"]
-        }
-        # Samples with any blank columns in pedigree will be ignored
-        _missing_pedigree = not any(pedigree.values())
-
-        if "trio" in _input_name.lower():
-            match = self._digits_only.search(self._sample_label)
-            if match:
-                self._trio_num = int(match.group())
-            else:
-                self._trio_counter += 1
-                self._trio_num = self._trio_counter
-
-            _trio_vcf_exists = True
-        else:
-            # print("TRIO VCF & PEDIGREE WILL NEED TO BE CREATED FOR MIE STATS!")
-            _trio_vcf_exists = False
-            self._trio_num = 0
-
-        if _missing_pedigree or _trio_vcf_exists is False:
-            return _trio_vcf_exists
-        else:
-            self._data = self._data_list[self._index : (self._index + 3)]
-            return _trio_vcf_exists
-
     def process_sample(self) -> None:
         """
         Generate the pickled data file, and the SLURM job for processing each sample.
@@ -310,37 +116,44 @@ class Summary:
             sample_metadata=self._data, output_file=self._csv_output
         )
 
-        self._pickled_data.check_file_path()
+        # self._pickled_data.check_file_path()
+        # self._pickled_data.find_trios()
+        
         self._pickled_data.get_sample_info()
+
         self._clean_file_path = self._pickled_data._input_file._test_file.clean_filename
 
         _pickle_file = TestFile(
             Path(f"{self._clean_file_path}.pkl"),
             logger=self.logger,
         )
-        if self._get_sample_stats:
-            slurm_cmd = [
-                "python3",
-                "./triotrain/summarize/smpl_stats.py",
-                "--pickle-file",
-                _pickle_file.file,
-            ]
-            cmd_string = " ".join(slurm_cmd)
-            self._command_list = [cmd_string]
-        else:
-            print("PUT MIE COMMAND(S) HERE!")
-            breakpoint()
+        # if self._get_sample_stats:
+        #     slurm_cmd = [
+        #         "python3",
+        #         "./triotrain/summarize/smpl_stats.py",
+        #         "--pickle-file",
+        #         _pickle_file.file,
+        #     ]
+        #     cmd_string = " ".join(slurm_cmd)
+        #     self._command_list = [cmd_string]
+        # else:
+        #     print("PUT MIE COMMAND(S) HERE!")
+        #     breakpoint()
 
         if self.args.dry_run:
             self.logger.info(
                 f"[DRY_RUN] - {self._logger_msg}: pretending to create pickle file | '{_pickle_file.file}'"
             )
         else:
-            preserve(item=self._pickled_data, pickled_path=_pickle_file, overwrite=self.args.overwrite)
+            preserve(
+                item=self._pickled_data,
+                pickled_path=_pickle_file,
+                overwrite=self.args.overwrite,
+            )
 
-        self._slurm_job = self.make_job()
-        self.submit_job(index=self._index)
-        self._command_list.clear()
+        # self._slurm_job = self.make_job()
+        # self.submit_job(index=self._index)
+        # self._command_list.clear()
 
     def process_multiple_samples(self) -> None:
         """
@@ -355,7 +168,7 @@ class Summary:
         for i, item in enumerate(itr):
             self._index = i
             self._data = item
-            _contains_trio_vcf = self.find_trios()
+            _contains_trio_vcf = self.find_trio_vcf()
             _counter += int(_contains_trio_vcf)
 
             if _contains_trio_vcf:
@@ -407,8 +220,11 @@ class Summary:
             if self._itr.debug_mode:
                 self._itr.logger.debug(f"{self._logger_msg}: creating file job now... ")
 
-        slurm_cmd = slurm_job._start_conda + [
-                "conda activate miniconda_envs/beam_v2.30"] + self._command_list
+        slurm_cmd = (
+            slurm_job._start_conda
+            + ["conda activate miniconda_envs/beam_v2.30"]
+            + self._command_list
+        )
 
         slurm_job.create_slurm_job(
             None,
@@ -485,7 +301,7 @@ class Summary:
         elif self._num_skipped == self._total_lines:
             self.logger.info(
                 f"{self._logger_msg}: no SLURM jobs were submitted... SKIPPING AHEAD"
-                )
+            )
         else:
             self.logger.warning(
                 f"{self._logger_msg}: expected SLURM jobs to be submitted, but they were not",
