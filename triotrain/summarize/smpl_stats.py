@@ -296,7 +296,7 @@ def collect_args() -> argparse.Namespace:
         "--pickle-file",
         dest="pickle_file",
         type=str,
-        help="[REQUIRED]\ninput file (.p)\ncontains necessary data to process summary stats for a single sample, as a pickled SummarizeResults object.",
+        help="[REQUIRED]\ninput file (.pkl)\ncontains necessary data to process summary stats for a single sample, as a pickled SummarizeResults object.",
         metavar="</path/file>",
     )
     parser.add_argument(
