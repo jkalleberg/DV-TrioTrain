@@ -41,7 +41,7 @@ def collect_args() -> argparse.ArgumentParser:
         "-v",
         "--version",
         action="version",
-        version="%(prog)s 0.8",
+        version="%(prog)s version 0.8",
         help="show program's version number and exit",
     )
     parser.add_argument(
@@ -55,7 +55,7 @@ def collect_args() -> argparse.ArgumentParser:
     parser.add_argument(
         "--ignore",
         dest="ignore",
-        help="comma-separated list of prefixes; used to exclude regions during training, such as any unmapped contigs or low-quality sex chrs; uses partial match to @SQ tag from reference genome\n Default based on ARS-UCD1.2_Btau5.0.1Y\n(default: %(default)s)",
+        help="comma-separated list of prefixes; used to exclude regions during training (e.g., unmapped contigs or low-quality sex chrs)\nNOTE: requires partial match to @SQ tag from reference genome\nDefault based on ARS-UCD1.2_Btau5.0.1Y\n(default: %(default)s)",
         type=str,
         metavar="<str>",
         default="NKLS,Y",
@@ -176,7 +176,7 @@ def collect_args() -> argparse.ArgumentParser:
     parser.add_argument(
         "--use-gpu",
         dest="use_gpu",
-        help=f"if True, use the GPU container to accelerate variant calling\n\tNOTE: NOT OPTIMZED; requires running with GPU partition/resources from SLURM\n(default: %(default)s)",
+        help=f"if True, use the GPU container to accelerate variant calling\n\tNOTE: NOT RECOMMENDED; requires running with GPU partition/resources from SLURM\n(default: %(default)s)",
         default=False,
         action="store_true",
     )
@@ -262,14 +262,14 @@ def collect_args() -> argparse.ArgumentParser:
     restart.add_argument(
         "--start-itr",
         dest="begin",
-        help="start a pipeline at a specified genome iteration.\n\texample: to start @ Trio2-Parent1, set --start-itr=3",
+        help="start a pipeline at a specified genome iteration.\nEXAMPLE: to start @ Trio2-Parent1, set --start-itr=3",
         type=int,
         metavar="<int>",
     )
     restart.add_argument(
         "--stop-itr",
         dest="terminate",
-        help="end a pipeline at a specified genome iteration.\n\texample: to end @ Trio2-Parent1, set --end-itr=3",
+        help="end a pipeline at a specified genome iteration.\nEXAMPLE: to end @ Trio2-Parent2, set --end-itr=4",
         type=int,
         metavar="<int>",
     )
@@ -319,9 +319,9 @@ def get_args(parser: argparse.ArgumentParser) -> argparse.Namespace:
     """
     manual_args_list = [
         "-m",
-        # "triotrain/model_training/metadata/240429_DeepVariantTriosTRUTH_UMAG1_noPopVCF.csv",
+        "triotrain/model_training/metadata/240429_DeepVariantTriosTRUTH_UMAG1_noPopVCF.csv",
         # "triotrain/model_training/metadata/230313_benchmarking.csv",
-        "triotrain/model_training/metadata/230307_PASS.csv",
+        # "triotrain/model_training/metadata/230307_PASS.csv",
         "--first-genome",
         "Father",
         # "Mother",
@@ -374,8 +374,8 @@ def get_args(parser: argparse.ArgumentParser) -> argparse.Namespace:
         # '{"convert_happy": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]}',
         # '{"convert_happy": [2, 3, 4, 5, 6]}',
     ]
-    return parser.parse_args(manual_args_list)
-    # return parser.parse_args()
+    # return parser.parse_args(manual_args_list)
+    return parser.parse_args()
 
 
 def check_args(args: argparse.Namespace, logger: Logger, default_channels: str) -> None:
