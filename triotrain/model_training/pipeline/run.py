@@ -7,6 +7,7 @@ usage:
 """
 from dataclasses import dataclass, field
 from json import load
+from re import compile, search
 from sys import exit
 from typing import List, TextIO, Union
 
@@ -805,9 +806,54 @@ class RunTrioTrain:
 
         # skip ahead if all outputs exist already
         if self.re_training._outputs_exist and not self.restart_jobs:
-            self.itr.logger.info(
-                f"============ SKIPPING {self.itr._mode_string} - [re_training_jobs] ============"
-            )
+            # if previous training completed, but missing environment variables
+            # collect them without re-running a SLURM job ---
+            if not self.re_training._select_ckpt_outputs_exist:
+
+                # Add the number of examples used during training, if missing
+                if f"{self.itr.train_genome}_Examples" not in self.itr.env.contents:
+                    final_config = (
+                        self.itr.examples_dir
+                        / f"{self.itr.train_genome}.labeled.shuffled.merged.dataset_config.pbtxt"
+                    )
+                    pattern = compile("^num_examples: (\d+)")
+                    if final_config.exists():
+                        with open(str(final_config), "r") as config:
+                            for line in config.readlines():
+                                match = search(pattern, line)
+                                if match:
+                                    n_examples = int(match.groups()[0])
+                    else:
+                        from model_training.prep.examples_count import CountExamples
+
+                        n_examples = CountExamples(itr=self.itr).run()
+
+                    self.itr.env.add_to(
+                        f"{self.itr.train_genome}_Examples",
+                        str(n_examples),
+                        dryrun_mode=self.itr.dryrun_mode,
+                        msg=self.itr._mode_string,
+                    )
+
+                # identify the best_ckpt model name and save to .env file
+                if f"{self.itr.train_genome}TestCkptName" not in self.itr.env.contents:
+
+                    from model_training.slurm.select_ckpt import MergeSelect
+
+                    eval_dir = self.itr.train_dir / "eval_Child"
+                    MergeSelect(
+                        ckpt_file=eval_dir / "best_checkpoint.txt",
+                        logger=self.itr.logger,
+                        env=self.itr.env,
+                        next_genome=self.itr.next_genome,
+                        next_run=self.itr.next_trio_num,
+                        _debug_mode=self.itr.debug_mode,
+                        _dryrun_mode=self.itr.dryrun_mode,
+                    ).run()
+            else:
+                self.itr.logger.info(
+                    f"============ SKIPPING {self.itr._mode_string} - [re_training_jobs] ============"
+                )
             return
 
         elif self.restart_jobs and self._phase_jobs is None:
@@ -922,8 +968,8 @@ class RunTrioTrain:
                         f"============ SKIPPING {self.itr._mode_string} - [test_model] - [{self.itr.train_genome}] ============"
                     )
                 return
-            # elif self.test_model._outputs_exist is False:
-            #     self.test_model.find_outputs(find_all=True)
+            else:
+                self.test_model.find_outputs(find_all=True)
 
             if self.restart_jobs and self._phase_jobs is None:
                 self.check_next_phase(

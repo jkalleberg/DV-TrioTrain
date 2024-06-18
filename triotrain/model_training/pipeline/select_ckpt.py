@@ -9,8 +9,6 @@ from dataclasses import dataclass, field
 from sys import exit
 from typing import List, Union
 
-from regex import compile
-
 from helpers.environment import Env
 from helpers.files import WriteFiles
 from helpers.iteration import Iteration
@@ -24,7 +22,7 @@ from helpers.utils import (
     generate_job_id,
 )
 from model_training.slurm.sbatch import SBATCH, SubmitSBATCH
-
+from regex import compile
 
 
 @dataclass
@@ -272,10 +270,10 @@ class SelectCheckpoint:
             self.ckpt_name = self.itr.env.contents[
                 f"{self.itr.train_genome}TestCkptName"
             ]
-            
+
             # confirm if new ckpt was saved for next training round correctly
             if self.itr.next_genome is not None and self.itr.next_trio_num is not None:
-                
+
                 if self.itr.next_trio_num == self.itr.current_trio_num:
                     if f"{self.itr.next_genome}StartCkptName" in self.itr.env.contents:
                         self.ckpt_selected = True
@@ -288,17 +286,15 @@ class SelectCheckpoint:
                             f"{logger_msg}: but {self.itr.next_genome}{self.itr.next_trio_num} starting checkpoint variable does not"
                         )
                 else:
-                    current_env_str = self.itr.env.env_path.name
-                    analysis_name = current_env_str.split("-")[0]
-                    next_env_file = (
-                        f"envs/{analysis_name}-run{self.itr.next_trio_num}.env"
-                    )
+                    # analysis_name = current_env_str.split("-")[0]
+                    next_env_file = f"{self.itr.env.env_path.parent}/run{self.itr.next_trio_num}.env"
                     next_env = Env(
                         next_env_file,
                         self.itr.logger,
                         logger_msg=logger_msg,
                         dryrun_mode=self.itr.args.dry_run,
                     )
+                    next_env.check_out()
 
                     if f"{self.itr.next_genome}StartCkptName" in next_env.contents:
                         self.ckpt_selected = True
@@ -316,7 +312,9 @@ class SelectCheckpoint:
 
         else:
             self.ckpt_selected = False
-            self.itr.logger.info(f"{logger_msg}: testing checkpoint variable does not exist")
+            self.itr.logger.info(
+                f"{logger_msg}: testing checkpoint variable does not exist"
+            )
 
         self._outputs_exist = self.ckpt_selected
 
@@ -351,12 +349,14 @@ class SelectCheckpoint:
         Submit SLURM jobs to queue.
         """
         if (self._outputs_exist and self.overwrite is False) or (
-            self._outputs_exist and self._ignoring_restart_jobs and self.overwrite is False
+            self._outputs_exist
+            and self._ignoring_restart_jobs
+            and self.overwrite is False
         ):
             self._skipped_counter += 1
             if resubmission:
                 self.itr.logger.info(
-                    f"{self.logger_msg}: --overwrite=False; skipping job because found best checkpoint file"
+                    f"{self.logger_msg}: --overwrite=False; skipping job because found best checkpoint outputs"
                 )
             return
 
@@ -370,7 +370,7 @@ class SelectCheckpoint:
 
         if not self.overwrite and self._ignoring_training:
             self.itr.logger.info(
-                f"{self.logger_msg}: --overwrite=False; {msg}mitting job because missing best checkpoint file"
+                f"{self.logger_msg}: --overwrite=False; {msg}mitting job because missing best checkpoint outputs"
             )
         elif self.overwrite and self._outputs_exist:
             self.itr.logger.info(
@@ -381,7 +381,10 @@ class SelectCheckpoint:
                 f"{self.logger_msg}: {msg}mitting job to find the best checkpoint"
             )
 
-        prior_jobs = [self.train_eval_job_num[0], self.itr.current_genome_dependencies[2]]
+        prior_jobs = [
+            self.train_eval_job_num[0],
+            self.itr.current_genome_dependencies[2],
+        ]
 
         if self.itr.current_genome_dependencies[3] is None:
             # submit the training eval job to queue
@@ -393,17 +396,14 @@ class SelectCheckpoint:
                 self.logger_msg,
             )
 
-
-            slurm_job.build_command(
-                prior_job_number=prior_jobs, allow_dep_failure=True
-            )
+            slurm_job.build_command(prior_job_number=prior_jobs, allow_dep_failure=True)
 
             if self.itr.dryrun_mode:
                 slurm_job.display_command(display_mode=self.itr.dryrun_mode)
                 self._model_testing_dependency[0] = generate_job_id()
-                self.itr.current_genome_dependencies[
-                    3
-                ] = self._model_testing_dependency[0]
+                self.itr.current_genome_dependencies[3] = (
+                    self._model_testing_dependency[0]
+                )
                 self.itr.next_genome_dependencies[2] = self._model_testing_dependency[0]
 
             else:
@@ -453,7 +453,7 @@ class SelectCheckpoint:
             if (
                 self.itr.current_genome_num is not None
                 and self.itr.current_genome_num != 0
-            ):  
+            ):
                 if self.itr.debug_mode:
                     self.itr.logger.debug(
                         f"{self.logger_msg}: no additional dependencies are required because missing a select_ckpt job number for prior iteration"
@@ -483,8 +483,12 @@ class SelectCheckpoint:
                     self.itr.logger.info(
                         f"{self.logger_msg}: 'call_variants' dependency updated | '{self._model_testing_dependency[0]}'"
                     )
-                    self.itr.current_genome_dependencies[3] = self._model_testing_dependency[0]
-                    self.itr.next_genome_dependencies[2] = self._model_testing_dependency[0]
+                    self.itr.current_genome_dependencies[3] = (
+                        self._model_testing_dependency[0]
+                    )
+                    self.itr.next_genome_dependencies[2] = (
+                        self._model_testing_dependency[0]
+                    )
                 else:
                     self._model_testing_dependency[0] = None
             else:

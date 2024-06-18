@@ -12,14 +12,15 @@ from typing import List, Union
 
 from helpers.files import WriteFiles
 from helpers.iteration import Iteration
+from helpers.jobs import is_job_index, is_jobid
 from helpers.outputs import check_expected_outputs, check_if_output_exists
 from helpers.utils import (
     check_if_all_same,
     create_deps,
     find_NaN,
     find_not_NaN,
-    generate_job_id,)
-from helpers.jobs import is_job_index, is_jobid
+    generate_job_id,
+)
 from model_training.slurm.sbatch import SBATCH, SubmitSBATCH
 from regex import compile
 
@@ -99,13 +100,15 @@ class ConvertHappy:
         Collect any SLURM job ids for running tests to avoid submitting a job while it's already running.
         """
         self._ignoring_compare_happy = check_if_all_same(self.compare_happy_jobs, None)
-        self._ignoring_restart_jobs = check_if_all_same(self.convert_happy_job_nums, None)
+        self._ignoring_restart_jobs = check_if_all_same(
+            self.convert_happy_job_nums, None
+        )
 
         if not self._ignoring_compare_happy:
             self._jobs_to_run = find_not_NaN(self.compare_happy_jobs)
             self._num_to_ignore = len(find_NaN(self.compare_happy_jobs))
             self._num_to_run = len(self._jobs_to_run)
-        
+
         elif not self._ignoring_restart_jobs:
             self._jobs_to_run = find_not_NaN(self.convert_happy_job_nums)
             self._num_to_run = len(self._jobs_to_run)
@@ -144,7 +147,8 @@ class ConvertHappy:
             return
         elif 0 < self._num_to_ignore < self.itr.total_num_tests:
             self.itr.logger.info(
-                f"{self.logger_msg}: ignoring {self._num_to_ignore}-of-{self.itr.total_num_tests} SLURM jobs")
+                f"{self.logger_msg}: ignoring {self._num_to_ignore}-of-{self.itr.total_num_tests} SLURM jobs"
+            )
         elif self._num_to_ignore == self.itr.total_num_tests:
             if self.convert_happy_job_nums:
                 self.itr.logger.info(
@@ -206,9 +210,7 @@ class ConvertHappy:
                 )
             self.benchmarking_file.add_rows(headers, data_dict=data)
         else:
-            self.itr.logger.info(
-                f"{self.logger_msg}: benchmarking is active"
-            )
+            self.itr.logger.info(f"{self.logger_msg}: benchmarking is active")
 
     def make_job(self, index: int = 0) -> Union[SBATCH, None]:
         """
@@ -252,7 +254,9 @@ class ConvertHappy:
                 return
         else:
             if self.itr.debug_mode:
-                self.itr.logger.debug(f"{self.logger_msg} - [{self.test_logger_msg}]: creating job file now... ")
+                self.itr.logger.debug(
+                    f"{self.logger_msg} - [{self.test_logger_msg}]: creating job file now... "
+                )
 
         if len(self.test_genome_metadata) > 0:
             if self.itr.demo_mode:
@@ -282,10 +286,7 @@ class ConvertHappy:
         return slurm_job
 
     def find_outputs(
-        self,
-        phase: Union[str, None] = None,
-        find_all: bool = False,
-        outputs_per_test=2
+        self, phase: Union[str, None] = None, find_all: bool = False, outputs_per_test=2
     ) -> None:
         """
         Determines if convert_happy phase has completed successfully.
@@ -376,20 +377,20 @@ class ConvertHappy:
             if missing_files:
                 if find_all:
                     self._num_to_ignore = self._outputs_found
-                    self._num_to_run = int(
-                        self._expected_outputs - self._outputs_found
-                    )
+                    self._num_to_run = int(self._expected_outputs - self._outputs_found)
                 self._outputs_exist = False
             else:
                 self._outputs_exist = True
         else:
             self._outputs_exist = False
 
-    def submit_job(self,
-                   msg: str = "sub",
-                   dependency_index: int = 0,
-                   total_jobs: int = 1,
-                   resubmission: bool = False) -> None:
+    def submit_job(
+        self,
+        msg: str = "sub",
+        dependency_index: int = 0,
+        total_jobs: int = 1,
+        resubmission: bool = False,
+    ) -> None:
         """
         Submit SLURM job to the queue.
         """
@@ -405,15 +406,15 @@ class ConvertHappy:
                     f"{self.logger_msg} - [{self.test_logger_msg}]: --overwrite=False; skipping job because found {self._output_type}"
                 )
             return
-        
+
         slurm_job = self.make_job(index=dependency_index)
-        
+
         if slurm_job is not None:
             if self.itr.dryrun_mode:
                 slurm_job.display_job()
             else:
                 slurm_job.write_job()
-        
+
         if not self.overwrite and self._ignoring_compare_happy and resubmission:
             self.itr.logger.info(
                 f"{self.logger_msg} - [{self.test_logger_msg}]: --overwrite=False; {msg}mitting job because missing {self._output_type}"
@@ -436,21 +437,19 @@ class ConvertHappy:
             self.itr.logger,
             f"{self.logger_msg} - [{self.test_logger_msg}]",
         )
-        
+
         # If there is a running job...
         if self.compare_happy_jobs and len(self.compare_happy_jobs) > 0:
             # ...include it as a dependency
-            slurm_job.build_command(
-                self.compare_happy_jobs[dependency_index]
-            )
+            slurm_job.build_command(self.compare_happy_jobs[dependency_index])
         else:
             slurm_job.build_command(None)
 
         slurm_job.display_command(
-                current_job=self.job_num,
-                total_jobs=total_jobs,
-                display_mode=self.itr.dryrun_mode,
-            )
+            current_job=self.job_num,
+            total_jobs=total_jobs,
+            display_mode=self.itr.dryrun_mode,
+        )
 
         if self.itr.dryrun_mode:
             self._final_jobs[dependency_index] = generate_job_id()
@@ -460,11 +459,9 @@ class ConvertHappy:
                 total_jobs=total_jobs,
                 debug_mode=self.itr.debug_mode,
             )
-            
+
             if slurm_job.status == 0:
-                self._final_jobs[dependency_index] = str(
-                            slurm_job.job_number
-                        )
+                self._final_jobs[dependency_index] = str(slurm_job.job_number)
             else:
                 self._final_jobs[dependency_index] = None
 
@@ -473,17 +470,17 @@ class ConvertHappy:
         Check if the SLURM job files were submitted to the queue successfully.
         """
         convert_results = check_if_all_same(self._final_jobs, None)
-        
+
         if convert_results is False:
             if len(self._final_jobs) == 1:
                 print(
                     f"============ {self.logger_msg} - Job Number - {self._final_jobs} ============"
-                    )
+                )
             else:
                 print(
                     f"============ {self.logger_msg}- Job Numbers ============\n{self._final_jobs}\n============================================================"
                 )
-            
+
             if self.track_resources and self.benchmarking_file is not None:
                 self.benchmark()
         elif self._skipped_counter != 0:
@@ -491,11 +488,11 @@ class ConvertHappy:
                 self._final_jobs = [None]
         else:
             self.itr.logger.error(
-                    f"{self.logger_msg}: expected SLURM jobs to be submitted, but they were not",
-                )
+                f"{self.logger_msg}: expected SLURM jobs to be submitted, but they were not",
+            )
             self.itr.logger.warning(
                 f"{self.logger_msg}: fatal error encountered, unable to proceed further with pipeline.\nExiting... ",
-                )
+            )
             exit(1)
 
     def unique_values_in_list_of_lists(self, lst: list) -> list:
@@ -519,7 +516,7 @@ class ConvertHappy:
         if self._outputs_found != self._num_to_ignore:
             self._num_to_ignore -= difference
             self._num_to_run += difference
-        
+
         if find_all:
             self.find_outputs(phase=phase_to_check, find_all=find_all)
         else:
@@ -553,7 +550,7 @@ class ConvertHappy:
             msg = "sub"
         else:
             msg = "re-sub"
-        
+
         # Determine if we are re-running some of the compare jobs
         if not self._ignoring_restart_jobs or not self._ignoring_compare_happy:
             if self._num_to_run == 0:
@@ -607,7 +604,7 @@ class ConvertHappy:
         # Determine if we are submitting all tests
         else:
             if self._outputs_exist:
-                return self._final_jobs            
+                return self._final_jobs
 
             for test_index in range(0, int(self.itr.total_num_tests)):
                 self.job_num = (

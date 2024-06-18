@@ -11,12 +11,13 @@ example:
 """
 # Load libraries
 import argparse
-from sys import exit, path
 from dataclasses import dataclass, field
 from json import load
 from logging import Logger
-from os import environ, getcwd, path as p
+from os import environ, getcwd
+from os import path as p
 from pathlib import Path
+from sys import exit, path
 
 import pandas as pd
 
@@ -71,7 +72,7 @@ def collect_args() -> argparse.Namespace:
         help="defines the proportion of the training genome should be covered by the new model\n(default: %(default)s)",
         type=float,
         default=20.0,
-        metavar="<float>"
+        metavar="<float>",
     )
 
     return parser.parse_args()
@@ -126,6 +127,12 @@ class ParseMetrics:
     _eval_genome: str = "Child"
     _phase: str = field(default="parse_metrics", init=False, repr=False)
 
+    def __post_init__(self) -> None:
+        if self._dryrun_mode:
+            self._logger_msg = f"[DRY_RUN] - [{self._phase}] - [{self.genome}]"
+        else:
+            self._logger_msg = f"[{self._phase}] - [{self.genome}]"
+
     def load_variables(self) -> None:
         """
         load in environment variables
@@ -136,7 +143,6 @@ class ParseMetrics:
             "CodePath",
             "ResultsDir",
             f"{self.genome}TrainDir",
-            f"{self.genome}_N_Steps",
             "N_Epochs",
         ]
         (
@@ -145,9 +151,33 @@ class ParseMetrics:
             code_path,
             self._outpath,
             self._train_dir,
-            self._total_steps,
             self._epochs,
         ) = self.env.load(*vars_list)
+
+        found_num_steps = self.env.test_contents((f"{self.genome}_N_Steps"))
+        if not found_num_steps:
+            n_step_vars_list = [
+                f"{self.genome}_Examples",
+                "BatchSize",
+            ]
+            (_num_examples, _batch_size) = self.env.load(*n_step_vars_list)
+
+            # Calculate the number of training steps used
+            self._total_steps = int(
+                (int(_num_examples) / int(_batch_size)) * int(self._epochs)
+            )
+
+            self.env.add_to(
+                key=f"{self.genome}_N_Steps",
+                value=str(self._total_steps),
+                dryrun_mode=self._dryrun_mode,
+                msg=self._logger_msg,
+            )
+        else:
+            n_step_vars_list = [f"{self.genome}_N_Steps"]
+
+            (_total_steps,) = self.env.load(*n_step_vars_list)
+            self._total_steps = int(_total_steps)
 
         try:
             assert (
@@ -161,11 +191,6 @@ class ParseMetrics:
         """
         define which genome from a Trio to parse metrics
         """
-        if self._dryrun_mode:
-            self._logger_msg = f"[DRY_RUN] - [{self._phase}] - [{self.genome}]"
-        else:
-            self._logger_msg = f"[{self._phase}] - [{self.genome}]"
-
         self._eval_dir = Path(f"{self._train_dir}/eval_{self._eval_genome}")
         assert (
             self._eval_dir.is_dir()
@@ -175,7 +200,6 @@ class ParseMetrics:
         assert (
             self._output_dir.is_dir()
         ), f"output directory does not exist | '{self._output_dir}'"
-        
 
     def clean_files(self):
         """
@@ -207,7 +231,9 @@ class ParseMetrics:
 
         # Count how many files match
         self._total_metrics = len(metrics_stem)
-        assert self._total_metrics > 0, f"{self._logger_msg}: no existing evaluation metrics files were found"
+        assert (
+            self._total_metrics > 0
+        ), f"{self._logger_msg}: no existing evaluation metrics files were found"
 
         # Create data descriptor columns to keep records unique
         run_order, model, train_order = (
@@ -302,9 +328,7 @@ class ParseMetrics:
         )
 
         if int(self._best_ckpt_steps) != int(self._lowest_loss_steps_num):
-            self.logger.warning(
-                f"{self._logger_msg}: different best checkpoint\t\t| "
-            )
+            self.logger.warning(f"{self._logger_msg}: different best checkpoint\t\t| ")
             self.logger.warning(
                 f"{self._logger_msg}: consider alternative performance metric for selecting checkpoint\t| "
             )
@@ -359,7 +383,9 @@ class ParseMetrics:
             outfile.check_missing()
 
             if outfile.file_exists:
-                self.logger.info(f"{self._logger_msg}: CSV output already exists... SKIPPING AHEAD")
+                self.logger.info(
+                    f"{self._logger_msg}: CSV output already exists... SKIPPING AHEAD"
+                )
             else:
                 # Write the sorted data to a CSV
                 self._sorted_data.to_csv(outfile.file_path, index=False)
@@ -369,7 +395,7 @@ class ParseMetrics:
                 assert (
                     outfile.file_path.exists()
                 ), f"{outfile.file} was not written correctly"
-                
+
         else:
             self.logger.info(
                 f"{self._logger_msg}: evaluation metrics contents, sorted by step number"
@@ -417,12 +443,21 @@ def __init__() -> None:
         logger.debug(f"using DeepVariant version {_version}")
 
     if args.dry_run:
-        logger.info("option [--dry-run] set; displaying evaluation metrics to screen only")
+        logger.info(
+            "option [--dry-run] set; displaying evaluation metrics to screen only"
+        )
         pd.set_option("display.max_rows", None)
         pd.set_option("display.max_columns", None)
 
     env = Env(args.env_file, logger, dryrun_mode=args.dry_run, debug_mode=args.debug)
-    ParseMetrics(args.genome, env, logger, threshold=args.threshold, _debug_mode=args.debug, _dryrun_mode = args.dry_run).run()
+    ParseMetrics(
+        args.genome,
+        env,
+        logger,
+        threshold=args.threshold,
+        _debug_mode=args.debug,
+        _dryrun_mode=args.dry_run,
+    ).run()
 
     Wrapper(__file__, "end").wrap_script(timestamp())
 

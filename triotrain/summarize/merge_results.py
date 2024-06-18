@@ -8,14 +8,16 @@ example:
         --dry-run
 """
 import argparse
-from csv import DictReader, reader
-from sys import exit, path
 from collections import defaultdict
+from csv import DictReader, reader
 from dataclasses import dataclass, field
 from logging import Logger
-from os import environ, getcwd, path as p
+from os import environ, getcwd
+from os import path as p
 from pathlib import Path
+from sys import exit, path
 from typing import Union
+
 import pandas as pd
 from regex import compile
 
@@ -24,8 +26,9 @@ module_path = str(abs_path.parent.parent)
 path.append(module_path)
 
 from helpers.environment import Env
-from helpers.files import WriteFiles, TestFile
+from helpers.files import TestFile, WriteFiles
 from helpers.outputs import check_if_output_exists
+
 
 def collect_args():
     """
@@ -90,6 +93,7 @@ def collect_args():
         metavar="</path/file>",
     )
     return parser.parse_args()
+
 
 def check_args(args: argparse.Namespace, logger: Logger):
     """
@@ -168,18 +172,16 @@ class MergedTests:
             self.logger.error(f"unable to identify a valid run number\nExiting...")
             exit(1)
 
-        var_list = [
-            "CodePath",
-            "TotalTests",
-            "BaselineModelResultsDir",
-            "ResultsDir"]
-        
+        var_list = ["CodePath", "TotalTests", "BaselineModelResultsDir", "ResultsDir"]
+
         if self.args.first_genome is None:
             extra_vars = ["RunDir", "RunDir"]
         else:
-            extra_vars = [f"{self.args.first_genome}CompareDir",
-            f"{self._next_genome}CompareDir"]
-        
+            extra_vars = [
+                f"{self.args.first_genome}CompareDir",
+                f"{self._next_genome}CompareDir",
+            ]
+
         vars = var_list + extra_vars
 
         (
@@ -195,10 +197,10 @@ class MergedTests:
             self._output_path = Path(_output_dir)
         else:
             self._output_path = Path(self._baseline_results)
-        
+
         assert (
             getcwd() == code_path
-        ), f"run the workflow in the {code_path} directory only!" 
+        ), f"run the workflow in the {code_path} directory only!"
 
         if self._run_num >= 1:
             assert (
@@ -206,21 +208,21 @@ class MergedTests:
             ), "missing --first-genome\nPlease set which training from the current trio was used first."
 
         self._total_num_tests = int(_total_num_tests)
-        version_nums = (self._version.split("."))
+        version_nums = self._version.split(".")
         version_clean = ".".join(version_nums[0:2])
         self._model_version = f"DV{version_clean}"
 
         if self._custom_model:
             # training_species = "bovine"
             model_type = "custom"
-    
+
             if self.args.first_genome is None:
                 self._expected_num_tests = self._total_num_tests
                 self._mode = f"GIAB{self._run_num}"
             else:
                 self._expected_num_tests = self._total_num_tests * 2
                 self._mode = f"Trio{self._run_num}"
-            
+
             if self.args.first_genome is None:
                 self._search_paths = [self._compare_dir1]
                 self._ckpts_list = ["TestCkptName"]
@@ -247,7 +249,7 @@ class MergedTests:
 
         # if self.args.merge_all:
         #     self._logger_msg = "[merge_all]"
-        # else:    
+        # else:
         self._logger_msg = f"[{self._mode}] - [{self._phase}]"
 
     def load_metadata(self) -> None:
@@ -258,7 +260,9 @@ class MergedTests:
         self.metadata = TestFile(self.args.metadata, self.logger)
         self.metadata.check_existing()
         if self.metadata.file_exists:
-            self.logger.info(f"{self._logger_msg}: adding test-specific metadata to CSV file")
+            self.logger.info(
+                f"{self._logger_msg}: adding test-specific metadata to CSV file"
+            )
 
             # if self.args.merge_all:
             #     return
@@ -289,14 +293,14 @@ class MergedTests:
         else:
             self.logger.error(
                 f"{self._logger_msg}: unable to load metadata file | '{str(self.metadata.path)}'"
-                )
+            )
             raise ValueError("Invalid Input File")
 
     def find_test(self, test_num: int = 1) -> None:
         """
         find the 'total' results file for a single test genome
         """
-        input_file_csv = self._search_path / f"Test{test_num}.total.metrics.csv" 
+        input_file_csv = self._search_path / f"Test{test_num}.total.metrics.csv"
         if input_file_csv.is_file():
             self._num_found += 1
             self._input_files.append(str(input_file_csv))
@@ -319,7 +323,7 @@ class MergedTests:
         """
         self._search_path = Path(search_path)
         current_model = self._search_path.name.split("_")
-        
+
         if len(current_model) > 1:
             self._genome = current_model[1]
         else:
@@ -330,39 +334,39 @@ class MergedTests:
 
         if self.args.debug:
             self.logger.debug(f"{self._logger_msg}:\n{self._input_files}")
-        
+
         if len(self._input_files) == 0:
             self.logger.warning(
                 f"{self._logger_msg}: no results files detected.\nExiting..."
             )
             exit(1)
-    
-    def find_AllTests(self) -> None:
-        """
-        identify how many 'AllTests' files exist.
-        """
-        self._total_found = 0
-        self._file_names = list()
-        search_paths = [Path(self._baseline_results), self._output_path]
-        search_patterns = [r"\w+\.\w+\.\w+\.AllTests\.total\.metrics\.csv", r"\w+\d+\.AllTests\.total\.metrics\.csv"]
-        
-        for i,sp in enumerate(search_paths):
-            self.logger.info(f"{self._logger_msg}: searching path | '{sp}'")
-            files_exist, total_found, file_names = check_if_output_exists(
-                match_pattern=search_patterns[i], 
-                file_type="AllTests files",
-                search_path=sp,
-                msg=self._logger_msg,
-                logger=self.logger,
-                debug_mode=self.args.debug
-            )
-            self._files_exist = files_exist
-            if files_exist:
-                self._total_found += total_found
-                self._file_names = self._file_names + [sp / f for f in file_names]
-        
-        if self._files_exist:        
-            self.logger.info(f"{self._logger_msg}: found {self._total_found} matching files")
+
+    # def find_AllTests(self) -> None:
+    #     """
+    #     identify how many 'AllTests' files exist.
+    #     """
+    #     self._total_found = 0
+    #     self._file_names = list()
+    #     search_paths = [Path(self._baseline_results), self._output_path]
+    #     search_patterns = [r"\w+\.\w+\.\w+\.AllTests\.total\.metrics\.csv", r"\w+\d+\.AllTests\.total\.metrics\.csv"]
+
+    #     for i,sp in enumerate(search_paths):
+    #         self.logger.info(f"{self._logger_msg}: searching path | '{sp}'")
+    #         files_exist, total_found, file_names = check_if_output_exists(
+    #             match_pattern=search_patterns[i],
+    #             file_type="AllTests files",
+    #             search_path=sp,
+    #             msg=self._logger_msg,
+    #             logger=self.logger,
+    #             debug_mode=self.args.debug
+    #         )
+    #         self._files_exist = files_exist
+    #         if files_exist:
+    #             self._total_found += total_found
+    #             self._file_names = self._file_names + [sp / f for f in file_names]
+
+    #     if self._files_exist:
+    #         self.logger.info(f"{self._logger_msg}: found {self._total_found} matching files")
 
     def load_csv(self, index: int = 0) -> None:
         """
@@ -373,7 +377,7 @@ class MergedTests:
         with open(
             self._input_files[index], mode="r", encoding="utf-8-sig"
         ) as results_csv:
-            
+
             input_name = Path(self._input_files[index]).parent.name
 
             test_dict = {}
@@ -400,15 +404,17 @@ class MergedTests:
                             self._model_name = self.env.contents["RunName"]
                         else:
                             if "noPop" in input_name:
-                                self._model_name = f"{self._model_version}_default_human"
+                                self._model_name = (
+                                    f"{self._model_version}_default_human"
+                                )
                             else:
                                 self._model_name = f"{self._model_version}_WGS.AF_human"
                     else:
                         genome = value.split("-")[1]
                         self._model_name = f"Trio{self._run_num}-{genome}"
-                    
+
                     test_dict["model_name"] = self._model_name
-                    
+
                 else:
                     if self.args.metadata:
                         for k in self._metadata_dict.keys():
@@ -418,7 +424,7 @@ class MergedTests:
                     for k in keep_these:
                         if k in key.lower() or k in key:
                             test_dict[key] = value
-            
+
             if K is not None and len(test_dict) > 0:
                 if K in self._results_dict.keys():
                     self._results_dict[index].update(test_dict)
@@ -468,7 +474,7 @@ class MergedTests:
             if self.args.debug:
                 self.logger.debug(
                     f"{self._logger_msg}: SAMPLE#{index}\n{_final_results}"
-                    )
+                )
             self._samples.insert(index, _final_results)
 
     def save_results(self) -> None:
@@ -481,7 +487,7 @@ class MergedTests:
         # else:
         input_label = Path(self._input_files[0]).name.split(".")
         if self._custom_model:
-                name = ".".join([self._mode, "AllTests"] + input_label[1:])
+            name = ".".join([self._mode, "AllTests"] + input_label[1:])
         else:
             name = ".".join([str(self._model_name), "AllTests"] + input_label[1:])
 
@@ -495,19 +501,19 @@ class MergedTests:
         output.check_missing()
 
         # if self.args.merge_all:
-            # if self.args.dry_run:
-            #     self.logger.info(
-            #         f"[DRY RUN] - {self._logger_msg}: pretending to write the final CSV file | '{str(output.file_path)}'"
-            #     )
-            #     print("---------------------------------------------")
-            #     print(self._final_csv)
-            #     print("---------------------------------------------")
-            # else:
-            #     self.logger.info(f"{self._logger_msg}: writing the final CSV file |  '{str(output.path)}'")
-            #     self._final_csv.to_csv(output.file_path, index=False)
+        # if self.args.dry_run:
+        #     self.logger.info(
+        #         f"[DRY RUN] - {self._logger_msg}: pretending to write the final CSV file | '{str(output.file_path)}'"
+        #     )
+        #     print("---------------------------------------------")
+        #     print(self._final_csv)
+        #     print("---------------------------------------------")
+        # else:
+        #     self.logger.info(f"{self._logger_msg}: writing the final CSV file |  '{str(output.path)}'")
+        #     self._final_csv.to_csv(output.file_path, index=False)
         # else:
         output.write_csv(write_dict=self._output_dict)
-    
+
     def merge_tests(self) -> None:
         """
         merge the processed hap.py results from each test into a single file called 'AllTests'
@@ -535,36 +541,37 @@ class MergedTests:
                 self.logger.debug(f"{self._logger_msg}: SAMPLE#{i}\n{dd}")
             # Combine all samples values into a dict where row names are keys
             for key, value in dd.items():
-                self._output_dict[key].append(value)
+                self._output_dict[str(key)].append(str(value))
 
         # confirm we didn't skip any samples
         num_missing = self._expected_num_tests - len(self._input_files)
         if num_missing != 0:
-            self.logger.warning(f"{self._logger_msg}: missing {num_missing} input files... unable to include them in merge")
-    
+            self.logger.warning(
+                f"{self._logger_msg}: missing {num_missing} input files... unable to include them in merge"
+            )
+
     def add_metadata(self) -> None:
-        """combine metadata with columns
-        """
+        """combine metadata with columns"""
         metadata_csv = pd.read_csv(self.metadata.file)
 
         # transpose columns and rows, remove a duplicate row
         transposed_csv = metadata_csv.T
-        clean_metadata = transposed_csv.rename(columns=transposed_csv.iloc[0]).drop('label') # type: ignore
+        clean_metadata = transposed_csv.rename(columns=transposed_csv.iloc[0]).drop("label")  # type: ignore
         self._metadata_dict = clean_metadata.to_dict()
-            
+
         # clean_metadata.index.name = "test_name"
         # clean_metadata.reset_index(inplace=True)
         # self._final_csv = pd.concat([clean_metadata, combined_csv])
-    
+
     # def merge_all(self) -> None:
     #     """
     #     merge the 'AllTests' files in the summary/ into a single file, and add optional metadata about each test.
     #     """
     #     self.find_AllTests()
-        
+
     #     total_records = [x for x in range(0, (self._total_found * self._total_num_tests))]
     #     col_indexes = [total_records[i * self._total_num_tests:(i + 1) * self._total_num_tests] for i in range((len(total_records) + self._total_num_tests - 1) // self._total_num_tests )]
-        
+
     #     # combine all files in the list
     #     csv1 = pd.read_csv(self._file_names[0], sep=",")
     #     print(csv1)
@@ -573,7 +580,7 @@ class MergedTests:
     #     breakpoint()
     #     # combined_csv = pd.concat([pd.read_csv(f, sep=",", names=col_indexes[i]) for i,f in enumerate(self._file_names)], axis=0)
     #     # print(combined_csv)
-    #     # breakpoint()        
+    #     # breakpoint()
     #     self.save_results()
 
     def run(self) -> None:
@@ -590,6 +597,7 @@ class MergedTests:
         # else:
         self.merge_tests()
         self.save_results()
+
 
 def __init__():
     from helpers.utils import get_logger

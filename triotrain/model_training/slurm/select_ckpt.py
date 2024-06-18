@@ -341,7 +341,7 @@ class MergeSelect:
             self.env.add_to(
                 f"{self.current_genome}_N_Steps",
                 str(self.num_training_steps),
-                self._dryrun_mode,
+                dryrun_mode=self._dryrun_mode,
                 msg=self._logger_msg
             )
 
@@ -351,7 +351,7 @@ class MergeSelect:
             and self.checkpoint is not None
         ):
             self.env.add_to(
-                f"{self.current_genome}TestCkptName", self.checkpoint, self._dryrun_mode, msg=self._logger_msg
+                f"{self.current_genome}TestCkptName", self.checkpoint, dryrun_mode=self._dryrun_mode, msg=self._logger_msg
             )
 
         # Add the new checkpoint to next Env File
@@ -364,7 +364,7 @@ class MergeSelect:
                     self.env.add_to(
                         f"{self.next_genome}StartCkptName",
                         self.checkpoint,
-                        self._dryrun_mode,
+                        dryrun_mode=self._dryrun_mode,
                         msg=self._logger_msg
                     )
             else:
@@ -380,7 +380,7 @@ class MergeSelect:
                     next_env.add_to(
                         f"{self.next_genome}StartCkptName",
                         self.checkpoint,
-                        self._dryrun_mode,
+                        dryrun_mode=self._dryrun_mode,
                         msg=self._logger_msg
                     )
 

@@ -1,6 +1,6 @@
 from logging import Logger
 from pathlib import Path
-from typing import Dict, List, Text, Union
+from typing import Dict, List, Text, Union, Tuple
 
 from dotenv import dotenv_values, get_key, set_key
 
@@ -52,10 +52,8 @@ class Env:
             )
             exit(1)
 
-    def test_contents(self, *variables: str) -> bool:
-        """Give a list of variable names, search within an environment file, and print a msg depending on if they are found.
-
-        Parameters
+    def test_contents(self, *variables: Tuple[str]) -> bool:
+        """Given variable names, search within an environment file, and print a msg depending on if they are found.
 
         Returns
         -------
@@ -71,7 +69,11 @@ class Env:
                     self.logger.debug(f"{self._logger_msg}{self.env_path.name} contains '{var}'")
                 self.var_count += 1
             else:
-                if not self.dryrun_mode:
+                if self.debug_mode:
+                    self.logger.debug(
+                        f"{self._logger_msg}{self.env_path.name} does not have a variable  | '{var}'"
+                    )
+                elif not self.dryrun_mode:
                     self.logger.warning(
                         f"{self._logger_msg}{self.env_path.name} does not have a variable  | '{var}'"
                     )

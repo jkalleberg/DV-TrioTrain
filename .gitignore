@@ -129,7 +129,7 @@ cython_debug/
 
 # files created during setup
 *.run
-*.txt
+/triotrain/variant_calling/data/GIAB/*
 shuffle_tfrecords_beam.py
 
 # image files
