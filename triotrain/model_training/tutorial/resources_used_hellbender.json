@@ -1,0 +1,92 @@
+{
+    "make_examples": {
+        "partition": "general,schnabelr-umag,schnabelr-lab",
+        "nodes": 1,
+        "ntasks": 64,
+        "mem": "250G",
+        "time": "0-2:00:00",
+        "account": "schnabelr-lab",
+        "email": "jakth2@mail.missouri.edu"
+    },
+    "beam_shuffle": {
+        "partition": "general,schnabelr-umag,schnabelr-lab",
+        "nodes": 1,
+        "ntasks": 64,
+        "mem": "250G",
+        "time": "0-2:00:00",
+        "account": "schnabelr-lab",
+        "email": "jakth2@mail.missouri.edu"
+    },
+    "re_shuffle": {
+        "partition": "general,schnabelr-umag,schnabelr-lab",
+        "nodes": 1,
+        "ntasks": 1,
+        "mem": "250G",
+        "time": "0-10:00:00",
+        "account": "schnabelr-lab",
+        "email": "jakth2@mail.missouri.edu"
+    },
+    "train_eval": {
+        "partition": "gpu",
+        "gres": "gpu:2",
+        "nodes": 1,
+        "ntasks": 28,
+        "mem": 122000,
+        "time": "2-00:00:00",
+        "account": "schnabelr-lab",
+        "email": "jakth2@mail.missouri.edu"
+    },
+    "select_ckpt": {
+        "partition": "general,schnabelr-umag,schnabelr-lab",
+        "nodes": 1,
+        "ntasks": 1,
+        "mem": 500,
+        "time": "0-00:30:00",
+        "account": "schnabelr-lab",
+        "email": "jakth2@mail.missouri.edu"
+    },
+    "call_variants": {
+        "partition": "general,schnabelr-umag,schnabelr-lab",
+        "nodes": 1,
+        "ntasks": 64,
+        "mem": "250G",
+        "time": "2-00:00:00",
+        "account": "schnabelr-lab",
+        "email": "jakth2@mail.missouri.edu"
+    },
+    "compare_happy": {
+        "partition": "general,schnabelr-umag,schnabelr-lab",
+        "nodes": 1,
+        "ntasks": 64,
+        "mem": "250G",
+        "time": "0-12:00:00",
+        "account": "schnabelr-lab",
+        "email": "jakth2@mail.missouri.edu"
+    },
+    "convert_happy": {
+        "partition": "general,schnabelr-umag,schnabelr-lab",
+        "nodes": 1,
+        "ntasks": 64,
+        "mem": "120G",
+        "time": "0-05:00:00",
+        "account": "schnabelr-lab",
+        "email": "jakth2@mail.missouri.edu"
+    },
+    "show_examples": {
+        "partition": "general",
+        "nodes": 1,
+        "mem": "1G",
+        "time": "0-02:00:00",
+        "account": "schnabelr-lab",
+        "email": "jakth2@mail.missouri.edu"
+    },
+    "summary": {
+        "partition": "general,schnabelr-umag,schnabelr-lab",
+        "nodes": 1,
+        "ntasks": 4,
+        "mem": "40G",
+        "time": "0-10:00:00",
+        "account": "schnabelr-lab",
+        "email": "jakth2@mail.missouri.edu"
+    }
+}
