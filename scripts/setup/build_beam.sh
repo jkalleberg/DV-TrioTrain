@@ -34,7 +34,7 @@ conda config --env --set channel_priority flexible
 
 # Install the project-specific packages
 # in the currently active env
-conda install -p ./miniconda_envs/beam_v2.30 -y -c conda-forge python=3.8 pandas numpy python-dotenv python-snappy tensorflow=2.5 apache-beam=2.30 regex spython natsort rtg-tools
+conda install -p ./miniconda_envs/beam_v2.30 -y -c conda-forge python=3.8 pandas numpy python-dotenv python-snappy tensorflow=2.5 apache-beam=2.30 regex spython natsort rtg-tools python-levenshtein
 
 # Deactivate the conda env to continue with build process
 conda deactivate
@@ -50,5 +50,6 @@ conda deactivate
 ### Spython = interface between Singularity/Apptainer bash commands and Python
 ### Natsort = enables sorting of file iterators
 ### RTG-Tools = required for Mendelian Inhertiance Error calculations performed for summarize
+### Levenshtein = required for checking for typos in command line flags, specifically TrioTrain phase namems
 
 echo -e "=== scripts/setup/build_beam.sh > end $(date)"
