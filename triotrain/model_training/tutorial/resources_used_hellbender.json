@@ -1,6 +1,6 @@
 {
     "make_examples": {
-        "partition": "general,schnabelr-umag,schnabelr-lab",
+        "partition": "general,schnabelr-lab",
         "nodes": 1,
         "ntasks": 64,
         "mem": "250G",
@@ -9,7 +9,7 @@
         "email": "jakth2@mail.missouri.edu"
     },
     "beam_shuffle": {
-        "partition": "general,schnabelr-umag,schnabelr-lab",
+        "partition": "general,schnabelr-lab",
         "nodes": 1,
         "ntasks": 64,
         "mem": "250G",
@@ -18,7 +18,7 @@
         "email": "jakth2@mail.missouri.edu"
     },
     "re_shuffle": {
-        "partition": "general,schnabelr-umag,schnabelr-lab",
+        "partition": "general,schnabelr-lab",
         "nodes": 1,
         "ntasks": 1,
         "mem": "250G",
@@ -37,7 +37,7 @@
         "email": "jakth2@mail.missouri.edu"
     },
     "select_ckpt": {
-        "partition": "general,schnabelr-umag,schnabelr-lab",
+        "partition": "general,schnabelr-lab",
         "nodes": 1,
         "ntasks": 1,
         "mem": 500,
@@ -46,7 +46,7 @@
         "email": "jakth2@mail.missouri.edu"
     },
     "call_variants": {
-        "partition": "general,schnabelr-umag,schnabelr-lab",
+        "partition": "general,schnabelr-lab",
         "nodes": 1,
         "ntasks": 64,
         "mem": "250G",
@@ -55,7 +55,7 @@
         "email": "jakth2@mail.missouri.edu"
     },
     "compare_happy": {
-        "partition": "general,schnabelr-umag,schnabelr-lab",
+        "partition": "general,schnabelr-lab",
         "nodes": 1,
         "ntasks": 64,
         "mem": "250G",
@@ -64,7 +64,7 @@
         "email": "jakth2@mail.missouri.edu"
     },
     "convert_happy": {
-        "partition": "general,schnabelr-umag,schnabelr-lab",
+        "partition": "general,schnabelr-lab",
         "nodes": 1,
         "ntasks": 64,
         "mem": "120G",
@@ -81,7 +81,7 @@
         "email": "jakth2@mail.missouri.edu"
     },
     "summary": {
-        "partition": "general,schnabelr-umag,schnabelr-lab",
+        "partition": "general,schnabelr-lab",
         "nodes": 1,
         "ntasks": 4,
         "mem": "40G",
