@@ -57,6 +57,28 @@ class TrainEval:
     def __post_init__(self) -> None:
         if self.itr.env is None:
             return
+
+        self.logger_msg = (
+            f"{self.itr._mode_string} - [{self._phase}] - [{self.itr.train_genome}]"
+        )
+
+        ### HANDLE CPUS
+        if "ntasks" in self.slurm_resources["train_eval"]:
+            self._total_ntasks = self.slurm_resources["train_eval"]["ntasks"]
+            self._ntasks_per_gpu = 1
+            if int(self._total_ntasks) % 2 != 0:
+                self.itr.logger.warning(f"{self.logger_msg}: odd number detected")
+                self._cpus_per_task = int((self._total_ntasks - 1) / 2)
+            else:
+                self._cpus_per_task = int(self._total_ntasks / 2)
+
+        else:
+            self.itr.logger.error(
+                f"{self.logger_msg}: missing 'ntasks' key in --slurm-resources file for 'train_eval'\nExiting..."
+            )
+            exit(1)
+
+        ### HANDLE CPU MEM
         if "mem" in self.slurm_resources["train_eval"]:
             self._gpu_mem = self.slurm_resources["train_eval"]["mem"]
             self._cpu_mem = None
@@ -65,13 +87,24 @@ class TrainEval:
         else:
             self._cpu_mem = None
 
-        self.logger_msg = (
-            f"{self.itr._mode_string} - [{self._phase}] - [{self.itr.train_genome}]"
-        )
+        ### HANDLE GPUS
+        if "gres" in self.slurm_resources["train_eval"]:
+            _gres_input = self.slurm_resources["train_eval"]["gres"]
+            _gres_items = _gres_input.split(":")
+            if len(_gres_items) == 3:
+                _total_gpus = int(_gres_items[2])
+                _gres_string = ":".join(_gres_items[0:2])
+            else:
+                _total_gpus = int(_gres_items[1])
+                _gres_string = _gres_items[0]
+
+            _gpus_per_task = int(_total_gpus / 2)
+            self._gres = f"{_gres_string}:{_gpus_per_task}"
+        else:
+            self._gres = None
+
         self.epochs = self.itr.env.contents["N_Epochs"]
         self.batches = self.itr.env.contents["BatchSize"]
-        self._total_ntasks = self.slurm_resources["train_eval"]["ntasks"]
-        self._ntasks_per_gpu = 1
 
         if f"{self.itr.train_genome}_Examples" in self.itr.env.contents:
             self.train_examples = self.itr.env.contents[
@@ -408,14 +441,14 @@ class TrainEval:
         if self._per_gpu_mem is None and self._per_cpu_mem is None:
             training_command_list.extend(
                 [
-                    f"srun -l --gres=gpu:1 --ntasks={self._ntasks_per_gpu} bash ./scripts/run/train_model.sh {self.itr.train_genome} >& \"{self.itr.log_dir}/train-{self.itr.train_genome}-{'${NUM_STEPS}'}steps.log\"",
+                    f"srun -l --gres={self._gres} --ntasks={self._ntasks_per_gpu} --cpus-per-task={self._cpus_per_task} bash ./scripts/run/train_model.sh {self.itr.train_genome} >& \"{self.itr.log_dir}/train-{self.itr.train_genome}-{'${NUM_STEPS}'}steps.log\"",
                 ]
             )
 
         else:
             training_command_list.extend(
                 [
-                    f"srun -l --gres=gpu:1 --ntasks={self._ntasks_per_gpu} {self._srun_mem} bash ./scripts/run/train_model.sh {self.itr.train_genome} >& \"{self.itr.log_dir}/train-{self.itr.train_genome}-{'${NUM_STEPS}'}steps.log\"",
+                    f"srun -l --gres={self._gres} --ntasks={self._ntasks_per_gpu} --cpus-per-task={self._cpus_per_task} {self._srun_mem} bash ./scripts/run/train_model.sh {self.itr.train_genome} >& \"{self.itr.log_dir}/train-{self.itr.train_genome}-{'${NUM_STEPS}'}steps.log\"",
                 ]
             )
 
@@ -435,11 +468,11 @@ class TrainEval:
         # link training with evaluation
         if self._per_gpu_mem is None and self._per_cpu_mem is None:
             evaluation_command_list = [
-                f"srun -l --gres=gpu:1 --ntasks={self._ntasks_per_gpu} bash ./scripts/run/eval_model.sh {self.itr.eval_genome} >& \"{self.itr.log_dir}/train-{self.itr.train_genome}-eval-{self.itr.eval_genome}-{'${NUM_STEPS}'}steps.log\""
+                f"srun -l --gres={self._gres} --ntasks={self._ntasks_per_gpu} --cpus-per-task={self._cpus_per_task} bash ./scripts/run/eval_model.sh {self.itr.eval_genome} >& \"{self.itr.log_dir}/train-{self.itr.train_genome}-eval-{self.itr.eval_genome}-{'${NUM_STEPS}'}steps.log\""
             ]
         else:
             evaluation_command_list = [
-                f"srun -l --gres=gpu:1 --ntasks={self._ntasks_per_gpu} {self._srun_mem} bash ./scripts/run/eval_model.sh {self.itr.eval_genome} >& \"{self.itr.log_dir}/train-{self.itr.train_genome}-eval-{self.itr.eval_genome}-{'${NUM_STEPS}'}steps.log\""
+                f"srun -l --gres={self._gres} --ntasks={self._ntasks_per_gpu} --cpus-per-task={self._cpus_per_task} {self._srun_mem} bash ./scripts/run/eval_model.sh {self.itr.eval_genome} >& \"{self.itr.log_dir}/train-{self.itr.train_genome}-eval-{self.itr.eval_genome}-{'${NUM_STEPS}'}steps.log\""
             ]
 
         group_srun_commands = f"{slurm_job._line_list[-1]} &"
