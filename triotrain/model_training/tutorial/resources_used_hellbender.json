@@ -27,8 +27,8 @@
         "email": "jakth2@mail.missouri.edu"
     },
     "train_eval": {
-        "partition": "gpu",
-        "gres": "gpu:2",
+        "partition": "gpu,schnabelr-lab,general",
+        "gres": "gpu:A100:2",
         "nodes": 1,
         "ntasks": 28,
         "mem": 122000,
