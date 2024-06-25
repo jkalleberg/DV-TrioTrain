@@ -6,8 +6,6 @@
 # altering your account (i.e. 'schnabellab')
 
 # srun --pty -p gpu3 --time=0-04:00:00 -A animalsci /bin/bash
-# srun --pty -p hpc6 --time=0-04:00:00 --mem=0 --exclusive -A animalsci /bin/bash
-# srun --pty -p Interactive --qos=Interactive --time=0-04:00:00 --mem=0 --exclusive -A animalsci /bin/bash
-# srun --pty -p Interactive --qos=Interactive --time=0-04:00:00 --mem=30G -A schnabellab /bin/bash
-srun --pty -p interactive --time=0-04:00:00 --mem=30G /bin/bash
+srun --pty -p schnabelr-umag --time=0-08:00:00 --mem=30G -A schnabelr-umag /bin/bash
+# srun --pty -p interactive --time=0-04:00:00 --mem=30G /bin/bash
 # srun --pty -p BioCompute --time=0-06:00:00 --exclusive --mem=0 -A schnabellab /bin/bash

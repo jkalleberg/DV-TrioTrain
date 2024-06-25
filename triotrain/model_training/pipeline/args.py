@@ -342,10 +342,10 @@ def get_args(parser: argparse.ArgumentParser) -> argparse.Namespace:
         "19",
         # "6",
         "--start-itr",
-        "9",
-        "--stop-itr",
-        # "11",
         "17",
+        "--stop-itr",
+        "18",
+        # "17",
         # "30",
         # "--dry-run",
         # "--ignore",
@@ -365,8 +365,8 @@ def get_args(parser: argparse.ArgumentParser) -> argparse.Namespace:
         # "/storage/hpc/group/UMAG_test/WORKING/jakth2/TRIO_TRAINING_OUTPUTS/220913_NewTrios/PASS11/examples/Mother.example_info.json",
         # "--use-gpu",
         # "--benchmark",
-        "--trio-dependencies",
-        "None,None,28935490,None",
+        # "--trio-dependencies",
+        # "None,None,28935490,None",
         # "--overwrite",
         # "--restart-jobs",
         # '{"train_eval": [1]}',
@@ -375,8 +375,8 @@ def get_args(parser: argparse.ArgumentParser) -> argparse.Namespace:
         # '{"convert_happy": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]}',
         # '{"convert_happy": [2, 3, 4, 5, 6]}',
     ]
-    # return parser.parse_args(manual_args_list)
-    return parser.parse_args()
+    return parser.parse_args(manual_args_list)
+    # return parser.parse_args()
 
 
 def check_args(args: argparse.Namespace, logger: Logger, default_channels: str) -> None:
