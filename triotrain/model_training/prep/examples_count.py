@@ -147,6 +147,7 @@ class CountExamples:
                 self.variable_name,
                 str(self._n_examples),
                 dryrun_mode=self.itr.dryrun_mode,
+                msg=f"{self.itr._mode_string} - [{self._phase}] - [{self.logger_msg}]",
             )
 
         if self._n_examples is not None:

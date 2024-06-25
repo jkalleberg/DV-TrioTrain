@@ -269,7 +269,7 @@ class RunTrioTrain:
                 return
             else:
                 indexes = [None] * total_jobs_in_phase
-        
+
         for i, index in enumerate(indexes):
             if index is None:
                 continue
@@ -314,7 +314,7 @@ class RunTrioTrain:
                     )
                 print("Exiting...")
                 exit(1)
-        
+
         if self._phase_jobs:
             if self._jobIDs and len(self._jobIDs) != total_jobs_in_phase:
                 self.itr.logger.error(
@@ -470,7 +470,6 @@ class RunTrioTrain:
 
                 if outputs_found:
                     continue
-
                 else:
                     jobs_list[j] = generate_job_id()
 
@@ -614,12 +613,10 @@ class RunTrioTrain:
                         )
                         continue
 
+                    self.make_examples.find_outputs(self.current_phase, find_all=True)
+
                     if self.restart_jobs and self._phase_jobs is None:
                         self.check_next_phase(total_jobs=self._n_regions, genome=genome)
-                    else:
-                        self.make_examples.find_outputs(
-                            self.current_phase, find_all=True
-                        )
 
                     examples_job_nums = self.make_examples.run()
 
