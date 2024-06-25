@@ -29,22 +29,22 @@ def preserve(item: object, pickled_path: TestFile, overwrite: bool = False) -> N
     """
     pickled_path.check_existing()
     if pickled_path.file_exists and overwrite is False:
-        pickled_path.logger.error(
-            f"Unable to overwrite an existing pickle file | '{pickled_path.file}'"
+        pickled_path.logger.info(
+            f"unable to overwrite an existing pickle file | '{pickled_path.file}'"
         )
     else:
         try:
             if pickled_path.file_exists and overwrite is True:
                 pickled_path.logger.warning(
-                    f"Overwriting an existing pickle file | '{pickled_path.file}'"
+                    f"overwriting an existing pickle file | '{pickled_path.file}'"
                 )
             else:
                 pickled_path.logger.info(
-                    f"Creating a new pickle file | '{pickled_path.file}'"
+                    f"creating a new pickle file | '{pickled_path.file}'"
                 )
             pickle.dump(item, open(pickled_path.file, "wb"))
         except pickle.PicklingError:
-            pickled_path.logger.error(f"Unable to pickle an item | '{object}'")
+            pickled_path.logger.error(f"unable to pickle an item | '{item}'")
 
 
 def prepare(pickled_path: Path) -> object:
@@ -66,6 +66,6 @@ def prepare(pickled_path: Path) -> object:
             return pickle.load(open(str(pickled_path), "rb"))
 
         except pickle.UnpicklingError:
-            print(f"Unable to unpickle an item | '{pickled_path.file}'")
+            print(f"unable to unpickle an item | '{pickled_path.file}'")
     else:
-        print(f"Missing the pickled item | '{pickled_path.file}'")
+        print(f"missing the pickled item | '{pickled_path.file}'")

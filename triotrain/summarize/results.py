@@ -5,12 +5,14 @@ description:
 example:
 """
 
+from csv import DictReader
 from dataclasses import dataclass, field
 from pathlib import Path
-from sys import path, exit
+from sys import exit, path
 from typing import Dict, List, Union
 
 from regex import compile
+from argparse import Namespace
 
 abs_path = Path(__file__).resolve()
 module_path = str(abs_path.parent.parent)
@@ -23,7 +25,7 @@ class SummarizeResults:
     """
     Data to pickle for processing the summary stats from a VCF/BCF output.
     """
-
+    args: Namespace
     sample_metadata: Union[List[Dict[str, str]], Dict[str, str]]
     output_file: WriteFiles
 
@@ -32,15 +34,23 @@ class SummarizeResults:
     _digits_only: compile = field(default=compile(r"\d+"), init=False, repr=False)
     _file_path: Path = field(default=None, init=False, repr=False)
     _input_file: WriteFiles = field(default=None, init=False, repr=False)
+    _index: int = field(default=0, init=False, repr=False)
+    _merged_data: Union[List[str], Dict[str, str]] = field(
+        default_factory=dict, init=False, repr=False
+    )
+    _sample_label: str = field(default=None, init=False, repr=False)
     _trio_num: int = field(default=None, init=False, repr=False)
     _total_samples: int = field(default=0, init=False, repr=False)
-    _sample_label: str = field(default=None, init=False, repr=False)
+    _output_lines_mie: List[str] = field(default_factory=list, init=False, repr=False)
+    _output_lines_stats: List[str] = field(default_factory=list, init=False, repr=False)
 
     def __post_init__(self) -> None:
 
         if isinstance(self.sample_metadata, dict):
             if "file_path" not in self.sample_metadata.keys():
-                self.output_file.logger.error(f"{self.output_file.logger_msg}: unrecognized file format, missing column with 'file_path'\nExiting...")
+                self.output_file.logger.error(
+                    f"{self.output_file.logger_msg}: unrecognized file format, missing column with 'file_path'\nExiting..."
+                )
                 exit(1)
             self._file_path = Path(self.sample_metadata["file_path"])
             self._total_samples = 1
@@ -99,7 +109,7 @@ class SummarizeResults:
                     self.output_file.logger.error(
                         f"{self.output_file.logger_msg}: discrepency in trio numbering: input file has 'Trio{self._trio_num}', but input label has 'Trio{_trio_num}'\nExiting..."
                     )
-                    exit(1) 
+                    exit(1)
             else:
                 self._trio_num = _trio_num
 
@@ -175,12 +185,15 @@ class SummarizeResults:
         self.validate_trio()
         input_name = Path(self._input_file._test_file.clean_filename).name
 
-        if not self._missing_pedigree_data:
-            self._ID = f"Trio{self._trio_num}"
+        if len(self.sample_metadata) == 3:
             self._caller = self.sample_metadata[0]["variant_caller"]
+            if self._contains_valid_trio:
+                self._ID = f"Trio{self._trio_num}"
+            else:
+                self._ID = self.sample_metadata[0]["sampleID"]
         else:
-            self._ID = self.sample_metadata["sampleID"]
             self._caller = self.sample_metadata["variant_caller"]
+            self._ID = self.sample_metadata["sampleID"]
 
         if self._ID not in input_name:
             self.output_file.logger.warning(
@@ -198,9 +211,50 @@ class SummarizeResults:
         else:
             self._job_name = f"stats.{_job_name}"
 
-        print("TRIO NUMBER:", self._trio_num)
-        print("ID:", self._ID)
-        print("CONTAINS TRIO:", self._contains_valid_trio)
-        print("MISSING PEDIGREE:", self._missing_pedigree_data)
-        print("MISSING MERGED VCF:", self._missing_merged_vcf)
-        breakpoint()
+    def write_output(self, unique_records_only: bool = False) -> None:
+        """
+        Save the combined metrics to a new CSV output, or display to screen.
+        """
+        self.output_file._test_file.check_existing()
+
+        if unique_records_only and self.output_file._test_file.file_exists:
+            with open(str(self.output_file.file_path), "r") as file:
+                dict_reader = DictReader(file)
+                current_records = list(dict_reader)
+
+            for r in current_records:
+                if isinstance(self._merged_data, list):
+                    if r in self._merged_data:
+                        if self._input_file.debug_mode:
+                            self._input_file.logger.debug(
+                                f"{self._input_file.logger_msg}: skipping a previously processed file | '{self._input_file.file}'"
+                            )
+                        self._input_file.logger.info(
+                            f"{self._input_file.logger_msg}: data has been written previously... SKIPPING AHEAD"
+                        )
+                        return
+                    else:
+                        continue
+
+                else:
+                    if self._merged_data == r:
+                        if self._input_file.debug_mode:
+                            self._input_file.logger.debug(
+                                f"{self._input_file.logger_msg}: skipping a previously processed file | '{self._input_file.file}'"
+                            )
+                        self._input_file.logger.info(
+                            f"{self._input_file.logger_msg}: data has been written previously... SKIPPING AHEAD"
+                        )
+                        return
+                    else:
+                        continue
+
+        # ensure that output doesn't have duplicate sampleID column
+        if isinstance(self._merged_data, dict):
+            col_names = list(self._merged_data.keys())
+            self.output_file.add_rows(col_names=col_names, data_dict=self._merged_data)
+        else:
+            for row in self._merged_data:
+                col_names = list(row.keys())
+                self.output_file.add_rows(col_names=col_names, data_dict=row)
+
