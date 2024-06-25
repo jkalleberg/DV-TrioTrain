@@ -243,11 +243,12 @@ class RunTrioTrain:
             genome=genome,
             restart=restart,
         )
+
         if self._phase_jobs:
             # check if all elements in self._phase_jobs are integers
             if all([isinstance(item, int) for item in self._phase_jobs]):
                 # check if all elements in self._phase_jobss are not SLURM job ids
-                if all([not is_jobid(item) for item in self._phase_jobs]):
+                if all([not is_jobid(item, max_jobs=total_jobs_in_phase) for item in self._phase_jobs]):
                     # handle if the user provides region numbers,
                     if 0 not in self._phase_jobs:
                         indexes = [x - 1 for x in self._phase_jobs]
@@ -255,7 +256,12 @@ class RunTrioTrain:
                     else:
                         indexes = self._phase_jobs
                 else:
-                    indexes = self._phase_jobs
+                    # handle if the user provides region numbers,
+                    if 0 not in self._phase_jobs:
+                        indexes = [x - 1 for x in self._phase_jobs]
+                    # rather than a list of indexes
+                    else:
+                        indexes = self._phase_jobs
             else:
                 indexes = self._phase_jobs
         else:
@@ -263,11 +269,11 @@ class RunTrioTrain:
                 return
             else:
                 indexes = [None] * total_jobs_in_phase
-
+        
         for i, index in enumerate(indexes):
             if index is None:
                 continue
-            elif is_jobid(index):
+            elif is_jobid(index, max_jobs=total_jobs_in_phase):
                 if total_jobs_in_phase > 1:
                     _num = i + 1
                     if phase in ["make_examples", "beam_shuffle"]:
@@ -282,7 +288,6 @@ class RunTrioTrain:
                     self.itr.logger.info(
                         f"{self._phase_logger_msg}: currently running SLURM job number | '{index}'"
                     )
-
                 self._jobIDs[i] = index
             elif is_job_index(index, max_jobs=total_jobs_in_phase):
                 self._jobIDs[index] = index
@@ -309,7 +314,7 @@ class RunTrioTrain:
                     )
                 print("Exiting...")
                 exit(1)
-
+        
         if self._phase_jobs:
             if self._jobIDs and len(self._jobIDs) != total_jobs_in_phase:
                 self.itr.logger.error(
@@ -432,7 +437,7 @@ class RunTrioTrain:
             jobs_list = [None for n in range(0, total_jobs)]
 
             for e, j in enumerate(self._phase_jobs):
-                if is_jobid(j):
+                if is_jobid(j,max_jobs=total_jobs):
                     _job_num = e + 1
                 elif is_job_index(j, max_jobs=total_jobs):
                     _job_num = (
@@ -1094,6 +1099,7 @@ class RunTrioTrain:
         """
         Combines all necessary functions to produce SLURM jobs for an Iteration of TrioTrain into one step.
         """
+
         if self.restart_jobs:
             self.convert_jobids()
         self.make_and_submit_jobs()

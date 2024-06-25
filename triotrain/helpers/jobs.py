@@ -1,7 +1,7 @@
 from typing import Union
 
 
-def is_jobid(value: Union[int, str]) -> bool:
+def is_jobid(value: Union[int, str], max_jobs: int = 1) -> bool:
     """Determine if a user entered value is a SLURM job id, indicating a currently running job to save for building job dependencies.
 
     Parameters
@@ -14,7 +14,8 @@ def is_jobid(value: Union[int, str]) -> bool:
     bool
         if True, entry is a valid SLURM job number
     """
-    return len(str(value)) in [8] and str(value).isdigit()
+    length_of_value = len(str(value))
+    return int(value) > max_jobs and length_of_value in [7, 8, 9] and str(value).isdigit()
 
 
 def is_job_index(value: Union[int, str], max_jobs: int = 1) -> bool:

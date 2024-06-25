@@ -369,6 +369,8 @@ def get_args(parser: argparse.ArgumentParser) -> argparse.Namespace:
         # "None,None,28935490,None",
         # "--overwrite",
         # "--restart-jobs",
+        # '{"make_examples:Father": [2497829,2,9]}',
+        # '{"make_examples:Father": [10,11,12]}',
         # '{"train_eval": [1]}',
         # '{"re_shuffle:Father": [1]}',
         # '{"call_variants": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]}',

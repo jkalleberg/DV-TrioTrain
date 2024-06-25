@@ -157,12 +157,11 @@ class MakeExamples:
         self.set_variables()
         self.set_region()
 
-    def find_restart_jobs(self, resubmission: bool = False) -> None:
+    def find_restart_jobs(self) -> None:
         """Collect any SLURM job ids for running tests to avoid submitting duplicate jobs simultaneously"""
         self._ignoring_restart_jobs = check_if_all_same(
             self.make_examples_job_nums, None
         )
-
         if not self._ignoring_restart_jobs:
             self._jobs_to_run = find_not_NaN(self.make_examples_job_nums)
             self._num_to_run = len(self._jobs_to_run)
@@ -181,7 +180,7 @@ class MakeExamples:
                 updated_jobs_list = []
 
                 for index in self._jobs_to_run:
-                    if is_jobid(self.make_examples_job_nums[index]):
+                    if is_jobid(self.make_examples_job_nums[index], max_jobs=self._total_regions):
                         self._num_to_run -= 1
                         self._num_to_ignore += 1
                         self._skipped_counter += 1
@@ -283,10 +282,16 @@ class MakeExamples:
         )
 
         if slurm_job.check_sbatch_file():
-            if self.make_examples_job_nums and self.make_examples_job_nums[index] is not None and self.overwrite:
-                self.itr.logger.info(
-                    f"{self.logger_msg}: --overwrite=True, re-writing the existing SLURM job now..."
-                )
+            if self.overwrite:
+                if self.make_examples_job_nums and self.make_examples_job_nums[index] is not None and is_jobid(self.make_examples_job_nums[index], max_jobs=self._total_regions):
+                    self.itr.logger.info(
+                        f"{self.logger_msg}: --overwrite=True, but skipping re-writing SLURM job due to a currently running job | '{self.make_examples_job_nums[index]}'"
+                    )
+                    return
+                else:
+                    self.itr.logger.info(
+                        f"{self.logger_msg}: --overwrite=True, re-writing the existing SLURM job now..."
+                    )
             else:
                 self.itr.logger.info(
                     f"{self.logger_msg}: --overwrite=False; SLURM job file already exists... SKIPPING AHEAD"
@@ -425,7 +430,7 @@ class MakeExamples:
             self.itr.logger.info(
                 f"{self.logger_msg}: --overwrite=True; {msg}mitting job because replacing existing labeled.tfrecords"
             )
-            
+
         else:
             self.itr.logger.info(
                 f"{self.logger_msg}: {msg}mitting job to create labeled.tfrecords"
@@ -561,7 +566,7 @@ class MakeExamples:
             msg = "sub"
         else:
             msg = "re-sub"
-            
+
         self.find_restart_jobs()
 
         if self.itr.debug_mode:
@@ -606,8 +611,9 @@ class MakeExamples:
                     )  # THIS HAS TO BE +1 to avoid starting with a region0
 
                     self.set_region(current_region=self.job_num)
-                    # if not self.itr.demo_mode:
-                    #     self.find_outputs()
+                    if not self.itr.demo_mode:
+                        self.find_outputs()
+                    
                     if skip_re_runs or not self._outputs_exist:
                         self.submit_job(
                             msg=msg,
@@ -633,13 +639,17 @@ class MakeExamples:
                     r + 1
                 )  # THIS HAS TO BE +1 to avoid starting with a region0
                 self.set_region(current_region=self.job_num)
-                # if not self.itr.demo_mode:
-                #     self.find_outputs()
-                self.submit_job(
-                    msg=msg,
-                    dependency_index=r, total_jobs=int(self._total_regions)
-                )  # THIS HAS TO BE r because indexing of the list of job ids starts with 3
+                if not self.itr.demo_mode:
+                    self.find_outputs()
 
+                if self.overwrite and self._outputs_exist:
+                    self.submit_job(msg=msg,dependency_index=r,total_jobs=int(self._total_regions),resubmission=True)
+                else:
+                    self.submit_job(
+                        msg=msg,
+                        dependency_index=r, total_jobs=int(self._total_regions)
+                    )  # THIS HAS TO BE r because indexing of the list of job ids starts with 3
+                    
         self.check_submissions()
 
         if (
