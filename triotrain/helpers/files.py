@@ -172,8 +172,15 @@ class WriteFiles:
         """
         Append rows to a csv.
         """
+
         if self.dryrun_mode:
+            self.logger.info(
+                    f"{self.logger_msg}: pretending to add header + row to a CSV | '{str(self.file_path)}'"
+                )
+            print("---------------------------------------------")
+            print(",".join(data_dict.keys()))
             print(",".join(data_dict.values()))
+            print("---------------------------------------------")
         else:
             if self.file_path.exists():
                 if self.debug_mode:
