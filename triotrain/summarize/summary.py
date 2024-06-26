@@ -155,9 +155,6 @@ class Summary:
                 ]
                 cmd_string = " ".join(slurm_cmd)
                 self._command_list = [cmd_string]
-            # else:
-            #     print("PUT MIE COMMAND(S) HERE!")
-            #     breakpoint()
 
             if self.args.dry_run:
                 self.logger.info(
@@ -169,10 +166,7 @@ class Summary:
                     pickled_path=_pickle_file,
                     overwrite=self.args.overwrite,
                 )
-
-            # self._slurm_job = self.make_job()
-            # self.submit_job(index=self._index)
-            # self._command_list.clear()
+            breakpoint()
 
     def process_multiple_samples(self) -> None:
         """
@@ -206,6 +200,10 @@ class Summary:
                     continue
             else:
                 self.process_sample()
+
+            # self._slurm_job = self.make_job()
+            # self.submit_job(index=self._index)
+            # self._command_list.clear()
 
     def make_job(self) -> Union[SBATCH, None]:
         """

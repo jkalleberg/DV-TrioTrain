@@ -5,6 +5,8 @@ description:
 example:
 """
 
+from argparse import Namespace
+from collections import OrderedDict
 from csv import DictReader
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -12,12 +14,12 @@ from sys import exit, path
 from typing import Dict, List, Union
 
 from regex import compile
-from argparse import Namespace
 
 abs_path = Path(__file__).resolve()
 module_path = str(abs_path.parent.parent)
 path.append(module_path)
 from helpers.files import WriteFiles
+from model_training.slurm.suffix import remove_suffixes
 
 
 @dataclass
@@ -25,6 +27,7 @@ class SummarizeResults:
     """
     Data to pickle for processing the summary stats from a VCF/BCF output.
     """
+
     args: Namespace
     sample_metadata: Union[List[Dict[str, str]], Dict[str, str]]
     output_file: WriteFiles
@@ -211,6 +214,50 @@ class SummarizeResults:
         else:
             self._job_name = f"stats.{_job_name}"
 
+    def add_metadata(
+        self, messy_metrics: Union[List[Dict[str, str]], Dict[str, str]]
+    ) -> None:
+        """
+        Merge the user-provided metadata with metrics Dict, or a list of Dicts
+        """
+        if isinstance(self.sample_metadata, dict):
+            clean_metadata = {
+                key: val
+                for key, val in self.sample_metadata.items()
+                if key != "file_path"
+            }
+            _clean_metrics = messy_metrics[0]
+            self._merged_data = {**clean_metadata, **_clean_metrics}
+        else:
+            clean_metadata = [
+                {key: val for key, val in d.items() if key != "file_path"}
+                for d in self.sample_metadata
+            ]
+
+            rekeyed_metadata = OrderedDict({d["sampleID"]: d for d in clean_metadata})
+
+            if "sampleID" in messy_metrics.keys():
+                rekeyed_metrics = {d["sampleID"]: d for d in messy_metrics}
+                combined = OrderedDict()
+
+                for key in rekeyed_metrics:
+                    temp = rekeyed_metadata[key]
+                    temp.update(rekeyed_metrics[key])
+                    combined[key] = temp
+
+                self._merged_data = list(combined.values())
+
+            else:
+                _sample_path = remove_suffixes(self._input_file.file_path)
+                _sample_name = Path(_sample_path).stem
+
+                for d in clean_metadata:
+                    if _sample_name in d["sampleID"]:
+                        _metadata = d
+                    else:
+                        continue
+                self._merged_data = {**_metadata, **messy_metrics}
+
     def write_output(self, unique_records_only: bool = False) -> None:
         """
         Save the combined metrics to a new CSV output, or display to screen.
@@ -249,6 +296,7 @@ class SummarizeResults:
                     else:
                         continue
 
+        
         # ensure that output doesn't have duplicate sampleID column
         if isinstance(self._merged_data, dict):
             col_names = list(self._merged_data.keys())
@@ -257,4 +305,3 @@ class SummarizeResults:
             for row in self._merged_data:
                 col_names = list(row.keys())
                 self.output_file.add_rows(col_names=col_names, data_dict=row)
-

@@ -792,28 +792,13 @@ class MIE:
             )
 
         # merge the user-provided metadata with sample_stats
-        self._summary._pickled_data._merged_data = {
-            **self._summary._pickled_data.sample_metadata[0],
-            **results_dict,
-        }
-
+        self._summary._pickled_data.add_metadata(messy_metrics=results_dict)
+        
         # save the merged data in a dict of dicts with _num_processed as the index
         self._num_processed += 1
         self._summary._pickled_data._output_lines_mie.insert(
             self._num_processed, self._summary._pickled_data._merged_data
-        )
-
-        if self.args.dry_run:
-            if self._summary._index < 1:
-                self.logger.info(
-                    f"{self._summary._logger_msg}: pretending to add header + row to a CSV | '{self.args.outpath}'"
-                )
-                print("---------------------------------------------")
-                print(",".join(self._summary._pickled_data._merged_data.keys()))
-            else:
-                self.logger.info(
-                    f"{self._summary._logger_msg}: pretending to add a row to a CSV | '{self.args.outpath}'"
-                )
+        )        
         self._summary._vcf_file = self._trio_vcf
         self._summary._pickled_data.write_output(unique_records_only=True)
 
