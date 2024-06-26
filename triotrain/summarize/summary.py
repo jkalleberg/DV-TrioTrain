@@ -43,7 +43,7 @@ class Summary:
     logger: Logger
 
     # optional values
-    get_sample_stats: bool = False
+    # get_sample_stats: bool = False
 
     # imutable, internal parameters
     _command_list: List[str] = field(default_factory=list, init=False, repr=False)
@@ -135,25 +135,27 @@ class Summary:
         self._clean_file_path = self._pickled_data._input_file._test_file.clean_filename
 
         if contains_trio and not self._pickled_data._contains_valid_trio:
-            if self.args.debug:
-                self.logger.debug(
+            # if self.args.debug:
+            self.logger.debug(
                     f"{self._logger_msg}: not a valid trio... SKIPPING AHEAD"
                 )
             return
         else:
-
             _pickle_file = TestFile(
                 Path(f"{self._clean_file_path}.pkl"),
                 logger=self.logger,
             )
-            if self.get_sample_stats:
-                slurm_cmd = [
-                    "python3",
-                    "./triotrain/summarize/smpl_stats.py",
-                    "--pickle-file",
-                    _pickle_file.file,
-                ]
-                cmd_string = " ".join(slurm_cmd)
+            slurm_cmd = [
+                "python3",
+                "./triotrain/summarize/smpl_stats.py",
+                "--pickle-file",
+                _pickle_file.file,
+            ]
+            cmd_string = " ".join(slurm_cmd)
+
+            if self._command_list:
+                self._command_list.append(cmd_string)
+            else:
                 self._command_list = [cmd_string]
 
             if self.args.dry_run:
@@ -168,42 +170,42 @@ class Summary:
                 )
             breakpoint()
 
-    def process_multiple_samples(self) -> None:
-        """
-        Iterate through multiple VCF files
-        """
-        if self.args.debug:
-            itr = self._data_list[0:3]
-        else:
-            itr = self._data_list
+    # def process_multiple_samples(self) -> None:
+    #     """
+    #     Iterate through multiple VCF files
+    #     """
+    #     if self.args.debug:
+    #         itr = self._data_list[0:3]
+    #     else:
+    #         itr = self._data_list
 
-        _counter = 0
-        for i, item in enumerate(itr):
-            self._index = i
-            self._data = item
-            _counter += int(self._pickled_data._contains_valid_trio)
+    #     _counter = 0
+    #     for i, item in enumerate(itr):
+    #         self._index = i
+    #         self._data = item
+    #         _counter += int(self._pickled_data._contains_valid_trio)
 
-            if self._pickled_data._contains_valid_trio:
-                if _counter == 1:
-                    self.logger.info(
-                        f"{self._logger_msg}: input file contains a family | Trio{self._trio_num}"
-                    )
-                    self.process_sample()
-                else:
-                    if self.args.dry_run:
-                        self.logger.info(
-                            f"{self._logger_msg}: multi-sample VCF detected... SKIPPING AHEAD"
-                        )
-                    self._num_skipped += 1
-                    if _counter == 3:
-                        _counter = 0
-                    continue
-            else:
-                self.process_sample()
+    #         if self._pickled_data._contains_valid_trio:
+    #             if _counter == 1:
+    #                 self.logger.info(
+    #                     f"{self._logger_msg}: input file contains a family | Trio{self._trio_num}"
+    #                 )
+    #                 self.process_sample()
+    #             else:
+    #                 if self.args.dry_run:
+    #                     self.logger.info(
+    #                         f"{self._logger_msg}: multi-sample VCF detected... SKIPPING AHEAD"
+    #                     )
+    #                 self._num_skipped += 1
+    #                 if _counter == 3:
+    #                     _counter = 0
+    #                 continue
+    #         else:
+    #             self.process_sample()
 
-            # self._slurm_job = self.make_job()
-            # self.submit_job(index=self._index)
-            # self._command_list.clear()
+    #         # self._slurm_job = self.make_job()
+    #         # self.submit_job(index=self._index)
+    #         # self._command_list.clear()
 
     def make_job(self) -> Union[SBATCH, None]:
         """
@@ -299,74 +301,74 @@ class Summary:
                 )
                 self._job_nums.append(None)
 
-    def check_submission(self) -> None:
-        """
-        Check if SLURM job file(s) were submitted to the SLURM queue successfully.
-        """
-        # look at job number list to see if all items are 'None'
-        _results = check_if_all_same(self._job_nums, None)
-        if _results is False:
-            print(
-               f"============ {self._logger_msg} Job Numbers - {self._job_nums} ============"
-            )
-        elif self._num_skipped == self._total_lines:
-            self.logger.info(
-                f"{self._logger_msg}: no SLURM jobs were submitted... SKIPPING AHEAD"
-            )
-        else:
-            self.logger.warning(
-                f"{self._logger_msg}: expected SLURM jobs to be submitted, but they were not",
-            )
-            self.logger.warning(
-                f"{self._logger_msg}: fatal error encountered, unable to proceed further with pipeline.\nExiting... ",
-            )
-            exit(1)
+    # def check_submission(self) -> None:
+    #     """
+    #     Check if SLURM job file(s) were submitted to the SLURM queue successfully.
+    #     """
+    #     # look at job number list to see if all items are 'None'
+    #     _results = check_if_all_same(self._job_nums, None)
+    #     if _results is False:
+    #         print(
+    #            f"============ {self._logger_msg} Job Numbers - {self._job_nums} ============"
+    #         )
+    #     elif self._num_skipped == self._total_lines:
+    #         self.logger.info(
+    #             f"{self._logger_msg}: no SLURM jobs were submitted... SKIPPING AHEAD"
+    #         )
+    #     else:
+    #         self.logger.warning(
+    #             f"{self._logger_msg}: expected SLURM jobs to be submitted, but they were not",
+    #         )
+    #         self.logger.warning(
+    #             f"{self._logger_msg}: fatal error encountered, unable to proceed further with pipeline.\nExiting... ",
+    #         )
+    #         exit(1)
 
-    def run(self) -> None:
-        """
-        Combine all the steps into a single command.
-        """
-        self.load_variables()
+    # def run(self) -> None:
+    #     """
+    #     Combine all the steps into a single command.
+    #     """
+    #     self.load_variables()
 
-        # Process all samples
-        self.process_multiple_samples()
-        self.check_submission()
-        if self._num_processed != 0:
-            self.logger.info(
-                f"{self._logger_msg}: processed {self._num_processed}-of-{self._total_samples} VCFs"
-            )
+    #     # Process all samples
+    #     self.process_multiple_samples()
+    #     self.check_submission()
+    #     if self._num_processed != 0:
+    #         self.logger.info(
+    #             f"{self._logger_msg}: processed {self._num_processed}-of-{self._total_samples} VCFs"
+    #         )
 
-        if self._num_skipped != 0:
-            self.logger.info(
-                f"{self._logger_msg}: skipped {self._num_skipped}-of-{self._total_samples} VCFs"
-            )
-
-
-def __init__() -> None:
-    from helpers.utils import get_logger
-    from helpers.wrapper import Wrapper, timestamp
-
-    # Collect command line arguments
-    args = collect_args()
-
-    # Collect start time
-    Wrapper(__file__, "start").wrap_script(timestamp())
-
-    # Create error log
-    current_file = p.basename(__file__)
-    module_name = p.splitext(current_file)[0]
-    logger = get_logger(module_name)
-
-    try:
-        # Check command line args
-        check_args(args, logger)
-        Summary(args, logger).run()
-    except AssertionError as E:
-        logger.error(E)
-
-    Wrapper(__file__, "end").wrap_script(timestamp())
+    #     if self._num_skipped != 0:
+    #         self.logger.info(
+    #             f"{self._logger_msg}: skipped {self._num_skipped}-of-{self._total_samples} VCFs"
+    #         )
 
 
-# Execute functions created
-if __name__ == "__main__":
-    __init__()
+# def __init__() -> None:
+#     from helpers.utils import get_logger
+#     from helpers.wrapper import Wrapper, timestamp
+
+#     # Collect command line arguments
+#     args = collect_args()
+
+#     # Collect start time
+#     Wrapper(__file__, "start").wrap_script(timestamp())
+
+#     # Create error log
+#     current_file = p.basename(__file__)
+#     module_name = p.splitext(current_file)[0]
+#     logger = get_logger(module_name)
+
+#     try:
+#         # Check command line args
+#         check_args(args, logger)
+#         Summary(args, logger).run()
+#     except AssertionError as E:
+#         logger.error(E)
+
+#     Wrapper(__file__, "end").wrap_script(timestamp())
+
+
+# # Execute functions created
+# if __name__ == "__main__":
+#     __init__()

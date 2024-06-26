@@ -12,7 +12,6 @@ example:
 
 import argparse
 from dataclasses import dataclass, field
-from json import load
 from logging import Logger
 from os import path as p
 from pathlib import Path
@@ -793,7 +792,7 @@ class MIE:
 
         # merge the user-provided metadata with sample_stats
         self._summary._pickled_data.add_metadata(messy_metrics=results_dict)
-        
+
         # save the merged data in a dict of dicts with _num_processed as the index
         self._num_processed += 1
         self._summary._pickled_data._output_lines_mie.insert(
@@ -802,8 +801,11 @@ class MIE:
         self._summary._vcf_file = self._trio_vcf
         self._summary._pickled_data.write_output(unique_records_only=True)
 
-    def process_sample(self, itr: int, row_data: Dict[str, str]) -> None:
+    def process_trio(self, itr: int, row_data: Dict[str, str]) -> None:
         """ """
+        # print("INPUT CMD LIST:--------------")
+        # print(self._summary._command_list)
+        # breakpoint()
         if self._summary._command_list:
             self._summary._command_list.clear()
 
@@ -890,9 +892,13 @@ class MIE:
                 continue
             self._summary._data = self._summary._data_list[self._summary._index : _stop]
             self._summary.process_sample(contains_trio=True)
-
+            print("FIX ME!")
+            breakpoint()
             if self._summary._pickled_data._contains_valid_trio:
-                self.process_sample(itr=i, row_data=item)
+                self.process_trio(itr=i, row_data=item)
+
+                # add bcftools +smpl-stats after preparing the TrioVCF
+                self._summary.process_sample()
 
                 if self._existing_metrics_log_file and not self.args.overwrite:
                     continue
@@ -901,9 +907,19 @@ class MIE:
                         self.logger.info(
                             f"{self._summary._logger_msg}: --overwrite=True; re-submitting SLURM job"
                         )
-                    self._summary._slurm_job = self._summary.make_job()
-                    self._summary.submit_job(index=self._summary._index)
-                    self._summary._command_list.clear()
+
+            else:
+                # add bcftools +smpl-stats for individual samples
+                self._summary.process_sample()
+
+            # print("------------- COMMAND LIST: --------------------")
+            # for line in self._summary._command_list:
+            #     print(line)
+
+            self._summary._slurm_job = self._summary.make_job()
+            self._summary.submit_job(index=self._summary._index)
+            breakpoint()
+            # self._summary._command_list.clear()
 
         if self._num_submitted == 0:
             completed = f"skipped {self._num_skipped}"

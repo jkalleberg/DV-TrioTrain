@@ -241,7 +241,7 @@ def __init__() -> None:
             _get_mie._summary._pickled_data = fermented_data
             _get_mie._summary._logger_msg = fermented_data.output_file.logger_msg
             _get_mie.args = fermented_data.args
-            _get_mie.process_sample(itr=fermented_data._index,row_data=fermented_data.sample_metadata[0])
+            _get_mie.process_trio(itr=fermented_data._index,row_data=fermented_data.sample_metadata[0])
             breakpoint()
         
         run_stats = Stats(pickled_data=fermented_data, run_iteractively=True)

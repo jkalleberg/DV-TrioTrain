@@ -157,6 +157,9 @@ class SummarizeResults:
             self._child_sex = self._pedigree["sex"]
             self._motherID = self._pedigree["maternalID"]
             self._fatherID = self._pedigree["paternalID"]
+        else:
+            self._contains_valid_trio = False
+            return
 
         if self._child_sex == "0":
             self.output_file.logger.info(
