@@ -226,7 +226,7 @@ class CompareHappy:
                 )
             self.benchmarking_file.add_rows(headers, data_dict=data)
         else:
-            self.itr.logger.info(f"{self.logger_msg}: benchmarking is active")
+            self.itr.logger.info(f"{self.logger_msg}: --keep-jobids=True")
 
     def make_job(self, index: int = 0) -> Union[SBATCH, None]:
         """

@@ -200,8 +200,8 @@ class BeamShuffleExamples:
         elif self._num_to_ignore == self._total_regions:
             if self.shuffle_examples_job_nums:
                 self.itr.logger.info(
-                        f"{self.logger_msg}: completed '{self._phase}:{self.genome}'... SKIPPING AHEAD"
-                    )
+                    f"{self.logger_msg}: completed '{self._phase}:{self.genome}'... SKIPPING AHEAD"
+                )
         else:
             if self.itr.debug_mode:
                 self.itr.logger.debug(
@@ -248,9 +248,7 @@ class BeamShuffleExamples:
                         data_dict=data,
                     )
                 else:
-                    self.itr.logger.info(
-                        f"{self.logger_msg}: benchmarking is active"
-                    )
+                    self.itr.logger.info(f"{self.logger_msg}: --keep-jobids=True")
 
     def make_job(self, index: int = 0) -> Union[SBATCH, None]:
         """
@@ -337,7 +335,7 @@ class BeamShuffleExamples:
 
         # self.itr.logger.info(f"SHUFFLE PATTERN:{shuff_examples_pattern}")
         # breakpoint()
-        
+
         if phase is None:
             log_msg = self.logger_msg
         else:
@@ -416,9 +414,7 @@ class BeamShuffleExamples:
         )
 
     def find_outputs(
-        self, 
-        phase: Union[str, None] = None,
-        find_all: bool = False
+        self, phase: Union[str, None] = None, find_all: bool = False
     ) -> Union[bool, None]:
         """
         Determine if shuffling outputs already exist
@@ -513,13 +509,19 @@ class BeamShuffleExamples:
         ), f"unable to proceed; expected a value for total_regions, and None was provided"
 
     def submit_job(
-        self, msg: str = "sub", dependency_index: int = 0, resubmission: bool = False, total_jobs: int = 1
+        self,
+        msg: str = "sub",
+        dependency_index: int = 0,
+        resubmission: bool = False,
+        total_jobs: int = 1,
     ) -> None:
         """
         Submit SLURM jobs to queue.
         """
         if (self._outputs_exist and self.overwrite is False) or (
-            self._outputs_exist and self._ignoring_restart_jobs and self.overwrite is False
+            self._outputs_exist
+            and self._ignoring_restart_jobs
+            and self.overwrite is False
         ):
             self._skipped_counter += 1
             if resubmission:
@@ -537,10 +539,10 @@ class BeamShuffleExamples:
                 slurm_job.write_job()
 
         num_missing_files = int(self.n_parts) - int(self._num_shuff_tfrecords_found)  # type: ignore
-        
+
         if not self.overwrite and self._ignoring_make_examples:
             self.itr.logger.info(
-                    f"{self.logger_msg}: --overwrite=False; {msg}mitting job because missing {num_missing_files} labeled.shuffled.tfrecords"
+                f"{self.logger_msg}: --overwrite=False; {msg}mitting job because missing {num_missing_files} labeled.shuffled.tfrecords"
             )
         elif self.overwrite and self._outputs_exist:
             self.itr.logger.info(
@@ -753,7 +755,7 @@ class BeamShuffleExamples:
         else:
             if self._outputs_exist:
                 return self._re_shuffle_dependencies
-            
+
             self.set_genome()
             for r in range(0, int(self._total_regions)):
                 self.job_num = (
@@ -761,7 +763,9 @@ class BeamShuffleExamples:
                 )  # THIS HAS TO BE +1 to avoid starting with a region0
                 self.set_region(current_region=self.job_num)
                 # self.find_outputs()
-                self.submit_job(msg=msg, dependency_index=r, total_jobs=int(self._total_regions))
+                self.submit_job(
+                    msg=msg, dependency_index=r, total_jobs=int(self._total_regions)
+                )
 
         self.check_submissions()
         return self._re_shuffle_dependencies

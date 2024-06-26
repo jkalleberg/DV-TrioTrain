@@ -405,7 +405,7 @@ class CallVariants:
                 )
             self.benchmarking_file.add_rows(headers, data_dict=data)
         else:
-            self.itr.logger.info(f"{self.logger_msg}: benchmarking is active")
+            self.itr.logger.info(f"{self.logger_msg}: --keep-jobids=True")
 
     def build_apptainer_command(self, normalize_reads: bool = False) -> None:
         """
@@ -819,7 +819,7 @@ class CallVariants:
                 else:
                     self._compare_dependencies = None
             else:
-                
+
                 if not self._ignoring_select_ckpt:
                     self.itr.logger.info(
                         f"{self.logger_msg}: 'select_ckpt' job was submitted...",

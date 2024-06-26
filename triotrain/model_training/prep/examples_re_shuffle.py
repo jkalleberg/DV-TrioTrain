@@ -185,7 +185,7 @@ class ReShuffleExamples:
                         data_dict=data,
                     )
                 else:
-                    self.itr.logger.info(f"{self.logger_msg}: benchmarking is active")
+                    self.itr.logger.info(f"{self.logger_msg}: --keep-jobids=True")
 
     def make_job(self) -> Union[SBATCH, None]:
         """
@@ -208,8 +208,7 @@ class ReShuffleExamples:
 
         if slurm_job.check_sbatch_file():
             if (
-                not self._ignoring_restart_jobs
-                or not self._ignoring_beam_shuffle
+                not self._ignoring_restart_jobs or not self._ignoring_beam_shuffle
             ) and self.overwrite:
                 self.itr.logger.info(
                     f"{self.logger_msg}: --overwrite=True, re-writing the existing SLURM job now..."

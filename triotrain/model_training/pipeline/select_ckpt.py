@@ -176,7 +176,7 @@ class SelectCheckpoint:
                 self.benchmarking_file.add_rows(headers, data_dict=data)
             else:
                 self.itr.logger.info(
-                    f"{self.logger_msg} - [{self.itr.train_genome}]: benchmarking is active"
+                    f"{self.logger_msg} - [{self.itr.train_genome}]: --keep-jobids=True"
                 )
 
     def make_job(self) -> Union[SBATCH, None]:
