@@ -333,7 +333,7 @@ class BeamShuffleExamples:
                 rf"{self.genome}\.labeled\.shuffled-\d+-of-\d+\.tfrecord\.gz"
             )
 
-        # self.itr.logger.info(f"SHUFFLE PATTERN:{shuff_examples_pattern}")
+        # self.itr.logger.info(f"SHUFFLE PATTERN: {shuff_examples_pattern}")
         # breakpoint()
 
         if phase is None:
@@ -363,6 +363,10 @@ class BeamShuffleExamples:
             debug_mode=self.itr.debug_mode,
             dryrun_mode=self.itr.dryrun_mode,
         )
+
+        # self.itr.logger.info(
+        #     f"NUM FOUND: {self._num_shuff_tfrecords_found}")
+        # breakpoint()
 
     def find_beam_shuffled_pbtxt(self, phase: str, find_all: bool = False) -> None:
         """
@@ -726,8 +730,8 @@ class BeamShuffleExamples:
                     )  # THIS HAS TO BE +1 to avoid starting with a region0
 
                     self.set_region(current_region=self.job_num)
-                    # if not self.itr.demo_mode:
-                    #     self.find_outputs()
+                    if not self.itr.demo_mode:
+                        self.find_outputs()
 
                     if not check_if_all_same(self.make_examples_jobs, None):
                         self.submit_job(
@@ -762,7 +766,7 @@ class BeamShuffleExamples:
                     r + 1
                 )  # THIS HAS TO BE +1 to avoid starting with a region0
                 self.set_region(current_region=self.job_num)
-                # self.find_outputs()
+                self.find_outputs()
                 self.submit_job(
                     msg=msg, dependency_index=r, total_jobs=int(self._total_regions)
                 )
