@@ -651,11 +651,6 @@ class MIE:
         """
 
         mendelian_cmd = [
-            "conda",
-            "run",
-            "--no-capture-output",
-            "-p",
-            "miniconda_envs/beam_v2.30",
             "rtg",
             "mendelian",
             "--input",
@@ -680,49 +675,6 @@ class MIE:
         cmd_string = " ".join(mendelian_cmd)
         self._summary._command_list.append(cmd_string)
 
-    # def check_submission(self) -> None:
-    #     """
-    #     Check if the SLURM job file was submitted to the SLURM queue successfully
-    #     """
-    #     if self._num_processed != 0 and self._num_skipped != 0:
-    #         completed = self._num_processed + self._num_skipped
-    #     elif self._num_processed != 0:
-    #         completed = self._num_processed
-    #     else:
-    #         completed = self._num_skipped
-
-    #     self._summary._logger_msg = f"{self._summary._logger_msg}"
-    #     # look at job number list to see if all items are 'None'
-    #     _results = check_if_all_same(self._job_nums, None)
-    #     if _results is False:
-    #         self.logger.info(
-    #             f"{self._summary._logger_msg}: submitted {self._num_submitted}-of-{int(self._total_lines/3)} jobs"
-    #         )
-    #         if self.args.dry_run:
-    #             print(
-    #                 f"============ [DRY RUN] - {self._summary._logger_msg} Job Numbers - {self._job_nums} ============"
-    #             )
-    #         else:
-    #             print(
-    #                 f"============ {self._summary._logger_msg} Job Numbers - {self._job_nums} ============"
-    #             )
-    #     elif completed == int(self._total_lines / 3):
-    #         self.logger.info(
-    #             f"{self._summary._logger_msg}: no SLURM jobs were submitted... SKIPPING AHEAD"
-    #         )
-    #     elif self.itr.debug_mode and completed == self._itr:
-    #         self.logger.debug(
-    #             f"{self._summary._logger_msg}: no SLURM jobs were submitted... SKIPPING AHEAD"
-    #         )
-    #     else:
-    #         self.logger.warning(
-    #             f"{self._summary._logger_msg}: expected SLURM jobs to be submitted, but they were not",
-    #         )
-    #         self.logger.warning(
-    #             f"{self._summary._logger_msg}: fatal error encountered, unable to proceed further with pipeline.\nExiting... ",
-    #         )
-    #         exit(1)
-
     def handle_mie_data(self, input: Union[list, TextIO]) -> None:
         """
         Parse out summary info from the string output.
@@ -731,7 +683,7 @@ class MIE:
         num_errors = None
         numerator = None
         denominator = None
-        results_dict = {} 
+        results_dict = {}
 
         if self.args.debug:
             self.logger.debug(
@@ -797,15 +749,12 @@ class MIE:
         self._num_processed += 1
         self._summary._pickled_data._output_lines_mie.insert(
             self._num_processed, self._summary._pickled_data._merged_data
-        )        
+        )
         self._summary._vcf_file = self._trio_vcf
         self._summary._pickled_data.write_output(unique_records_only=True)
 
     def process_trio(self, itr: int, row_data: Dict[str, str]) -> None:
         """ """
-        # print("INPUT CMD LIST:--------------")
-        # print(self._summary._command_list)
-        # breakpoint()
         if self._summary._command_list:
             self._summary._command_list.clear()
 
@@ -876,31 +825,60 @@ class MIE:
         """
         Iterate through multiple VCF files
         """
-        itr = 0
         if self.args.debug:
             itr_list = self._summary._data_list[:4]
         else:
             itr_list = self._summary._data_list
 
-        self._total_lines = len(itr_list)
+        _total_lines = len(itr_list)
 
+        _counter = 0
         for i, item in enumerate(itr_list):
-            self._summary._get_sample_stats = False
+
             self._summary._index = i
             _stop = self._summary._index + 3
-            if _stop > len(itr_list):
-                continue
-            self._summary._data = self._summary._data_list[self._summary._index : _stop]
+
+            # Handle last item in metadata
+            if i == (len(itr_list) - 1):
+                self._summary._data = self._summary._data_list[self._summary._index]
+            # Handle second-to-last item in metadata
+            elif _stop > len(itr_list):
+                self._summary._data = self._summary._data_list[
+                    self._summary._index : -1
+                ]
+            else:
+                self._summary._data = self._summary._data_list[
+                    self._summary._index : _stop
+                ]
+
             self._summary.process_sample(contains_trio=True)
-            print("FIX ME!")
-            breakpoint()
-            if self._summary._pickled_data._contains_valid_trio:
+
+            _counter += int(self._summary._pickled_data._contains_valid_trio)
+
+            if _counter == 1:
+                self.logger.info(
+                    f"{self._summary._logger_msg}: input file contains a family | Trio{self._summary._pickled_data._trio_num}"
+                )
                 self.process_trio(itr=i, row_data=item)
+                self._job_name = f"Trio{self._summary._pickled_data._trio_num}"
 
                 # add bcftools +smpl-stats after preparing the TrioVCF
                 self._summary.process_sample()
+                _counter += 1
+            else:
+                # add bcftools +smpl-stats for parent samples within a trio
+                self._summary.process_sample()
+                _counter += 1
 
-                if self._existing_metrics_log_file and not self.args.overwrite:
+            # submit to SLURM after all 3 samples processed
+            if _counter == 4:
+                _counter = 0
+
+                if (
+                    self._existing_metrics_log_file
+                    and not self.args.overwrite
+                    and len(self._summary._command_list) == 0
+                ):
                     continue
                 else:
                     if self._existing_metrics_log_file and self.args.overwrite:
@@ -908,63 +886,30 @@ class MIE:
                             f"{self._summary._logger_msg}: --overwrite=True; re-submitting SLURM job"
                         )
 
-            else:
+                    self.logger.info(
+                        f"{self._summary._logger_msg}: job name will include | '{self._job_name}'"
+                    )
+                    self._summary._slurm_job = self._summary.make_job(
+                        job_name=f"post_process.{self._job_name}"
+                    )
+                    self._summary.submit_job(index=int(self._summary._index/3), total=int(_total_lines/3))
+                    self._summary._command_list.clear()
+                    self._num_submitted += 1
+            elif _counter == 0:
                 # add bcftools +smpl-stats for individual samples
+                self.logger.info(
+                        f"{self._summary._logger_msg}: job name will include | '{self._summary._pickled_data._ID}'"
+                    )
                 self._summary.process_sample()
-
-            # print("------------- COMMAND LIST: --------------------")
-            # for line in self._summary._command_list:
-            #     print(line)
-
-            self._summary._slurm_job = self._summary.make_job()
-            self._summary.submit_job(index=self._summary._index)
-            breakpoint()
-            # self._summary._command_list.clear()
-
-        if self._num_submitted == 0:
-            completed = f"skipped {self._num_skipped}"
-        else:
-            completed = f"submitted {self._num_submitted}"
-
-        self.logger.info(
-            f"{self._summary._logger_msg}: processed {completed}-of-{int(self._total_lines/3)} Trios from '{str(self._summary._metadata_input)}'"
-        )
-
-        if (self._num_submitted % 5) == 0:
-            self.logger.info(
-                f"{self._summary._logger_msg}: {completed}-of-{self._total_lines} jobs"
-            )
-
-            itr += 1
-            self._itr = itr
-
-            if self.args.dry_run:
-                print(f"[ITR{itr}] ==================================")
-
-        # if self.args.debug:
-        #     self.logger.debug(
-        #         f"{self._summary._logger_msg}: MIE SUBMITTED = {self._num_submitted}"
-        #     )
-        #     self.logger.debug(
-        #         f"{self._summary._logger_msg}: MIE SKIPPED = {self._num_skipped}"
-        #     )
-        #     self.logger.debug(
-        #         f"{self._summary._logger_msg}: MIE PROCESSED = {self._num_processed}"
-        #     )
-        #     self.logger.debug(
-        #         f"{self._summary._logger_msg}: STATS SUBMITTED = {self._summary._num_submitted}"
-        #     )
-        #     self.logger.debug(
-        #         f"{self._summary._logger_msg}: STATS SKIPPED = {self._summary._num_skipped}"
-        #     )
-        #     self.logger.debug(
-        #         f"{self._summary._logger_msg}: STATS PROCESSED = {self._summary._num_processed}"
-        #     )
-        #     self.logger.debug(
-        #         f"{self._summary._logger_msg}: MIE TOTAL = {self._total_lines}"
-        #     )
-
-        # self.check_submission()
+                self._summary._slurm_job = self._summary.make_job(job_name=f"post_process.{self._summary._pickled_data._ID}")
+                self._summary.submit_job(index=self._summary._index, total=_total_lines)
+                self._summary._command_list.clear()
+                self._num_submitted += 1
+            else:
+                # dont submit jobs while iterating through a trio
+                continue
+        
+        self._summary.check_submission()
 
     def run(self) -> None:
         """

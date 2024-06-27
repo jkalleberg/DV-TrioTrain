@@ -118,13 +118,15 @@ def collect_args(
         return parser.parse_args(
             [
                 "-M",
-                "triotrain/summarize/data/240529_mie_rate_inputs_noPop.csv",
+                "triotrain/summarize/data/240627_mie_rate_inputs_noPop_cattle.csv",
+                # "triotrain/summarize/data/240627_mie_rate_inputs_noPop_human.csv",
                 "-O",
                 "../VARIANT_CALLING_OUTPUTS/240528_Benchmarking/summary",
                 "-r",
                 "triotrain/model_training/tutorial/resources_used.json",
                 "-R",
                 "../REF_GENOME_COPY/ARS-UCD1.2_Btau5.0.1Y.fa",
+                # "triotrain/variant_calling/data/GIAB/reference/GRCh38_no_alt_analysis_set.fasta",
                 # "-P",
                 # "triotrain/summarize/data/ARS-UCD1.2_Btau5.0.1Y_reference.txt",
                 "--dry-run",

@@ -183,21 +183,21 @@ class Stats:
                 self.test_process_stats()
             else:
                 return
-
-        self.pickled_data.add_metadata(messy_metrics=self._stats)
+        
+        self.pickled_data.add_metadata(messy_metrics=self._stats[0])
 
         if self.pickled_data._input_file.dryrun_mode:
             self.pickled_data._input_file.logger.info(
                 f"[DRY RUN] - {self.pickled_data._input_file.logger_msg}: pretending to add {self._num_samples} rows to a CSV | '{self.pickled_data.output_file.file}'"
             )
             print("---------------------------------------------")
-            if isinstance(self._merged_data, list):
-                print(",".join(self._merged_data[0].keys()))
-                for sample in self._merged_data:
+            if isinstance(self.pickled_data._merged_data, list):
+                print(",".join(self.pickled_data._merged_data[0].keys()))
+                for sample in self.pickled_data._merged_data:
                     print(",".join(sample.values()))
             else:
-                print(",".join(self._merged_data.keys()))
-                print(",".join(self._merged_data.values()))
+                print(",".join(self.pickled_data._merged_data.keys()))
+                print(",".join(self.pickled_data._merged_data.values()))
 
         else:
             self.pickled_data.write_output(unique_records_only=True)
@@ -242,7 +242,6 @@ def __init__() -> None:
             _get_mie._summary._logger_msg = fermented_data.output_file.logger_msg
             _get_mie.args = fermented_data.args
             _get_mie.process_trio(itr=fermented_data._index,row_data=fermented_data.sample_metadata[0])
-            breakpoint()
         
         run_stats = Stats(pickled_data=fermented_data, run_iteractively=True)
         run_stats.save_stats()

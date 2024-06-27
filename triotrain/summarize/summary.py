@@ -42,9 +42,6 @@ class Summary:
     args: argparse.Namespace
     logger: Logger
 
-    # optional values
-    # get_sample_stats: bool = False
-
     # imutable, internal parameters
     _command_list: List[str] = field(default_factory=list, init=False, repr=False)
     _job_nums: List = field(default_factory=list, init=False, repr=False)
@@ -128,15 +125,17 @@ class Summary:
         Generate the pickled data file, and the SLURM job for processing each sample.
         """
         self._pickled_data = SummarizeResults(
-            sample_metadata=self._data, output_file=self._csv_output, args=self.args,
+            sample_metadata=self._data,
+            output_file=self._csv_output,
+            args=self.args,
         )
         self._pickled_data._index = self._index
-        self._pickled_data.get_sample_info(use_mie=contains_trio)
+        self._pickled_data.get_sample_info()
         self._clean_file_path = self._pickled_data._input_file._test_file.clean_filename
 
         if contains_trio and not self._pickled_data._contains_valid_trio:
-            # if self.args.debug:
-            self.logger.debug(
+            if self.args.debug:
+                self.logger.debug(
                     f"{self._logger_msg}: not a valid trio... SKIPPING AHEAD"
                 )
             return
@@ -153,71 +152,34 @@ class Summary:
             ]
             cmd_string = " ".join(slurm_cmd)
 
-            if self._command_list:
-                self._command_list.append(cmd_string)
-            else:
-                self._command_list = [cmd_string]
+        if self._command_list:
+            self._command_list.append(cmd_string)
+        else:
+            self._command_list = [cmd_string]
 
-            if self.args.dry_run:
-                self.logger.info(
-                    f"{self._logger_msg}: pretending to create pickle file | '{_pickle_file.file}'"
-                )
-            else:
-                preserve(
-                    item=self._pickled_data,
-                    pickled_path=_pickle_file,
-                    overwrite=self.args.overwrite,
-                )
-            breakpoint()
+        if self.args.dry_run:
+            self.logger.info(
+                f"{self._logger_msg}: pretending to create pickle file | '{_pickle_file.file}'"
+            )
+        else:
+            preserve(
+                item=self._pickled_data,
+                pickled_path=_pickle_file,
+                overwrite=self.args.overwrite,
+            )
 
-    # def process_multiple_samples(self) -> None:
-    #     """
-    #     Iterate through multiple VCF files
-    #     """
-    #     if self.args.debug:
-    #         itr = self._data_list[0:3]
-    #     else:
-    #         itr = self._data_list
-
-    #     _counter = 0
-    #     for i, item in enumerate(itr):
-    #         self._index = i
-    #         self._data = item
-    #         _counter += int(self._pickled_data._contains_valid_trio)
-
-    #         if self._pickled_data._contains_valid_trio:
-    #             if _counter == 1:
-    #                 self.logger.info(
-    #                     f"{self._logger_msg}: input file contains a family | Trio{self._trio_num}"
-    #                 )
-    #                 self.process_sample()
-    #             else:
-    #                 if self.args.dry_run:
-    #                     self.logger.info(
-    #                         f"{self._logger_msg}: multi-sample VCF detected... SKIPPING AHEAD"
-    #                     )
-    #                 self._num_skipped += 1
-    #                 if _counter == 3:
-    #                     _counter = 0
-    #                 continue
-    #         else:
-    #             self.process_sample()
-
-    #         # self._slurm_job = self.make_job()
-    #         # self.submit_job(index=self._index)
-    #         # self._command_list.clear()
-
-    def make_job(self) -> Union[SBATCH, None]:
+    def make_job(self, job_name: str) -> Union[SBATCH, None]:
         """
         Define the contents of the SLURM job for the rtg-mendelian phase for TrioTrain Pipeline.
         """
         self._itr.job_dir = Path(self._clean_file_path).parent
         self._itr.log_dir = Path(self._clean_file_path).parent
+        self._job_name = job_name
 
         # initialize a SBATCH Object
         slurm_job = SBATCH(
             itr=self._itr,
-            job_name=self._pickled_data._job_name,
+            job_name=self._job_name,
             error_file_label=self._pickled_data._caller,
             handler_status_label=None,
             logger_msg=self._logger_msg,
@@ -252,10 +214,11 @@ class Summary:
         )
         return slurm_job
 
-    def submit_job(self, index: int = 0) -> None:
+    def submit_job(self, index: int = 0, total: int = 1) -> None:
         """
         Submit SLURM jobs to queue.
         """
+        self._total_samples = total
         # only submit a job if a new SLURM job file was created
         if self._slurm_job is None:
             return
@@ -268,7 +231,7 @@ class Summary:
         # submit the training eval job to queue
         submit_slurm_job = SubmitSBATCH(
             sbatch_dir=self._itr.job_dir,
-            job_file=f"{self._pickled_data._job_name}.sh",
+            job_file=f"{self._job_name}.sh",
             label="None",
             logger=self.logger,
             logger_msg=self._logger_msg,
@@ -277,7 +240,7 @@ class Summary:
         submit_slurm_job.build_command()
         submit_slurm_job.display_command(
             current_job=(index + 1),
-            total_jobs=self._total_samples,
+            total_jobs=total,
             display_mode=self._itr.dryrun_mode,
             debug_mode=self._itr.debug_mode,
         )
@@ -289,7 +252,7 @@ class Summary:
             submit_slurm_job.get_status(
                 debug_mode=self._itr.debug_mode,
                 current_job=(index + 1),
-                total_jobs=self._total_samples,
+                total_jobs=total,
             )
 
             if submit_slurm_job.status == 0:
@@ -301,28 +264,47 @@ class Summary:
                 )
                 self._job_nums.append(None)
 
-    # def check_submission(self) -> None:
-    #     """
-    #     Check if SLURM job file(s) were submitted to the SLURM queue successfully.
-    #     """
-    #     # look at job number list to see if all items are 'None'
-    #     _results = check_if_all_same(self._job_nums, None)
-    #     if _results is False:
-    #         print(
-    #            f"============ {self._logger_msg} Job Numbers - {self._job_nums} ============"
-    #         )
-    #     elif self._num_skipped == self._total_lines:
-    #         self.logger.info(
-    #             f"{self._logger_msg}: no SLURM jobs were submitted... SKIPPING AHEAD"
-    #         )
-    #     else:
-    #         self.logger.warning(
-    #             f"{self._logger_msg}: expected SLURM jobs to be submitted, but they were not",
-    #         )
-    #         self.logger.warning(
-    #             f"{self._logger_msg}: fatal error encountered, unable to proceed further with pipeline.\nExiting... ",
-    #         )
-    #         exit(1)
+    def check_submission(self) -> None:
+        """
+        Check if the SLURM job file was submitted to the SLURM queue successfully
+        """
+        if self._num_processed != 0 and self._num_skipped != 0:
+            completed = self._num_processed + self._num_skipped
+        elif self._num_processed != 0:
+            completed = self._num_processed
+        else:
+            completed = self._num_skipped
+        
+        # look at job number list to see if all items are 'None'
+        _results = check_if_all_same(self._job_nums, None)
+        
+        if _results is False:
+            if self.args.dry_run:
+                msg = "pretending to submit"
+            else:
+                msg = "submitted" 
+            self.logger.info(
+                f"{self._logger_msg}: {msg} {self._num_submitted}-of-{self._total_samples} jobs"
+            )
+            print(
+                f"============ {self._logger_msg} Job Numbers - {self._job_nums} ============"
+            )
+        elif completed == self._total_samples:
+            self.logger.info(
+                f"{self._summary._logger_msg}: no SLURM jobs were submitted... SKIPPING AHEAD"
+            )
+        elif self.itr.debug_mode and completed == self._total_samples:
+            self.logger.debug(
+                f"{self._summary._logger_msg}: no SLURM jobs were submitted... SKIPPING AHEAD"
+            )
+        else:
+            self.logger.warning(
+                f"{self._summary._logger_msg}: expected SLURM jobs to be submitted, but they were not",
+            )
+            self.logger.warning(
+                f"{self._summary._logger_msg}: fatal error encountered, unable to proceed further with pipeline.\nExiting... ",
+            )
+            exit(1)
 
     # def run(self) -> None:
     #     """

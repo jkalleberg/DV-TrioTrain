@@ -185,13 +185,12 @@ class SummarizeResults:
         else:
             self._contains_valid_trio = True
 
-    def get_sample_info(self, use_mie: bool = False) -> None:
+    def get_sample_info(self) -> None:
         self.check_file_path()
         self.identify_trio()
         self.validate_trio()
-        input_name = Path(self._input_file._test_file.clean_filename).name
-
-        if len(self.sample_metadata) == 3:
+                        
+        if isinstance(self.sample_metadata, list):
             self._caller = self.sample_metadata[0]["variant_caller"]
             if self._contains_valid_trio:
                 self._ID = f"Trio{self._trio_num}"
@@ -200,22 +199,6 @@ class SummarizeResults:
         else:
             self._caller = self.sample_metadata["variant_caller"]
             self._ID = self.sample_metadata["sampleID"]
-
-        if self._ID not in input_name:
-            self.output_file.logger.warning(
-                f"{self.output_file.logger_msg}: discrepancy between ID '{self._ID}' and file name '{input_name}'"
-            )
-            self.output_file.logger.info(
-                f"{self.output_file.logger_msg}: therefore, job name will use ID | '{self._ID}'"
-            )
-            _job_name = f"{self._ID}.{self._caller}"
-        else:
-            _job_name = f"{input_name}.{self._caller}"
-
-        if use_mie:
-            self._job_name = f"mie.{_job_name}"
-        else:
-            self._job_name = f"stats.{_job_name}"
 
     def add_metadata(
         self, messy_metrics: Union[List[Dict[str, str]], Dict[str, str]]
@@ -239,7 +222,7 @@ class SummarizeResults:
 
             rekeyed_metadata = OrderedDict({d["sampleID"]: d for d in clean_metadata})
 
-            if "sampleID" in messy_metrics.keys():
+            if isinstance(messy_metrics, list) and "sampleID" in messy_metrics[0].keys():
                 rekeyed_metrics = {d["sampleID"]: d for d in messy_metrics}
                 combined = OrderedDict()
 
@@ -299,7 +282,6 @@ class SummarizeResults:
                     else:
                         continue
 
-        
         # ensure that output doesn't have duplicate sampleID column
         if isinstance(self._merged_data, dict):
             col_names = list(self._merged_data.keys())
