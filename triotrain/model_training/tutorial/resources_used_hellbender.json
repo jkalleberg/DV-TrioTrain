@@ -2,8 +2,8 @@
     "make_examples": {
         "partition": "general,schnabelr-umag",
         "nodes": 1,
-        "ntasks": 64,
-        "mem": "250G",
+        "ntasks": 32,
+        "mem": "122G",
         "time": "0-2:00:00",
         "account": "schnabelr-umag",
         "email": "jakth2@mail.missouri.edu"
@@ -11,8 +11,8 @@
     "beam_shuffle": {
         "partition": "general,schnabelr-umag",
         "nodes": 1,
-        "ntasks": 64,
-        "mem": "250G",
+        "ntasks": 32,
+        "mem": "122G",
         "time": "0-2:00:00",
         "account": "schnabelr-umag",
         "email": "jakth2@mail.missouri.edu"
@@ -21,7 +21,7 @@
         "partition": "general,schnabelr-umag",
         "nodes": 1,
         "ntasks": 1,
-        "mem": "250G",
+        "mem": "122G",
         "time": "0-10:00:00",
         "account": "schnabelr-umag",
         "email": "jakth2@mail.missouri.edu"
@@ -48,8 +48,8 @@
     "call_variants": {
         "partition": "general,schnabelr-umag",
         "nodes": 1,
-        "ntasks": 64,
-        "mem": "250G",
+        "ntasks": 32,
+        "mem": "122G",
         "time": "2-00:00:00",
         "account": "schnabelr-umag",
         "email": "jakth2@mail.missouri.edu"
@@ -57,8 +57,8 @@
     "compare_happy": {
         "partition": "general,schnabelr-umag",
         "nodes": 1,
-        "ntasks": 64,
-        "mem": "250G",
+        "ntasks": 32,
+        "mem": "122G",
         "time": "0-12:00:00",
         "account": "schnabelr-umag",
         "email": "jakth2@mail.missouri.edu"
@@ -66,7 +66,7 @@
     "convert_happy": {
         "partition": "general,schnabelr-umag",
         "nodes": 1,
-        "ntasks": 64,
+        "ntasks": 32,
         "mem": "120G",
         "time": "0-05:00:00",
         "account": "schnabelr-umag",
