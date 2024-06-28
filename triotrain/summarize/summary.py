@@ -286,13 +286,6 @@ class Summary:
         _results = check_if_all_same(self._job_nums, None)
 
         if _results is False:
-            if self.args.dry_run:
-                msg = "pretending to submit"
-            else:
-                msg = "submitted" 
-            self.logger.info(
-                f"{self._logger_msg}: {msg} {self._num_submitted}-of-{self._total_samples} jobs"
-            )
             print(
                 f"============ {self._logger_msg} Job Numbers - {self._job_nums} ============"
             )
