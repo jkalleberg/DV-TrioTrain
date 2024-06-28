@@ -247,14 +247,10 @@ class RunTrioTrain:
         if self._phase_jobs:
             # check if all elements in self._phase_jobs are integers
             if all([isinstance(item, int) for item in self._phase_jobs]):
-                # check if all elements in self._phase_jobss are not SLURM job ids
-                if all([not is_jobid(item, max_jobs=total_jobs_in_phase) for item in self._phase_jobs]):
-                    # handle if the user provides region numbers,
-                    if 0 not in self._phase_jobs:
-                        indexes = [x - 1 for x in self._phase_jobs]
-                    # rather than a list of indexes
-                    else:
-                        indexes = self._phase_jobs
+                
+                # check if all elements in self._phase_jobs are SLURM job ids
+                if all([is_jobid(item, max_jobs=total_jobs_in_phase) for item in self._phase_jobs]):
+                    indexes = self._phase_jobs
                 else:
                     # handle if the user provides region numbers,
                     if 0 not in self._phase_jobs:
