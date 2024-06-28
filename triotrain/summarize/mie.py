@@ -747,11 +747,11 @@ class MIE:
 
         # save the merged data in a dict of dicts with _num_processed as the index
         self._num_processed += 1
-        self._summary._pickled_data._output_lines_mie.insert(
-            self._num_processed, self._summary._pickled_data._merged_data
-        )
+        # self._summary._pickled_data._output_lines_mie.insert(
+        #     self._num_processed, self._summary._pickled_data._merged_data
+        # )
         self._summary._vcf_file = self._trio_vcf
-        self._summary._pickled_data.write_output(unique_records_only=True)
+        self._summary._pickled_data.write_output(unique_records_only=True, data_type = "mie")
 
     def process_trio(self, itr: int, row_data: Dict[str, str]) -> None:
         """ """
@@ -854,20 +854,23 @@ class MIE:
             self._summary.process_sample(contains_trio=True)
 
             _counter += int(self._summary._pickled_data._contains_valid_trio)
+            
+            if self._summary._pickled_data._trio_num is not None:
+                _trio_name = f"Trio{self._summary._pickled_data._trio_num}"
 
             if _counter == 1:
                 self.logger.info(
-                    f"{self._summary._logger_msg}: input file contains a family | Trio{self._summary._pickled_data._trio_num}"
+                    f"{self._summary._logger_msg}: input file contains a family | {_trio_name}"
                 )
                 self.process_trio(itr=i, row_data=item)
-                self._job_name = f"Trio{self._summary._pickled_data._trio_num}"
+                self._job_name = _trio_name
 
                 # add bcftools +smpl-stats after preparing the TrioVCF
-                self._summary.process_sample()
+                self._summary.process_sample(pkl_suffix=_trio_name, store_data=True)
                 _counter += 1
             else:
                 # add bcftools +smpl-stats for parent samples within a trio
-                self._summary.process_sample()
+                self._summary.process_sample(pkl_suffix=_trio_name, store_data=True)
                 _counter += 1
 
             # submit to SLURM after all 3 samples processed
@@ -900,7 +903,7 @@ class MIE:
                 self.logger.info(
                         f"{self._summary._logger_msg}: job name will include | '{self._summary._pickled_data._ID}'"
                     )
-                self._summary.process_sample()
+                self._summary.process_sample(store_data=True)
                 self._summary._slurm_job = self._summary.make_job(job_name=f"post_process.{self._summary._pickled_data._ID}")
                 self._summary.submit_job(index=self._summary._index, total=_total_lines)
                 self._summary._command_list.clear()
@@ -908,7 +911,7 @@ class MIE:
             else:
                 # dont submit jobs while iterating through a trio
                 continue
-        
+
         self._summary.check_submission()
 
     def run(self) -> None:

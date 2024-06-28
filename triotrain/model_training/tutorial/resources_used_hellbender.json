@@ -81,12 +81,11 @@
         "email": "jakth2@mail.missouri.edu"
     },
     "summary": {
-        "partition": "general,schnabelr-umag",
+        "partition": "general",
         "nodes": 1,
         "ntasks": 4,
         "mem": "40G",
         "time": "0-10:00:00",
-        "account": "schnabelr-umag",
         "email": "jakth2@mail.missouri.edu"
     }
 }

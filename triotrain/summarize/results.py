@@ -18,7 +18,7 @@ from regex import compile
 abs_path = Path(__file__).resolve()
 module_path = str(abs_path.parent.parent)
 path.append(module_path)
-from helpers.files import WriteFiles
+from helpers.files import TestFile, WriteFiles
 from model_training.slurm.suffix import remove_suffixes
 
 
@@ -44,8 +44,8 @@ class SummarizeResults:
     _sample_label: str = field(default=None, init=False, repr=False)
     _trio_num: int = field(default=None, init=False, repr=False)
     _total_samples: int = field(default=0, init=False, repr=False)
-    _output_lines_mie: List[str] = field(default_factory=list, init=False, repr=False)
-    _output_lines_stats: List[str] = field(default_factory=list, init=False, repr=False)
+    # _output_lines_mie: List[str] = field(default_factory=list, init=False, repr=False)
+    # _output_lines_stats: List[str] = field(default_factory=list, init=False, repr=False)
 
     def __post_init__(self) -> None:
 
@@ -113,6 +113,8 @@ class SummarizeResults:
                         f"{self.output_file.logger_msg}: discrepency in trio numbering: input file has 'Trio{self._trio_num}', but input label has 'Trio{_trio_num}'\nExiting..."
                     )
                     exit(1)
+                else:
+                    self._trio_num = _trio_num
             else:
                 self._trio_num = _trio_num
 
@@ -189,7 +191,7 @@ class SummarizeResults:
         self.check_file_path()
         self.identify_trio()
         self.validate_trio()
-                        
+
         if isinstance(self.sample_metadata, list):
             self._caller = self.sample_metadata[0]["variant_caller"]
             if self._contains_valid_trio:
@@ -222,7 +224,10 @@ class SummarizeResults:
 
             rekeyed_metadata = OrderedDict({d["sampleID"]: d for d in clean_metadata})
 
-            if isinstance(messy_metrics, list) and "sampleID" in messy_metrics[0].keys():
+            if (
+                isinstance(messy_metrics, list)
+                and "sampleID" in messy_metrics[0].keys()
+            ):
                 rekeyed_metrics = {d["sampleID"]: d for d in messy_metrics}
                 combined = OrderedDict()
 
@@ -244,14 +249,28 @@ class SummarizeResults:
                         continue
                 self._merged_data = {**_metadata, **messy_metrics}
 
-    def write_output(self, unique_records_only: bool = False) -> None:
+    def write_output(
+        self, unique_records_only: bool = False, data_type: str = "mie"
+    ) -> None:
         """
         Save the combined metrics to a new CSV output, or display to screen.
         """
-        self.output_file._test_file.check_existing()
+
+        if data_type != "mie":
+            _new_output = self.output_file.file.replace("mie", data_type)
+            self.output_file = WriteFiles(
+                path_to_file=self.output_file.path_to_file,
+                file=_new_output,
+                logger=self._input_file.logger,
+                logger_msg=self._input_file.logger_msg,
+                debug_mode=self._input_file.debug_mode,
+                dryrun_mode=self._input_file.dryrun_mode,
+            )
+
+        self.output_file._test_file.check_missing()
 
         if unique_records_only and self.output_file._test_file.file_exists:
-            with open(str(self.output_file.file_path), "r") as file:
+            with open(str(self.output_file._test_file.file), "r") as file:
                 dict_reader = DictReader(file)
                 current_records = list(dict_reader)
 

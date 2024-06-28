@@ -51,13 +51,13 @@ def collect_args(
             help="[REQUIRED]\ninput file (.pkl)\ncontains necessary data to process results as a pickled SummarizeResults() object.",
             metavar="</path/file>",
         )
-        return parser.parse_args(
-            [
-                "-P",
-                "/mnt/pixstor/schnabelr-drii/WORKING/jakth2/VARIANT_CALLING_OUTPUTS/240528_Benchmarking/DV1.4_cattle1/UMCUSAF000000341497.pkl",
-                "--dry-run",
-            ]
-        )
+        # return parser.parse_args(
+        #     [
+        #         "-P",
+        #         "/mnt/pixstor/schnabelr-drii/WORKING/jakth2/VARIANT_CALLING_OUTPUTS/240528_Benchmarking/DV1.4_cattle1/UMCUSAF000000341497.pkl",
+        #         "--dry-run",
+        #     ]
+        # )
     else:
         parser.add_argument(
             "-M",
@@ -123,18 +123,18 @@ def collect_args(
                 "-O",
                 "../VARIANT_CALLING_OUTPUTS/240528_Benchmarking/summary",
                 "-r",
-                "triotrain/model_training/tutorial/resources_used.json",
+                "triotrain/model_training/tutorial/resources_used_hellbender.json",
                 "-R",
                 "../REF_GENOME_COPY/ARS-UCD1.2_Btau5.0.1Y.fa",
                 # "triotrain/variant_calling/data/GIAB/reference/GRCh38_no_alt_analysis_set.fasta",
                 # "-P",
                 # "triotrain/summarize/data/ARS-UCD1.2_Btau5.0.1Y_reference.txt",
-                "--dry-run",
+                # "--dry-run",
                 # "--debug",
             ]
         )
 
-    # return parser.parse_args()
+    return parser.parse_args()
 
 
 def check_args(

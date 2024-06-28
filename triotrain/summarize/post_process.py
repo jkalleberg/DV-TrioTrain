@@ -4,17 +4,10 @@ description:
 
 """
 from __future__ import annotations
-
-from collections import OrderedDict
 from dataclasses import dataclass, field
 from pathlib import Path
 from sys import path
-from typing import TYPE_CHECKING, Dict, List, TextIO, Union
-
-
-# if TYPE_CHECKING:
-#     from logging import Logger
-
+from typing import Dict, List, TextIO, Union
 
 abs_path = Path(__file__).resolve()
 module_path = str(abs_path.parent.parent)
@@ -26,7 +19,6 @@ from pantry import prepare
 from summary import SummarizeResults
 from summarize.mie import MIE
 from summarize._args import check_args, collect_args
-from model_training.slurm.suffix import remove_suffixes
 
 
 @dataclass
@@ -173,6 +165,7 @@ class Stats:
             self.test_process_stats()
         else:
             self.get_sample_stats()
+
             if self.run_iteractively:
                 if (
                     self._output.file_exists is False
@@ -183,7 +176,7 @@ class Stats:
                 self.test_process_stats()
             else:
                 return
-        
+
         self.pickled_data.add_metadata(messy_metrics=self._stats[0])
 
         if self.pickled_data._input_file.dryrun_mode:
@@ -200,7 +193,7 @@ class Stats:
                 print(",".join(self.pickled_data._merged_data.values()))
 
         else:
-            self.pickled_data.write_output(unique_records_only=True)
+            self.pickled_data.write_output(unique_records_only=True, data_type="stats")
 
 
 def __init__() -> None:

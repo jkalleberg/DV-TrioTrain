@@ -23,7 +23,7 @@ from typing import List, Union
 abs_path = Path(__file__).resolve()
 module_path = str(abs_path.parent.parent)
 path.append(module_path)
-from _args import check_args, collect_args
+# from _args import check_args, collect_args
 from helpers.files import TestFile, WriteFiles
 from helpers.iteration import Iteration
 from helpers.utils import check_if_all_same, generate_job_id
@@ -99,10 +99,10 @@ class Summary:
 
         if "." in output.name:
             _path = str(output.parent)
-            _file_name = output.name
+            _file_name = f"{output.name}.mie.csv"
         else:
             _path = str(output)
-            _file_name = f"{self._phase}.csv"
+            _file_name = f"mie.csv"
 
         if not self.args.dry_run:
             output.mkdir(parents=True, exist_ok=True)
@@ -120,7 +120,7 @@ class Summary:
         # initalize an empty Iteration() to store paths
         self._itr = Iteration(logger=self.logger, args=self.args)
 
-    def process_sample(self, contains_trio: bool = False) -> None:
+    def process_sample(self, contains_trio: bool = False, pkl_suffix: Union[str, None] = None, store_data: bool = False) -> None:
         """
         Generate the pickled data file, and the SLURM job for processing each sample.
         """
@@ -140,13 +140,19 @@ class Summary:
                 )
             return
         else:
-            _pickle_file = TestFile(
-                Path(f"{self._clean_file_path}.pkl"),
-                logger=self.logger,
-            )
+            if pkl_suffix is None:
+                _pickle_file = TestFile(
+                    Path(f"{self._clean_file_path}.pkl"),
+                    logger=self.logger,
+                )
+            else:
+                _pickle_file = TestFile(
+                    Path(f"{self._clean_file_path}.{pkl_suffix}.pkl"),
+                    logger=self.logger,
+                )
             slurm_cmd = [
                 "python3",
-                "./triotrain/summarize/smpl_stats.py",
+                "./triotrain/summarize/post_process.py",
                 "--pickle-file",
                 _pickle_file.file,
             ]
@@ -162,11 +168,12 @@ class Summary:
                 f"{self._logger_msg}: pretending to create pickle file | '{_pickle_file.file}'"
             )
         else:
-            preserve(
-                item=self._pickled_data,
-                pickled_path=_pickle_file,
-                overwrite=self.args.overwrite,
-            )
+            if store_data:
+                preserve(
+                    item=self._pickled_data,
+                    pickled_path=_pickle_file,
+                    overwrite=self.args.overwrite,
+                )
 
     def make_job(self, job_name: str) -> Union[SBATCH, None]:
         """
@@ -274,10 +281,10 @@ class Summary:
             completed = self._num_processed
         else:
             completed = self._num_skipped
-        
+
         # look at job number list to see if all items are 'None'
         _results = check_if_all_same(self._job_nums, None)
-        
+
         if _results is False:
             if self.args.dry_run:
                 msg = "pretending to submit"
@@ -291,18 +298,18 @@ class Summary:
             )
         elif completed == self._total_samples:
             self.logger.info(
-                f"{self._summary._logger_msg}: no SLURM jobs were submitted... SKIPPING AHEAD"
+                f"{self._logger_msg}: no SLURM jobs were submitted... SKIPPING AHEAD"
             )
-        elif self.itr.debug_mode and completed == self._total_samples:
+        elif self._itr.debug_mode and completed == self._total_samples:
             self.logger.debug(
-                f"{self._summary._logger_msg}: no SLURM jobs were submitted... SKIPPING AHEAD"
+                f"{self._logger_msg}: no SLURM jobs were submitted... SKIPPING AHEAD"
             )
         else:
             self.logger.warning(
-                f"{self._summary._logger_msg}: expected SLURM jobs to be submitted, but they were not",
+                f"{self._logger_msg}: expected SLURM jobs to be submitted, but they were not",
             )
             self.logger.warning(
-                f"{self._summary._logger_msg}: fatal error encountered, unable to proceed further with pipeline.\nExiting... ",
+                f"{self._logger_msg}: fatal error encountered, unable to proceed further with pipeline.\nExiting... ",
             )
             exit(1)
 
