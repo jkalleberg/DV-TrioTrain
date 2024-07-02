@@ -400,7 +400,7 @@ class Happy:
         command_str = "\n".join(self._command)
         if self.args.debug:
             self.logger.debug(
-                f"[{self._mode}] - [{self._phase}] - [{self._logger_msg}] : Command Used | \n{command_str}"
+                f"[{self._mode}] - [{self._phase}] - [{self._logger_msg}]: command | '{command_str}'"
             )
 
     def happy_help(self) -> None:
@@ -442,7 +442,7 @@ class Happy:
             self.build_command()
             print(f"----- Starting hap.py now @ {timestamp()} -----")
             self.logger.info(
-                f"[{self._mode}] - [{self._phase}] - [{self._logger_msg}] : Command Used |"
+                f"[{self._mode}] - [{self._phase}] - [{self._logger_msg}]: command |"
             )
             for line in Client.execute(  # type: ignore
                 self._image,
