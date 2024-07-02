@@ -317,16 +317,20 @@ class CallVariants:
                 self.pop_vcf = Path(self.pop_path) / self.pop_file
                 assert self.pop_vcf.exists(), "missing the population VCF file"
                 self.use_pop = True
-                self.itr.logger.info(
-                    f"{self.logger_msg}: using both '{8: 'allele_frequency', 19: 'insert_size'}' channels in test genome examples"
-                )
+                channels_used = "{8: 'allele_frequency', 19: 'insert_size'}"
+                msg = f"custom channels '{channels_used}'"
             elif "PopVCF" in self.itr.env.contents:
                 self.use_pop = False
-                self.itr.logger.info(
-                    f"{self.logger_msg}: using default '{19: 'insert_size'}' channel in test genome examples"
-                )
+                channel_used = "{19: 'insert_size'}"
+                msg = f"default channel '{channel_used}'"
+
             else:
                 self.use_pop = False
+                msg = "default channel(s)"
+
+            self.itr.logger.info(
+                f"{self.logger_msg}: using {msg} in test genome examples"
+            )
 
     def set_test_genome(self, current_test_num: Union[int, None] = None) -> None:
         """
