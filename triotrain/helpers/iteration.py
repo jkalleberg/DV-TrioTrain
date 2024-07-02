@@ -72,7 +72,7 @@ class Iteration:
 
         if self._version is None:
             raise ValueError(
-                "Unable to proceed, setup() function failed to determine which version of DeepVariant is being used"
+                f"Unable to proceed, setup() function failed to determine which version of DeepVariant is being used.\nDid you forget to run: 'source scripts/setup/modules.sh'?"
             )
 
         if self.demo_mode and self.current_trio_num is not None:
