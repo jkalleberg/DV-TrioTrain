@@ -530,7 +530,7 @@ class BeamShuffleExamples:
             self._skipped_counter += 1
             if resubmission:
                 self.itr.logger.info(
-                    f"{self.logger_msg}: --overwrite=False; skipping job because found all labeled.shuffled.tfrecords"
+                    f"{self.logger_msg}: --overwrite=False; skipping job because found a labeled.shuffled.pbtxt file"
                 )
             return
 
