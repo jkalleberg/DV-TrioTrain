@@ -728,10 +728,7 @@ class RunTrioTrain:
 
                         self.re_shuffle.set_genome()
                         self.re_shuffle.find_outputs(phase=self.current_phase)
-
-                        print("RESTART:", self.restart_jobs)
-                        print("PHASE:", self._phase_jobs)
-                        breakpoint()
+                        
                         if self.restart_jobs and self._phase_jobs is None:
                             self.check_next_phase(total_jobs=1, genome=genome)
 
