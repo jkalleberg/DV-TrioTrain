@@ -332,7 +332,7 @@ class ShowExamples:
         if self.slurm_job.check_sbatch_file() is not False:
             if self.itr.debug_mode:
                 self.itr.logger.debug(
-                    f"{self.logger_msg}: SLURM job file already exists... SKIPPING AHEAD"
+                    f"{self.logger_msg}: SLURM job file already exists."
                 )
             return
 
@@ -364,7 +364,7 @@ class ShowExamples:
             else:
                 if self.itr.debug_mode:
                     self.itr.logger.debug(
-                        f"{self.logger_msg}: SLURM job file already exists... SKIPPING AHEAD"
+                        f"{self.logger_msg}: SLURM job file already exists."
                     )
             self._list_of_slurm_jobs = [self.slurm_job]
         else:
@@ -394,7 +394,7 @@ class ShowExamples:
                 else:
                     if self.itr.debug_mode:
                         self.itr.logger.debug(
-                            f"{self.logger_msg}: SLURM job file already exists... SKIPPING AHEAD"
+                            f"{self.logger_msg}: SLURM job file already exists."
                         )
                 self._list_of_slurm_jobs.append(self.slurm_job)
 

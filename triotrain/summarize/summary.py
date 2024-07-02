@@ -199,7 +199,7 @@ class Summary:
                 )
             else:
                 self._itr.logger.info(
-                    f"{self._logger_msg}: SLURM job file already exists... SKIPPING AHEAD"
+                    f"{self._logger_msg}: --overwrite=False, SLURM job file already exists."
                 )
                 self._num_skipped += 1
                 return

@@ -421,7 +421,7 @@ class TestModel:
             )
 
         command_str = "\n".join(self._command)
-        self.logger.info(f"[{self._logger_msg}]: Command Used | \n{command_str}")
+        self.logger.info(f"[{self._logger_msg}]: command | '{command_str}'")
 
     def get_help(self) -> None:
         """

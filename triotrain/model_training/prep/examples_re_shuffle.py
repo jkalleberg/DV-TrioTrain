@@ -215,7 +215,7 @@ class ReShuffleExamples:
                 )
             else:
                 self.itr.logger.info(
-                    f"{self.logger_msg}: --overwrite=False; SLURM job file already exists... SKIPPING AHEAD"
+                    f"{self.logger_msg}: --overwrite=False; SLURM job file already exists."
                 )
                 return
         else:
