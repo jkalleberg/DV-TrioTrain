@@ -247,7 +247,7 @@ class RunTrioTrain:
         if self._phase_jobs:
             # check if all elements in self._phase_jobs are integers
             if all([isinstance(item, int) for item in self._phase_jobs]):
-                
+
                 # check if all elements in self._phase_jobs are SLURM job ids
                 if all([is_jobid(item, max_jobs=total_jobs_in_phase) for item in self._phase_jobs]):
                     indexes = self._phase_jobs
@@ -433,12 +433,16 @@ class RunTrioTrain:
             jobs_list = [None for n in range(0, total_jobs)]
 
             for e, j in enumerate(self._phase_jobs):
-                if is_jobid(j,max_jobs=total_jobs):
-                    _job_num = e + 1
-                elif is_job_index(j, max_jobs=total_jobs):
-                    _job_num = (
-                        j + 1
-                    )  # THIS HAS TO BE +1 to avoid starting with a region0
+                # if is_jobid(j,max_jobs=total_jobs):
+                #     _job_num = e + 1
+                # elif is_job_index(j, max_jobs=total_jobs):
+                #     if 0 in self._phase_jobs:
+                #         print("STARTS WITH 0!")
+                #     else:
+                #         print("DOESN'T START WITH 0!")
+                #     _job_num = (
+                #         j + 1
+                #     )  # THIS HAS TO BE +1 to avoid starting with a region0
 
                 if self.current_phase == "make_examples":
                     outputs_found = self.make_examples._outputs_exist
@@ -467,7 +471,9 @@ class RunTrioTrain:
                 if outputs_found:
                     continue
                 else:
-                    jobs_list[j] = generate_job_id()
+                    # Only need to switch to something besides 'None' to satisfy test
+                    # jobs_list[j] = generate_job_id()
+                    jobs_list[e] = generate_job_id()
 
             if not check_if_all_same(jobs_list, None):
                 self.itr.logger.error(
@@ -723,6 +729,9 @@ class RunTrioTrain:
                         self.re_shuffle.set_genome()
                         self.re_shuffle.find_outputs(phase=self.current_phase)
 
+                        print("RESTART:", self.restart_jobs)
+                        print("PHASE:", self._phase_jobs)
+                        breakpoint()
                         if self.restart_jobs and self._phase_jobs is None:
                             self.check_next_phase(total_jobs=1, genome=genome)
 
