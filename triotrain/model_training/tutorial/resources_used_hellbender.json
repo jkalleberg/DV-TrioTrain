@@ -3,7 +3,7 @@
         "partition": "general,schnabelr-umag",
         "nodes": 1,
         "ntasks": 64,
-        "mem": "245G",
+        "mem": "490G",
         "time": "0-2:00:00",
         "account": "schnabelr-umag",
         "email": "jakth2@mail.missouri.edu"
@@ -12,7 +12,7 @@
         "partition": "general,schnabelr-umag",
         "nodes": 1,
         "ntasks": 64,
-        "mem": "245G",
+        "mem": "490G",
         "time": "0-2:00:00",
         "account": "schnabelr-umag",
         "email": "jakth2@mail.missouri.edu"
@@ -21,7 +21,7 @@
         "partition": "general,schnabelr-umag",
         "nodes": 1,
         "ntasks": 1,
-        "mem": "245G",
+        "mem": "490G",
         "time": "0-10:00:00",
         "account": "schnabelr-umag",
         "email": "jakth2@mail.missouri.edu"
@@ -49,7 +49,7 @@
         "partition": "general,schnabelr-umag",
         "nodes": 1,
         "ntasks": 64,
-        "mem": "245G",
+        "mem": "490G",
         "time": "2-00:00:00",
         "account": "schnabelr-umag",
         "email": "jakth2@mail.missouri.edu"
@@ -58,7 +58,7 @@
         "partition": "general,schnabelr-umag",
         "nodes": 1,
         "ntasks": 64,
-        "mem": "245G",
+        "mem": "490G",
         "time": "0-12:00:00",
         "account": "schnabelr-umag",
         "email": "jakth2@mail.missouri.edu"
