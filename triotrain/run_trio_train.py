@@ -227,11 +227,11 @@ def run_trio_train(eval_genome="Child") -> None:
 
         if itr > 1:
             logger.info(
-                f"{logging_msg}: building a new model with {pipeline.meta.additional_channels} channels"
+                f"{logging_msg}: building a new model with '{pipeline.meta.additional_channels}' channels"
             )
         else:
             logger.info(
-                f"{logging_msg}: model includes the {pipeline.meta.additional_channels} channel(s)"
+                f"{logging_msg}: model includes the '{pipeline.meta.additional_channels}' channel(s)"
             )
 
         if current_itr.demo_mode:
