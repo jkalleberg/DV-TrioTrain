@@ -516,7 +516,7 @@ class MergedTests:
 
     def merge_tests(self) -> None:
         """
-        merge the processed hap.py results from each test into a single file called 'AllTests'
+        Merge the processed hap.py results from each test into a single file called 'AllTests'
         """
         for i, c in enumerate(self._search_paths):
             self.find_tests(search_path=c)
@@ -551,7 +551,9 @@ class MergedTests:
             )
 
     def add_metadata(self) -> None:
-        """combine metadata with columns"""
+        """
+        Combine metadata with columns.
+        """
         metadata_csv = pd.read_csv(self.metadata.file)
 
         # transpose columns and rows, remove a duplicate row
