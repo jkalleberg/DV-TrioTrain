@@ -41,15 +41,14 @@ class MIE:
     Define what data to keep when calculating Mendelian inheritance errors with TrioVCFs.
     """
 
-    # required parameters
+    # Required parameters
     args: argparse.Namespace
     logger: Logger
 
-    # optional values
+    # Optional values
     run_iteractively: bool = False
-    # overwrite: bool = False
 
-    # internal, imutable values
+    # Internal, imutable values
     _job_nums: List = field(default_factory=list, repr=False, init=False)
     _num_processed: int = field(default=0, init=False, repr=False)
     _num_skipped: int = field(default=0, init=False, repr=False)
@@ -106,7 +105,7 @@ class MIE:
         _sdf_summary_file.check_existing()
 
         if not _sdf_summary_file.file_exists:
-            # when run interactively as a sub-process, don't include conda
+            # When run interactively as a sub-process, don't include conda
             rtg_format_cmd = [
                 "rtg",
                 "format",
@@ -140,7 +139,7 @@ class MIE:
                 f"{self._summary._logger_msg}: found existing SDF for 'rtg mendelian'  | '{_sdf_summary_file.file}'"
             )
 
-        # rtg tools requires a "reference.txt" file to exists AFTER formatting the FASTA into SDF
+        # Rtg tools requires a "reference.txt" file to exists AFTER formatting the FASTA into SDF
         _rtg_ref_path = self._rtg_tools_path / "reference.txt"
         _rtg_reference_file = TestFile(file=f"{_rtg_ref_path}", logger=self.logger)
         _rtg_reference_file.check_existing()
@@ -183,7 +182,7 @@ class MIE:
 
     def find_merged_file(self) -> None:
         """
-        Determine what type (vcf vs. bcf) of input was provided.
+        Identify the Family VCF, and confirm it exists.
         """
         self._trio_vcf = TestFile(
             f"{self._summary._pickled_data._input_file.path}/{self._summary._pickled_data._ID}.vcf.gz",
@@ -200,6 +199,11 @@ class MIE:
         Determine if 'rtg-tools mendelian' needs to be run.
         """
         trio_filename = remove_suffixes(self._trio_vcf.path)
+        logging_dir = Path(trio_filename).parent / "logs"
+        if logging_dir.is_dir():
+            self._log_dir = logging_dir
+        else:
+            self._log_dir = Path(trio_filename).parent
 
         if pass_only:
             mie_vcf_file = Path(f"{trio_filename}.PASS.MIE")
@@ -225,20 +229,11 @@ class MIE:
                     f"{self._summary._logger_msg}: rtg-tools MIE VCF | '{self._mie_vcf.file_path}'"
                 )
 
-            logging_dir = Path(trio_filename).parent / "logs"
-            if logging_dir.is_dir():
-                self._log_dir = logging_dir
-            else:
-                self._log_dir = Path(trio_filename).parent
-
-            # mie_regex = compile(
-            #     rf"mie-{self._summary._pickled_data._ID}-{self._summary._caller}_\d+\.out"
-            # )
             mie_regex = compile(rf"mie-{self._summary._pickled_data._ID}.log")
 
             mie_metrics_file_exists, num_found, files_found = check_if_output_exists(
                 match_pattern=mie_regex,
-                file_type="the MIE log file",
+                file_type="a MIE log file",
                 search_path=self._log_dir,
                 msg=self._summary._logger_msg,
                 logger=self.logger,
@@ -258,6 +253,10 @@ class MIE:
                     dryrun_mode=self.args.dry_run,
                 )
                 self._mie_metrics.check_missing()
+                if self._mie_metrics.file_exists:
+                    self.logger.info(
+                        f"{self._summary._logger_msg}: the MIE log file already exists... SKIPPING AHEAD"
+                    )
                 if self.args.debug:
                     self.logger.debug(
                         f"{self._summary._logger_msg}: MIE metrics log file | '{mie_metrics_file}'"
@@ -300,16 +299,20 @@ class MIE:
                 f"{self._summary._logger_msg}: the Trio pedigree file already exists... SKIPPING AHEAD"
             )
 
-    def convert(self, input: str, output: str, vcf_to_bcf: bool = True) -> None:
+    def convert(
+        self, input: Union[str, Path], output: Union[str, Path], vcf_to_bcf: bool = True
+    ) -> None:
         """
         Speed up merging by converting any vcf inputs that are missing a bcf companion.
         """
         if vcf_to_bcf:
+            status = "VCF -> BCF"
             output_type = "b"
             self.logger.info(
                 f"{self._summary._logger_msg}: {self._status} 'bcftools convert' to create a BCF | '{output}'",
             )
         else:
+            status = "BCF -> VCF"
             output_type = "z"
             self.logger.info(
                 f"{self._summary._logger_msg}: {self._status} 'bcftools convert' to create a VCF | '{output}'",
@@ -321,11 +324,14 @@ class MIE:
             "--output-type",
             output_type,
             "--output",
-            output,
-            input,
+            str(output),
+            str(input),
         ]
 
         cmd_string = " ".join(convert_cmd)
+        self._summary._command_list.append(
+            f'echo $(date) "- [INFO]: converting {status} | {Path(output).name}"'
+        )
         self._summary._command_list.append(cmd_string)
 
     def find_input_vcfs(self) -> None:
@@ -454,7 +460,7 @@ class MIE:
         Returns the new file name, if reheader is being used.
         Otherwise, returnts the old file name.
         """
-        # requiring re-naming to work correctly!
+        # Requiring re-naming to work correctly!
         giab_samples = {
             "NA24385": "HG002",
             "NA24149": "HG003",
@@ -504,6 +510,9 @@ class MIE:
 
             if not new_vcf.file_exists:
                 cmd_string = " ".join(reheader_cmd)
+                self._summary._command_list.append(
+                    f'echo $(date)" - [INFO]: updating sample name | {sampleID}={giab_samples[sampleID]}"'
+                )
                 self._summary._command_list.append(cmd_string)
             return output
         else:
@@ -536,6 +545,9 @@ class MIE:
                 f"{input_path}/{input_name}",
             ]
             cmd_string = " ".join(index_cmd)
+            self._summary._command_list.append(
+                f'echo $(date)" - [INFO]: creating index | {input_name}.csi"'
+            )
             self._summary._command_list.append(cmd_string)
 
     def find_input_bcfs(
@@ -642,6 +654,9 @@ class MIE:
                 )
 
             cmd_string = " ".join(merge_cmd)
+            self._summary._command_list.append(
+                f'echo $(date)" - [INFO]: merging individual VCFs into Family VCF | {self._trio_vcf.path.name}"'
+            )
             self._summary._command_list.append(cmd_string)
             self.find_indexed_inputs(input=self._trio_vcf.file)
 
@@ -649,7 +664,6 @@ class MIE:
         """
         Use the family VCF file to calculate the number of violations to Mendelian inheritance.
         """
-
         mendelian_cmd = [
             "rtg",
             "mendelian",
@@ -669,10 +683,17 @@ class MIE:
         if self._alter_min_concordance:
             mendelian_cmd.append(f"--min-concordance={self.args.threshold}")
 
+        # Save command line output to a separate file
+        _mie_output = self._log_dir / f"mie-{self._summary._pickled_data._ID}.log"
+        mendelian_cmd.append(f"> {str(_mie_output)}")
+
         self.logger.info(
-            f"{self._summary._logger_msg}: {self._status} 'rtg mendelian' to calculate mendelian errors within | '{self._trio_vcf.file}'",
+            f"{self._summary._logger_msg}: {self._status} 'rtg mendelian' to calculate mendelian errors within | '{self._trio_vcf.path.name}'",
         )
         cmd_string = " ".join(mendelian_cmd)
+        self._summary._command_list.append(
+            f"echo $(date)\" - [INFO]: calculating mendelian errors with 'rtg-tools' | {self._trio_vcf.path.name}\""
+        )
         self._summary._command_list.append(cmd_string)
 
     def handle_mie_data(self, input: Union[list, TextIO]) -> None:
@@ -705,7 +726,7 @@ class MIE:
                     sub(r"[()%]", "", trio_concordance_messy)
                 )
 
-                # sanity check
+                # Sanity check
                 trio_con_parts = concordance_parts[8].split("/")
                 denominator = int(trio_con_parts[1])
                 match = self._summary._pickled_data._digits_only.search(
@@ -742,25 +763,37 @@ class MIE:
                 f"{num_errors/variants_analyzed * 100:.2f}%"
             )
 
-        # merge the user-provided metadata with sample_stats
-        self._summary._pickled_data.add_metadata(messy_metrics=results_dict)
+        _mie_metrics = [results_dict]
+        # Merge the user-provided metadata with sample_stats
+        self._summary._pickled_data.add_metadata(messy_metrics=_mie_metrics)
 
-        # save the merged data in a dict of dicts with _num_processed as the index
+        # Save the merged data in a dict of dicts with _num_processed as the index
         self._num_processed += 1
         # self._summary._pickled_data._output_lines_mie.insert(
         #     self._num_processed, self._summary._pickled_data._merged_data
         # )
         self._summary._vcf_file = self._trio_vcf
-        self._summary._pickled_data.write_output(unique_records_only=True, data_type = "mie")
+        self._summary._pickled_data.output_file.logger_msg = self._summary._logger_msg
+        self._summary._pickled_data.write_output(
+            unique_records_only=True, data_type="mie"
+        )
 
-    def process_trio(self, itr: int, row_data: Dict[str, str]) -> None:
-        """ """
+    def process_trio(
+        self, itr: Union[int, None] = None, row_data: Union[Dict[str, str], None] = None
+    ) -> None:
+        """
+        add a description!
+        """
         if self._summary._command_list:
             self._summary._command_list.clear()
 
-        self._summary._index = itr
-        self._summary._data = row_data
-        self._summary._get_sample_stats = False
+        if itr is not None:
+            self._summary._index = itr
+
+        if row_data is not None:
+            self._summary._data = row_data
+        else:
+            self._summary._data = self._summary._pickled_data.sample_metadata
 
         if self._summary._pickled_data._missing_merged_vcf:
             self._merge_inputs = True
@@ -768,7 +801,9 @@ class MIE:
             self._merge_inputs = False
 
         if self._summary._pickled_data._missing_pedigree_data:
-            print("SKIPPING DUE TO LACK OF PEDIGREE")
+            self.logger.info(
+                f"{self._summary._logger_msg}: missing pedigree... SKIPPING AHEAD"
+            )
             return
         else:
             if not self._summary._pickled_data._contains_valid_trio:
@@ -777,7 +812,7 @@ class MIE:
             self.find_merged_file()
 
             self.logger.info(
-                f"{self._summary._logger_msg}: ========== INDEX: {self._summary._index} | CHILD: {self._summary._pickled_data._childID} | MOTHER: {self._summary._pickled_data._motherID} | FATHER: {self._summary._pickled_data._fatherID} =========="
+                f"{self._summary._logger_msg}: ========== INDEX: {self._summary._index} | {self._summary._pickled_data._ID} = CHILD: {self._summary._pickled_data._childID} | MOTHER: {self._summary._pickled_data._motherID} | FATHER: {self._summary._pickled_data._fatherID} =========="
             )
 
             self.itr = Iteration(
@@ -834,7 +869,6 @@ class MIE:
 
         _counter = 0
         for i, item in enumerate(itr_list):
-
             self._summary._index = i
             _stop = self._summary._index + 3
 
@@ -851,29 +885,25 @@ class MIE:
                     self._summary._index : _stop
                 ]
 
-            self._summary.process_sample(contains_trio=True)
-
+            self._summary.check_sample()
             _counter += int(self._summary._pickled_data._contains_valid_trio)
-            
+
             if self._summary._pickled_data._trio_num is not None:
                 _trio_name = f"Trio{self._summary._pickled_data._trio_num}"
 
             if _counter == 1:
-                self.logger.info(
-                    f"{self._summary._logger_msg}: input file contains a family | {_trio_name}"
-                )
                 self.process_trio(itr=i, row_data=item)
                 self._job_name = _trio_name
 
-                # add bcftools +smpl-stats after preparing the TrioVCF
+                # Add bcftools +smpl-stats after preparing the TrioVCF
                 self._summary.process_sample(pkl_suffix=_trio_name, store_data=True)
                 _counter += 1
             else:
-                # add bcftools +smpl-stats for parent samples within a trio
+                # Add bcftools +smpl-stats for parent samples within a trio
                 self._summary.process_sample(pkl_suffix=_trio_name, store_data=True)
                 _counter += 1
 
-            # submit to SLURM after all 3 samples processed
+            # Submit to SLURM after all 3 samples processed
             if _counter == 4:
                 _counter = 0
 
@@ -889,28 +919,27 @@ class MIE:
                             f"{self._summary._logger_msg}: --overwrite=True; re-submitting SLURM job"
                         )
 
-                    self.logger.info(
-                        f"{self._summary._logger_msg}: job name will include | '{self._job_name}'"
-                    )
                     self._summary._slurm_job = self._summary.make_job(
                         job_name=f"post_process.{self._job_name}"
                     )
-                    self._summary.submit_job(index=int(self._summary._index/3), total=int(_total_lines/3))
+                    self._summary.submit_job(
+                        index=int(self._summary._index / 3), total=int(_total_lines / 3)
+                    )
                     self._summary._command_list.clear()
                     self._num_submitted += 1
             elif _counter == 0:
-                # add bcftools +smpl-stats for individual samples
-                self.logger.info(
-                        f"{self._summary._logger_msg}: job name will include | '{self._summary._pickled_data._ID}'"
-                    )
+                # Add bcftools +smpl-stats for individual samples
                 self._summary.process_sample(store_data=True)
-                self._summary._slurm_job = self._summary.make_job(job_name=f"post_process.{self._summary._pickled_data._ID}")
+                self._summary._slurm_job = self._summary.make_job(
+                    job_name=f"post_process.{self._summary._pickled_data._ID}"
+                )
                 self._summary.submit_job(index=self._summary._index, total=_total_lines)
                 self._summary._command_list.clear()
                 self._num_submitted += 1
             else:
-                # dont submit jobs while iterating through a trio
+                # Don't submit jobs while iterating through a trio
                 continue
+            print("-------------------------------------------------")
 
         self._summary.check_submission()
 

@@ -7,5 +7,5 @@
 
 # srun --pty -p schnabelr-umag --time=0-08:00:00 --mem=30G -A schnabelr-umag /bin/bash
 # srun --pty -p schnabelr-lab --time=0-08:00:00 --mem=30G -A schnabelr-lab /bin/bash
-# srun --pty -p interactive --time=0-04:00:00 --mem=30G /bin/bash
-srun --pty -p requeue --time=0-06:00:00 --mem=10G /bin/bash
+srun --pty -p interactive --time=0-04:00:00 --mem=30G /bin/bash
+# srun --pty -p requeue --time=0-06:00:00 --mem=10G /bin/bash

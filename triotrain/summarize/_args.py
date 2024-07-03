@@ -118,18 +118,18 @@ def collect_args(
         return parser.parse_args(
             [
                 "-M",
-                # "triotrain/summarize/data/240627_mie_rate_inputs_noPop_cattle.csv",
-                "triotrain/summarize/data/240627_mie_rate_inputs_noPop_human.csv",
+                "triotrain/summarize/data/240627_mie_rate_inputs_noPop_cattle.csv",
+                # "triotrain/summarize/data/240627_mie_rate_inputs_noPop_human.csv",
                 "-O",
                 "../VARIANT_CALLING_OUTPUTS/240528_Benchmarking/summary",
                 "-r",
                 "triotrain/model_training/tutorial/resources_used_hellbender.json",
                 "-R",
-                # "../REF_GENOME_COPY/ARS-UCD1.2_Btau5.0.1Y.fa",
-                "triotrain/variant_calling/data/GIAB/reference/GRCh38_no_alt_analysis_set.fasta",
+                "../REF_GENOME_COPY/ARS-UCD1.2_Btau5.0.1Y.fa",
+                # "triotrain/variant_calling/data/GIAB/reference/GRCh38_no_alt_analysis_set.fasta",
                 # "-P",
                 # "triotrain/summarize/data/ARS-UCD1.2_Btau5.0.1Y_reference.txt",
-                # "--dry-run",
+                "--dry-run",
                 # "--debug",
             ]
         )
@@ -169,7 +169,6 @@ def check_args(
             args.resource_config
         ), "Missing --resources; Please designate a path to pipeline compute resources in JSON format"
 
-        # if not args.dry_run:
         assert (
             args.outpath
         ), "missing --output; Please provide a file name to save results."
@@ -178,7 +177,6 @@ def check_args(
             args.pickle_file
         ), "missing --pickle-file; Please provide a path to a pickled SummarizeResults object."
 
-    # if use_mie and args.post_process is False:
     if use_mie:
         assert (
             args.reference

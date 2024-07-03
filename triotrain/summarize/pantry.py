@@ -66,6 +66,6 @@ def prepare(pickled_path: Path) -> object:
             return pickle.load(open(str(pickled_path), "rb"))
 
         except pickle.UnpicklingError:
-            print(f"unable to unpickle an item | '{pickled_path.file}'")
+            raise FileNotFoundError(f"unable to unpickle an item | '{pickled_path.name}'")
     else:
-        print(f"missing the pickled item | '{pickled_path.file}'")
+        raise FileNotFoundError(f"missing the pickled item | '{pickled_path.name}'")

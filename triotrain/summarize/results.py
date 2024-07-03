@@ -18,7 +18,7 @@ from regex import compile
 abs_path = Path(__file__).resolve()
 module_path = str(abs_path.parent.parent)
 path.append(module_path)
-from helpers.files import TestFile, WriteFiles
+from helpers.files import WriteFiles
 from model_training.slurm.suffix import remove_suffixes
 
 
@@ -32,7 +32,7 @@ class SummarizeResults:
     sample_metadata: Union[List[Dict[str, str]], Dict[str, str]]
     output_file: WriteFiles
 
-    # imutable, internal parameters
+    # Imutable, internal parameters
     _contains_valid_trio: bool = field(default=False, init=False, repr=False)
     _digits_only: compile = field(default=compile(r"\d+"), init=False, repr=False)
     _file_path: Path = field(default=None, init=False, repr=False)
@@ -124,6 +124,9 @@ class SummarizeResults:
             )
 
     def identify_trio(self) -> None:
+        """
+        Determine what metadata to retain internally with a valid Trio.
+        """
         if self._total_samples == 3:
             # Determine if input file is labeled as a "TrioVCF"
             _result = self.find_trio_name(self._file_path.name)
@@ -133,21 +136,31 @@ class SummarizeResults:
                 self.find_trio_num(_result)
             else:
                 self._missing_merged_vcf = True
-
-            # Determine if any TrioNumber was found in the existing sample label
-            self.find_trio_num(self._sample_label)
-
-            self._pedigree = {
-                key: value
-                for key, value in self.sample_metadata[0].items()
-                if key in ["sampleID", "paternalID", "maternalID", "sex"]
-            }
-            # Samples with any blank columns in pedigree will be ignored
-            self._missing_pedigree_data = not any(self._pedigree.values())
-
-        else:
+            _metadata_dict = self.sample_metadata[0]
+        elif self._total_samples == 1:
+            if isinstance(self.sample_metadata, list):
+                _metadata_dict = self.sample_metadata[0]
+            else:
+                _metadata_dict = self.sample_metadata
+        elif self._total_samples == 0:
             self._missing_pedigree_data = True
+            return
+        else:
             self._missing_merged_vcf = True
+            _metadata_dict = self.sample_metadata
+
+        # Determine if any TrioNumber was found in the existing sample label
+        self.find_trio_num(self._sample_label)
+
+        # Create pedigree dictionary
+        self._pedigree = {
+            key: value
+            for key, value in _metadata_dict.items()
+            if key in ["sampleID", "paternalID", "maternalID", "sex"]
+        }
+
+        # Samples with any blank columns in pedigree will be ignored
+        self._missing_pedigree_data = not any(self._pedigree.values())
 
     def validate_trio(self) -> None:
         """
@@ -188,6 +201,9 @@ class SummarizeResults:
             self._contains_valid_trio = True
 
     def get_sample_info(self) -> None:
+        """
+        Determine if working with a valid trio, or not.
+        """
         self.check_file_path()
         self.identify_trio()
         self.validate_trio()
@@ -200,7 +216,10 @@ class SummarizeResults:
                 self._ID = self.sample_metadata[0]["sampleID"]
         else:
             self._caller = self.sample_metadata["variant_caller"]
-            self._ID = self.sample_metadata["sampleID"]
+            if self._contains_valid_trio:
+                self._ID = f"Trio{self._trio_num}"
+            else:
+                self._ID = self.sample_metadata["sampleID"]
 
     def add_metadata(
         self, messy_metrics: Union[List[Dict[str, str]], Dict[str, str]]
@@ -247,7 +266,8 @@ class SummarizeResults:
                         _metadata = d
                     else:
                         continue
-                self._merged_data = {**_metadata, **messy_metrics}
+                _clean_metrics = messy_metrics[0]
+                self._merged_data = {**_metadata, **_clean_metrics}
 
     def write_output(
         self, unique_records_only: bool = False, data_type: str = "mie"
@@ -262,7 +282,7 @@ class SummarizeResults:
                 path_to_file=self.output_file.path_to_file,
                 file=_new_output,
                 logger=self._input_file.logger,
-                logger_msg=self._input_file.logger_msg,
+                logger_msg=self.output_file.logger_msg,
                 debug_mode=self._input_file.debug_mode,
                 dryrun_mode=self._input_file.dryrun_mode,
             )
@@ -279,10 +299,10 @@ class SummarizeResults:
                     if r in self._merged_data:
                         if self._input_file.debug_mode:
                             self._input_file.logger.debug(
-                                f"{self._input_file.logger_msg}: skipping a previously processed file | '{self._input_file.file}'"
+                                f"{self.output_file.logger_msg}: skipping a previously processed file | '{self._input_file.file}'"
                             )
                         self._input_file.logger.info(
-                            f"{self._input_file.logger_msg}: data has been written previously... SKIPPING AHEAD"
+                            f"{self.output_file.logger_msg}: data has been written previously... SKIPPING AHEAD"
                         )
                         return
                     else:
@@ -292,16 +312,16 @@ class SummarizeResults:
                     if self._merged_data == r:
                         if self._input_file.debug_mode:
                             self._input_file.logger.debug(
-                                f"{self._input_file.logger_msg}: skipping a previously processed file | '{self._input_file.file}'"
+                                f"{self.output_file.logger_msg}: skipping a previously processed file | '{self._input_file.file}'"
                             )
                         self._input_file.logger.info(
-                            f"{self._input_file.logger_msg}: data has been written previously... SKIPPING AHEAD"
+                            f"{self.output_file.logger_msg}: data has been written previously... SKIPPING AHEAD"
                         )
                         return
                     else:
                         continue
 
-        # ensure that output doesn't have duplicate sampleID column
+        # Ensure that output doesn't have duplicate sampleID column
         if isinstance(self._merged_data, dict):
             col_names = list(self._merged_data.keys())
             self.output_file.add_rows(col_names=col_names, data_dict=self._merged_data)

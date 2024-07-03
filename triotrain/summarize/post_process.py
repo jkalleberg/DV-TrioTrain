@@ -4,9 +4,10 @@ description:
 
 """
 from __future__ import annotations
+
 from dataclasses import dataclass, field
 from pathlib import Path
-from sys import path
+from sys import path, exit
 from typing import Dict, List, TextIO, Union
 
 abs_path = Path(__file__).resolve()
@@ -16,21 +17,21 @@ path.append(module_path)
 from helpers.files import WriteFiles
 from model_training.prep.count import count_variants
 from pantry import prepare
-from summary import SummarizeResults
-from summarize.mie import MIE
 from summarize._args import check_args, collect_args
+from summarize.mie import MIE
+from summary import SummarizeResults
 
 
 @dataclass
 class Stats:
 
-    # required parameters
+    # Required parameters
     pickled_data: SummarizeResults
 
-    # optional values
+    # Optional values
     run_iteractively: bool = False
 
-    # imutable, internal parameters
+    # Imutable, internal parameters
     _num_samples: int = field(default=0, init=False, repr=False)
     _stats: List[Dict[str, str]] = field(default_factory=list, init=False, repr=False)
 
@@ -38,23 +39,24 @@ class Stats:
         """
         Check for an existing .STATS file.
         """
-        _new_file = Path(
-            f"{self.pickled_data._input_file._test_file.clean_filename}.STATS"
-        )
+        _logging_dir = self.pickled_data._input_file._test_file.path.parent
+        _sample_name = Path(self.pickled_data._input_file._test_file.clean_filename).name
+        _new_file = _logging_dir / "logs" / f"stats-{_sample_name}.log"
 
-        self.pickled_data.output_file.logger.info(
-            f"{self.pickled_data.output_file.logger_msg}: searching for existing file | '{_new_file}'"
-        )
+        if self.pickled_data.output_file.debug_mode:
+            self.pickled_data.output_file.logger.debug(
+                f"{self.pickled_data.output_file.logger_msg}: searching for existing file | '{_new_file}'"
+            )
         self._output = WriteFiles(
             _new_file.parent,
             _new_file.name,
             logger=self.pickled_data._input_file.logger,
-            logger_msg=self.pickled_data._input_file.logger_msg,
+            logger_msg=self.pickled_data.output_file.logger_msg,
             debug_mode=self.pickled_data._input_file.debug_mode,
             dryrun_mode=self.pickled_data._input_file.dryrun_mode,
         )
         self._output._test_file.check_existing(
-            logger_msg=self.pickled_data._input_file.logger_msg
+            logger_msg=self.pickled_data.output_file.logger_msg
         )
         self._output.file_exists = self._output._test_file.file_exists
 
@@ -68,7 +70,7 @@ class Stats:
             )
             self._smpl_stats = count_variants(
                 self.pickled_data._input_file.file_path,
-                self.pickled_data._input_file.logger_msg,
+                self.pickled_data.output_file.logger_msg,
                 logger=self.pickled_data._input_file.logger,
                 count_pass=False,
                 count_ref=False,
@@ -112,7 +114,7 @@ class Stats:
                 for i, v in enumerate(line_values):
                     _data_dict[self._header_keys[i]] = v
 
-                # make sure no sampleID values are 'default'
+                # Make sure no sampleID values are 'default'
                 # if _data_dict["sampleID"] == "default":
                 #     _data_dict["sampleID"] = self.pickled_data.sample_metadata[
                 #         "sampleID"
@@ -142,13 +144,17 @@ class Stats:
         """
         Confirm that at least one sample was processed.
         """
-        if self._num_samples > 0:
+        if self._num_samples > 1:
             self.pickled_data._input_file.logger.info(
-                f"{self.pickled_data._input_file.logger_msg}: processed {self._num_samples} files"
+                f"{self.pickled_data.output_file.logger_msg}: processed {self._num_samples} files"
+            )
+        elif self._num_samples == 1:
+            self.pickled_data._input_file.logger.info(
+                f"{self.pickled_data.output_file.logger_msg}: processed {self._num_samples} file"
             )
         else:
             self.pickled_data._input_file.logger.error(
-                f"{self.pickled_data._input_file.logger_msg}: {self._num_samples} files processed"
+                f"{self.pickled_data.output_file.logger_msg}: {self._num_samples} files processed"
             )
 
     def save_stats(self) -> None:
@@ -164,6 +170,9 @@ class Stats:
                 self.process_stats(data=stats_data)
             self.test_process_stats()
         else:
+            self.pickled_data._input_file.logger.info(
+                f"{self.pickled_data.output_file.logger_msg}: missing 'stats' logging file | '{self._output.file}'"
+            )
             self.get_sample_stats()
 
             if self.run_iteractively:
@@ -177,11 +186,23 @@ class Stats:
             else:
                 return
 
-        self.pickled_data.add_metadata(messy_metrics=self._stats[0])
+        _sampleID = self._stats[0]["sampleID"]
+        if len(self._stats) > 1:
+            self.pickled_data._input_file.logger.warning(
+                f"{self.pickled_data.output_file.logger_msg}: additional STATS records detected, only keeping the first one | '{_sampleID}'"
+            )
+            _stats_list = list(self._stats[0])
+        else:
+            self.pickled_data._input_file.logger.info(
+                f"{self.pickled_data.output_file.logger_msg}: saving summary stats data from VCF | '{_sampleID}'"
+            )
+            _stats_list = self._stats
+
+        self.pickled_data.add_metadata(messy_metrics=_stats_list)
 
         if self.pickled_data._input_file.dryrun_mode:
             self.pickled_data._input_file.logger.info(
-                f"[DRY RUN] - {self.pickled_data._input_file.logger_msg}: pretending to add {self._num_samples} rows to a CSV | '{self.pickled_data.output_file.file}'"
+                f"{self.pickled_data.output_file.logger_msg}: pretending to add {self._num_samples} rows to a CSV | '{self.pickled_data.output_file.file}'"
             )
             print("---------------------------------------------")
             if isinstance(self.pickled_data._merged_data, list):
@@ -218,28 +239,42 @@ def __init__() -> None:
 
     try:
         fermented_data = prepare(pickled_path=Path(args.pickle_file))
-        
+
         fermented_data.output_file.logger = logger
         fermented_data.output_file.debug_mode = args.debug
         fermented_data.output_file.dryrun_mode = args.dry_run
-        
+
         if args.dry_run:
             fermented_data.output_file.logger_msg = f"[DRY_RUN] - [post_process]"
         else:
             fermented_data.output_file.logger_msg = f"[post_process]"
-        fermented_data.check_file_path()
-        
+
+        fermented_data.get_sample_info()
+
         if fermented_data._contains_valid_trio:
-            _get_mie = MIE(args, logger)
+            _get_mie = MIE(args=fermented_data.args, logger=logger)
             _get_mie._summary._pickled_data = fermented_data
-            _get_mie._summary._logger_msg = fermented_data.output_file.logger_msg
-            _get_mie.args = fermented_data.args
-            _get_mie.process_trio(itr=fermented_data._index,row_data=fermented_data.sample_metadata[0])
+            _get_mie._summary.load_variables()
+            _get_mie.set_threshold()
+            _get_mie.find_default_region_file()
+            _get_mie.find_reference_SDF()
+            _get_mie._summary._index = fermented_data._index
+            _get_mie.process_trio()
+
+        _run_stats = Stats(pickled_data=fermented_data, run_iteractively=True)
+
+        if args.dry_run:
+            _run_stats.pickled_data.output_file.logger_msg = f"[DRY_RUN] - [stats]"
+        else:
+            _run_stats.pickled_data.output_file.logger_msg = f"[stats]"
+
+        _run_stats.save_stats()
         
-        run_stats = Stats(pickled_data=fermented_data, run_iteractively=True)
-        run_stats.save_stats()
     except AssertionError as E:
         logger.error(E)
+    except FileNotFoundError as E:
+        logger.error(E)
+        exit(1)
 
     Wrapper(__file__, "end").wrap_script(timestamp())
 
