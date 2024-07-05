@@ -15,7 +15,7 @@ from helpers.environment import Env
 from helpers.iteration import Iteration
 
 
-def collect_args():
+def collect_args() -> argparse.Namespace:
     """
     Process command line argument to execute script.
     """
@@ -92,7 +92,7 @@ def check_args(args: argparse.Namespace, logger: Logger) -> None:
     ), "Missing --resources; Please designate a path to pipeline compute resources in JSON format"
 
 
-def __init__():
+def __init__() -> None:
     # Collect command line arguments
     args = collect_args()
 
