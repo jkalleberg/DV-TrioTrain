@@ -568,11 +568,7 @@ class ConvertHappy:
                         f"{self.logger_msg}: 'compare_happy' jobs were submitted...",
                     )
 
-                if self._num_to_run <= self.itr.total_num_tests:
-                    self.itr.logger.info(
-                        f"{self.logger_msg}: attempting to {msg}mit {self._num_to_run}-of-{self.itr.total_num_tests} SLURM jobs to the queue",
-                    )
-                else:
+                if self._num_to_run > self.itr.total_num_tests:
                     self.itr.logger.error(
                         f"{self.logger_msg}: max number of re-submission SLURM jobs is {self.itr.total_num_tests} but {self._num_to_run} were provided.\nExiting... ",
                     )

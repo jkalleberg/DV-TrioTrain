@@ -606,11 +606,7 @@ class MakeExamples:
                 else:
                     self._beam_shuffle_dependencies = None
             else:
-                if self._num_to_run <= self._total_regions:
-                    self.itr.logger.info(
-                        f"{self.logger_msg}: attempting to {msg}mit {self._num_to_run}-of-{self._total_regions} SLURM jobs to the queue",
-                    )
-                else:
+                if self._num_to_run > self._total_regions:
                     self.itr.logger.error(
                         f"{self.logger_msg}: max number of {msg}mission SLURM jobs is {self._total_regions} but {self._num_to_run} were provided.\nExiting... ",
                     )

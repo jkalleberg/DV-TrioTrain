@@ -497,11 +497,7 @@ class SelectCheckpoint:
                         f"{self.logger_msg}: 'train_eval' job was submitted...",
                     )
 
-                if self._num_to_run == 1:
-                    self.itr.logger.info(
-                        f"{self.logger_msg}: attempting to {msg}mit {self._num_to_run}-of-1 SLURM jobs to the queue",
-                    )
-                else:
+                if self._num_to_run != 1:
                     self.itr.logger.error(
                         f"{self.logger_msg}: max number of SLURM jobs for {msg}mission is 1 but {self._num_to_run} were provided.\nExiting... ",
                     )

@@ -571,11 +571,6 @@ class CompareHappy:
                     if self._expected_outputs > self._outputs_found > 0:
                         self.converting._outputs_found = self._outputs_found
                         self.converting.double_check(phase_to_check="process_happy")
-
-                    self.itr.logger.info(
-                        f"{self.logger_msg}: attempting to {msg}mit {self._num_to_run}-of-{self.itr.total_num_tests} SLURM jobs to the queue",
-                    )
-
                 else:
                     self.itr.logger.error(
                         f"{self.logger_msg}: max number of re-submission SLURM jobs is {self.itr.total_num_tests} but {self._num_to_run} were provided.\nExiting... ",
