@@ -80,7 +80,7 @@ class Setup:
         )
         return self.meta.env
 
-    def find_show_regions_file(self):
+    def find_show_regions_file(self) -> None:
         """
         Confirm that the show_regions file input exists first, and throw and error if missing.
         """

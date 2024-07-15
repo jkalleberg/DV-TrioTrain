@@ -259,7 +259,7 @@ class Pipeline:
             )
             raise ValueError
 
-    def edit_resources(self, current_phase: str):
+    def edit_resources(self, current_phase: str) -> None:
         """_summary_
 
         Parameters

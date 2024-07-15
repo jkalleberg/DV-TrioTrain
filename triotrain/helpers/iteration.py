@@ -11,7 +11,7 @@ from dataclasses import dataclass, field
 from logging import Logger
 from os import environ, getcwd
 from pathlib import Path
-from typing import Union
+from typing import Union,Dict
 
 from helpers.environment import Env
 from helpers.outputs import check_expected_outputs, check_if_output_exists
@@ -34,7 +34,7 @@ class Iteration:
     current_trio_num: Union[int, str, None] = None
 
     default_region_file: Union[Path, None] = None
-    env: Union[Env, None] = None
+    env: Union[Env, Dict[str,str], None] = None
     eval_genome: Union[str, None] = None
     eval_num_regions: Union[int, None] = None
 
