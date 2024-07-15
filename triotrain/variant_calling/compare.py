@@ -49,13 +49,23 @@ class CompareHappy:
     _convert_happy_dependencies: Union[List[Union[str, None]], None] = field(
         default_factory=list, init=False, repr=False
     )
+    _ignoring_call_variants: bool = field(default=True, init=False, repr=False)
     _phase: str = field(default="compare_happy", init=False, repr=False)
     _skipped_counter: int = field(default=0, init=False, repr=False)
     _skip_phase: bool = field(default=False, init=False, repr=False)
 
     def __post_init__(self) -> None:
-        if self.itr.env is None:
-            return
+        self._convert_happy_dependencies = create_deps(self.itr.total_num_tests)
+
+        self.converting = ConvertHappy(
+            itr=self.itr,
+            slurm_resources=self.slurm_resources,
+            model_label=self.model_label,
+        )
+        if self._phase in self.slurm_resources.keys():
+            self.n_parts = self.slurm_resources[self._phase]["ntasks"]
+        else:
+            self.n_parts = self.slurm_resources["ntasks"]
 
         if self.itr.train_genome is None:
             self.logger_msg = f"{self.itr._mode_string} - [{self._phase}]"
@@ -64,30 +74,21 @@ class CompareHappy:
                 f"{self.itr._mode_string} - [{self._phase}] - [{self.itr.train_genome}]"
             )
 
-        self.n_parts = self.slurm_resources[self._phase]["ntasks"]
-
-        if "N_Parts" not in self.itr.env.contents:
-            self.itr.env.add_to(
-                "N_Parts",
-                str(self.n_parts),
-                dryrun_mode=self.itr.dryrun_mode,
-                msg=self.logger_msg,
-            )
-
         if self.track_resources:
             assert (
                 self.benchmarking_file is not None
             ), "missing a WriteFiles object to save SLURM job numbers"
 
-        self._convert_happy_dependencies = create_deps(self.itr.total_num_tests)
+        if self.itr.env is not None:
+            if "N_Parts" not in self.itr.env.contents:
+                self.itr.env.add_to(
+                    "N_Parts",
+                    str(self.n_parts),
+                    dryrun_mode=self.itr.dryrun_mode,
+                    msg=self.logger_msg,
+                )
 
-        self.converting = ConvertHappy(
-            itr=self.itr,
-            slurm_resources=self.slurm_resources,
-            model_label=self.model_label,
-        )
-
-    def set_genome(self) -> None:
+    def set_genome(self, outdir: Union[str, Path, None] = None) -> None:
         """
         Assign a genome label.
         """
@@ -100,10 +101,16 @@ class CompareHappy:
                 self.outdir = str(self.itr.env.contents["BaselineModelResultsDir"])
             elif self.itr.current_trio_num is None:
                 self.genome = None
-                self.outdir = str(self.itr.env.contents["RunDir"])
+                self.outdir = str(self.itr.env.contents["OutPath"])
             else:
                 self.genome = self.itr.train_genome
                 self.outdir = str(self.itr.env.contents[f"{self.genome}CompareDir"])
+        elif outdir is not None:
+            self.genome = None
+            self.outdir = str(outdir)
+        else:
+            self.genome = None
+            self.outdir = None
 
     def find_restart_jobs(self) -> None:
         """
@@ -179,6 +186,7 @@ class CompareHappy:
         """
         self.test_num = current_test_num
         self.test_logger_msg = f"test{self.test_num}"
+        
         if self.itr.env is not None:
             if f"Test{self.test_num}ReadsBAM" in self.itr.env.contents:
                 self.test_genome = None
@@ -274,7 +282,7 @@ class CompareHappy:
         ### ----- NOTE TO SELF: DO NOT USE 'CONDA RUN' WITH APPTAINER HAPPY ----- ###
 
         # determine if GIAB benchmarking is being performed
-        if self.itr.args.first_genome is None:
+        if "first_genome" not in self.itr.args or self.itr.args.first_genome is None:
             additional_flag = " --benchmark "
         else:
             additional_flag = ""

@@ -50,6 +50,7 @@ class ConvertHappy:
     _final_jobs: Union[List[Union[str, None]], None] = field(
         default_factory=list, init=False, repr=False
     )
+    _ignoring_compare_happy: bool = field(default=True, init=False,repr=False)
     _jobs_to_run: List[int] = field(default_factory=list, init=False, repr=False)
     _num_to_ignore: int = field(default=0, init=False, repr=False)
     _num_to_run: int = field(default=0, init=False, repr=False)
@@ -90,7 +91,7 @@ class ConvertHappy:
                 self.outdir = str(self.itr.env.contents[f"{self.genome}CompareDir"])
             elif self.itr.current_trio_num is None:
                 self.genome = None
-                self.outdir = str(self.itr.env.contents["RunDir"])
+                self.outdir = str(self.itr.env.contents["OutPath"])
             else:
                 self.genome = self.model_label.split("-")[1]
                 self.outdir = str(self.itr.env.contents[f"{self.genome}CompareDir"])

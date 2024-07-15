@@ -217,9 +217,10 @@ class Happy:
             self._mode = "demo"
             self._logger_msg = f"v{self._version}] - [test{self.args.test_num}"
         elif self.args.benchmark_mode:
-            self._test_dir = str(self.env.contents["RunDir"])
-            self._out_dir = str(self.env.contents["RunDir"])
-            self._query_vcf_name = f"test{self.args.test_num}.vcf.gz"
+            self._test_dir = str(self.env.contents["OutPath"])
+            self._out_dir = str(self.env.contents["OutPath"])
+            _sample_id = str(self.env.contents["SampleID"])
+            self._query_vcf_name = f"{_sample_id}.vcf.gz"
             self._mode = "Benchmark"
             self._logger_msg = f"v{self._version}] - [test{self.args.test_num}"
         elif self.args.train_genome is None:
