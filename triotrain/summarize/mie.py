@@ -185,7 +185,7 @@ class MIE:
         Identify the Family VCF, and confirm it exists.
         """
         self._trio_vcf = TestFile(
-            f"{self._summary._pickled_data._input_file.path}/{self._summary._pickled_data._ID}.vcf.gz",
+            f"{self._summary._pickled_data._input_file.path.parent}/{self._summary._pickled_data._ID}.vcf.gz",
             self.logger,
         )
         self._trio_vcf.check_existing()
@@ -280,7 +280,7 @@ class MIE:
         ]
 
         self._pedigree = WriteFiles(
-            path_to_file=str(self._summary._pickled_data._input_file.path),
+            path_to_file=str(self._summary._pickled_data._input_file.path.parent),
             file=f"{self._summary._pickled_data._ID}.PED",
             logger=self.logger,
             logger_msg=self._summary._logger_msg,
@@ -940,6 +940,7 @@ class MIE:
                 # Don't submit jobs while iterating through a trio
                 continue
             print("-------------------------------------------------")
+            breakpoint()
 
         self._summary.check_submission()
 
