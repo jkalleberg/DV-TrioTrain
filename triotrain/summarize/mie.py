@@ -184,8 +184,22 @@ class MIE:
         """
         Identify the Family VCF, and confirm it exists.
         """
+        self._trio_path = (
+            Path(self._summary._pickled_data._input_file.path.parent) / "TRIOS"
+        )
+        if not self._trio_path.exists():
+            if self.args.dry_run:
+                self.logger.info(
+                    f"{self._summary._logger_msg}: pretending to create a new directory | '{self._trio_path}'"
+                )
+            else:
+                self.logger.info(
+                    f"{self._summary._logger_msg}: creating a new directory | '{self._trio_path}'"
+                )
+                self._trio_path.mkdir(parents=True)
+        
         self._trio_vcf = TestFile(
-            f"{self._summary._pickled_data._input_file.path.parent}/{self._summary._pickled_data._ID}.vcf.gz",
+            f"{self._trio_path}/{self._summary._pickled_data._ID}.vcf.gz",
             self.logger,
         )
         self._trio_vcf.check_existing()
@@ -199,11 +213,18 @@ class MIE:
         Determine if 'rtg-tools mendelian' needs to be run.
         """
         trio_filename = remove_suffixes(self._trio_vcf.path)
-        logging_dir = Path(trio_filename).parent / "logs"
-        if logging_dir.is_dir():
-            self._log_dir = logging_dir
-        else:
-            self._log_dir = Path(trio_filename).parent
+        self._log_dir = self._trio_path / "logs"
+
+        if not self._log_dir.exists():
+            if self.args.dry_run:
+                self.logger.info(
+                    f"{self._summary._logger_msg}: pretending to create a new directory | '{self._log_dir}'"
+                )
+            else:
+                self.logger.info(
+                    f"{self._summary._logger_msg}: creating a new directory | '{self._log_dir}'"
+                )
+                self._log_dir.mkdir(parents=True)
 
         if pass_only:
             mie_vcf_file = Path(f"{trio_filename}.PASS.MIE")
@@ -280,7 +301,7 @@ class MIE:
         ]
 
         self._pedigree = WriteFiles(
-            path_to_file=str(self._summary._pickled_data._input_file.path.parent),
+            path_to_file=str(self._trio_path),
             file=f"{self._summary._pickled_data._ID}.PED",
             logger=self.logger,
             logger_msg=self._summary._logger_msg,
@@ -435,7 +456,7 @@ class MIE:
         _lines = [f"{sample_name}"]
 
         renaming_file = WriteFiles(
-            path_to_file=str(self._summary._pickled_data._input_file.path),
+            path_to_file=str(self._trio_path),
             file=f"{sample_name}.rename",
             logger=self.logger,
             logger_msg=self._summary._logger_msg,
@@ -502,7 +523,7 @@ class MIE:
                 "bcftools",
                 "reheader",
                 "--samples",
-                f"{self._summary._pickled_data._input_file.path}/{sampleID}.rename",
+                f"{self._trio_path}/{sampleID}.rename",
                 "--output",
                 output,
                 input,
@@ -609,7 +630,7 @@ class MIE:
         # Confirm a Family BCF File already exists...
         else:
             self._trio_bcf = TestFile(
-                f"{self._summary._pickled_data._input_file.path}/{self._input_filename}",
+                f"{self._trio_path}/{self._input_filename}",
                 self.logger,
             )
             self._trio_bcf.check_existing(
@@ -729,6 +750,11 @@ class MIE:
                 # Sanity check
                 trio_con_parts = concordance_parts[8].split("/")
                 denominator = int(trio_con_parts[1])
+                if denominator == 0:
+                    self.logger.info(
+                        f"{self._summary._logger_msg}: unable to calculate Trio Concordance, error occurred during 'rtg-mendelian'\nExiting..."
+                    )
+                    exit(1)
                 match = self._summary._pickled_data._digits_only.search(
                     trio_con_parts[0]
                 )
@@ -769,9 +795,6 @@ class MIE:
 
         # Save the merged data in a dict of dicts with _num_processed as the index
         self._num_processed += 1
-        # self._summary._pickled_data._output_lines_mie.insert(
-        #     self._num_processed, self._summary._pickled_data._merged_data
-        # )
         self._summary._vcf_file = self._trio_vcf
         self._summary._pickled_data.output_file.logger_msg = self._summary._logger_msg
         self._summary._pickled_data.write_output(
@@ -809,18 +832,16 @@ class MIE:
             if not self._summary._pickled_data._contains_valid_trio:
                 return
 
-            self.find_merged_file()
-
             self.logger.info(
                 f"{self._summary._logger_msg}: ========== INDEX: {self._summary._index} | {self._summary._pickled_data._ID} = CHILD: {self._summary._pickled_data._childID} | MOTHER: {self._summary._pickled_data._motherID} | FATHER: {self._summary._pickled_data._fatherID} =========="
             )
 
+            self.find_merged_file()
             self.itr = Iteration(
                 current_trio_num=self._summary._pickled_data._trio_num,
                 logger=self.logger,
                 args=self.args,
             )
-
             self.find_mie_outputs()
 
             if "all" in self.args and self.args.all:
@@ -940,7 +961,7 @@ class MIE:
                 # Don't submit jobs while iterating through a trio
                 continue
             print("-------------------------------------------------")
-            # breakpoint()
+            breakpoint()
 
         self._summary.check_submission()
 

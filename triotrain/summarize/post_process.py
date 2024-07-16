@@ -39,7 +39,11 @@ class Stats:
         """
         Check for an existing .STATS file.
         """
-        _logging_dir = self.pickled_data._input_file._test_file.path.parent
+        if self.pickled_data._contains_valid_trio:
+            _logging_dir = self.pickled_data._input_file.path_to_file.parent / "TRIOS"
+        else:
+            _logging_dir = self.pickled_data._input_file._test_file.path.parent
+
         _sample_name = Path(self.pickled_data._input_file._test_file.clean_filename).name
         _new_file = _logging_dir / "logs" / f"stats-{_sample_name}.log"
 
@@ -75,6 +79,9 @@ class Stats:
                 count_pass=False,
                 count_ref=False,
                 debug_mode=self.pickled_data._input_file.debug_mode,
+            )
+            self.pickled_data.output_file.logger.info(
+                f"{self.pickled_data.output_file.logger_msg}: done running 'bcftools +smpl-stats' | '{self.pickled_data._input_file.file_path.name}'"
             )
         else:
             self._smpl_stats = [
@@ -194,7 +201,7 @@ class Stats:
             _stats_list = list(self._stats[0])
         else:
             self.pickled_data._input_file.logger.info(
-                f"{self.pickled_data.output_file.logger_msg}: saving summary stats data from VCF | '{_sampleID}'"
+                f"{self.pickled_data.output_file.logger_msg}: processed summary stats | '{_sampleID}'"
             )
             _stats_list = self._stats
 

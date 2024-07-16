@@ -320,6 +320,11 @@ class SummarizeResults:
                         return
                     else:
                         continue
+        
+        # _current_sample = self._merged_data[0]["sampleID"]
+        self._input_file.logger.info(
+            f"{self.output_file.logger_msg}: saving summary stats data | '{self.output_file.file_path}'"
+        )
 
         # Ensure that output doesn't have duplicate sampleID column
         if isinstance(self._merged_data, dict):

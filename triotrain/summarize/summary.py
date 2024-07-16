@@ -15,7 +15,6 @@ from csv import DictReader
 from dataclasses import dataclass, field
 from json import load
 from logging import Logger
-# from os import path as p
 from pathlib import Path
 from sys import path
 from typing import List, Union
@@ -23,7 +22,7 @@ from typing import List, Union
 abs_path = Path(__file__).resolve()
 module_path = str(abs_path.parent.parent)
 path.append(module_path)
-# from _args import check_args, collect_args
+
 from helpers.files import TestFile, WriteFiles
 from helpers.iteration import Iteration
 from helpers.utils import check_if_all_same, generate_job_id
@@ -146,20 +145,27 @@ class Summary:
         self._clean_file_path = self._pickled_data._input_file._test_file.clean_filename
 
         if pkl_suffix is None:
-            _pickle_file = TestFile(
+            self._pickle_file = TestFile(
                 Path(f"{self._clean_file_path}.pkl"),
                 logger=self.logger,
             )
         else:
-            _pickle_file = TestFile(
-                Path(f"{self._clean_file_path}.{pkl_suffix}.pkl"),
+            if "trio" in pkl_suffix.lower():
+                _sample_name = self._clean_file_path.stem
+                _pickle_path = Path(self._clean_file_path).parent.parent / "TRIOS" / f"{_sample_name}.{pkl_suffix}.pkl"
+            else:
+                _pickle_path = Path(f"{self._clean_file_path}.{pkl_suffix}.pkl")
+
+            self._pickle_file = TestFile(
+                _pickle_path,
                 logger=self.logger,
             )
+
         slurm_cmd = [
             "python3",
             "./triotrain/summarize/post_process.py",
             "--pickle-file",
-            _pickle_file.file,
+            self._pickle_file.file,
         ]
         cmd_string = " ".join(slurm_cmd)
 
@@ -170,13 +176,13 @@ class Summary:
 
         if self.args.dry_run:
             self.logger.info(
-                f"{self._logger_msg}: pretending to create pickle file | '{_pickle_file.file}'"
+                f"{self._logger_msg}: pretending to create pickle file | '{self._pickle_file.file}'"
             )
         else:
             if store_data:
                 preserve(
                     item=self._pickled_data,
-                    pickled_path=_pickle_file,
+                    pickled_path=self._pickle_file,
                     overwrite=self.args.overwrite,
                 )
 
@@ -184,8 +190,8 @@ class Summary:
         """
         Define the contents of the SLURM job for the rtg-mendelian phase for TrioTrain Pipeline.
         """
-        self._itr.job_dir = Path(self._clean_file_path).parent
-        self._itr.log_dir = Path(self._clean_file_path).parent
+        self._itr.job_dir = self._pickle_file.path.parent 
+        self._itr.log_dir = self._pickle_file.path.parent / "logs"
         self._job_name = job_name
 
         # Initialize a SBATCH Object
@@ -332,6 +338,8 @@ class Summary:
 
 
 # def __init__() -> None:
+#     from os import path as p
+#     from _args import check_args, collect_args
 #     from helpers.utils import get_logger
 #     from helpers.wrapper import Wrapper, timestamp
 
