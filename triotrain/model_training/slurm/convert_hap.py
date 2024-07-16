@@ -87,11 +87,10 @@ class Convert:
             self._input_pattern = str(self.happy_vcf_file_path).lower()
             self._train_genome = None
             if "default" in self._input_pattern:
-                self._test_vcf_name = f"test{self._test_num}.vcf.gz"
                 self._custom_model = False
             else:
-                self._test_vcf_name = f"test{self._test_num}.vcf.gz"
                 self._custom_model = True
+            self._test_vcf_name = f"test{self._test_num}.vcf.gz"
         else:
             self._input_pattern = self.happy_vcf_file_path.parent.stem
             if "Father" in self._input_pattern or "Mother" in self._input_pattern:
@@ -121,6 +120,7 @@ class Convert:
             dryrun_mode=self.args.dry_run,
             debug_mode=self.args.debug,
         )
+        
         env_vars = [
             "RunName",
             "RunOrder",
@@ -154,6 +154,11 @@ class Convert:
             self._compare_dir,
         ) = self.env.load(*var_list)
 
+        # update the VCF name based on SampleID
+        if "SampleID" in self.env.contents:
+            _sample_ID = self.env.contents["SampleID"]
+            self._test_vcf_name = f"{_sample_ID}.vcf.gz"
+
         if self._custom_model:
             if self._train_genome is None:
                 self._mode = "Benchmark"
@@ -178,6 +183,8 @@ class Convert:
             self._checkpoint = self.env.contents["BaselineTestCkptName"]
         elif "TestCkptName" in self.env.contents:
             self._checkpoint = self.env.contents["TestCkptName"]
+        elif "Ckpt_File" in self.env.contents:
+            self._checkpoint = self.env.contents["Ckpt_File"]
         else:
             self._checkpoint = None
 

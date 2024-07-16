@@ -215,6 +215,18 @@ class VariantCaller:
             msg=self._test_logger_msg,
         )
         self._env.add_to(
+            key="RunDir",
+            value=self._output_path,
+            dryrun_mode=self.args.dry_run,
+            msg=self._test_logger_msg,
+        )
+        self._env.add_to(
+            key="ResultsDir",
+            value=self._output_path,
+            dryrun_mode=self.args.dry_run,
+            msg=self._test_logger_msg,
+        )
+        self._env.add_to(
             key="JobDir",
             value=self._output_path,
             dryrun_mode=self.args.dry_run,
