@@ -129,7 +129,7 @@ def collect_args(
                 "triotrain/variant_calling/data/GIAB/reference/GRCh38_no_alt_analysis_set.fasta",
                 # "-P",
                 # "triotrain/summarize/data/ARS-UCD1.2_Btau5.0.1Y_reference.txt",
-                "--dry-run",
+                # "--dry-run",
                 # "--debug",
             ]
         )
