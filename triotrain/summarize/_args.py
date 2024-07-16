@@ -118,8 +118,8 @@ def collect_args(
         return parser.parse_args(
             [
                 "-M",
-                # "triotrain/summarize/data/240627_mie_rate_inputs_noPop_cattle.csv",
-                "triotrain/summarize/data/240627_mie_rate_inputs_noPop_human.csv",
+                "triotrain/summarize/data/240627_mie_rate_inputs_noPop_cattle.csv",
+                # "triotrain/summarize/data/240627_mie_rate_inputs_noPop_human.csv",
                 "-O",
                 "../VARIANT_CALLING_OUTPUTS/240528_Benchmarking/summary",
                 "-r",
