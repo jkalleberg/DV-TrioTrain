@@ -164,7 +164,7 @@ class ReShuffleExamples:
         if self.track_resources:
             if self._train_dependency is None:
                 self.itr.logger.warning(
-                    f": unable to perform benchmarking, as a SLURM job id is missing",
+                    f"{self.logger_msg}: unable to perform benchmarking, as a SLURM job id is missing",
                 )
             else:
                 data = {
