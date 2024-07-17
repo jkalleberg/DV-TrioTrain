@@ -431,7 +431,7 @@ class ConvertHappy:
                 f"{self.logger_msg} - [{self.test_logger_msg}]: {msg}mitting job to process hap.py outputs"
             )
 
-        slurm_job = SubmitSBATCH(
+        self._slurm_job = SubmitSBATCH(
             self.itr.job_dir,
             f"{self.job_name}.sh",
             self.handler_label,
@@ -442,27 +442,28 @@ class ConvertHappy:
         # If there is a running job...
         if self.compare_happy_jobs and len(self.compare_happy_jobs) > 0:
             # ...include it as a dependency
-            slurm_job.build_command(self.compare_happy_jobs[dependency_index])
+            self._slurm_job.build_command(self.compare_happy_jobs[dependency_index])
         else:
-            slurm_job.build_command(None)
+            self._slurm_job.build_command(None)
 
-        slurm_job.display_command(
+        self._slurm_job.display_command(
             current_job=self.job_num,
             total_jobs=total_jobs,
             display_mode=self.itr.dryrun_mode,
         )
 
         if self.itr.dryrun_mode:
-            self._final_jobs[dependency_index] = generate_job_id()
+            self._slurm_job.job_number = generate_job_id()
+            self._final_jobs[dependency_index] = self._slurm_job.job_number
         else:
-            slurm_job.get_status(
+            self._slurm_job.get_status(
                 current_job=self.job_num,
                 total_jobs=total_jobs,
                 debug_mode=self.itr.debug_mode,
             )
 
-            if slurm_job.status == 0:
-                self._final_jobs[dependency_index] = str(slurm_job.job_number)
+            if self._slurm_job.status == 0:
+                self._final_jobs[dependency_index] = str(self._slurm_job.job_number)
             else:
                 self._final_jobs[dependency_index] = None
 
@@ -479,7 +480,7 @@ class ConvertHappy:
                 )
             else:
                 print(
-                    f"============ {self.logger_msg}- Job Numbers ============\n{self._final_jobs}\n============================================================"
+                    f"============ {self.logger_msg} - Job Numbers ============\n{self._final_jobs}\n============================================================"
                 )
 
             if self.track_resources and self.benchmarking_file is not None:

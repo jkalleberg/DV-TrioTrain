@@ -961,7 +961,7 @@ class MIE:
                 # Don't submit jobs while iterating through a trio
                 continue
             print("-------------------------------------------------")
-            breakpoint()
+            # breakpoint()
 
         self._summary.check_submission()
 

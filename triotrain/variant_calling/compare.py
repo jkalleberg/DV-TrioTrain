@@ -467,7 +467,7 @@ class CompareHappy:
                 f"{self.logger_msg} - [{self.test_logger_msg}]: {msg}mitting job to compare results using hap.py"
             )
 
-        slurm_job = SubmitSBATCH(
+        self._slurm_job = SubmitSBATCH(
             self.itr.job_dir,
             f"{self.job_name}.sh",
             self.handler_label,
@@ -478,28 +478,29 @@ class CompareHappy:
         # If there is a running call-variants job...
         if self.call_variants_jobs and len(self.call_variants_jobs) > 0:
             # ...include it as a dependency
-            slurm_job.build_command(self.call_variants_jobs[dependency_index])
+            self._slurm_job.build_command(self.call_variants_jobs[dependency_index])
         else:
-            slurm_job.build_command(None)
+            self._slurm_job.build_command(None)
 
-        slurm_job.display_command(
+        self._slurm_job.display_command(
             current_job=self.job_num,
             total_jobs=total_jobs,
             display_mode=self.itr.dryrun_mode,
         )
 
         if self.itr.dryrun_mode:
-            self._convert_happy_dependencies[dependency_index] = generate_job_id()
+            self._slurm_job.job_number = generate_job_id()
+            self._convert_happy_dependencies[dependency_index] = self._slurm_job.job_number
         else:
-            slurm_job.get_status(
+            self._slurm_job.get_status(
                 current_job=self.job_num,
                 total_jobs=total_jobs,
                 debug_mode=self.itr.debug_mode,
             )
 
-            if slurm_job.status == 0:
+            if self._slurm_job.status == 0:
                 self._convert_happy_dependencies[dependency_index] = (
-                    slurm_job.job_number
+                    self._slurm_job.job_number
                 )
             else:
                 self.itr.logger.warning(

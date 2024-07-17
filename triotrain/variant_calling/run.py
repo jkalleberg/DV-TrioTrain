@@ -93,7 +93,7 @@ def collect_args() -> argparse.Namespace:
             "triotrain/variant_calling/data/metadata/240715_benchmarking_metadata.csv",
             "-r",
             "triotrain/model_training/tutorial/resources_used_hellbender.json",
-            # "--dry-run",
+            "--dry-run",
         ]
     )
     # return parser.parse_args()
@@ -126,28 +126,6 @@ def check_args(args: argparse.Namespace, logger: Logger) -> None:
         ), "Missing --resources; Please designate a path to pipeline compute resources in JSON format"
 
 
-# def check_args(args: argparse.Namespace, logger: Logger) -> None:
-#     """
-#     With "--debug", display command line args provided.
-#     With "--dry-run", display a msg.
-#     Then, check to make sure all required flags are provided.
-#     """
-#     if args.debug:
-#         str_args = "COMMAND LINE ARGS USED: "
-#         for key, val in vars(args).items():
-#             str_args += f"{key}={val} | "
-
-#         logger.debug(str_args)
-#         _version = environ.get("BIN_VERSION_DV")
-#         logger.debug(f"using DeepVariant version | {_version}")
-
-#     if args.dry_run:
-#         logger.info("[DRY_RUN]: output will display to screen and not write to a file")
-#     assert (
-#         args.resource_config
-#     ), "Missing --resources; Please designate a path to pipeline compute resources in JSON format"
-
-
 def __init__() -> None:
     from helpers.utils import get_logger
     from helpers.wrapper import Wrapper, timestamp
@@ -169,20 +147,7 @@ def __init__() -> None:
 
     run_DV = VariantCaller(args=args, logger=logger)
     run_DV.setup()
-
-    # print("ROW1:", run_DV._data_list[0])
-    run_DV.process_samples()
-    # breakpoint()
-
-    # run_DV.load_variables(index=0)
-    # run_DV.set_iteration()
-    # run_DV.submit_job(index=0, total_jobs=run_DV._total_lines)
-
-    # print("RESOURCES:", run_DV._resources)
-    # print("ITR:", run_DV._itr)
-    # print("JOBS:", run_DV._job_nums)
-
-    
+    run_DV.process_samples()   
 
     # current_itr = Iteration(
     #     current_trio_num=12,

@@ -30,11 +30,10 @@ path.append(module_path)
 from helpers.environment import Env
 from helpers.files import TestFile
 from helpers.iteration import Iteration
-from helpers.utils import generate_job_id
+from helpers.utils import generate_job_id, create_deps, check_if_all_same
 from model_training.prep.examples_regions import MakeRegions
 from model_training.slurm.sbatch import SBATCH, SubmitSBATCH
 from compare import CompareHappy
-from convert import ConvertHappy
 
 @dataclass
 class VariantCaller:
@@ -84,7 +83,11 @@ class VariantCaller:
         if not self.args.get_help:
             self._metadata_input = Path(self.args.metadata)
             self._resource_input = Path(self.args.resource_config)
-        self._logger_msg = f"[{self._phase}]"
+        
+        if self.args.dry_run:
+            self._logger_msg = f"[DRY_RUN] - [{self._phase}]"
+        else:
+            self._logger_msg = f"[{self._phase}]"
 
     def set_container(self) -> None:
         """
@@ -270,6 +273,7 @@ class VariantCaller:
         )
 
         if "TruthVCF" in self._data_list[index].keys():
+            self._run_happy = True
             self._truth_VCF = self._data_list[index]["TruthVCF"]
             self._truth_BED = self._data_list[index]["CallableBED"]
             input_paths = [
@@ -282,6 +286,7 @@ class VariantCaller:
                 "CallableBED",
             ]
         else:
+            self._run_happy = False
             self._truth_VCF = "NA"
             self._truth_BED = "NA"
             input_paths = ["RefFASTA", "PopVCF", "RegionsFile", "ReadsBAM", "ModelCkpt"]
@@ -494,7 +499,7 @@ class VariantCaller:
                 update=True,
             )
             self._env.add_to(
-                key="RegionsFile_Name",
+                key="RegionsFile_File",
                 value=f"{_prefix}_autosomes_withX.bed",
                 dryrun_mode=self.args.dry_run,
                 msg=self._test_logger_msg,
@@ -504,7 +509,8 @@ class VariantCaller:
                 logger=self.logger,
                 args=self.args,
                 default_region_file=default_region_file,
-                env=self._env
+                env=self._env,
+                total_num_tests=self._total_lines,
             )
         else:
             self.logger.warning(
@@ -514,7 +520,8 @@ class VariantCaller:
             self._itr = Iteration(
                 logger=self.logger,
                 args=self.args,
-                env=self._env
+                env=self._env,
+                total_num_tests=self._total_lines,
             )
 
             # --- Create Shuffling Regions for Non-Baseline Runs --- ##
@@ -542,6 +549,7 @@ class VariantCaller:
                         logger=self.logger,
                         args=self.args,
                         default_region_file=default_region_file,
+                        
                     )
                 except Exception as ex:
                     self.logger.error(
@@ -613,10 +621,10 @@ class VariantCaller:
             if self._itr.default_region_file.exists():
                 bindings.append(f"{self._itr.default_region_file.parent}/:/region_dir/")
             else:
-                self.logger.warning(
-                    f"{self._test_logger_msg}: missing the default BED file | {self._itr.default_region_file}... SKIPPING AHEAD"
+                self.logger.error(
+                    f"{self._test_logger_msg}: missing the default BED file | {self._itr.default_region_file}.\nExiting..."
                 )
-                return
+                exit(1)
 
         self._bindings = ",".join(bindings)
 
@@ -720,6 +728,8 @@ class VariantCaller:
         if self._output_exists:
             self._skipped_counter += 1
             if self._job_nums:
+                self._job_nums[index] = None
+            else:
                 self._job_nums.insert(index, None)
         else:
             slurm_job = self.make_job()
@@ -735,7 +745,7 @@ class VariantCaller:
                 else:
                     slurm_job.write_job()
 
-            submit_slurm_job = SubmitSBATCH(
+            self._slurm_job = SubmitSBATCH(
                 self._itr.job_dir,
                 f"{self._job_name}.sh",
                 self._job_name,
@@ -747,10 +757,10 @@ class VariantCaller:
                 self.logger.debug(
                     f"{self._test_logger_msg}: submitting without a SLURM dependency"
                 )
-            submit_slurm_job.build_command(None)
+            self._slurm_job.build_command(None)
 
             if self.args.dry_run:
-                submit_slurm_job.display_command(
+                self._slurm_job.display_command(
                     current_job=(index + 1),
                     total_jobs=total_jobs,
                     display_mode=self.args.dry_run,
@@ -758,18 +768,18 @@ class VariantCaller:
                 if self._job_nums:
                     self._job_nums.insert(index, generate_job_id())
             else:
-                submit_slurm_job.display_command(
+                self._slurm_job.display_command(
                     current_job=(index + 1),
                     total_jobs=total_jobs,
                     debug_mode=self.args.debug,
                 )
-                submit_slurm_job.get_status(
+                self._slurm_job.get_status(
                     current_job=(index + 1),
                     total_jobs=total_jobs,
                     debug_mode=self.args.debug,
                 )
-                if submit_slurm_job.status == 0:
-                    self._job_nums.insert(index, str(submit_slurm_job.job_number))
+                if self._slurm_job.status == 0:
+                    self._job_nums.insert(index, str(self._slurm_job.job_number))
                 else:
                     self.logger.warning(
                         f"{self._test_logger_msg}: unable to submit SLURM job",
@@ -786,17 +796,23 @@ class VariantCaller:
             self.set_iteration()
             self.submit_job(total_jobs=self._total_lines)
         else:
+            self._job_nums = create_deps(self._total_lines)
+            _run_happy_jobs = create_deps(self._total_lines)
+            _convert_happy_jobs = create_deps(self._total_lines)
             for i in range(0, self._total_lines):
                 self.load_variables(index=i)
                 self.set_iteration()
                 self.submit_job(index=i, total_jobs=self._total_lines)
+                
+                if self._run_happy is False:
+                    continue
 
                 if self._job_nums:
                     benchmark = CompareHappy(
                         itr=self._itr,
                         slurm_resources=self._resource_dict,
                         model_label=self._variant_caller,
-                        call_variants_jobs=self._job_nums[i],
+                        call_variants_jobs=self._job_nums,
                     )
                 else:
                     benchmark = CompareHappy(
@@ -810,20 +826,38 @@ class VariantCaller:
                 # THIS HAS TO BE +1 to avoid labeling files Test0
 
                 benchmark.set_test_genome(current_test_num=(i+1))
-
                 benchmark.find_outputs()
                 benchmark.submit_job(
                     dependency_index=i,
                     total_jobs=int(self._total_lines),
                 )
-
-                # print("BENCHMARK OUTDIR:", benchmark.outdir)
-                # breakpoint()
+                _run_happy_jobs[i] = benchmark._slurm_job.job_number
+                
+                #--------- PROCESS HAP.PY RESULTS ----------------------#
                 benchmark.converting.job_num = i + 1
                 benchmark.converting.set_test_genome(current_test_num=(i+1))
                 benchmark.converting.find_outputs()
-                # benchmark.converting.submit_job(dependency_index=i, total_jobs=int(self._total_lines))
-                breakpoint()
+                benchmark.converting.compare_happy_jobs = benchmark._convert_happy_dependencies
+                benchmark.converting.submit_job(
+                    dependency_index=i,
+                    total_jobs=int(self._total_lines))
+                _convert_happy_jobs[i] = benchmark.converting._slurm_job.job_number
+
+                if (i + 1) == self._total_lines:
+                    _skip_DV = check_if_all_same(self._job_nums, None)
+                    if not _skip_DV:
+                        if len(self._job_nums) == 1:
+                            print(
+                                f"============ {self._logger_msg} - Job Number - {self._job_nums} ============"
+                            )
+                        else:
+                            print(
+                                f"============ {self._logger_msg} - Job Numbers ============\n{self._job_nums}\n============================================================"
+                            )
+                    benchmark._convert_happy_dependencies = _run_happy_jobs
+                    benchmark.check_submissions()
+                    benchmark.converting._final_jobs = _convert_happy_jobs
+                    benchmark.converting.check_submissions()
 
     def setup(self) -> None:
         """
