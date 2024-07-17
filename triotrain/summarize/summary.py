@@ -192,6 +192,17 @@ class Summary:
         """
         self._itr.job_dir = self._pickle_file.path.parent 
         self._itr.log_dir = self._pickle_file.path.parent / "logs"
+        if not self._itr.log_dir.exists():
+            if self.args.dry_run:
+                self._itr.logger.info(
+                    f"{self._logger_msg}: pretending to create a new directory | '{self._itr.log_dir}'"
+                )
+            else:
+                self._itr.logger.info(
+                    f"{self._logger_msg}: creating a new directory | '{self._itr.log_dir}'"
+                )
+                self._itr.log_dir.mkdir(parents=True, exist_ok=True)
+
         self._job_name = job_name
 
         # Initialize a SBATCH Object

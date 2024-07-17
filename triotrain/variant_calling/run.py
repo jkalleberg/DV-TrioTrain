@@ -43,14 +43,6 @@ def collect_args() -> argparse.Namespace:
         type=str,
         metavar="</path/file>",
     )
-    # parser.add_argument(
-    #     "-e",
-    #     "--env-file",
-    #     dest="env_file",
-    #     help="[REQUIRED]\ninput file (.env)\nprovides environment variables",
-    #     type=str,
-    #     metavar="</path/file>",
-    # )
     parser.add_argument(
         "-d",
         "--debug",
@@ -93,7 +85,7 @@ def collect_args() -> argparse.Namespace:
             "triotrain/variant_calling/data/metadata/240715_benchmarking_metadata.csv",
             "-r",
             "triotrain/model_training/tutorial/resources_used_hellbender.json",
-            "--dry-run",
+            # "--dry-run",
         ]
     )
     # return parser.parse_args()

@@ -177,6 +177,16 @@ class Stats:
                 self.process_stats(data=stats_data)
             self.test_process_stats()
         else:
+            if not self._output.file_path.parent.exists():
+                if self.pickled_data.args.dry_run:
+                    self.pickled_data._input_file.logger.info(
+                        f"{self.pickled_data.output_file.logger_msg}: pretending to create a new directory | '{self._output.file_path.parent}'"
+                    )
+                else:
+                    self.pickled_data._input_file.logger.info(
+                        f"{self.pickled_data.output_file.logger_msg}: creating a new directory | '{self._output.file_path.parent}'"
+                    )
+                    self._output.file_path.parent.mkdir(parents=True, exist_ok=True)
             self.pickled_data._input_file.logger.info(
                 f"{self.pickled_data.output_file.logger_msg}: missing 'stats' logging file | '{self._output.file}'"
             )
