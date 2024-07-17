@@ -1,0 +1,342 @@
+===== start of triotrain/run_trio_train.py @ 2024-07-17  08:57:56 =====
+2024-07-17 08:57:56 AM - [INFO] - --------- running jobs were provided ---------
+2024-07-17 08:57:56 AM - [INFO] - phase1 | 'train_eval'=[1]
+2024-07-17 08:57:56 AM - [INFO] - ----------------------------------------------
+2024-07-17 08:57:56 AM - [INFO] - [TRIO14] - [create_environment]: using model weights from previously re-training to initalize DeepVariant-v1.4.0
+2024-07-17 08:57:56 AM - [INFO] - [TRIO14] - [create_environment]: warm-starting checkpoint will be determined shortly...
+2024-07-17 08:57:56 AM - [INFO] - [TRIO14] - [create_environment]: use existing env file | '/mnt/pixstor/schnabelr-drii/WORKING/jakth2/TRIO_TRAINING_OUTPUTS/240429_NoPopVCF/envs/run14.env'
+2024-07-17 08:57:56 AM - [INFO] - [TRIO14] - [create_environment]: use existing environment file 15-of-31
+2024-07-17 08:57:56 AM - [INFO] - [TRIO14] - [create_environment]: loaded environment variables from | '/mnt/pixstor/schnabelr-drii/WORKING/jakth2/TRIO_TRAINING_OUTPUTS/240429_NoPopVCF/envs/run14.env'
+============================================================
+Starting Iteration 28-of-31 @ 2024-07-17  08:57:56
+INFO: Prior [Genome=Mother; Trio=13]
+INFO: Current [Genome=Father; Trio=14]
+INFO: Next [Genome=Mother; Trio=14]
+INFO: Current Genome Job Dependencies: [None, None, '3138179', None]
+INFO: Next Genome Job Dependencies: [None, None, None, None]
+============================================================
+2024-07-17 08:57:56 AM - [INFO] - [TRIO14] - [setup] - [Father]: found the 1 expected default BED file... SKIPPING AHEAD
+2024-07-17 08:57:56 AM - [INFO] - [TRIO14] - [setup] - [Father]: population VCF variables are NOT present in '/mnt/pixstor/schnabelr-drii/WORKING/jakth2/TRIO_TRAINING_OUTPUTS/240429_NoPopVCF/envs/run14.env'
+2024-07-17 08:57:56 AM - [INFO] - [TRIO14] - [setup] - [Father]: building a new model with '{19: 'insert_size'}' channels
+2024-07-17 08:57:56 AM - [INFO] - [TRIO14] - [setup] - [Father]: warm-starting model location | '/mnt/pixstor/schnabelr-drii/WORKING/jakth2/TRIO_TRAINING_OUTPUTS/240429_NoPopVCF/PASS13/train_Mother'
+2024-07-17 08:57:56 AM - [INFO] - [TRIO14] - [region_shuffling] - [Father]: --use-regions-shuffle is set
+2024-07-17 08:57:56 AM - [INFO] - [TRIO14] - [region_shuffling] - [Father]: found all 183 expected shuffling BED files... SKIPPING AHEAD
+2024-07-17 08:57:56 AM - [INFO] - [TRIO14] - [region_shuffling] - [Father]: updating Iteration() 'train_num_regions=183'
+2024-07-17 08:57:56 AM - [INFO] - [TRIO14] - [check_jobs] - [Father]: found all 426 expected SLURM sbatch jobs... SKIPPING AHEAD
+2024-07-17 08:57:56 AM - [INFO] - [TRIO14] - [check_restart] - [Father]: there are no jobs to re-submit for 'make_examples:Father'...  SKIPPING AHEAD
+2024-07-17 08:57:56 AM - [INFO] - [TRIO14] - [find_all_outputs] - [Father]: found the 1 labeled.shuffled.merged.dataset_config.pbtxt file... SKIPPING AHEAD
+2024-07-17 08:57:56 AM - [INFO] - [TRIO14] - [find_all_outputs] - [Father]: found all 183 expected labeled.shuffled.merged.tfrecords... SKIPPING AHEAD
+2024-07-17 08:57:57 AM - [INFO] - [TRIO14] - [make_examples] - [Father]: found all 11,712 expected labeled.tfrecords... SKIPPING AHEAD
+2024-07-17 08:57:57 AM - [INFO] - [TRIO14] - [check_next_phase] - [Father]: there are no jobs to re-submit for 'beam_shuffle:Father'...  SKIPPING AHEAD
+2024-07-17 08:57:57 AM - [INFO] - [TRIO14] - [make_examples] - [Father]: completed 'make_examples:Father'... SKIPPING AHEAD
+2024-07-17 08:57:57 AM - [INFO] - [TRIO14] - [check_restart] - [Father]: there are no jobs to re-submit for 'beam_shuffle:Father'...  SKIPPING AHEAD
+2024-07-17 08:57:58 AM - [INFO] - [TRIO14] - [beam_shuffle] - [Father]: found all 11,712 expected labeled.shuffled.tfrecords... SKIPPING AHEAD
+2024-07-17 08:57:58 AM - [INFO] - [TRIO14] - [beam_shuffle] - [Father]: found all 183 expected total labeled.shuffled.pbtxt files... SKIPPING AHEAD
+2024-07-17 08:57:58 AM - [INFO] - [TRIO14] - [check_next_phase] - [Father]: there are no jobs to re-submit for 're_shuffle:Father'...  SKIPPING AHEAD
+2024-07-17 08:57:58 AM - [INFO] - [TRIO14] - [beam_shuffle] - [Father]: completed 'beam_shuffle:Father'... SKIPPING AHEAD
+2024-07-17 08:57:58 AM - [INFO] - [TRIO14] - [check_restart] - [Father]: there are no jobs to re-submit for 're_shuffle:Father'...  SKIPPING AHEAD
+2024-07-17 08:57:58 AM - [INFO] - [TRIO14] - [re_shuffle] - [Father]: found the 1 labeled.shuffled.merged.dataset_config.pbtxt file... SKIPPING AHEAD
+2024-07-17 08:57:59 AM - [INFO] - [TRIO14] - [re_shuffle] - [Father]: found all 183 expected labeled.shuffled.merged.tfrecords... SKIPPING AHEAD
+2024-07-17 08:57:59 AM - [INFO] - [TRIO14] - [check_next_phase] - [Father]: found jobs to re-submit for 'train_eval'
+2024-07-17 08:57:59 AM - [INFO] - [TRIO14] - [re_shuffle] - [Father]: completed 're_shuffle:Father'... SKIPPING AHEAD
+2024-07-17 08:57:59 AM - [WARNING] - [TRIO14] - [re_shuffle] - [Father]: unable to perform benchmarking, as a SLURM job id is missing
+2024-07-17 08:57:59 AM - [INFO] - ============ SKIPPING [TRIO14] - [data_prep_jobs] - [Father] ============
+2024-07-17 08:57:59 AM - [INFO] - [TRIO14] - [region_shuffling] - [Child]: --use-regions-shuffle is set
+2024-07-17 08:57:59 AM - [INFO] - [TRIO14] - [region_shuffling] - [Child]: found all 187 expected shuffling BED files... SKIPPING AHEAD
+2024-07-17 08:57:59 AM - [INFO] - [TRIO14] - [region_shuffling] - [Child]: updating Iteration() 'eval_num_regions=187'
+2024-07-17 08:57:59 AM - [INFO] - [TRIO14] - [check_jobs] - [Child]: found all 375 expected SLURM sbatch jobs... SKIPPING AHEAD
+2024-07-17 08:57:59 AM - [INFO] - [TRIO14] - [check_restart] - [Child]: there are no jobs to re-submit for 'make_examples:Child'...  SKIPPING AHEAD
+2024-07-17 08:57:59 AM - [INFO] - [TRIO14] - [find_all_outputs] - [Child]: found the 1 labeled.shuffled.merged.dataset_config.pbtxt file... SKIPPING AHEAD
+2024-07-17 08:57:59 AM - [INFO] - [TRIO14] - [find_all_outputs] - [Child]: found all 187 expected labeled.shuffled.merged.tfrecords... SKIPPING AHEAD
+2024-07-17 08:58:00 AM - [INFO] - [TRIO14] - [make_examples] - [Child]: found all 11,968 expected labeled.tfrecords... SKIPPING AHEAD
+2024-07-17 08:58:00 AM - [INFO] - [TRIO14] - [check_next_phase] - [Child]: there are no jobs to re-submit for 'beam_shuffle:Child'...  SKIPPING AHEAD
+2024-07-17 08:58:00 AM - [INFO] - [TRIO14] - [make_examples] - [Child]: completed 'make_examples:Child'... SKIPPING AHEAD
+2024-07-17 08:58:00 AM - [INFO] - [TRIO14] - [check_restart] - [Child]: there are no jobs to re-submit for 'beam_shuffle:Child'...  SKIPPING AHEAD
+2024-07-17 08:58:01 AM - [INFO] - [TRIO14] - [beam_shuffle] - [Child]: found all 11,968 expected labeled.shuffled.tfrecords... SKIPPING AHEAD
+2024-07-17 08:58:01 AM - [INFO] - [TRIO14] - [beam_shuffle] - [Child]: found all 187 expected total labeled.shuffled.pbtxt files... SKIPPING AHEAD
+2024-07-17 08:58:01 AM - [INFO] - [TRIO14] - [check_next_phase] - [Child]: there are no jobs to re-submit for 're_shuffle:Child'...  SKIPPING AHEAD
+2024-07-17 08:58:01 AM - [INFO] - [TRIO14] - [beam_shuffle] - [Child]: completed 'beam_shuffle:Child'... SKIPPING AHEAD
+2024-07-17 08:58:01 AM - [INFO] - [TRIO14] - [check_restart] - [Child]: there are no jobs to re-submit for 're_shuffle:Child'...  SKIPPING AHEAD
+2024-07-17 08:58:01 AM - [INFO] - [TRIO14] - [re_shuffle] - [Child]: found the 1 labeled.shuffled.merged.dataset_config.pbtxt file... SKIPPING AHEAD
+2024-07-17 08:58:02 AM - [INFO] - [TRIO14] - [re_shuffle] - [Child]: found all 187 expected labeled.shuffled.merged.tfrecords... SKIPPING AHEAD
+2024-07-17 08:58:02 AM - [INFO] - [TRIO14] - [check_next_phase] - [Child]: found jobs to re-submit for 'train_eval'
+2024-07-17 08:58:02 AM - [INFO] - [TRIO14] - [re_shuffle] - [Child]: completed 're_shuffle:Child'... SKIPPING AHEAD
+2024-07-17 08:58:02 AM - [WARNING] - [TRIO14] - [re_shuffle] - [Child]: unable to perform benchmarking, as a SLURM job id is missing
+2024-07-17 08:58:02 AM - [INFO] - ============ SKIPPING [TRIO14] - [data_prep_jobs] - [Child] ============
+2024-07-17 08:58:02 AM - [INFO] - [TRIO14] - [check_restart] - [Father]: found jobs to re-submit for 'train_eval'
+2024-07-17 08:58:02 AM - [INFO] - [TRIO14] - [train_eval] - [Father]: adding Father_N_Steps='953331'
+2024-07-17 08:58:02 AM - [INFO] - [TRIO14] - [find_all_outputs] - [Father]: testing checkpoint variable does not exist
+2024-07-17 08:58:02 AM - [INFO] - [TRIO14] - [train_eval] - [Father]: --overwrite=True, re-writing the existing SLURM job now...
+2024-07-17 08:58:02 AM - [INFO] - [TRIO14] - [train_eval] - [Father]: new job file created | 'train-Father14-eval-Child.sh'
+2024-07-17 08:58:02 AM - [INFO] - [TRIO14] - [train_eval] - [Father]: re-submitting job to create the model checkpoint files
+2024-07-17 08:58:03 AM - [INFO] - [TRIO14] - [train_eval] - [Father]: submitted SLURM job 1-of-1
+============ [TRIO14] - [train_eval] - [Father] Job Number - ['3138270'] ============
+2024-07-17 08:58:03 AM - [INFO] - [TRIO14] - [check_restart] - [Father]: there are no jobs to re-submit for 'select_ckpt'... SKIPPING AHEAD
+2024-07-17 08:58:03 AM - [INFO] - [TRIO14] - [select_ckpt] - [Father]: testing checkpoint variable does not exist
+2024-07-17 08:58:03 AM - [INFO] - [TRIO14] - [check_next_phase] - [Father]: there are no jobs to re-submit for 'call_variants'... SKIPPING AHEAD
+2024-07-17 08:58:03 AM - [INFO] - [TRIO14] - [select_ckpt] - [Father]: prior iteration select-ckpt job number | '3138179'
+2024-07-17 08:58:03 AM - [INFO] - [TRIO14] - [select_ckpt] - [Father]: 'train_eval' job was submitted...
+2024-07-17 08:58:03 AM - [INFO] - [TRIO14] - [select_ckpt] - [Father]: --overwrite=True, re-writing the existing SLURM job now...
+2024-07-17 08:58:03 AM - [INFO] - [TRIO14] - [select_ckpt] - [Father]: new job file created | 'select-ckpt-Father14.sh'
+2024-07-17 08:58:03 AM - [INFO] - [TRIO14] - [select_ckpt] - [Father]: submitting job to find the best checkpoint
+2024-07-17 08:58:03 AM - [INFO] - [TRIO14] - [select_ckpt] - [Father]: submitted SLURM job 1-of-1
+============ [TRIO14] - [select_ckpt] - [Father] Job Number - ['3138271'] ============
+2024-07-17 08:58:03 AM - [INFO] - [TRIO14] - [select_ckpt] - [Father] - [Father]: --keep-jobids=True
+2024-07-17 08:58:03 AM - [INFO] - [TRIO14] - [check_restart] - [Father]: there are no jobs to re-submit for 'call_variants'... SKIPPING AHEAD
+2024-07-17 08:58:03 AM - [INFO] - [TRIO14] - [find_all_outputs] - [Father]: missing all intermediate metrics file(s)
+2024-07-17 08:58:03 AM - [INFO] - [TRIO14] - [call_variants] - [Father]: missing all the DeepVariant VCF outputs
+2024-07-17 08:58:03 AM - [INFO] - [TRIO14] - [check_next_phase] - [Father]: there are no jobs to re-submit for 'compare_happy'... SKIPPING AHEAD
+2024-07-17 08:58:03 AM - [INFO] - [TRIO14] - [call_variants] - [Father]: 'select_ckpt' job was submitted...
+2024-07-17 08:58:03 AM - [INFO] - [TRIO14] - [call_variants] - [Father]: using a custom model checkpoint
+2024-07-17 08:58:03 AM - [INFO] - [TRIO14] - [call_variants] - [Father]: using default channel '{19: 'insert_size'}' in test genome examples
+2024-07-17 08:58:03 AM - [INFO] - [TRIO14] - [call_variants] - [Father] - [test1]: --overwrite=True; re-writing the existing SLURM job now... 
+2024-07-17 08:58:03 AM - [INFO] - [TRIO14] - [call_variants] - [Father] - [test1]: new job file created | 'test1-Father14.sh'
+2024-07-17 08:58:03 AM - [INFO] - [TRIO14] - [call_variants] - [Father] - [test1]: submitting job to call variants with DeepVariant
+2024-07-17 08:58:04 AM - [INFO] - [TRIO14] - [call_variants] - [Father] - [test1]: submitted SLURM job 1-of-19
+2024-07-17 08:58:04 AM - [INFO] - [TRIO14] - [call_variants] - [Father] - [test2]: --overwrite=True; re-writing the existing SLURM job now... 
+2024-07-17 08:58:04 AM - [INFO] - [TRIO14] - [call_variants] - [Father] - [test2]: new job file created | 'test2-Father14.sh'
+2024-07-17 08:58:04 AM - [INFO] - [TRIO14] - [call_variants] - [Father] - [test2]: submitting job to call variants with DeepVariant
+2024-07-17 08:58:04 AM - [INFO] - [TRIO14] - [call_variants] - [Father] - [test2]: submitted SLURM job 2-of-19
+2024-07-17 08:58:04 AM - [INFO] - [TRIO14] - [call_variants] - [Father] - [test3]: --overwrite=True; re-writing the existing SLURM job now... 
+2024-07-17 08:58:04 AM - [INFO] - [TRIO14] - [call_variants] - [Father] - [test3]: new job file created | 'test3-Father14.sh'
+2024-07-17 08:58:04 AM - [INFO] - [TRIO14] - [call_variants] - [Father] - [test3]: submitting job to call variants with DeepVariant
+2024-07-17 08:58:05 AM - [INFO] - [TRIO14] - [call_variants] - [Father] - [test3]: submitted SLURM job 3-of-19
+2024-07-17 08:58:05 AM - [INFO] - [TRIO14] - [call_variants] - [Father] - [test4]: --overwrite=True; re-writing the existing SLURM job now... 
+2024-07-17 08:58:05 AM - [INFO] - [TRIO14] - [call_variants] - [Father] - [test4]: new job file created | 'test4-Father14.sh'
+2024-07-17 08:58:05 AM - [INFO] - [TRIO14] - [call_variants] - [Father] - [test4]: submitting job to call variants with DeepVariant
+2024-07-17 08:58:06 AM - [INFO] - [TRIO14] - [call_variants] - [Father] - [test4]: submitted SLURM job 4-of-19
+2024-07-17 08:58:06 AM - [INFO] - [TRIO14] - [call_variants] - [Father] - [test5]: --overwrite=True; re-writing the existing SLURM job now... 
+2024-07-17 08:58:06 AM - [INFO] - [TRIO14] - [call_variants] - [Father] - [test5]: new job file created | 'test5-Father14.sh'
+2024-07-17 08:58:06 AM - [INFO] - [TRIO14] - [call_variants] - [Father] - [test5]: submitting job to call variants with DeepVariant
+2024-07-17 08:58:06 AM - [INFO] - [TRIO14] - [call_variants] - [Father] - [test5]: submitted SLURM job 5-of-19
+2024-07-17 08:58:06 AM - [INFO] - [TRIO14] - [call_variants] - [Father] - [test6]: --overwrite=True; re-writing the existing SLURM job now... 
+2024-07-17 08:58:06 AM - [INFO] - [TRIO14] - [call_variants] - [Father] - [test6]: new job file created | 'test6-Father14.sh'
+2024-07-17 08:58:06 AM - [INFO] - [TRIO14] - [call_variants] - [Father] - [test6]: submitting job to call variants with DeepVariant
+2024-07-17 08:58:07 AM - [INFO] - [TRIO14] - [call_variants] - [Father] - [test6]: submitted SLURM job 6-of-19
+2024-07-17 08:58:07 AM - [INFO] - [TRIO14] - [call_variants] - [Father] - [test7]: --overwrite=True; re-writing the existing SLURM job now... 
+2024-07-17 08:58:07 AM - [INFO] - [TRIO14] - [call_variants] - [Father] - [test7]: new job file created | 'test7-Father14.sh'
+2024-07-17 08:58:07 AM - [INFO] - [TRIO14] - [call_variants] - [Father] - [test7]: submitting job to call variants with DeepVariant
+2024-07-17 08:58:08 AM - [INFO] - [TRIO14] - [call_variants] - [Father] - [test7]: submitted SLURM job 7-of-19
+2024-07-17 08:58:08 AM - [INFO] - [TRIO14] - [call_variants] - [Father] - [test8]: --overwrite=True; re-writing the existing SLURM job now... 
+2024-07-17 08:58:08 AM - [INFO] - [TRIO14] - [call_variants] - [Father] - [test8]: new job file created | 'test8-Father14.sh'
+2024-07-17 08:58:08 AM - [INFO] - [TRIO14] - [call_variants] - [Father] - [test8]: submitting job to call variants with DeepVariant
+2024-07-17 08:58:09 AM - [INFO] - [TRIO14] - [call_variants] - [Father] - [test8]: submitted SLURM job 8-of-19
+2024-07-17 08:58:09 AM - [INFO] - [TRIO14] - [call_variants] - [Father] - [test9]: --overwrite=True; re-writing the existing SLURM job now... 
+2024-07-17 08:58:09 AM - [INFO] - [TRIO14] - [call_variants] - [Father] - [test9]: new job file created | 'test9-Father14.sh'
+2024-07-17 08:58:09 AM - [INFO] - [TRIO14] - [call_variants] - [Father] - [test9]: submitting job to call variants with DeepVariant
+2024-07-17 08:58:09 AM - [INFO] - [TRIO14] - [call_variants] - [Father] - [test9]: submitted SLURM job 9-of-19
+2024-07-17 08:58:09 AM - [INFO] - [TRIO14] - [call_variants] - [Father] - [test10]: --overwrite=True; re-writing the existing SLURM job now... 
+2024-07-17 08:58:09 AM - [INFO] - [TRIO14] - [call_variants] - [Father] - [test10]: new job file created | 'test10-Father14.sh'
+2024-07-17 08:58:09 AM - [INFO] - [TRIO14] - [call_variants] - [Father] - [test10]: submitting job to call variants with DeepVariant
+2024-07-17 08:58:09 AM - [INFO] - [TRIO14] - [call_variants] - [Father] - [test10]: submitted SLURM job 10-of-19
+2024-07-17 08:58:09 AM - [INFO] - [TRIO14] - [call_variants] - [Father] - [test11]: --overwrite=True; re-writing the existing SLURM job now... 
+2024-07-17 08:58:09 AM - [INFO] - [TRIO14] - [call_variants] - [Father] - [test11]: new job file created | 'test11-Father14.sh'
+2024-07-17 08:58:09 AM - [INFO] - [TRIO14] - [call_variants] - [Father] - [test11]: submitting job to call variants with DeepVariant
+2024-07-17 08:58:10 AM - [INFO] - [TRIO14] - [call_variants] - [Father] - [test11]: submitted SLURM job 11-of-19
+2024-07-17 08:58:10 AM - [INFO] - [TRIO14] - [call_variants] - [Father] - [test12]: --overwrite=True; re-writing the existing SLURM job now... 
+2024-07-17 08:58:10 AM - [INFO] - [TRIO14] - [call_variants] - [Father] - [test12]: new job file created | 'test12-Father14.sh'
+2024-07-17 08:58:10 AM - [INFO] - [TRIO14] - [call_variants] - [Father] - [test12]: submitting job to call variants with DeepVariant
+2024-07-17 08:58:10 AM - [INFO] - [TRIO14] - [call_variants] - [Father] - [test12]: submitted SLURM job 12-of-19
+2024-07-17 08:58:10 AM - [INFO] - [TRIO14] - [call_variants] - [Father] - [test13]: --overwrite=True; re-writing the existing SLURM job now... 
+2024-07-17 08:58:10 AM - [INFO] - [TRIO14] - [call_variants] - [Father] - [test13]: new job file created | 'test13-Father14.sh'
+2024-07-17 08:58:10 AM - [INFO] - [TRIO14] - [call_variants] - [Father] - [test13]: submitting job to call variants with DeepVariant
+2024-07-17 08:58:11 AM - [INFO] - [TRIO14] - [call_variants] - [Father] - [test13]: submitted SLURM job 13-of-19
+2024-07-17 08:58:11 AM - [INFO] - [TRIO14] - [call_variants] - [Father] - [test14]: --overwrite=True; re-writing the existing SLURM job now... 
+2024-07-17 08:58:11 AM - [INFO] - [TRIO14] - [call_variants] - [Father] - [test14]: new job file created | 'test14-Father14.sh'
+2024-07-17 08:58:11 AM - [INFO] - [TRIO14] - [call_variants] - [Father] - [test14]: submitting job to call variants with DeepVariant
+2024-07-17 08:58:12 AM - [INFO] - [TRIO14] - [call_variants] - [Father] - [test14]: submitted SLURM job 14-of-19
+2024-07-17 08:58:12 AM - [INFO] - [TRIO14] - [call_variants] - [Father] - [test15]: --overwrite=True; re-writing the existing SLURM job now... 
+2024-07-17 08:58:12 AM - [INFO] - [TRIO14] - [call_variants] - [Father] - [test15]: new job file created | 'test15-Father14.sh'
+2024-07-17 08:58:12 AM - [INFO] - [TRIO14] - [call_variants] - [Father] - [test15]: submitting job to call variants with DeepVariant
+2024-07-17 08:58:13 AM - [INFO] - [TRIO14] - [call_variants] - [Father] - [test15]: submitted SLURM job 15-of-19
+2024-07-17 08:58:13 AM - [INFO] - [TRIO14] - [call_variants] - [Father] - [test16]: --overwrite=True; re-writing the existing SLURM job now... 
+2024-07-17 08:58:13 AM - [INFO] - [TRIO14] - [call_variants] - [Father] - [test16]: new job file created | 'test16-Father14.sh'
+2024-07-17 08:58:13 AM - [INFO] - [TRIO14] - [call_variants] - [Father] - [test16]: submitting job to call variants with DeepVariant
+2024-07-17 08:58:13 AM - [INFO] - [TRIO14] - [call_variants] - [Father] - [test16]: submitted SLURM job 16-of-19
+2024-07-17 08:58:13 AM - [INFO] - [TRIO14] - [call_variants] - [Father] - [test17]: --overwrite=True; re-writing the existing SLURM job now... 
+2024-07-17 08:58:13 AM - [INFO] - [TRIO14] - [call_variants] - [Father] - [test17]: new job file created | 'test17-Father14.sh'
+2024-07-17 08:58:13 AM - [INFO] - [TRIO14] - [call_variants] - [Father] - [test17]: submitting job to call variants with DeepVariant
+2024-07-17 08:58:14 AM - [INFO] - [TRIO14] - [call_variants] - [Father] - [test17]: submitted SLURM job 17-of-19
+2024-07-17 08:58:14 AM - [INFO] - [TRIO14] - [call_variants] - [Father] - [test18]: --overwrite=True; re-writing the existing SLURM job now... 
+2024-07-17 08:58:14 AM - [INFO] - [TRIO14] - [call_variants] - [Father] - [test18]: new job file created | 'test18-Father14.sh'
+2024-07-17 08:58:14 AM - [INFO] - [TRIO14] - [call_variants] - [Father] - [test18]: submitting job to call variants with DeepVariant
+2024-07-17 08:58:14 AM - [INFO] - [TRIO14] - [call_variants] - [Father] - [test18]: submitted SLURM job 18-of-19
+2024-07-17 08:58:14 AM - [INFO] - [TRIO14] - [call_variants] - [Father] - [test19]: --overwrite=True; re-writing the existing SLURM job now... 
+2024-07-17 08:58:14 AM - [INFO] - [TRIO14] - [call_variants] - [Father] - [test19]: new job file created | 'test19-Father14.sh'
+2024-07-17 08:58:14 AM - [INFO] - [TRIO14] - [call_variants] - [Father] - [test19]: submitting job to call variants with DeepVariant
+2024-07-17 08:58:15 AM - [INFO] - [TRIO14] - [call_variants] - [Father] - [test19]: submitted SLURM job 19-of-19
+============ [TRIO14] - [call_variants] - [Father] Job Numbers ============
+['3138272', '3138273', '3138274', '3138275', '3138276', '3138278', '3138279', '3138280', '3138281', '3138282', '3138283', '3138284', '3138285', '3138286', '3138287', '3138288', '3138289', '3138290', '3138291']
+============================================================
+2024-07-17 08:58:15 AM - [INFO] - [TRIO14] - [check_restart] - [Father]: there are no jobs to re-submit for 'compare_happy'... SKIPPING AHEAD
+2024-07-17 08:58:15 AM - [INFO] - [TRIO14] - [compare_happy] - [Father]: missing all hap.py output files
+2024-07-17 08:58:15 AM - [INFO] - [TRIO14] - [check_next_phase] - [Father]: there are no jobs to re-submit for 'convert_happy'... SKIPPING AHEAD
+2024-07-17 08:58:15 AM - [INFO] - [TRIO14] - [compare_happy] - [Father]: 'call_variants' jobs were submitted...
+2024-07-17 08:58:15 AM - [INFO] - [TRIO14] - [compare_happy] - [Father] - [test1]: --overwrite=True; re-writing the existing SLURM job now... 
+2024-07-17 08:58:15 AM - [INFO] - [TRIO14] - [compare_happy] - [Father] - [test1]: new job file created | 'happy1-no-flags-Father14.sh'
+2024-07-17 08:58:15 AM - [INFO] - [TRIO14] - [compare_happy] - [Father] - [test1]: submitting job to compare results using hap.py
+2024-07-17 08:58:15 AM - [INFO] - [TRIO14] - [compare_happy] - [Father] - [test1]: submitted SLURM job 1-of-19
+2024-07-17 08:58:15 AM - [INFO] - [TRIO14] - [compare_happy] - [Father] - [test2]: --overwrite=True; re-writing the existing SLURM job now... 
+2024-07-17 08:58:15 AM - [INFO] - [TRIO14] - [compare_happy] - [Father] - [test2]: new job file created | 'happy2-no-flags-Father14.sh'
+2024-07-17 08:58:15 AM - [INFO] - [TRIO14] - [compare_happy] - [Father] - [test2]: submitting job to compare results using hap.py
+2024-07-17 08:58:16 AM - [INFO] - [TRIO14] - [compare_happy] - [Father] - [test2]: submitted SLURM job 2-of-19
+2024-07-17 08:58:16 AM - [INFO] - [TRIO14] - [compare_happy] - [Father] - [test3]: --overwrite=True; re-writing the existing SLURM job now... 
+2024-07-17 08:58:16 AM - [INFO] - [TRIO14] - [compare_happy] - [Father] - [test3]: new job file created | 'happy3-no-flags-Father14.sh'
+2024-07-17 08:58:16 AM - [INFO] - [TRIO14] - [compare_happy] - [Father] - [test3]: submitting job to compare results using hap.py
+2024-07-17 08:58:16 AM - [INFO] - [TRIO14] - [compare_happy] - [Father] - [test3]: submitted SLURM job 3-of-19
+2024-07-17 08:58:16 AM - [INFO] - [TRIO14] - [compare_happy] - [Father] - [test4]: --overwrite=True; re-writing the existing SLURM job now... 
+2024-07-17 08:58:16 AM - [INFO] - [TRIO14] - [compare_happy] - [Father] - [test4]: new job file created | 'happy4-no-flags-Father14.sh'
+2024-07-17 08:58:16 AM - [INFO] - [TRIO14] - [compare_happy] - [Father] - [test4]: submitting job to compare results using hap.py
+2024-07-17 08:58:17 AM - [INFO] - [TRIO14] - [compare_happy] - [Father] - [test4]: submitted SLURM job 4-of-19
+2024-07-17 08:58:17 AM - [INFO] - [TRIO14] - [compare_happy] - [Father] - [test5]: --overwrite=True; re-writing the existing SLURM job now... 
+2024-07-17 08:58:17 AM - [INFO] - [TRIO14] - [compare_happy] - [Father] - [test5]: new job file created | 'happy5-no-flags-Father14.sh'
+2024-07-17 08:58:17 AM - [INFO] - [TRIO14] - [compare_happy] - [Father] - [test5]: submitting job to compare results using hap.py
+2024-07-17 08:58:18 AM - [INFO] - [TRIO14] - [compare_happy] - [Father] - [test5]: submitted SLURM job 5-of-19
+2024-07-17 08:58:18 AM - [INFO] - [TRIO14] - [compare_happy] - [Father] - [test6]: --overwrite=True; re-writing the existing SLURM job now... 
+2024-07-17 08:58:18 AM - [INFO] - [TRIO14] - [compare_happy] - [Father] - [test6]: new job file created | 'happy6-no-flags-Father14.sh'
+2024-07-17 08:58:18 AM - [INFO] - [TRIO14] - [compare_happy] - [Father] - [test6]: submitting job to compare results using hap.py
+2024-07-17 08:58:19 AM - [INFO] - [TRIO14] - [compare_happy] - [Father] - [test6]: submitted SLURM job 6-of-19
+2024-07-17 08:58:19 AM - [INFO] - [TRIO14] - [compare_happy] - [Father] - [test7]: --overwrite=True; re-writing the existing SLURM job now... 
+2024-07-17 08:58:19 AM - [INFO] - [TRIO14] - [compare_happy] - [Father] - [test7]: new job file created | 'happy7-no-flags-Father14.sh'
+2024-07-17 08:58:19 AM - [INFO] - [TRIO14] - [compare_happy] - [Father] - [test7]: submitting job to compare results using hap.py
+2024-07-17 08:58:19 AM - [INFO] - [TRIO14] - [compare_happy] - [Father] - [test7]: submitted SLURM job 7-of-19
+2024-07-17 08:58:19 AM - [INFO] - [TRIO14] - [compare_happy] - [Father] - [test8]: --overwrite=True; re-writing the existing SLURM job now... 
+2024-07-17 08:58:19 AM - [INFO] - [TRIO14] - [compare_happy] - [Father] - [test8]: new job file created | 'happy8-no-flags-Father14.sh'
+2024-07-17 08:58:19 AM - [INFO] - [TRIO14] - [compare_happy] - [Father] - [test8]: submitting job to compare results using hap.py
+2024-07-17 08:58:20 AM - [INFO] - [TRIO14] - [compare_happy] - [Father] - [test8]: submitted SLURM job 8-of-19
+2024-07-17 08:58:20 AM - [INFO] - [TRIO14] - [compare_happy] - [Father] - [test9]: --overwrite=True; re-writing the existing SLURM job now... 
+2024-07-17 08:58:20 AM - [INFO] - [TRIO14] - [compare_happy] - [Father] - [test9]: new job file created | 'happy9-no-flags-Father14.sh'
+2024-07-17 08:58:20 AM - [INFO] - [TRIO14] - [compare_happy] - [Father] - [test9]: submitting job to compare results using hap.py
+2024-07-17 08:58:21 AM - [INFO] - [TRIO14] - [compare_happy] - [Father] - [test9]: submitted SLURM job 9-of-19
+2024-07-17 08:58:21 AM - [INFO] - [TRIO14] - [compare_happy] - [Father] - [test10]: --overwrite=True; re-writing the existing SLURM job now... 
+2024-07-17 08:58:21 AM - [INFO] - [TRIO14] - [compare_happy] - [Father] - [test10]: new job file created | 'happy10-no-flags-Father14.sh'
+2024-07-17 08:58:21 AM - [INFO] - [TRIO14] - [compare_happy] - [Father] - [test10]: submitting job to compare results using hap.py
+2024-07-17 08:58:22 AM - [INFO] - [TRIO14] - [compare_happy] - [Father] - [test10]: submitted SLURM job 10-of-19
+2024-07-17 08:58:22 AM - [INFO] - [TRIO14] - [compare_happy] - [Father] - [test11]: --overwrite=True; re-writing the existing SLURM job now... 
+2024-07-17 08:58:22 AM - [INFO] - [TRIO14] - [compare_happy] - [Father] - [test11]: new job file created | 'happy11-no-flags-Father14.sh'
+2024-07-17 08:58:22 AM - [INFO] - [TRIO14] - [compare_happy] - [Father] - [test11]: submitting job to compare results using hap.py
+2024-07-17 08:58:22 AM - [INFO] - [TRIO14] - [compare_happy] - [Father] - [test11]: submitted SLURM job 11-of-19
+2024-07-17 08:58:22 AM - [INFO] - [TRIO14] - [compare_happy] - [Father] - [test12]: --overwrite=True; re-writing the existing SLURM job now... 
+2024-07-17 08:58:22 AM - [INFO] - [TRIO14] - [compare_happy] - [Father] - [test12]: new job file created | 'happy12-no-flags-Father14.sh'
+2024-07-17 08:58:22 AM - [INFO] - [TRIO14] - [compare_happy] - [Father] - [test12]: submitting job to compare results using hap.py
+2024-07-17 08:58:23 AM - [INFO] - [TRIO14] - [compare_happy] - [Father] - [test12]: submitted SLURM job 12-of-19
+2024-07-17 08:58:23 AM - [INFO] - [TRIO14] - [compare_happy] - [Father] - [test13]: --overwrite=True; re-writing the existing SLURM job now... 
+2024-07-17 08:58:23 AM - [INFO] - [TRIO14] - [compare_happy] - [Father] - [test13]: new job file created | 'happy13-no-flags-Father14.sh'
+2024-07-17 08:58:23 AM - [INFO] - [TRIO14] - [compare_happy] - [Father] - [test13]: submitting job to compare results using hap.py
+2024-07-17 08:58:24 AM - [INFO] - [TRIO14] - [compare_happy] - [Father] - [test13]: submitted SLURM job 13-of-19
+2024-07-17 08:58:24 AM - [INFO] - [TRIO14] - [compare_happy] - [Father] - [test14]: --overwrite=True; re-writing the existing SLURM job now... 
+2024-07-17 08:58:24 AM - [INFO] - [TRIO14] - [compare_happy] - [Father] - [test14]: new job file created | 'happy14-no-flags-Father14.sh'
+2024-07-17 08:58:24 AM - [INFO] - [TRIO14] - [compare_happy] - [Father] - [test14]: submitting job to compare results using hap.py
+2024-07-17 08:58:24 AM - [INFO] - [TRIO14] - [compare_happy] - [Father] - [test14]: submitted SLURM job 14-of-19
+2024-07-17 08:58:24 AM - [INFO] - [TRIO14] - [compare_happy] - [Father] - [test15]: --overwrite=True; re-writing the existing SLURM job now... 
+2024-07-17 08:58:24 AM - [INFO] - [TRIO14] - [compare_happy] - [Father] - [test15]: new job file created | 'happy15-no-flags-Father14.sh'
+2024-07-17 08:58:24 AM - [INFO] - [TRIO14] - [compare_happy] - [Father] - [test15]: submitting job to compare results using hap.py
+2024-07-17 08:58:25 AM - [INFO] - [TRIO14] - [compare_happy] - [Father] - [test15]: submitted SLURM job 15-of-19
+2024-07-17 08:58:25 AM - [INFO] - [TRIO14] - [compare_happy] - [Father] - [test16]: --overwrite=True; re-writing the existing SLURM job now... 
+2024-07-17 08:58:25 AM - [INFO] - [TRIO14] - [compare_happy] - [Father] - [test16]: new job file created | 'happy16-no-flags-Father14.sh'
+2024-07-17 08:58:25 AM - [INFO] - [TRIO14] - [compare_happy] - [Father] - [test16]: submitting job to compare results using hap.py
+2024-07-17 08:58:26 AM - [INFO] - [TRIO14] - [compare_happy] - [Father] - [test16]: submitted SLURM job 16-of-19
+2024-07-17 08:58:26 AM - [INFO] - [TRIO14] - [compare_happy] - [Father] - [test17]: --overwrite=True; re-writing the existing SLURM job now... 
+2024-07-17 08:58:26 AM - [INFO] - [TRIO14] - [compare_happy] - [Father] - [test17]: new job file created | 'happy17-no-flags-Father14.sh'
+2024-07-17 08:58:26 AM - [INFO] - [TRIO14] - [compare_happy] - [Father] - [test17]: submitting job to compare results using hap.py
+2024-07-17 08:58:26 AM - [INFO] - [TRIO14] - [compare_happy] - [Father] - [test17]: submitted SLURM job 17-of-19
+2024-07-17 08:58:26 AM - [INFO] - [TRIO14] - [compare_happy] - [Father] - [test18]: --overwrite=True; re-writing the existing SLURM job now... 
+2024-07-17 08:58:26 AM - [INFO] - [TRIO14] - [compare_happy] - [Father] - [test18]: new job file created | 'happy18-no-flags-Father14.sh'
+2024-07-17 08:58:26 AM - [INFO] - [TRIO14] - [compare_happy] - [Father] - [test18]: submitting job to compare results using hap.py
+2024-07-17 08:58:27 AM - [INFO] - [TRIO14] - [compare_happy] - [Father] - [test18]: submitted SLURM job 18-of-19
+2024-07-17 08:58:27 AM - [INFO] - [TRIO14] - [compare_happy] - [Father] - [test19]: --overwrite=True; re-writing the existing SLURM job now... 
+2024-07-17 08:58:27 AM - [INFO] - [TRIO14] - [compare_happy] - [Father] - [test19]: new job file created | 'happy19-no-flags-Father14.sh'
+2024-07-17 08:58:27 AM - [INFO] - [TRIO14] - [compare_happy] - [Father] - [test19]: submitting job to compare results using hap.py
+2024-07-17 08:58:28 AM - [INFO] - [TRIO14] - [compare_happy] - [Father] - [test19]: submitted SLURM job 19-of-19
+============ [TRIO14] - [compare_happy] - [Father] Job Numbers ============
+['3138292', '3138293', '3138294', '3138295', '3138296', '3138297', '3138298', '3138299', '3138300', '3138301', '3138302', '3138303', '3138304', '3138305', '3138306', '3138307', '3138308', '3138309', '3138310']
+============================================================
+2024-07-17 08:58:28 AM - [INFO] - [TRIO14] - [check_restart] - [Father]: there are no jobs to re-submit for 'convert_happy'... SKIPPING AHEAD
+2024-07-17 08:58:28 AM - [INFO] - [TRIO14] - [convert_happy] - [Father]: missing all converted hap.py file(s)
+2024-07-17 08:58:28 AM - [INFO] - [TRIO14] - [process_happy] - [Father]: missing all processed hap.py file(s)
+2024-07-17 08:58:28 AM - [INFO] - [TRIO14] - [convert_happy] - [Father]: 'compare_happy' jobs were submitted...
+2024-07-17 08:58:28 AM - [INFO] - [TRIO14] - [convert_happy] - [Father] - [test1]: --overwrite=True; re-writing the existing SLURM job now... 
+2024-07-17 08:58:28 AM - [INFO] - [TRIO14] - [convert_happy] - [Father] - [test1]: new job file created | 'convert-happy1-Father14.sh'
+2024-07-17 08:58:28 AM - [INFO] - [TRIO14] - [convert_happy] - [Father] - [test1]: submitting job to process hap.py outputs
+2024-07-17 08:58:29 AM - [INFO] - [TRIO14] - [convert_happy] - [Father] - [test1]: submitted SLURM job 1-of-19
+2024-07-17 08:58:29 AM - [INFO] - [TRIO14] - [convert_happy] - [Father] - [test2]: --overwrite=True; re-writing the existing SLURM job now... 
+2024-07-17 08:58:29 AM - [INFO] - [TRIO14] - [convert_happy] - [Father] - [test2]: new job file created | 'convert-happy2-Father14.sh'
+2024-07-17 08:58:29 AM - [INFO] - [TRIO14] - [convert_happy] - [Father] - [test2]: submitting job to process hap.py outputs
+2024-07-17 08:58:29 AM - [INFO] - [TRIO14] - [convert_happy] - [Father] - [test2]: submitted SLURM job 2-of-19
+2024-07-17 08:58:29 AM - [INFO] - [TRIO14] - [convert_happy] - [Father] - [test3]: --overwrite=True; re-writing the existing SLURM job now... 
+2024-07-17 08:58:29 AM - [INFO] - [TRIO14] - [convert_happy] - [Father] - [test3]: new job file created | 'convert-happy3-Father14.sh'
+2024-07-17 08:58:29 AM - [INFO] - [TRIO14] - [convert_happy] - [Father] - [test3]: submitting job to process hap.py outputs
+2024-07-17 08:58:29 AM - [INFO] - [TRIO14] - [convert_happy] - [Father] - [test3]: submitted SLURM job 3-of-19
+2024-07-17 08:58:29 AM - [INFO] - [TRIO14] - [convert_happy] - [Father] - [test4]: --overwrite=True; re-writing the existing SLURM job now... 
+2024-07-17 08:58:29 AM - [INFO] - [TRIO14] - [convert_happy] - [Father] - [test4]: new job file created | 'convert-happy4-Father14.sh'
+2024-07-17 08:58:29 AM - [INFO] - [TRIO14] - [convert_happy] - [Father] - [test4]: submitting job to process hap.py outputs
+2024-07-17 08:58:30 AM - [INFO] - [TRIO14] - [convert_happy] - [Father] - [test4]: submitted SLURM job 4-of-19
+2024-07-17 08:58:30 AM - [INFO] - [TRIO14] - [convert_happy] - [Father] - [test5]: --overwrite=True; re-writing the existing SLURM job now... 
+2024-07-17 08:58:30 AM - [INFO] - [TRIO14] - [convert_happy] - [Father] - [test5]: new job file created | 'convert-happy5-Father14.sh'
+2024-07-17 08:58:30 AM - [INFO] - [TRIO14] - [convert_happy] - [Father] - [test5]: submitting job to process hap.py outputs
+2024-07-17 08:58:30 AM - [INFO] - [TRIO14] - [convert_happy] - [Father] - [test5]: submitted SLURM job 5-of-19
+2024-07-17 08:58:30 AM - [INFO] - [TRIO14] - [convert_happy] - [Father] - [test6]: --overwrite=True; re-writing the existing SLURM job now... 
+2024-07-17 08:58:30 AM - [INFO] - [TRIO14] - [convert_happy] - [Father] - [test6]: new job file created | 'convert-happy6-Father14.sh'
+2024-07-17 08:58:30 AM - [INFO] - [TRIO14] - [convert_happy] - [Father] - [test6]: submitting job to process hap.py outputs
+2024-07-17 08:58:31 AM - [INFO] - [TRIO14] - [convert_happy] - [Father] - [test6]: submitted SLURM job 6-of-19
+2024-07-17 08:58:31 AM - [INFO] - [TRIO14] - [convert_happy] - [Father] - [test7]: --overwrite=True; re-writing the existing SLURM job now... 
+2024-07-17 08:58:31 AM - [INFO] - [TRIO14] - [convert_happy] - [Father] - [test7]: new job file created | 'convert-happy7-Father14.sh'
+2024-07-17 08:58:31 AM - [INFO] - [TRIO14] - [convert_happy] - [Father] - [test7]: submitting job to process hap.py outputs
+2024-07-17 08:58:31 AM - [INFO] - [TRIO14] - [convert_happy] - [Father] - [test7]: submitted SLURM job 7-of-19
+2024-07-17 08:58:31 AM - [INFO] - [TRIO14] - [convert_happy] - [Father] - [test8]: --overwrite=True; re-writing the existing SLURM job now... 
+2024-07-17 08:58:31 AM - [INFO] - [TRIO14] - [convert_happy] - [Father] - [test8]: new job file created | 'convert-happy8-Father14.sh'
+2024-07-17 08:58:31 AM - [INFO] - [TRIO14] - [convert_happy] - [Father] - [test8]: submitting job to process hap.py outputs
+2024-07-17 08:58:32 AM - [INFO] - [TRIO14] - [convert_happy] - [Father] - [test8]: submitted SLURM job 8-of-19
+2024-07-17 08:58:32 AM - [INFO] - [TRIO14] - [convert_happy] - [Father] - [test9]: --overwrite=True; re-writing the existing SLURM job now... 
+2024-07-17 08:58:32 AM - [INFO] - [TRIO14] - [convert_happy] - [Father] - [test9]: new job file created | 'convert-happy9-Father14.sh'
+2024-07-17 08:58:32 AM - [INFO] - [TRIO14] - [convert_happy] - [Father] - [test9]: submitting job to process hap.py outputs
+2024-07-17 08:58:33 AM - [INFO] - [TRIO14] - [convert_happy] - [Father] - [test9]: submitted SLURM job 9-of-19
+2024-07-17 08:58:33 AM - [INFO] - [TRIO14] - [convert_happy] - [Father] - [test10]: --overwrite=True; re-writing the existing SLURM job now... 
+2024-07-17 08:58:33 AM - [INFO] - [TRIO14] - [convert_happy] - [Father] - [test10]: new job file created | 'convert-happy10-Father14.sh'
+2024-07-17 08:58:33 AM - [INFO] - [TRIO14] - [convert_happy] - [Father] - [test10]: submitting job to process hap.py outputs
+2024-07-17 08:58:34 AM - [INFO] - [TRIO14] - [convert_happy] - [Father] - [test10]: submitted SLURM job 10-of-19
+2024-07-17 08:58:34 AM - [INFO] - [TRIO14] - [convert_happy] - [Father] - [test11]: --overwrite=True; re-writing the existing SLURM job now... 
+2024-07-17 08:58:34 AM - [INFO] - [TRIO14] - [convert_happy] - [Father] - [test11]: new job file created | 'convert-happy11-Father14.sh'
+2024-07-17 08:58:34 AM - [INFO] - [TRIO14] - [convert_happy] - [Father] - [test11]: submitting job to process hap.py outputs
+2024-07-17 08:58:34 AM - [INFO] - [TRIO14] - [convert_happy] - [Father] - [test11]: submitted SLURM job 11-of-19
+2024-07-17 08:58:34 AM - [INFO] - [TRIO14] - [convert_happy] - [Father] - [test12]: --overwrite=True; re-writing the existing SLURM job now... 
+2024-07-17 08:58:34 AM - [INFO] - [TRIO14] - [convert_happy] - [Father] - [test12]: new job file created | 'convert-happy12-Father14.sh'
+2024-07-17 08:58:34 AM - [INFO] - [TRIO14] - [convert_happy] - [Father] - [test12]: submitting job to process hap.py outputs
+2024-07-17 08:58:35 AM - [INFO] - [TRIO14] - [convert_happy] - [Father] - [test12]: submitted SLURM job 12-of-19
+2024-07-17 08:58:35 AM - [INFO] - [TRIO14] - [convert_happy] - [Father] - [test13]: --overwrite=True; re-writing the existing SLURM job now... 
+2024-07-17 08:58:35 AM - [INFO] - [TRIO14] - [convert_happy] - [Father] - [test13]: new job file created | 'convert-happy13-Father14.sh'
+2024-07-17 08:58:35 AM - [INFO] - [TRIO14] - [convert_happy] - [Father] - [test13]: submitting job to process hap.py outputs
+2024-07-17 08:58:35 AM - [INFO] - [TRIO14] - [convert_happy] - [Father] - [test13]: submitted SLURM job 13-of-19
+2024-07-17 08:58:35 AM - [INFO] - [TRIO14] - [convert_happy] - [Father] - [test14]: --overwrite=True; re-writing the existing SLURM job now... 
+2024-07-17 08:58:35 AM - [INFO] - [TRIO14] - [convert_happy] - [Father] - [test14]: new job file created | 'convert-happy14-Father14.sh'
+2024-07-17 08:58:35 AM - [INFO] - [TRIO14] - [convert_happy] - [Father] - [test14]: submitting job to process hap.py outputs
+2024-07-17 08:58:36 AM - [INFO] - [TRIO14] - [convert_happy] - [Father] - [test14]: submitted SLURM job 14-of-19
+2024-07-17 08:58:36 AM - [INFO] - [TRIO14] - [convert_happy] - [Father] - [test15]: --overwrite=True; re-writing the existing SLURM job now... 
+2024-07-17 08:58:36 AM - [INFO] - [TRIO14] - [convert_happy] - [Father] - [test15]: new job file created | 'convert-happy15-Father14.sh'
+2024-07-17 08:58:36 AM - [INFO] - [TRIO14] - [convert_happy] - [Father] - [test15]: submitting job to process hap.py outputs
+2024-07-17 08:58:37 AM - [INFO] - [TRIO14] - [convert_happy] - [Father] - [test15]: submitted SLURM job 15-of-19
+2024-07-17 08:58:37 AM - [INFO] - [TRIO14] - [convert_happy] - [Father] - [test16]: --overwrite=True; re-writing the existing SLURM job now... 
+2024-07-17 08:58:37 AM - [INFO] - [TRIO14] - [convert_happy] - [Father] - [test16]: new job file created | 'convert-happy16-Father14.sh'
+2024-07-17 08:58:37 AM - [INFO] - [TRIO14] - [convert_happy] - [Father] - [test16]: submitting job to process hap.py outputs
+2024-07-17 08:58:37 AM - [INFO] - [TRIO14] - [convert_happy] - [Father] - [test16]: submitted SLURM job 16-of-19
+2024-07-17 08:58:37 AM - [INFO] - [TRIO14] - [convert_happy] - [Father] - [test17]: --overwrite=True; re-writing the existing SLURM job now... 
+2024-07-17 08:58:37 AM - [INFO] - [TRIO14] - [convert_happy] - [Father] - [test17]: new job file created | 'convert-happy17-Father14.sh'
+2024-07-17 08:58:37 AM - [INFO] - [TRIO14] - [convert_happy] - [Father] - [test17]: submitting job to process hap.py outputs
+2024-07-17 08:58:38 AM - [INFO] - [TRIO14] - [convert_happy] - [Father] - [test17]: submitted SLURM job 17-of-19
+2024-07-17 08:58:38 AM - [INFO] - [TRIO14] - [convert_happy] - [Father] - [test18]: --overwrite=True; re-writing the existing SLURM job now... 
+2024-07-17 08:58:38 AM - [INFO] - [TRIO14] - [convert_happy] - [Father] - [test18]: new job file created | 'convert-happy18-Father14.sh'
+2024-07-17 08:58:38 AM - [INFO] - [TRIO14] - [convert_happy] - [Father] - [test18]: submitting job to process hap.py outputs
+2024-07-17 08:58:38 AM - [INFO] - [TRIO14] - [convert_happy] - [Father] - [test18]: submitted SLURM job 18-of-19
+2024-07-17 08:58:38 AM - [INFO] - [TRIO14] - [convert_happy] - [Father] - [test19]: --overwrite=True; re-writing the existing SLURM job now... 
+2024-07-17 08:58:38 AM - [INFO] - [TRIO14] - [convert_happy] - [Father] - [test19]: new job file created | 'convert-happy19-Father14.sh'
+2024-07-17 08:58:38 AM - [INFO] - [TRIO14] - [convert_happy] - [Father] - [test19]: submitting job to process hap.py outputs
+2024-07-17 08:58:39 AM - [INFO] - [TRIO14] - [convert_happy] - [Father] - [test19]: submitted SLURM job 19-of-19
+============ [TRIO14] - [convert_happy] - [Father] - Job Numbers ============
+['3138311', '3138312', '3138313', '3138314', '3138315', '3138316', '3138317', '3138318', '3138319', '3138320', '3138321', '3138322', '3138323', '3138324', '3138325', '3138326', '3138327', '3138328', '3138329']
+============================================================
+============================================================
+End of Iteration 28-of-31 @ 2024-07-17  08:58:39
+CURRENT DEPS: [None, None, '3138179', '3138271']
+NEXT DEPS: [None, None, '3138271', None]
+============================================================
+===== end of triotrain/run_trio_train.py @ 2024-07-17  08:58:39 =====
