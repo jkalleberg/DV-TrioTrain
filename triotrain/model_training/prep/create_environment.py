@@ -527,9 +527,6 @@ class Environment:
             col_num = col_num + 1
             # Record column number working on
             value = self.data[col][self.index]
-            
-            # print(f"COL {col_num}: {value}")
-            # breakpoint()
 
             if col_num >= 10:
                 # Columns 10+ are paths. Confirm that the paths given exist
@@ -879,15 +876,9 @@ class Environment:
 
         self.identify_checkpoint()
         self.identify_channels()
-        
-        print("USE POP VCF:", self.use_allele_freq)
-        breakpoint()
 
         if None not in self.train_order:
             self.create_lists()
-        
-        print("TRIO_NUM:", self.trio_num)
-        breakpoint()
 
         if self.trio_num is not None:
             self.make_a_file()
