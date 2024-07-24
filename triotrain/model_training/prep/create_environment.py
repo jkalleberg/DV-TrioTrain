@@ -547,7 +547,11 @@ class Environment:
                             )
 
                         if col == "PopVCF":
-                            if self.use_allele_freq:
+                            
+                            if absolute_path.file_exists:
+                                self.use_allele_freq = True
+                            
+                            if self.use_allele_freq and self.trio_num > 0:
                                 # If adding PopVCF data to new model, update conditions accordingly...
                                 if 8 not in self.additional_channels.keys():
                                     self.additional_channels[8] = "allele_frequency"
@@ -875,9 +879,15 @@ class Environment:
 
         self.identify_checkpoint()
         self.identify_channels()
+        
+        print("USE POP VCF:", self.use_allele_freq)
+        breakpoint()
 
         if None not in self.train_order:
             self.create_lists()
+        
+        print("TRIO_NUM:", self.trio_num)
+        breakpoint()
 
         if self.trio_num is not None:
             self.make_a_file()
