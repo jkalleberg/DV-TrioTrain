@@ -124,6 +124,10 @@ def initalize_weights(setup: Setup, itr: Iteration, logging_msg: str):
                     dryrun_mode=setup.args.dry_run,
                     msg=logging_msg,
                 )
+            elif setup.args.dry_run:
+                itr.logger.info(
+                    f"{logging_msg}: pretending to initalize a starting ckpt | '{current_starting_point}'"
+                ) 
             else:
                 itr.logger.error(
                     f"{logging_msg}: unable to initalize model; missing starting ckpt | '{current_starting_point}'.\nExiting..."
@@ -192,11 +196,11 @@ def initalize_weights(setup: Setup, itr: Iteration, logging_msg: str):
                     )
             elif setup.meta.itr_num+1 == setup.meta.num_of_iterations:
                 itr.logger.info(
-                    f"{itr._mode_string} - [setup]: final iteration detected; unable to update next trio env file")
+                    f"{logging_msg}: final iteration detected; unable to update next trio env file.")
                 return
             else:
                 itr.logger.error(
-                    f"{itr._mode_string} - [setup]: next_trio_num can not be 'None', unable to update next trio env file.\nExiting..."
+                    f"{logging_msg}: next_trio_num can not be 'None', unable to update next trio env file.\nExiting..."
                 )
                 exit(1)
         # or if we can update the CURRENT ENV
