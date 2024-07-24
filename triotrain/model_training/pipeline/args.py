@@ -319,7 +319,9 @@ def get_args(parser: argparse.ArgumentParser) -> argparse.Namespace:
     """
     manual_args_list = [
         "-m",
-        "triotrain/model_training/metadata/240724_SingleTrio_AA_BR.csv",
+        "triotrain/model_training/metadata/240724_SingleTrio_BI_SI.csv",
+        # "triotrain/model_training/metadata/240724_SingleTrio_YK_HI.csv",
+        # "triotrain/model_training/metadata/240724_SingleTrio_AA_BR.csv",
         # "triotrain/model_training/metadata/240429_DeepVariantTriosTRUTH_UMAG1_noPopVCF.csv",
         # "triotrain/model_training/metadata/240429_DeepVariantTriosTRUTH_UMAG1_noPopVCF_hellbender.csv",
         # "triotrain/model_training/metadata/230313_benchmarking.csv",
@@ -329,7 +331,9 @@ def get_args(parser: argparse.ArgumentParser) -> argparse.Namespace:
         # "Mother",
         # "None",
         "--name",
-        "240724_AA_BR_Only",
+        "240724_BI_SI_Only", 
+        # "240724_YK_HI_Only", 
+        # "240724_AA_BR_Only",
         # "230313_GIAB",
         # "220913_NewTrios",
         # "221118_NewTrios",
