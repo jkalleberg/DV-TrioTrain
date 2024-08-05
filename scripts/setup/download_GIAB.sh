@@ -205,7 +205,7 @@ for t in ${!Trio2[@]}; do
             valid_check_sum="${check_sum/$old_path/$new_path}"
             msg=$(echo $valid_check_sum | md5sum -c -)
             if [ $? -eq 0 ]; then 
-                echo $(date '+%Y-%m-%d %H:%M:%S') INFO: $msg || error_exit $msg tracker_file.txt
+                echo $(date '+%Y-%m-%d %H:%M:%S') INFO: $msg && capture_status $msg tracker_file.txt
             fi
         else
             echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: file found | '${t}${benchmark_version}${bench_ext[${e}]}'"

@@ -144,7 +144,7 @@ class SBATCH:
         if self.itr.debug_mode:
             self.itr.logger.debug(f"{self.logger_msg}: adding error handler... ")
         last_line = self._line_list[error_handler_index]
-        errors = f' && success_exit "{message}" {status_tracker_file} || error_exit "{message}" {status_tracker_file}'
+        errors = f' && capture_status "{message}" {status_tracker_file}'
         if error_handler_index != -1:
             errors = errors + " &"
         error_handler = last_line + errors
