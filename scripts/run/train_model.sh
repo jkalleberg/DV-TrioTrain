@@ -179,13 +179,16 @@ fi
 # Create a custom bash function for combining words
 join_by()
 {
-    local IFS="$1"; shift; echo "$*";
+  local d=${1-} f=${2-}
+  if shift 2; then
+    printf %s "$f" "${@/#/$d}"
+  fi
 }
-flag=$(join_by ' \\' ${region_flag} ${model_flag} ${channels_flag})
+flag=$(join_by \\n\\t ${region_flag} ${model_flag} ${channels_flag})
 
 if [ ! -z "${flag}" ]; then
   echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: ADDITIONAL FLAGS INCLUDE:"
-  echo -e "$(date '+%Y-%m-%d %H:%M:%S') INFO:\t'${flag}'"
+  echo -e "\t'${flag}'"
 else
   echo "$(date '+%Y-%m-%d %H:%M:%S') INFO: NO ADDITIONAL FLAGS TO INCLUDE."
 fi
@@ -203,6 +206,8 @@ time apptainer run --nv -B ${bindings} \
   --save_interval_secs=300 \
   --batch_size=${BatchSize} \
   --learning_rate=${LearnRate} \
-  "${flag}"
+  ${model_flag} \
+  ${channels_flag} \
+  ${region_flag}
 
 echo -e "=== scripts/run/train_model.sh > end $(date)"
