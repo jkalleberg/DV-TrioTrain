@@ -4,6 +4,7 @@ from logging import Logger
 from pathlib import Path
 from typing import Dict, List, Union
 from json import load
+import pandas as pd
 
 from model_training.slurm.suffix import remove_suffixes
 
