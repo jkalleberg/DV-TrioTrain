@@ -858,6 +858,9 @@ class VariantCaller:
                     benchmark.check_submissions()
                     benchmark.converting._final_jobs = _convert_happy_jobs
                     benchmark.converting.check_submissions()
+                
+                # if self.args.dry_run:
+                breakpoint()
 
     def setup(self) -> None:
         """

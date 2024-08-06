@@ -246,8 +246,7 @@ def __init__() -> None:
 
         # Save output to disk
         results = Files(
-            path_to_file=_processed_file.path.parent,
-            file=_processed_file.path.name,
+            path_to_file=_processed_file.path.parent / _processed_file.path.name,
             logger=logger,
             logger_msg=_log_msg,
             dryrun_mode=args.dry_run,
@@ -298,8 +297,7 @@ def __init__() -> None:
 
     # Define the summary output CSV file to be created
     summary_file = Files(
-        str(_processed_file.path.parent),
-        f"{_processed_file.path.stem}.calibration.csv",
+        _processed_file.path.parent / f"{_processed_file.path.stem}.calibration.csv",
         logger,
     )
     summary_file.check_status()

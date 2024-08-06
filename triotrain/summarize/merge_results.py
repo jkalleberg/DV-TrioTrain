@@ -492,8 +492,7 @@ class MergedTests:
             name = ".".join([str(self._model_name), "AllTests"] + input_label[1:])
 
         output = Files(
-            str(self._output_path),
-            name,
+            self._output_path / name,
             self.logger,
             logger_msg=self._logger_msg,
             dryrun_mode=self.args.dry_run,

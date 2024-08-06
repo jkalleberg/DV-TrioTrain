@@ -419,8 +419,7 @@ class DTVariantCaller:
             )
 
         self._pedigree = Files(
-            path_to_file=str(self._output_path),
-            file=f"{self._trio_name}.PED",
+            path_to_file=self._output_path / f"{self._trio_name}.PED",
             logger=self.logger,
             logger_msg=self._logger_msg,
             debug_mode=self.args.debug,

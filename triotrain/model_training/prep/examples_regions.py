@@ -289,8 +289,7 @@ class MakeRegions:
             output_file_path = self._reference.parent
 
         output_file = Files(
-            output_file_path,
-            output_file_name,
+            Path(output_file_path) / output_file_name,
             self.itr.logger,
             logger_msg=f"{self.itr._mode_string} - [setup]: default call_variants",
         )

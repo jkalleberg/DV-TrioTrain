@@ -376,8 +376,7 @@ class ParseMetrics:
             )
             # Define the output CSV to be created
             outfile = Files(
-                self._outpath,
-                f"{self._run_name}-{self.genome}-evaluation-metrics.csv",
+                Path(self._outpath) / f"{self._run_name}-{self.genome}-evaluation-metrics.csv",
                 self.logger,
             )
             outfile.check_status()

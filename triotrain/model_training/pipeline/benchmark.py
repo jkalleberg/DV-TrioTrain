@@ -597,8 +597,7 @@ class Benchmark:
         else:
             # Define the summary output CSV file to be created
             summary_file = Files(
-                str(self._results_dir),
-                f"{self.name}.summary_resources.csv",
+                self._results_dir / f"{self.name}.summary_resources.csv",
                 self.logger,
             )
             summary_file.check_status()

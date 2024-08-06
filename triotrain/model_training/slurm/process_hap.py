@@ -735,8 +735,7 @@ class Process:
             )
 
         file = Files(
-            str(outfile.parent),
-            outfile.name,
+            outfile.parent / outfile.name,
             self.logger,
             dryrun_mode=self.args.dry_run,
             logger_msg=self._logger_msg,

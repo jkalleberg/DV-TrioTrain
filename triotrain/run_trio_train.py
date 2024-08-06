@@ -241,8 +241,7 @@ def run_trio_train(eval_genome="Child") -> None:
         # inialize a file to store metrics
         if pipeline.args.benchmark:
             output_file = Files(
-                path_to_file=str(current_itr.results_dir),
-                file=f"{current_itr.model_label}.SLURM.job_numbers.csv",
+                path_to_file=current_itr.results_dir / f"{current_itr.model_label}.SLURM.job_numbers.csv",
                 logger=logger,
                 logger_msg=logging_msg,
                 debug_mode=pipeline.args.debug,

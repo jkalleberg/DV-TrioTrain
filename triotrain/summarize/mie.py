@@ -232,8 +232,7 @@ class MIE:
             mie_vcf_file = Path(f"{trio_filename}.ALL.MIE")
 
         self._mie_vcf = Files(
-            path_to_file=str(mie_vcf_file.parent),
-            file=f"{mie_vcf_file.name}.vcf.gz",
+            path_to_file=mie_vcf_file.parent / f"{mie_vcf_file.name}.vcf.gz",
             logger=self.logger,
             logger_msg=self._summary._logger_msg,
             debug_mode=self.args.debug,
@@ -266,8 +265,7 @@ class MIE:
                 mie_metrics_file = self._log_dir / str(files_found[0])
 
                 self._mie_metrics = Files(
-                    path_to_file=str(mie_metrics_file.parent),
-                    file=f"{mie_metrics_file.name}",
+                    path_to_file=mie_metrics_file.parent / mie_metrics_file.name,
                     logger=self.logger,
                     logger_msg=self._summary._logger_msg,
                     debug_mode=self.args.debug,
@@ -301,8 +299,7 @@ class MIE:
         ]
 
         self._pedigree = Files(
-            path_to_file=str(self._trio_path),
-            file=f"{self._summary._pickled_data._ID}.PED",
+            path_to_file=self._trio_path / f"{self._summary._pickled_data._ID}.PED",
             logger=self.logger,
             logger_msg=self._summary._logger_msg,
             debug_mode=self.args.debug,
@@ -456,8 +453,7 @@ class MIE:
         _lines = [f"{sample_name}"]
 
         renaming_file = Files(
-            path_to_file=str(self._trio_path),
-            file=f"{sample_name}.rename",
+            path_to_file=self._trio_path / f"{sample_name}.rename",
             logger=self.logger,
             logger_msg=self._summary._logger_msg,
             debug_mode=self.args.debug,

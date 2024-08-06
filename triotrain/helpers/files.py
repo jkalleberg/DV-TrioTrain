@@ -1,8 +1,9 @@
-from csv import DictWriter, writer
+from csv import QUOTE_NONE, DictReader, DictWriter, writer
 from dataclasses import dataclass, field
 from logging import Logger
 from pathlib import Path
 from typing import Dict, List, Union
+from json import load
 
 from model_training.slurm.suffix import remove_suffixes
 
@@ -67,8 +68,7 @@ class Files:
     Check for exisiting files and to create multiple types of outputs.
 
     Attributes:
-        path -- a Path object for the file
-        file -- a string pairs naming pattern
+        path_to_file -- a Path object for the file
         logger -- a Logger object
     """
 
@@ -276,6 +276,14 @@ class Files:
                 index=keep_index,
             )
     
+    def write_json_file(self) -> None:
+        """
+        Open the JSON config file, and confirm the user provided the 'ntasks' parameter as required by Cue
+        """
+        pass
+        # with open(str(self.path), mode="r") as file:
+        #     self._existing_data = load(file)
+    
     def load_csv(self) -> None:
         """
         Read in and save the CSV file as a dictionary.
@@ -350,3 +358,12 @@ class Files:
             for line in data.readlines():
                 _clean_line = line.strip()
                 self._existing_data.append(_clean_line)
+
+    def load_json_file(self) -> None:
+        """
+        Open the JSON config file, and confirm the user provided the 'ntasks' parameter as required by Cue
+        """
+        with open(str(self.path), mode="r") as file:
+            _existing_data = load(file)
+
+        print(_existing_data)

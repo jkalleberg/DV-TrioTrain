@@ -247,8 +247,7 @@ class ReShuffleExamples:
         Determine if merging is necessary
         """
         self.merged_config = Files(
-            str(self.itr.examples_dir),
-            f"{self.pattern}.labeled.shuffled.merged.dataset_config.pbtxt",
+            self.itr.examples_dir / f"{self.pattern}.labeled.shuffled.merged.dataset_config.pbtxt",
             self.itr.logger,
             logger_msg=msg,
         )

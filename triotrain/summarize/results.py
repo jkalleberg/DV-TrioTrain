@@ -73,8 +73,7 @@ class SummarizeResults:
         Confirm that the VCF file in the metadata file exists.
         """
         self._input_file = Files(
-            path_to_file=self._file_path.parent,
-            file=self._file_path.name,
+            path_to_file=self._file_path,
             logger=self.output_file.logger,
             logger_msg=self.output_file.logger_msg,
             dryrun_mode=self.output_file.dryrun_mode,
@@ -279,8 +278,7 @@ class SummarizeResults:
         if data_type != "mie":
             _new_output = self.output_file.file.replace("mie", data_type)
             self.output_file = Files(
-                path_to_file=self.output_file.path_to_file,
-                file=_new_output,
+                path_to_file=self.output_file.path / _new_output,
                 logger=self._input_file.logger,
                 logger_msg=self.output_file.logger_msg,
                 debug_mode=self._input_file.debug_mode,

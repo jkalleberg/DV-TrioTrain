@@ -52,8 +52,7 @@ class Stats:
                 f"{self.pickled_data.output_file.logger_msg}: searching for existing file | '{_new_file}'"
             )
         self._output = Files(
-            _new_file.parent,
-            _new_file.name,
+            _new_file,
             logger=self.pickled_data._input_file.logger,
             logger_msg=self.pickled_data.output_file.logger_msg,
             debug_mode=self.pickled_data._input_file.debug_mode,

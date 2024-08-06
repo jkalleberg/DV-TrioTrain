@@ -76,18 +76,17 @@ class Summary:
         output = Path(self.args.outpath).resolve()
 
         if "." in output.name:
-            _path = str(output.parent)
+            _path = output.parent
             _file_name = f"{output.name}.mie.csv"
         else:
-            _path = str(output)
+            _path = output
             _file_name = f"mie.csv"
 
         if not self.args.dry_run:
             output.mkdir(parents=True, exist_ok=True)
 
         self._csv_output = Files(
-            path_to_file=_path,
-            file=_file_name,
+            path_to_file=_path / _file_name,
             logger=self.logger,
             logger_msg=self._logger_msg,
             dryrun_mode=self.args.dry_run,

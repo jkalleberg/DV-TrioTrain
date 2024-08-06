@@ -29,6 +29,7 @@ abs_path = Path(__file__).resolve()
 module_path = str(abs_path.parent.parent.parent)
 path.append(module_path)
 from helpers.environment import Env
+from helpers.files import Files
 
 
 # Parsing command line inputs function
@@ -197,6 +198,8 @@ class MergeSelect:
             f"{self.current_genome}_Examples",
             "N_Epochs",
             "BatchSize",
+            "ExamplesDir",
+            "N_Parts",
         ]
 
         (
@@ -205,6 +208,8 @@ class MergeSelect:
             self.num_examples,
             self.epochs,
             self.batch_size,
+            self.examples_dir,
+            self.n_parts,
         ) = self.env.load(*vars_list)
 
         # Calculate the number of training steps used
@@ -332,6 +337,16 @@ class MergeSelect:
             self.logger.info(
                 f"{self._logger_msg}: next starting ckpt identified\t\t| '{self.checkpoint}'",
             )
+    
+    def find_example_info_file(self) -> None:
+        """
+        Confirm that metadata about examples made exists.
+        """
+        _input_path = Path(self.examples_dir) / f"{self.current_genome}.region1.labeled.tfrecords-00001-of-000{self.n_parts}.gz.example_info.json"
+        _input_json = Files(
+            path=_input_path,
+            
+        )
 
     def record_results(self) -> None:
         """
@@ -391,6 +406,7 @@ class MergeSelect:
         self.count_log_lines()
         self.count_log_lines(train_mode=False)
         self.select_ckpt_name()
+        breakpoint()
         self.record_results()
 
 

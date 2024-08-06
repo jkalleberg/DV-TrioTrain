@@ -85,8 +85,7 @@ for k, v in defaults.items():
         )
 
 output_file = Files(
-    path_to_file=str(cwd / "triotrain" / "model_training" / "tutorial"),
-    file=f"GIAB.Human_tutorial_metadata.csv",
+    path_to_file=Path(cwd) / "triotrain" / "model_training" / "tutorial" / f"GIAB.Human_tutorial_metadata.csv",
     logger=logger,
     logger_msg="[tutorial]",
 )
