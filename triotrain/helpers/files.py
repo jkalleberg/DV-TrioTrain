@@ -3,7 +3,7 @@ from dataclasses import dataclass, field
 from logging import Logger
 from pathlib import Path
 from typing import Dict, List, Union
-from json import load
+from json import load, dump
 import pandas as pd
 
 from model_training.slurm.suffix import remove_suffixes
@@ -86,6 +86,7 @@ class Files:
     file_exists: bool = field(default=False, init=False, repr=False)
     file_lines: List[str] = field(default_factory=list, init=False, repr=False)
     file_dict: Dict[str, str] = field(default_factory=dict, init=False, repr=False)
+    _existing_data: List[Dict[str,str]] = field(default_factory=list, init=False, repr=False)
 
     def __post_init__(self) -> None:
         self.path = Path(self.path_to_file)
@@ -115,11 +116,11 @@ class Files:
         if self.dryrun_mode:
             if self.logger_msg is None:
                 self.logger.info(
-                    f"[DRY_RUN]: pretending to write a list of lines | '{str(self.file_path)}'"
+                    f"[DRY_RUN]: pretending to write a list of lines | '{str(self.path)}'"
                 )
             else:
                 self.logger.info(
-                    f"{self.logger_msg}: pretending to write a list of lines | '{str(self.file_path)}'"
+                    f"{self.logger_msg}: pretending to write a list of lines | '{str(self.path)}'"
                 )
 
             print("---------------------------------------------")
@@ -155,11 +156,11 @@ class Files:
         if self.dryrun_mode:
             if self.logger_msg is None:
                 self.logger.info(
-                    f"[DRY_RUN]: pretending to write a list of dictionaries | '{str(self.file_path)}'"
+                    f"[DRY_RUN]: pretending to write a list of dictionaries | '{str(self.path)}'"
                 )
             else:
                 self.logger.info(
-                    f"{self.logger_msg}: pretending to write a list of dictionaries | '{str(self.file_path)}'"
+                    f"{self.logger_msg}: pretending to write a list of dictionaries | '{str(self.path)}'"
                 )
 
             print("---------------------------------------------")
@@ -182,14 +183,14 @@ class Files:
 
         if self.dryrun_mode:
             self.logger.info(
-                    f"{self.logger_msg}: pretending to add header + row to a CSV | '{str(self.file_path)}'"
+                    f"{self.logger_msg}: pretending to add header + row to a CSV | '{str(self.path)}'"
                 )
             print("---------------------------------------------")
             print(",".join(data_dict.keys()))
             print(",".join(data_dict.values()))
             print("---------------------------------------------")
         else:
-            if self.file_path.exists():
+            if self.path.exists():
                 if self.debug_mode:
                     debug_msg = f"appending [{self.file}] with a new row"
                     if self.logger_msg is None:
@@ -197,7 +198,7 @@ class Files:
                     else:
                         self.logger.debug(f"{self.logger_msg}: {debug_msg}")
 
-                with open(str(self.file_path), mode="a") as file:
+                with open(str(self.path), mode="a") as file:
                     dictwriter = DictWriter(file, fieldnames=col_names)
                     dictwriter.writerow(data_dict)
                     self.file_dict.update(data_dict)
@@ -209,7 +210,7 @@ class Files:
                     else:
                         self.logger.debug(f"{self.logger_msg}: {debug_msg}")
 
-                with open(str(self.file_path), mode="w") as file:
+                with open(str(self.path), mode="w") as file:
                     dictwriter = DictWriter(file, fieldnames=col_names)
                     dictwriter.writeheader()
                     dictwriter.writerow(data_dict)
@@ -224,11 +225,11 @@ class Files:
         if self.dryrun_mode:
             if self.logger_msg is None:
                 self.logger.info(
-                    f"[DRY_RUN]: pretending to write CSV file | '{str(self.file_path)}'"
+                    f"[DRY_RUN]: pretending to write CSV file | '{str(self.path)}'"
                 )
             else:
                 self.logger.info(
-                    f"{self.logger_msg}: pretending to write CSV file | '{str(self.file_path)}'"
+                    f"{self.logger_msg}: pretending to write CSV file | '{str(self.path)}'"
                 )
 
             print("---------------------------------------------")
@@ -242,7 +243,7 @@ class Files:
 
         # Otherwise, write an intermediate CSV output file
         else:
-            with open(str(self.file_path), mode="w") as file:
+            with open(str(self.path), mode="w") as file:
                 write_file = writer(file)
                 for key, value in write_dict.items():
                     if type(value) is list:
@@ -250,7 +251,7 @@ class Files:
                     else:
                         write_file.writerow([key, value])
 
-            if self.file_path.is_file():
+            if self.path.is_file():
                 logging_msg = f"created intermediate CSV file | '{self.file}'"
                 if self.logger_msg is None:
                     self.logger.info(logging_msg)
@@ -281,9 +282,24 @@ class Files:
         """
         Open the JSON config file, and confirm the user provided the 'ntasks' parameter as required by Cue
         """
-        pass
-        # with open(str(self.path), mode="r") as file:
-        #     self._existing_data = load(file)
+        if self.dryrun_mode:
+            self.logger.info(
+                f"{self.logger_msg}: pretending to write JSON file | '{str(self.path)}'"
+            )
+            self.logger.info(
+                f"{self.logger_msg}: JSON contents ---------------------"
+            )
+            for k, v in self.file_dict.items():
+                self.logger.info(f"{self.logger_msg}:\t{k}: {v}")
+            self.logger.info(
+                f"{self.logger_msg}: -----------------------------------"
+            )
+        else:
+            self.logger.info(
+                f"{self.logger_msg}: writing a JSON file | '{str(self.path)}'"
+            )
+            with open(str(self.path), "w") as f:
+                dump(self.file_dict, f)
     
     def load_csv(self) -> None:
         """
@@ -365,6 +381,4 @@ class Files:
         Open the JSON config file, and confirm the user provided the 'ntasks' parameter as required by Cue
         """
         with open(str(self.path), mode="r") as file:
-            _existing_data = load(file)
-
-        print(_existing_data)
+            self.file_dict = load(file)
