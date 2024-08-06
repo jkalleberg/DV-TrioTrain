@@ -22,7 +22,7 @@ module_path = str(abs_path.parent.parent)
 path.append(module_path)
 
 from helpers.collections import Bins
-from helpers.files import TestFile, WriteFiles
+from helpers.files import TestFile, Files
 from helpers.vcf_to_tsv import Convert_VCF
 
 
@@ -245,14 +245,14 @@ def __init__() -> None:
         )
 
         # Save output to disk
-        results = WriteFiles(
+        results = Files(
             path_to_file=_processed_file.path.parent,
             file=_processed_file.path.name,
             logger=logger,
             logger_msg=_log_msg,
             dryrun_mode=args.dry_run,
         )
-        results.check_missing()
+        results.check_status()
         results.write_list_of_dicts(line_list=sorted_dict_array, delim="\t")
 
     # Create bins without having to read the (very large)
@@ -297,12 +297,12 @@ def __init__() -> None:
     summary_df["%MIE_Rate"] = (summary_df["NUM_MIE"] / _sum_sites) * 100
 
     # Define the summary output CSV file to be created
-    summary_file = WriteFiles(
+    summary_file = Files(
         str(_processed_file.path.parent),
         f"{_processed_file.path.stem}.calibration.csv",
         logger,
     )
-    summary_file.check_missing()
+    summary_file.check_status()
 
     if args.dry_run:
         logger.info(
@@ -320,7 +320,7 @@ def __init__() -> None:
             )
             summary_df.to_csv(summary_file.file_path, index=False)
             if args.debug:
-                summary_file.check_missing()
+                summary_file.check_status(should_file_exist=True)
                 if summary_file.file_exists:
                     logger.debug(
                         f"{_internal_msg}{summary_file.file_path.name} written"

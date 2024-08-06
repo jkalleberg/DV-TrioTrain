@@ -14,7 +14,7 @@ abs_path = Path(__file__).resolve()
 module_path = str(abs_path.parent.parent)
 path.append(module_path)
 
-from helpers.files import WriteFiles
+from helpers.files import Files
 from model_training.prep.count import count_variants
 from pantry import prepare
 from summarize._args import check_args, collect_args
@@ -51,7 +51,7 @@ class Stats:
             self.pickled_data.output_file.logger.debug(
                 f"{self.pickled_data.output_file.logger_msg}: searching for existing file | '{_new_file}'"
             )
-        self._output = WriteFiles(
+        self._output = Files(
             _new_file.parent,
             _new_file.name,
             logger=self.pickled_data._input_file.logger,

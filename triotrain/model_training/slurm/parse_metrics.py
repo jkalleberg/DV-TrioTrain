@@ -25,7 +25,7 @@ abs_path = Path(__file__).resolve()
 module_path = str(abs_path.parent.parent.parent)
 path.append(module_path)
 from helpers.environment import Env
-from helpers.files import WriteFiles
+from helpers.files import Files
 
 
 def collect_args() -> argparse.Namespace:
@@ -375,12 +375,12 @@ class ParseMetrics:
                 f"{self._logger_msg}: parsed metrics CSV directory\t| '{str(self._output_dir)}'"
             )
             # Define the output CSV to be created
-            outfile = WriteFiles(
+            outfile = Files(
                 self._outpath,
                 f"{self._run_name}-{self.genome}-evaluation-metrics.csv",
                 self.logger,
             )
-            outfile.check_missing()
+            outfile.check_status()
 
             if outfile.file_exists:
                 self.logger.info(

@@ -10,7 +10,7 @@ from pathlib import Path
 from sys import exit
 from typing import List, Union
 
-from helpers.files import WriteFiles
+from helpers.files import Files
 from helpers.iteration import Iteration
 from helpers.jobs import is_job_index, is_jobid
 from helpers.outputs import check_expected_outputs, check_if_output_exists
@@ -37,7 +37,7 @@ class ConvertHappy:
     model_label: str
 
     # optional values
-    benchmarking_file: Union[WriteFiles, None] = None
+    benchmarking_file: Union[Files, None] = None
     compare_happy_jobs: Union[List[Union[str, None]], None] = field(
         default_factory=list
     )
@@ -62,7 +62,7 @@ class ConvertHappy:
         if self.track_resources:
             assert (
                 self.benchmarking_file is not None
-            ), "missing a WriteFiles object to save SLURM job numbers"
+            ), "missing a Files object to save SLURM job numbers"
 
         self._final_jobs = create_deps(self.itr.total_num_tests)
         if self.itr.train_genome is None:

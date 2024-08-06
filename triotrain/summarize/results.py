@@ -18,7 +18,7 @@ from regex import compile
 abs_path = Path(__file__).resolve()
 module_path = str(abs_path.parent.parent)
 path.append(module_path)
-from helpers.files import WriteFiles
+from helpers.files import Files
 from model_training.slurm.suffix import remove_suffixes
 
 
@@ -30,13 +30,13 @@ class SummarizeResults:
 
     args: Namespace
     sample_metadata: Union[List[Dict[str, str]], Dict[str, str]]
-    output_file: WriteFiles
+    output_file: Files
 
     # Imutable, internal parameters
     _contains_valid_trio: bool = field(default=False, init=False, repr=False)
     _digits_only: compile = field(default=compile(r"\d+"), init=False, repr=False)
     _file_path: Path = field(default=None, init=False, repr=False)
-    _input_file: WriteFiles = field(default=None, init=False, repr=False)
+    _input_file: Files = field(default=None, init=False, repr=False)
     _index: int = field(default=0, init=False, repr=False)
     _merged_data: Union[List[str], Dict[str, str]] = field(
         default_factory=dict, init=False, repr=False
@@ -72,7 +72,7 @@ class SummarizeResults:
         """
         Confirm that the VCF file in the metadata file exists.
         """
-        self._input_file = WriteFiles(
+        self._input_file = Files(
             path_to_file=self._file_path.parent,
             file=self._file_path.name,
             logger=self.output_file.logger,
@@ -278,7 +278,7 @@ class SummarizeResults:
 
         if data_type != "mie":
             _new_output = self.output_file.file.replace("mie", data_type)
-            self.output_file = WriteFiles(
+            self.output_file = Files(
                 path_to_file=self.output_file.path_to_file,
                 file=_new_output,
                 logger=self._input_file.logger,

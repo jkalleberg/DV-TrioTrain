@@ -28,7 +28,7 @@ module_path = str(abs_path.parent.parent)
 path.append(module_path)
 
 from _args import check_args, collect_args
-from helpers.files import TestFile, WriteFiles
+from helpers.files import TestFile, Files
 from helpers.iteration import Iteration
 from helpers.outputs import check_if_output_exists
 from model_training.slurm.suffix import remove_suffixes
@@ -231,7 +231,7 @@ class MIE:
         else:
             mie_vcf_file = Path(f"{trio_filename}.ALL.MIE")
 
-        self._mie_vcf = WriteFiles(
+        self._mie_vcf = Files(
             path_to_file=str(mie_vcf_file.parent),
             file=f"{mie_vcf_file.name}.vcf.gz",
             logger=self.logger,
@@ -239,7 +239,7 @@ class MIE:
             debug_mode=self.args.debug,
             dryrun_mode=self.args.dry_run,
         )
-        self._mie_vcf.check_missing()
+        self._mie_vcf.check_status()
 
         if self._mie_vcf.file_exists:
             self.logger.info(
@@ -265,7 +265,7 @@ class MIE:
                 self._existing_metrics_log_file = mie_metrics_file_exists
                 mie_metrics_file = self._log_dir / str(files_found[0])
 
-                self._mie_metrics = WriteFiles(
+                self._mie_metrics = Files(
                     path_to_file=str(mie_metrics_file.parent),
                     file=f"{mie_metrics_file.name}",
                     logger=self.logger,
@@ -273,7 +273,7 @@ class MIE:
                     debug_mode=self.args.debug,
                     dryrun_mode=self.args.dry_run,
                 )
-                self._mie_metrics.check_missing()
+                self._mie_metrics.check_status()
                 if self._mie_metrics.file_exists:
                     self.logger.info(
                         f"{self._summary._logger_msg}: the MIE log file already exists... SKIPPING AHEAD"
@@ -300,7 +300,7 @@ class MIE:
             f"{self._summary._pickled_data._ID} {self._summary._pickled_data._childID} {self._summary._pickled_data._fatherID} {self._summary._pickled_data._motherID} {self._summary._pickled_data._child_sex} 0",
         ]
 
-        self._pedigree = WriteFiles(
+        self._pedigree = Files(
             path_to_file=str(self._trio_path),
             file=f"{self._summary._pickled_data._ID}.PED",
             logger=self.logger,
@@ -308,7 +308,7 @@ class MIE:
             debug_mode=self.args.debug,
             dryrun_mode=self.args.dry_run,
         )
-        self._pedigree.check_missing()
+        self._pedigree.check_status()
         if not self._pedigree.file_exists:
             if self.args.dry_run:
                 self.logger.info(
@@ -455,7 +455,7 @@ class MIE:
         """
         _lines = [f"{sample_name}"]
 
-        renaming_file = WriteFiles(
+        renaming_file = Files(
             path_to_file=str(self._trio_path),
             file=f"{sample_name}.rename",
             logger=self.logger,
@@ -463,7 +463,7 @@ class MIE:
             debug_mode=self.args.debug,
             dryrun_mode=self.args.dry_run,
         )
-        renaming_file.check_missing()
+        renaming_file.check_status()
         if not renaming_file._file_exists:
             if self.args.dry_run:
                 self.logger.info(

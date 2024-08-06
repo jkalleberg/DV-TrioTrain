@@ -12,7 +12,7 @@ from pathlib import Path
 from sys import exit
 from typing import List, Union
 
-from helpers.files import WriteFiles
+from helpers.files import Files
 from helpers.iteration import Iteration
 from helpers.jobs import is_job_index, is_jobid
 from helpers.outputs import check_expected_outputs, check_if_output_exists
@@ -41,7 +41,7 @@ class TrainEval:
     model_label: str
 
     # optional values
-    benchmarking_file: Union[WriteFiles, None] = None
+    benchmarking_file: Union[Files, None] = None
     constrain_training_regions: bool = False
     overwrite: bool = False
     track_resources: bool = False
@@ -127,7 +127,7 @@ class TrainEval:
         if self.track_resources:
             assert (
                 self.benchmarking_file is not None
-            ), "unable to proceed, missing a WriteFiles object to save SLURM job numbers"
+            ), "unable to proceed, missing a Files object to save SLURM job numbers"
 
         self._select_ckpt_dependency = create_deps(1)
 

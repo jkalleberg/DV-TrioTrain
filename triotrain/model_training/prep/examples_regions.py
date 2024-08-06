@@ -14,7 +14,7 @@ from sys import exit
 from typing import Dict, List, Union
 
 import pandas as pd
-from helpers.files import TestFile, WriteFiles
+from helpers.files import TestFile, Files
 from helpers.iteration import Iteration
 from helpers.outputs import check_expected_outputs, check_if_output_exists
 from model_training.prep.count import count_variants
@@ -288,13 +288,13 @@ class MakeRegions:
         elif output_file_path is None:
             output_file_path = self._reference.parent
 
-        output_file = WriteFiles(
+        output_file = Files(
             output_file_path,
             output_file_name,
             self.itr.logger,
             logger_msg=f"{self.itr._mode_string} - [setup]: default call_variants",
         )
-        output_file.check_missing()
+        output_file.check_status()
 
         if not output_file.file_exists:
             if self.itr.debug_mode:

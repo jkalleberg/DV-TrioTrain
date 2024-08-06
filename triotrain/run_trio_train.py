@@ -18,7 +18,7 @@ example:
 from os import path
 from sys import exit
 
-from helpers.files import WriteFiles
+from helpers.files import Files
 from helpers.iteration import Iteration
 from helpers.utils import create_deps, get_logger
 from helpers.wrapper import Wrapper, timestamp
@@ -240,7 +240,7 @@ def run_trio_train(eval_genome="Child") -> None:
         # If tracking resources used from SLURM jobs,
         # inialize a file to store metrics
         if pipeline.args.benchmark:
-            output_file = WriteFiles(
+            output_file = Files(
                 path_to_file=str(current_itr.results_dir),
                 file=f"{current_itr.model_label}.SLURM.job_numbers.csv",
                 logger=logger,

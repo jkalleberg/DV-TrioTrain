@@ -11,7 +11,7 @@ from pathlib import Path
 from sys import exit
 from typing import List, Union
 
-from helpers.files import WriteFiles
+from helpers.files import Files
 from helpers.iteration import Iteration
 from helpers.jobs import is_job_index, is_jobid
 from helpers.outputs import check_expected_outputs, check_if_output_exists
@@ -40,7 +40,7 @@ class CallVariants:
     model_label: str
 
     # optional values
-    benchmarking_file: Union[WriteFiles, None] = None
+    benchmarking_file: Union[Files, None] = None
     call_variants_job_nums: List = field(default_factory=list)
     overwrite: bool = False
     track_resources: bool = False
@@ -77,7 +77,7 @@ class CallVariants:
         if self.track_resources:
             assert (
                 self.benchmarking_file is not None
-            ), "missing a WriteFiles() object to save SLURM job numbers"
+            ), "missing a Files() object to save SLURM job numbers"
 
     def set_genome(self) -> None:
         """

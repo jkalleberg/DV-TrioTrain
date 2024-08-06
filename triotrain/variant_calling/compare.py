@@ -10,7 +10,7 @@ from pathlib import Path
 from sys import exit
 from typing import List, Union
 
-from helpers.files import TestFile, WriteFiles
+from helpers.files import TestFile, Files
 from helpers.iteration import Iteration
 from helpers.jobs import is_job_index, is_jobid
 from helpers.outputs import check_expected_outputs, check_if_output_exists
@@ -37,7 +37,7 @@ class CompareHappy:
     model_label: str
 
     # optional values
-    benchmarking_file: Union[WriteFiles, None] = None
+    benchmarking_file: Union[Files, None] = None
     call_variants_jobs: Union[List[Union[str, None]], None] = field(
         default_factory=list
     )
@@ -77,7 +77,7 @@ class CompareHappy:
         if self.track_resources:
             assert (
                 self.benchmarking_file is not None
-            ), "missing a WriteFiles object to save SLURM job numbers"
+            ), "missing a Files object to save SLURM job numbers"
 
         if self.itr.env is not None:
             if "N_Parts" not in self.itr.env.contents:
@@ -283,7 +283,7 @@ class CompareHappy:
 
         # determine if GIAB benchmarking is being performed
         if "first_genome" not in self.itr.args or self.itr.args.first_genome is None:
-            additional_flag = " --benchmark "
+            additional_flag = " --benchmark"
         else:
             additional_flag = ""
 

@@ -14,4 +14,4 @@ abs_path = Path(__file__).resolve()
 module_path = str(abs_path.parent.parent)
 path.append(module_path)
 
-from helpers.files import TestFile, WriteFiles
+from helpers.files import TestFile, Files

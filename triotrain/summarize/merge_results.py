@@ -26,7 +26,7 @@ module_path = str(abs_path.parent.parent)
 path.append(module_path)
 
 from helpers.environment import Env
-from helpers.files import TestFile, WriteFiles
+from helpers.files import TestFile, Files
 from helpers.outputs import check_if_output_exists
 
 
@@ -491,14 +491,14 @@ class MergedTests:
         else:
             name = ".".join([str(self._model_name), "AllTests"] + input_label[1:])
 
-        output = WriteFiles(
+        output = Files(
             str(self._output_path),
             name,
             self.logger,
             logger_msg=self._logger_msg,
             dryrun_mode=self.args.dry_run,
         )
-        output.check_missing()
+        output.check_status()
 
         # if self.args.merge_all:
         # if self.args.dry_run:

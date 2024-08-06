@@ -62,7 +62,7 @@ class TestFile:
 
 
 @dataclass
-class WriteFiles:
+class Files:
     """
     Check for exisiting files and to create multiple types of outputs.
 
@@ -73,8 +73,7 @@ class WriteFiles:
     """
 
     # required parameters
-    path_to_file: str
-    file: str
+    path_to_file: Union[Path, str]
     logger: Logger
 
     # optional parameters
@@ -89,16 +88,23 @@ class WriteFiles:
 
     def __post_init__(self) -> None:
         self.path = Path(self.path_to_file)
-        self.file_path = self.path / self.file
-        self._test_file = TestFile(self.file_path, self.logger)
+        self.file_name = self.path.name
+        self.path_only = self.path.parent
+        self._test_file = TestFile(self.path, self.logger)
 
-    def check_missing(
+    def check_status(
         self,
+        should_file_exist: bool = False
     ) -> None:
         """
         Confirm that file is non-existant.
         """
-        self._test_file.check_missing(logger_msg=self.logger_msg, debug_mode=self.debug_mode)
+        if should_file_exist is True:
+            self._test_file.check_existing(logger_msg=self.logger_msg,debug_mode=self.debug_mode)
+        else:
+            self._test_file.check_missing(
+                logger_msg=self.logger_msg, debug_mode=self.debug_mode
+            )
         self.file_exists = self._test_file.file_exists
 
     def write_list(self, line_list: List[str]) -> None:
@@ -249,3 +255,98 @@ class WriteFiles:
                     self.logger.info(logging_msg)
                 else:
                     self.logger.info(f"{self.logger_msg}: {logging_msg}")
+    
+    def write_dataframe(self, df: pd.DataFrame, keep_index: bool = False) -> None:
+        if self.dryrun_mode:
+            self.logger.info(
+                f"{self.logger_msg}: pretending to write CSV file | '{str(self.path)}'"
+            )
+
+            print("---------------------------------------------")
+            print(df)
+            print("---------------------------------------------")
+        else:
+            self.logger.info(
+                f"{self.logger_msg}: writing a CSV file | '{str(self.path)}'"
+            )
+            df.to_csv(
+                str(self.path),
+                doublequote=False,
+                quoting=QUOTE_NONE,
+                index=keep_index,
+            )
+    
+    def load_csv(self) -> None:
+        """
+        Read in and save the CSV file as a dictionary.
+        """
+        if "gz" in self.path.suffix:
+            import gzip
+            logging_msg = f"handling a compressed file | '{self.path.stem}'"
+            if self.logger_msg is None:
+                self.logger.info(logging_msg)
+            else:
+                self.logger.info(f"{self.logger_msg}: {logging_msg}")
+            with gzip.open(str(self.path), mode="rt") as data:
+                reader = DictReader(data)
+                self._existing_data = [dict(row) for row in reader]
+        else:
+            with open(str(self.path), mode="r", encoding="utf-8-sig") as data:
+                reader = DictReader(data)
+                self._existing_data = [dict(row) for row in reader]
+    
+    def load_tsv(self, header_list: List[str]) -> List[Dict[str, str]]:
+        """
+        Read in and save the TSV file as a list of lines.
+        """
+        if self._existing_data:
+            reader = DictReader(
+                self._existing_lines, fieldnames=header_list, delimiter="\t"
+            )
+
+            return [line for line in reader]
+        else:
+            list_of_line_dicts = []
+            with open(str(self.path), mode="r", encoding="utf-8-sig") as data:
+                reader = DictReader(data, fieldnames=header_list, delimiter="\t")
+                for line in reader:
+                    # If the file containes headers, skip them
+                    contents = list(line.values())
+                    if reader.fieldnames and any(
+                        i in contents for i in reader.fieldnames
+                    ):
+                        if self.debug_mode:
+                            self.logger.debug(
+                                f"{self.logger_msg}: SKIPPING HEADERS"
+                            )
+                        continue
+                    else:
+                        list_of_line_dicts.append(line)
+            return list_of_line_dicts
+
+    def load_vcf(self) -> None:
+        with open(str(self.path), mode="r", encoding="utf-8-sig") as data:
+            Lines = data.readlines()
+            for line in Lines:
+                if line.startswith("##"):
+                    self._vcf_header_lines.append(line.strip())
+                elif line.startswith("#CHROM"):
+                    self._vcf_header_lines.append(line.strip())
+                    self._col_names = line.strip("#\n").split("\t")
+
+        with open(str(self.path), mode="r", encoding="utf-8-sig") as data:
+            reader = DictReader(data, fieldnames=self._col_names, delimiter="\t")
+            for line in reader:
+                # SKIP the VCF header lines saved previously
+                if any(v.startswith("#") for v in line.values()):
+                    continue
+                self._list_of_line_dicts.append(line)
+                
+    def load_txt_file(self) -> None:
+        """
+        Read in and save a \n seperated file as list.
+        """
+        with open(str(self.path), mode="r", encoding="utf-8-sig") as data:
+            for line in data.readlines():
+                _clean_line = line.strip()
+                self._existing_data.append(_clean_line)

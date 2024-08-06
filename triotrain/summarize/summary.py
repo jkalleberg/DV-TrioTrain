@@ -23,7 +23,7 @@ abs_path = Path(__file__).resolve()
 module_path = str(abs_path.parent.parent)
 path.append(module_path)
 
-from helpers.files import TestFile, WriteFiles
+from helpers.files import TestFile, Files
 from helpers.iteration import Iteration
 from helpers.utils import check_if_all_same, generate_job_id
 from model_training.slurm.sbatch import SBATCH, SubmitSBATCH
@@ -85,7 +85,7 @@ class Summary:
         if not self.args.dry_run:
             output.mkdir(parents=True, exist_ok=True)
 
-        self._csv_output = WriteFiles(
+        self._csv_output = Files(
             path_to_file=_path,
             file=_file_name,
             logger=self.logger,
@@ -93,7 +93,7 @@ class Summary:
             dryrun_mode=self.args.dry_run,
             debug_mode=self.args.debug,
         )
-        self._csv_output.check_missing()
+        self._csv_output.check_status()
 
         # Initalize an empty Iteration() to store paths
         self._itr = Iteration(logger=self.logger, args=self.args)

@@ -25,7 +25,7 @@ path.append(module_path)
 from args_hap import check_args, collect_args
 from convert_hap import Convert
 from helpers.dictionary import add_to_dict
-from helpers.files import WriteFiles
+from helpers.files import Files
 
 
 @dataclass
@@ -734,14 +734,14 @@ class Process:
                 f"{self._logger_msg}: metrics by type contents:"
             )
 
-        file = WriteFiles(
+        file = Files(
             str(outfile.parent),
             outfile.name,
             self.logger,
             dryrun_mode=self.args.dry_run,
             logger_msg=self._logger_msg,
         )
-        file.check_missing()
+        file.check_status()
         file.write_csv(write_dict=out_dict)
 
     def run(self) -> None:

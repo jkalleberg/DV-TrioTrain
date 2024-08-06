@@ -24,7 +24,7 @@ from spython.main import Client
 abs_path = Path(__file__).resolve()
 module_path = str(abs_path.parent.parent.parent)
 path.append(module_path)
-from helpers.files import WriteFiles, TestFile
+from helpers.files import Files, TestFile
 from helpers.iteration import Iteration
 from helpers.utils import generate_job_id, check_if_all_same
 from model_training.slurm.sbatch import SBATCH, SubmitSBATCH
@@ -418,7 +418,7 @@ class DTVariantCaller:
                 f"{self._trio_name} {self._father_sampleID} {paternal} {maternal} {sex} 0"
             )
 
-        self._pedigree = WriteFiles(
+        self._pedigree = Files(
             path_to_file=str(self._output_path),
             file=f"{self._trio_name}.PED",
             logger=self.logger,
@@ -426,7 +426,7 @@ class DTVariantCaller:
             debug_mode=self.args.debug,
             dryrun_mode=self.args.dry_run,
         )
-        self._pedigree.check_missing()
+        self._pedigree.check_status()
         if not self._pedigree.file_exists:
             if self.args.dry_run:
                 self.logger.info(

@@ -17,7 +17,7 @@ module_path = str(abs_path.parent.parent.parent)
 path.append(module_path)
 
 from helpers.dictionary import add_to_dict
-from helpers.files import WriteFiles
+from helpers.files import Files
 from helpers.utils import get_logger
 from helpers.wrapper import Wrapper, timestamp
 
@@ -84,21 +84,21 @@ for k, v in defaults.items():
             logger_msg="[tutorial]",
         )
 
-output_file = WriteFiles(
+output_file = Files(
     path_to_file=str(cwd / "triotrain" / "model_training" / "tutorial"),
     file=f"GIAB.Human_tutorial_metadata.csv",
     logger=logger,
     logger_msg="[tutorial]",
 )
 
-output_file.check_missing()
+output_file.check_status()
 
 if output_file.file_exists:
     logger.info("[tutorial]: tutorial metadata file already exists... SKIPPING AHEAD")
 else:
     logger.info("[tutorial]: creating a tutorial metadata file now...")
     output_file.add_rows(col_names=output_dict.keys(), data_dict=output_dict)
-    output_file.check_missing()
+    output_file.check_status(should_file_exist=True)
     if output_file.file_exists:
         logger.info("[tutorial]: successfully created the tutorial metadata file")
 

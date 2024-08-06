@@ -12,7 +12,7 @@ from sys import exit
 from typing import List, TextIO, Union
 
 # Custom helper modules
-from helpers.files import WriteFiles
+from helpers.files import Files
 from helpers.iteration import Iteration
 from helpers.jobs import is_job_index, is_jobid
 from helpers.outputs import check_expected_outputs
@@ -40,7 +40,7 @@ class RunTrioTrain:
     resource_file: TextIO
 
     # optional values
-    benchmarking_file: Union[WriteFiles, None] = None
+    benchmarking_file: Union[Files, None] = None
     eval_mode: bool = False
     est_examples: float = 1.5
     expected_jobs: int = 0
@@ -103,7 +103,7 @@ class RunTrioTrain:
         if self.track_resources:
             assert (
                 self.benchmarking_file is not None
-            ), "unable to proceed, missing a WriteFiles object to save SLURM job numbers"
+            ), "unable to proceed, missing a Files object to save SLURM job numbers"
 
         with open(str(self.resource_file), mode="r") as file:
             self.resource_dict = load(file)

@@ -9,7 +9,7 @@ from dataclasses import dataclass, field
 from sys import exit
 from typing import List, Union
 
-from helpers.files import WriteFiles
+from helpers.files import Files
 from helpers.iteration import Iteration
 from helpers.jobs import is_job_index, is_jobid
 from helpers.outputs import check_expected_outputs, check_if_output_exists
@@ -38,7 +38,7 @@ class ReShuffleExamples:
     beam_shuffling_jobs: Union[List[Union[str, None]], None] = field(
         default_factory=list
     )
-    benchmarking_file: Union[WriteFiles, None] = None
+    benchmarking_file: Union[Files, None] = None
     genome: Union[str, None] = None
     overwrite: bool = False
     re_shuffle_job_num: List = field(default_factory=list)
@@ -59,7 +59,7 @@ class ReShuffleExamples:
         if self.track_resources:
             assert (
                 self.benchmarking_file is not None
-            ), "unable to proceed, missing a WriteFiles object to save SLURM job numbers"
+            ), "unable to proceed, missing a Files object to save SLURM job numbers"
 
     def set_genome(self) -> None:
         """
@@ -246,13 +246,13 @@ class ReShuffleExamples:
         """
         Determine if merging is necessary
         """
-        self.merged_config = WriteFiles(
+        self.merged_config = Files(
             str(self.itr.examples_dir),
             f"{self.pattern}.labeled.shuffled.merged.dataset_config.pbtxt",
             self.itr.logger,
             logger_msg=msg,
         )
-        self.merged_config.check_missing()
+        self.merged_config.check_status(should_file_exist=True)
 
         self._merged_config_exists = self.merged_config.file_exists
 

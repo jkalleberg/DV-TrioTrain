@@ -9,7 +9,7 @@ from dataclasses import dataclass, field
 from sys import exit
 from typing import Dict, List, Union
 
-from helpers.files import WriteFiles
+from helpers.files import Files
 from helpers.iteration import Iteration
 from helpers.jobs import is_job_index, is_jobid
 from helpers.outputs import check_expected_outputs, check_if_output_exists
@@ -41,7 +41,7 @@ class MakeExamples:
     model_label: str
 
     # optional values
-    benchmarking_file: Union[WriteFiles, None] = None
+    benchmarking_file: Union[Files, None] = None
     make_examples_job_nums: List = field(default_factory=list)
     overwrite: bool = False
     total_shards: int = 1
@@ -65,7 +65,7 @@ class MakeExamples:
         if self.track_resources:
             assert (
                 self.benchmarking_file is not None
-            ), "unable to proceed, missing a WriteFiles object to save SLURM job numbers"
+            ), "unable to proceed, missing a Files object to save SLURM job numbers"
 
     def set_variables(self) -> None:
         """Add variables from SLURM config to ENV"""
