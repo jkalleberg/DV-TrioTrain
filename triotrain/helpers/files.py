@@ -204,7 +204,7 @@ class Files:
                     self.file_dict.update(data_dict)
             else:
                 if self.debug_mode:
-                    debug_msg = f"initializing | '{self.file}'"
+                    debug_msg = f"initializing | '{self.file_name}'"
                     if self.logger_msg is None:
                         self.logger.debug(debug_msg)
                     else:
@@ -252,7 +252,7 @@ class Files:
                         write_file.writerow([key, value])
 
             if self.path.is_file():
-                logging_msg = f"created intermediate CSV file | '{self.file}'"
+                logging_msg = f"created intermediate CSV file | '{self.file_name}'"
                 if self.logger_msg is None:
                     self.logger.info(logging_msg)
                 else:
