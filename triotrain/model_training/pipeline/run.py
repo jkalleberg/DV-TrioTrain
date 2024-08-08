@@ -805,43 +805,53 @@ class RunTrioTrain:
             benchmarking_file=self.benchmarking_file,
             overwrite=self.overwrite,
         )
-
+        
         self.re_training.find_all_outputs("find_all_outputs", verbose=True)
 
-        # skip ahead if all outputs exist already
+        # If training files exists, and not attempting to re-run training...
         if self.re_training._outputs_exist and not self.restart_jobs:
-            # if previous training completed, but missing environment variables
-            # collect them without re-running a SLURM job ---
-            if not self.re_training._select_ckpt_outputs_exist:
-
-                # Add the number of examples used during training, if missing
+            
+            # But missing the output files from selecting a best checkpoint...
+            if self.re_training._select_ckpt_outputs_exist is False:
+                
+                # Determine which outputs are missing from selecting a checkpoint and
+                # collect them without re-running a SLURM job ---
+                
+                # If previous training completed, but missing the number of examples used?
                 if f"{self.itr.train_genome}_Examples" not in self.itr.env.contents:
+                    
                     final_config = (
                         self.itr.examples_dir
                         / f"{self.itr.train_genome}.labeled.shuffled.merged.dataset_config.pbtxt"
                     )
                     pattern = compile("^num_examples: (\d+)")
+                    
+                    # Look for the final config file from re-shuffling....
                     if final_config.exists():
                         with open(str(final_config), "r") as config:
                             for line in config.readlines():
                                 match = search(pattern, line)
                                 if match:
                                     n_examples = int(match.groups()[0])
+                    
+                    # Otherwise, just count the examples in the make_examples log files...
                     else:
                         from model_training.prep.examples_count import CountExamples
 
                         n_examples = CountExamples(itr=self.itr).run()
 
+                    # then, save to .env file
                     self.itr.env.add_to(
                         f"{self.itr.train_genome}_Examples",
                         str(n_examples),
                         dryrun_mode=self.itr.dryrun_mode,
                         msg=self.itr._mode_string,
                     )
-
-                # identify the best_ckpt model name and save to .env file
-                if f"{self.itr.train_genome}TestCkptName" not in self.itr.env.contents:
-
+                        
+                # if previous training completed, but missing best_ckpt name in env file?
+                if not self.re_training._selecting_ckpt.ckpt_selected or f"{self.itr.train_genome}TestCkptName" not in self.itr.env.contents:
+                    
+                    # identify the best_ckpt model name and save to .env file
                     from model_training.slurm.select_ckpt import MergeSelect
 
                     eval_dir = self.itr.train_dir / "eval_Child"
@@ -854,10 +864,43 @@ class RunTrioTrain:
                         _debug_mode=self.itr.debug_mode,
                         _dryrun_mode=self.itr.dryrun_mode,
                     ).run()
-            else:
-                self.itr.logger.info(
-                    f"============ SKIPPING {self.itr._mode_string} - [re_training_jobs] ============"
-                )
+                        
+                ## if prevous training completed, but missing the example_info.json file?
+                if self.re_training._selecting_ckpt._existing_info_file is False:
+                    
+                    # Collect the selected checkpoint name
+                    _ckpt_name = self.itr.env.contents[f"{self.itr.train_genome}TestCkptName"]
+                
+                    # Open up a previous example_info.json file from make_examples
+                    _input_path = self.itr.examples_dir / f"{self.genome}.region1.labeled.tfrecords-00001-of-000{self.n_parts}.gz.example_info.json"
+                    
+                    _input_json = Files(
+                        path_to_file = _input_path,
+                        logger = self.itr.logger,
+                        logger_msg = self.itr._mode_string,
+                        debug_mode = self.itr.debug_mode,
+                        dryrun_mode = self.itr.dryrun_mode,
+                    )
+                    _input_json.check_status(should_file_exist=True)
+                    _input_json.load_json_file()
+                        
+                    _output_path = self.itr.train_dir / f"{_ckpt_name}.example_info.json"
+                    _output_json = Files(
+                        path_to_file = _output_path,
+                        logger = self.itr.logger,
+                        logger_msg = self.itr._mode_string,
+                        debug_mode = self.itr.debug_mode,
+                        dryrun_mode = self.itr.dryrun_mode,
+                    )
+                    _output_json.check_status()
+                    _output_json.file_dict = _input_json.file_dict        
+                    _output_json.write_json_file()
+                    
+            
+            # Skip training & select_ckpt because outputs were finalized...            
+            self.itr.logger.info(
+                f"============ SKIPPING {self.itr._mode_string} - [re_training_jobs] ============"
+            )
             return
 
         elif self.restart_jobs and self._phase_jobs is None:
@@ -1075,9 +1118,9 @@ class RunTrioTrain:
         """
         Generates or displays the SLURM job files for an Iteration of the TrioTrain pipeline.
         """
-        n_parts = self.resource_dict["make_examples"]["ntasks"]
-        if n_parts is not None:
-            self.n_shards = n_parts - 1
+        self.n_parts = self.resource_dict["make_examples"]["ntasks"]
+        if self.n_parts is not None:
+            self.n_shards = self.n_parts - 1
         else:
             self.n_shards = 1
             # This must be 1 less than n_parts because shards start at 0!
@@ -1098,7 +1141,6 @@ class RunTrioTrain:
         """
         Combines all necessary functions to produce SLURM jobs for an Iteration of TrioTrain into one step.
         """
-
         if self.restart_jobs:
             self.convert_jobids()
         self.make_and_submit_jobs()

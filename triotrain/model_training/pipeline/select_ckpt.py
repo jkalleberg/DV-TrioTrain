@@ -139,21 +139,34 @@ class SelectCheckpoint:
         self.find_selected_ckpt_vars(phase=phase)
 
         if self.ckpt_selected:
-            self.find_selected_ckpt_files(phase=phase)
-            missing_files = check_expected_outputs(
-                self.num_model_files_found,
-                number_outputs_expected,
-                logging_msg,
-                "new model weights files",
-                self.itr.logger,
+            self.find_selected_ckpt_files(msg=logging_msg)
+            
+            missing_ckpt_files = check_expected_outputs(
+                outputs_found=self._num_model_files_found,
+                outputs_expected=number_outputs_expected,
+                msg=logging_msg,
+                file_type="new model weights files",
+                logger=self.itr.logger,
             )
-            if missing_files:
-                self._outputs_exist = False
-            else:
-                self._outputs_exist = True
+            
+            missing_info_file = check_expected_outputs(
+                outputs_found=self._num_info_files_found,
+                outputs_expected=1,
+                msg=logging_msg,
+                file_type="example_info.json file",
+                logger=self.itr.logger,
+            )
         else:
+            self._existing_model_weights = False
+            self._existing_info_file = False
+            missing_ckpt_files = True
+            missing_info_file = True
+        
+        if missing_ckpt_files is True or missing_info_file is True:
             self._outputs_exist = False
-
+        else:
+            self._outputs_exist = True
+    
     def benchmark(self) -> None:
         """
         Save the SLURM job numbers to a file for future resource usage metrics.
@@ -318,25 +331,43 @@ class SelectCheckpoint:
 
         self._outputs_exist = self.ckpt_selected
 
-    def find_selected_ckpt_files(self, phase: Union[str, None] = None) -> None:
+    def find_selected_ckpt_files(self, msg: Union[str, None] = None) -> None:
         """
         Determine if the new model weight files exist
         """
-        if phase is None:
+        if msg is None:
             logger_msg = self.logger_msg
         else:
-            logger_msg = f"{self.itr._mode_string} - [{phase}]"
-        # confirm model weights files are present
+            logger_msg = msg
+        
+        # Confirm model weights files are present
         model_weights_pattern = compile(f"{self.ckpt_name}.*")
 
         # Confirm if files do not already exist
         (
-            self.existing_model_weights,
-            self.num_model_files_found,
+            self._existing_model_weights,
+            self._num_model_files_found,
             model_weights_files,
         ) = check_if_output_exists(
             model_weights_pattern,
             "new model weights files",
+            self.itr.train_dir,
+            logger_msg,
+            self.itr.logger,
+            debug_mode=self.itr.debug_mode,
+            dryrun_mode=self.itr.dryrun_mode,
+        )
+        
+        example_info_pattern = compile(r"model.ckpt-\d+.example_info.json")
+        
+        # Confirm example metadata file does not already exist
+        (
+            self._existing_info_file,
+            self._num_info_files_found,
+            info_file,
+        ) = check_if_output_exists(
+            example_info_pattern,
+            "the final example_info.json file",
             self.itr.train_dir,
             logger_msg,
             self.itr.logger,

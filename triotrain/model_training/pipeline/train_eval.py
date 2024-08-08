@@ -215,10 +215,10 @@ class TrainEval:
             # NOTE: these will start being created at the
             best_ckpt_pattern = compile(r"best_checkpoint.*")
 
-            # Confirm examples do not already exist
+            # Confirm best_ckpt files do not already exist
             (
-                self.existing_best_ckpt_file,
-                self.best_ckpt_files_found,
+                _existing_best_ckpt_file,
+                _best_ckpt_files_found,
                 best_ckpt_files,
             ) = check_if_output_exists(
                 best_ckpt_pattern,
@@ -232,22 +232,23 @@ class TrainEval:
 
         # if eval dir doesn't exist, then...
         else:
-            self.existing_best_ckpt_file = False
+            _existing_best_ckpt_file = False
 
-        if self.existing_best_ckpt_file:
-            missing_files = check_expected_outputs(
-                self.best_ckpt_files_found,
+        if _existing_best_ckpt_file:
+            missing_ckpt_files = check_expected_outputs(
+                _best_ckpt_files_found,
                 number_outputs_expected,
                 logging_msg,
                 "best_checkpoint files",
                 self.itr.logger,
             )
-            if missing_files is True:
-                self._outputs_exist = False
-            else:
-                self._outputs_exist = True
         else:
+            missing_ckpt_files = True
+        
+        if missing_ckpt_files is True:
             self._outputs_exist = False
+        else:
+            self._outputs_exist = True
 
     def find_all_outputs(
         self, phase: str = "find_outputs", verbose: bool = False
@@ -255,7 +256,7 @@ class TrainEval:
         """
         Determine if re-shuffle or beam outputs already exist, skip ahead if they do.
         """
-        selecting_ckpt = SelectCheckpoint(
+        self._selecting_ckpt = SelectCheckpoint(
             itr=self.itr,
             slurm_resources=self.slurm_resources,
             model_label=self.model_label,
@@ -264,13 +265,13 @@ class TrainEval:
             overwrite=self.overwrite,
         )
         if verbose:
-            selecting_ckpt.find_outputs(phase=phase)
+            self._selecting_ckpt.find_outputs(phase=phase)
             self.find_outputs(phase=phase)
         else:
-            selecting_ckpt.find_selected_ckpt_vars(phase=phase)
+            self._selecting_ckpt.find_selected_ckpt_vars(phase=phase)
             self._outputs_exist = False
-
-        self._select_ckpt_outputs_exist = selecting_ckpt._outputs_exist
+        
+        self._select_ckpt_outputs_exist = self._selecting_ckpt._outputs_exist
 
     def benchmark(self) -> None:
         """
