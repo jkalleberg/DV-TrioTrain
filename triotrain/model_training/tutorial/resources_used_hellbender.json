@@ -49,7 +49,7 @@
         "ntasks": 64,
         "mem": "490G",
         "time": "2-00:00:00",
-        "account": "schnabelr-umag",
+        "account": "schnabelr-lab",
         "email": "jakth2@mail.missouri.edu"
     },
     "compare_happy": {
@@ -58,7 +58,7 @@
         "ntasks": 64,
         "mem": "490G",
         "time": "0-12:00:00",
-        "account": "schnabelr-umag",
+        "account": "schnabelr-lab",
         "email": "jakth2@mail.missouri.edu"
     },
     "convert_happy": {
@@ -67,7 +67,7 @@
         "ntasks": 64,
         "mem": "120G",
         "time": "0-05:00:00",
-        "account": "schnabelr-umag",
+        "account": "schnabelr-lab",
         "email": "jakth2@mail.missouri.edu"
     },
     "show_examples": {
