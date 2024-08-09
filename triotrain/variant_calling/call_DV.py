@@ -831,7 +831,9 @@ class VariantCaller:
                     dependency_index=i,
                     total_jobs=int(self._total_lines),
                 )
-                _run_happy_jobs[i] = benchmark._slurm_job.job_number
+                
+                _run_happy_jobs[i] = benchmark._convert_happy_dependencies[i]
+                # _run_happy_jobs[i] = benchmark._slurm_job.job_number
                 
                 #--------- PROCESS HAP.PY RESULTS ----------------------#
                 benchmark.converting.job_num = i + 1
