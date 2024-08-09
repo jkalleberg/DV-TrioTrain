@@ -288,7 +288,7 @@ class SummarizeResults:
         self.output_file._test_file.check_missing()
 
         if unique_records_only and self.output_file._test_file.file_exists:
-            with open(str(self.output_file._test_file.file), "r") as file:
+            with open(self.output_file.path_str, "r") as file:
                 dict_reader = DictReader(file)
                 current_records = list(dict_reader)
 

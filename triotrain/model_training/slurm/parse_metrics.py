@@ -387,13 +387,13 @@ class ParseMetrics:
                 )
             else:
                 # Write the sorted data to a CSV
-                self._sorted_data.to_csv(outfile.file_path, index=False)
+                self._sorted_data.to_csv(outfile.path_to_file, index=False)
                 if self._debug_mode:
-                    self.logger.debug(f"{outfile.file} written")
+                    self.logger.debug(f"{outfile.file_name} written")
 
                 assert (
-                    outfile.file_path.exists()
-                ), f"{outfile.file} was not written correctly"
+                    outfile.path.exists()
+                ), f"{outfile.file_name} was not written correctly"
 
         else:
             self.logger.info(

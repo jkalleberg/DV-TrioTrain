@@ -108,8 +108,8 @@ class Convert_VCF:
                 "bcftools",
                 "view",
                 "-h",
-                str(self._input_file.path),
-            ],  # type: ignore
+                self._input_file.file,
+            ],
             capture_output=True,
             text=True,
             check=True,
@@ -149,7 +149,7 @@ class Convert_VCF:
                 "query",
                 "-f",
                 self.output_format,
-                str(self._input_file.path),
+                self._input_file.file,
             ],  # type: ignore
             capture_output=True,
             text=True,

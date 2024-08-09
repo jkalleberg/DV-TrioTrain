@@ -27,10 +27,10 @@ path.append(module_path)
 
 from helpers.environment import Env
 from helpers.files import TestFile, Files
-from helpers.outputs import check_if_output_exists
+# from helpers.outputs import check_if_output_exists
 
 
-def collect_args():
+def collect_args() -> argparse.Namespace:
     """
     Process command line argument to execute script.
     """
@@ -292,7 +292,7 @@ class MergedTests:
             ), f"missing {num_missing} lines in metadata | '{str(self.metadata.path.name)}'"
         else:
             self.logger.error(
-                f"{self._logger_msg}: unable to load metadata file | '{str(self.metadata.path)}'"
+                f"{self._logger_msg}: unable to load metadata file | '{self.metadata.file}'"
             )
             raise ValueError("Invalid Input File")
 

@@ -160,7 +160,7 @@ def __init__() -> None:
         
         # print("STOPPING HERE!")
         # breakpoint()
-        with open(str(_processed_file.path), mode="r", encoding="utf-8-sig") as data:
+        with open(_processed_file.file, mode="r", encoding="utf-8-sig") as data:
             dict_reader = DictReader(data, delimiter="\t")
             _tsv_dict_array = list(dict_reader)
 

@@ -103,7 +103,7 @@ class Setup:
                     self.logger.info(
                         f"[{self.meta.mode}] - [show_examples]: provided a non-BED file input"
                     )
-                    open_file = open(str(self._regions_path), "r")
+                    open_file = open(regions.file, "r")
 
                     while True:
                         self.num_show_regions_jobs += 1

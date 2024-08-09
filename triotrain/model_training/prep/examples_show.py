@@ -238,7 +238,7 @@ class ShowExamples:
         if str(self.regions_path.parent) == ".":
             self.regions_dir = getcwd()
         else:
-            self.regions_dir = str(Path(self.show_regions_file).parent)
+            self.regions_dir = str(self.regions_path.parent)
 
         self.region_file = self.regions_path.name
 

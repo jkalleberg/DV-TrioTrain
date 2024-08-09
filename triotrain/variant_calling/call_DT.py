@@ -182,7 +182,7 @@ class DTVariantCaller:
         )
         if resources.file_exists:
             # read in the json file
-            with open(str(self._resource_input), mode="r") as file:
+            with open(resources.file, mode="r") as file:
                 resource_dict = load(file)
 
             if self._phase in resource_dict:
@@ -217,8 +217,7 @@ class DTVariantCaller:
         metadata.check_existing(logger_msg=self._logger_msg, debug_mode=self.args.debug)
         if metadata.file_exists:
             # read in the csv file
-            with open(
-                str(self._metadata_input), mode="r", encoding="utf-8-sig"
+            with open(metadata.file, mode="r", encoding="utf-8-sig"
             ) as data:
                 dict_reader = DictReader(data)
                 self._data_list = list(dict_reader)
@@ -229,7 +228,7 @@ class DTVariantCaller:
             )
         else:
             self.logger.error(
-                f"{self._logger_msg}: unable to load metadata file | '{self._metadata_input}'"
+                f"{self._logger_msg}: unable to load metadata file | '{metadata.file}'"
             )
             raise ValueError("Invalid Input File")
 

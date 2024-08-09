@@ -32,7 +32,7 @@ class TestFile:
         if self.path.is_file():
             if debug_mode:
                 self.logger.debug(
-                    f"{msg}'{str(self.path)}' already exists... SKIPPING AHEAD"
+                    f"{msg}'{self.file}' already exists... SKIPPING AHEAD"
                 )
             self.file_exists = True
         else:
@@ -54,13 +54,13 @@ class TestFile:
         if self.path.is_file() and self.path.stat().st_size != 0:
             if debug_mode:
                 self.logger.debug(
-                    f"{msg}'{str(self.path)}' already exists... SKIPPING AHEAD"
+                    f"{msg}'{self.file}' already exists... SKIPPING AHEAD"
                 )
             self.file_exists = True
         else:
             self.file_exists = False
             if debug_mode:
-                self.logger.debug(f"{msg}unexpectedly missing a file | '{self.path}'")       
+                self.logger.debug(f"{msg}unexpectedly missing a file | '{self.file}'")       
 
 
 @dataclass
@@ -90,6 +90,7 @@ class Files:
 
     def __post_init__(self) -> None:
         self.path = Path(self.path_to_file)
+        self.path_str = str(self.path)
         self.file_name = self.path.name
         self.path_only = self.path.parent
         self._test_file = TestFile(self.path, self.logger)
@@ -116,11 +117,11 @@ class Files:
         if self.dryrun_mode:
             if self.logger_msg is None:
                 self.logger.info(
-                    f"[DRY_RUN]: pretending to write a list of lines | '{str(self.path)}'"
+                    f"[DRY_RUN]: pretending to write a list of lines | '{self.path_str}'"
                 )
             else:
                 self.logger.info(
-                    f"{self.logger_msg}: pretending to write a list of lines | '{str(self.path)}'"
+                    f"{self.logger_msg}: pretending to write a list of lines | '{self.path_str}'"
                 )
 
             print("---------------------------------------------")
@@ -156,11 +157,11 @@ class Files:
         if self.dryrun_mode:
             if self.logger_msg is None:
                 self.logger.info(
-                    f"[DRY_RUN]: pretending to write a list of dictionaries | '{str(self.path)}'"
+                    f"[DRY_RUN]: pretending to write a list of dictionaries | '{self.path_str}'"
                 )
             else:
                 self.logger.info(
-                    f"{self.logger_msg}: pretending to write a list of dictionaries | '{str(self.path)}'"
+                    f"{self.logger_msg}: pretending to write a list of dictionaries | '{self.path_str}'"
                 )
 
             print("---------------------------------------------")
@@ -183,7 +184,7 @@ class Files:
 
         if self.dryrun_mode:
             self.logger.info(
-                    f"{self.logger_msg}: pretending to add header + row to a CSV | '{str(self.path)}'"
+                    f"{self.logger_msg}: pretending to add header + row to a CSV | '{self.path_str}'"
                 )
             print("---------------------------------------------")
             print(",".join(data_dict.keys()))
@@ -198,7 +199,7 @@ class Files:
                     else:
                         self.logger.debug(f"{self.logger_msg}: {debug_msg}")
 
-                with open(str(self.path), mode="a") as file:
+                with open(self.path_str, mode="a") as file:
                     dictwriter = DictWriter(file, fieldnames=col_names)
                     dictwriter.writerow(data_dict)
                     self.file_dict.update(data_dict)
@@ -210,7 +211,7 @@ class Files:
                     else:
                         self.logger.debug(f"{self.logger_msg}: {debug_msg}")
 
-                with open(str(self.path), mode="w") as file:
+                with open(self.path_str, mode="w") as file:
                     dictwriter = DictWriter(file, fieldnames=col_names)
                     dictwriter.writeheader()
                     dictwriter.writerow(data_dict)
@@ -225,11 +226,11 @@ class Files:
         if self.dryrun_mode:
             if self.logger_msg is None:
                 self.logger.info(
-                    f"[DRY_RUN]: pretending to write CSV file | '{str(self.path)}'"
+                    f"[DRY_RUN]: pretending to write CSV file | '{self.path_str}'"
                 )
             else:
                 self.logger.info(
-                    f"{self.logger_msg}: pretending to write CSV file | '{str(self.path)}'"
+                    f"{self.logger_msg}: pretending to write CSV file | '{self.path_str}'"
                 )
 
             print("---------------------------------------------")
@@ -243,7 +244,7 @@ class Files:
 
         # Otherwise, write an intermediate CSV output file
         else:
-            with open(str(self.path), mode="w") as file:
+            with open(self.path_str, mode="w") as file:
                 write_file = writer(file)
                 for key, value in write_dict.items():
                     if type(value) is list:
@@ -261,7 +262,7 @@ class Files:
     def write_dataframe(self, df: pd.DataFrame, keep_index: bool = False) -> None:
         if self.dryrun_mode:
             self.logger.info(
-                f"{self.logger_msg}: pretending to write CSV file | '{str(self.path)}'"
+                f"{self.logger_msg}: pretending to write CSV file | '{self.path_str}'"
             )
 
             print("---------------------------------------------")
@@ -269,10 +270,10 @@ class Files:
             print("---------------------------------------------")
         else:
             self.logger.info(
-                f"{self.logger_msg}: writing a CSV file | '{str(self.path)}'"
+                f"{self.logger_msg}: writing a CSV file | '{self.path_str}'"
             )
             df.to_csv(
-                str(self.path),
+                self.path_str,
                 doublequote=False,
                 quoting=QUOTE_NONE,
                 index=keep_index,
@@ -284,7 +285,7 @@ class Files:
         """
         if self.dryrun_mode:
             self.logger.info(
-                f"{self.logger_msg}: pretending to write JSON file | '{str(self.path)}'"
+                f"{self.logger_msg}: pretending to write JSON file | '{self.path_str}'"
             )
             self.logger.info(
                 f"{self.logger_msg}: JSON contents ---------------------"
@@ -296,9 +297,9 @@ class Files:
             )
         else:
             self.logger.info(
-                f"{self.logger_msg}: writing a JSON file | '{str(self.path)}'"
+                f"{self.logger_msg}: writing a JSON file | '{self.path_str}'"
             )
-            with open(str(self.path), "w") as f:
+            with open(self.path_str, "w") as f:
                 dump(self.file_dict, f)
     
     def load_csv(self) -> None:
@@ -312,11 +313,11 @@ class Files:
                 self.logger.info(logging_msg)
             else:
                 self.logger.info(f"{self.logger_msg}: {logging_msg}")
-            with gzip.open(str(self.path), mode="rt") as data:
+            with gzip.open(self.path_str, mode="rt") as data:
                 reader = DictReader(data)
                 self._existing_data = [dict(row) for row in reader]
         else:
-            with open(str(self.path), mode="r", encoding="utf-8-sig") as data:
+            with open(self.path_str, mode="r", encoding="utf-8-sig") as data:
                 reader = DictReader(data)
                 self._existing_data = [dict(row) for row in reader]
     
@@ -332,7 +333,7 @@ class Files:
             return [line for line in reader]
         else:
             list_of_line_dicts = []
-            with open(str(self.path), mode="r", encoding="utf-8-sig") as data:
+            with open(self.path_str, mode="r", encoding="utf-8-sig") as data:
                 reader = DictReader(data, fieldnames=header_list, delimiter="\t")
                 for line in reader:
                     # If the file containes headers, skip them
@@ -350,7 +351,7 @@ class Files:
             return list_of_line_dicts
 
     def load_vcf(self) -> None:
-        with open(str(self.path), mode="r", encoding="utf-8-sig") as data:
+        with open(self.path_str, mode="r", encoding="utf-8-sig") as data:
             Lines = data.readlines()
             for line in Lines:
                 if line.startswith("##"):
@@ -359,7 +360,7 @@ class Files:
                     self._vcf_header_lines.append(line.strip())
                     self._col_names = line.strip("#\n").split("\t")
 
-        with open(str(self.path), mode="r", encoding="utf-8-sig") as data:
+        with open(self.path_str, mode="r", encoding="utf-8-sig") as data:
             reader = DictReader(data, fieldnames=self._col_names, delimiter="\t")
             for line in reader:
                 # SKIP the VCF header lines saved previously
@@ -371,7 +372,7 @@ class Files:
         """
         Read in and save a \n seperated file as list.
         """
-        with open(str(self.path), mode="r", encoding="utf-8-sig") as data:
+        with open(self.path_str, mode="r", encoding="utf-8-sig") as data:
             for line in data.readlines():
                 _clean_line = line.strip()
                 self._existing_data.append(_clean_line)
@@ -380,5 +381,5 @@ class Files:
         """
         Open the JSON config file, and confirm the user provided the 'ntasks' parameter as required by Cue
         """
-        with open(str(self.path), mode="r") as file:
+        with open(self.path_str, mode="r") as file:
             self.file_dict = load(file)

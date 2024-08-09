@@ -246,7 +246,7 @@ class MIE:
             )
             if self.args.debug:
                 self.logger.debug(
-                    f"{self._summary._logger_msg}: rtg-tools MIE VCF | '{self._mie_vcf.file_path}'"
+                    f"{self._summary._logger_msg}: rtg-tools MIE VCF | '{self._mie_vcf.path_str}'"
                 )
 
             mie_regex = compile(rf"mie-{self._summary._pickled_data._ID}.log")
@@ -441,8 +441,8 @@ class MIE:
                     f"{self._summary._logger_msg}: missing the Trio VCF..."
                 )
                 self.convert(
-                    input=str(self._trio_bcf.file),
-                    output=str(self._trio_vcf.file),
+                    input=self._trio_bcf.file,
+                    output=self._trio_vcf.file,
                     vcf_to_bcf=False,
                 )
 
@@ -463,7 +463,7 @@ class MIE:
         if not renaming_file._file_exists:
             if self.args.dry_run:
                 self.logger.info(
-                    f"{self._summary._logger_msg}: missing the  'bcftools reheader' input file | '{sample_name}.rename'"
+                    f"{self._summary._logger_msg}: missing the  'bcftools reheader' input file | '{renaming_file.file_name}'"
                 )
             renaming_file.write_list(_lines)
         else:
@@ -586,7 +586,7 @@ class MIE:
                 self.convert(input=str(vcf_path), output=_bcf.file, vcf_to_bcf=True)
             else:
                 self.logger.info(
-                    f"{self._summary._logger_msg}: individual BCF '{_bcf.file}' already exists... SKIPPING AHEAD"
+                    f"{self._summary._logger_msg}: individual BCF '{_bcf.path}' already exists... SKIPPING AHEAD"
                 )
 
             if index == 0:
@@ -687,11 +687,11 @@ class MIE:
             "--input",
             self._trio_vcf.file,
             "--output",
-            str(self._mie_vcf.file_path),
+            self._mie_vcf.path_str,
             "--template",
             str(self._rtg_tools_path),
             "--pedigree",
-            str(self._pedigree.file_path),
+            self._pedigree.path_str,
         ]
 
         if not pass_only:

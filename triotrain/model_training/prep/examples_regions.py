@@ -130,7 +130,7 @@ class MakeRegions:
                             "picard",
                             "CreateSequenceDictionary",
                             "--REFERENCE",
-                            f"{ref_genome_exists.file}",
+                            f"{ref_genome_exists.path}",
                         ],
                         capture_output=True,
                         text=True,
@@ -302,7 +302,7 @@ class MakeRegions:
                 )
             self.transform_dictionary()
             self._autosome_BED_data.to_csv(
-                output_file.path / output_file.file, sep="\t", index=False, header=False
+                output_file.path, sep="\t", index=False, header=False
             )
             output_file.check_missing()
             if output_file.file_exists:

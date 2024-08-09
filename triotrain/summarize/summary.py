@@ -107,7 +107,7 @@ class Summary:
         if metadata.file_exists:
             # Read in the csv file
             with open(
-                str(self._metadata_input), mode="r", encoding="utf-8-sig"
+                metadata.file, mode="r", encoding="utf-8-sig"
             ) as data:
                 dict_reader = DictReader(data)
 
@@ -119,7 +119,7 @@ class Summary:
                 self._total_samples = len(self._data_list)
         else:
             self.logger.error(
-                f"{self._logger_msg}: unable to load metadata file | '{self._metadata_input}'"
+                f"{self._logger_msg}: unable to load metadata file | '{metadata.file}'"
             )
             raise ValueError("Invalid Input File")
 

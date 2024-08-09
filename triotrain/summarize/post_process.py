@@ -69,10 +69,10 @@ class Stats:
         """
         if self.run_iteractively:
             self.pickled_data.output_file.logger.info(
-                f"{self.pickled_data.output_file.logger_msg}: running 'bcftools +smpl-stats' | '{self.pickled_data._input_file.file_path.name}'"
+                f"{self.pickled_data.output_file.logger_msg}: running 'bcftools +smpl-stats' | '{self.pickled_data._input_file.file_name}'"
             )
             self._smpl_stats = count_variants(
-                self.pickled_data._input_file.file_path,
+                self.pickled_data._input_file.path,
                 self.pickled_data.output_file.logger_msg,
                 logger=self.pickled_data._input_file.logger,
                 count_pass=False,
@@ -80,14 +80,14 @@ class Stats:
                 debug_mode=self.pickled_data._input_file.debug_mode,
             )
             self.pickled_data.output_file.logger.info(
-                f"{self.pickled_data.output_file.logger_msg}: done running 'bcftools +smpl-stats' | '{self.pickled_data._input_file.file_path.name}'"
+                f"{self.pickled_data.output_file.logger_msg}: done running 'bcftools +smpl-stats' | '{self.pickled_data._input_file.file_name}'"
             )
         else:
             self._smpl_stats = [
                 "bcftools",
                 "+smpl-stats",
                 "--output",
-                self._output.file,
+                self._output.path_str,
                 self.pickled_data._input_file._test_file.file,
             ]
 

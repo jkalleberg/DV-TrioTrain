@@ -603,14 +603,14 @@ class Benchmark:
             summary_file.check_status()
             if summary_file.file_exists:
                 if self.args.debug:
-                    self.logger.debug(f"{summary_file.file_path.name} written")
+                    self.logger.debug(f"{summary_file.file_name} written")
             else:
-                self._merged_df.to_csv(summary_file.file_path, index=False)
+                self._merged_df.to_csv(summary_file.path_to_file, index=False)
                 assert (
-                    summary_file.file_path.exists()
-                ), f"{summary_file.file_path.name} was not written correctly"
+                    summary_file.path.exists()
+                ), f"{summary_file.file_name} was not written correctly"
                 if self.args.debug:
-                    self.logger.debug(f"{summary_file.file_path.name} written")
+                    self.logger.debug(f"{summary_file.file_name} written")
 
     def run(self) -> None:
         """
