@@ -969,9 +969,6 @@ class RunTrioTrain:
             self.itr.logger.info(
                 f"============ SKIPPING {self.itr._mode_string} - [re_training_jobs] - [{self.itr.train_genome}] ============"
             )
-        
-        print("STOPPING NOW!")
-        breakpoint()
 
     def test_model_jobs(self, useDT: bool = False) -> None:
         """
