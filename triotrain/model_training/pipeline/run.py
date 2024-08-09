@@ -809,7 +809,7 @@ class RunTrioTrain:
         self.re_training.find_all_outputs("find_all_outputs", verbose=True)
 
         # If training files exists, and not attempting to re-run training...
-        if self.re_training._outputs_exist and not self.restart_jobs:
+        if self.re_training._outputs_exist and self.re_training._selecting_ckpt.ckpt_selected and not self.restart_jobs:
             
             # But missing the output files from selecting a best checkpoint...
             if self.re_training._select_ckpt_outputs_exist is False:
@@ -969,6 +969,9 @@ class RunTrioTrain:
             self.itr.logger.info(
                 f"============ SKIPPING {self.itr._mode_string} - [re_training_jobs] - [{self.itr.train_genome}] ============"
             )
+        
+        print("STOPPING NOW!")
+        breakpoint()
 
     def test_model_jobs(self, useDT: bool = False) -> None:
         """
