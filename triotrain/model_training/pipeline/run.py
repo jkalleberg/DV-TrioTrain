@@ -877,7 +877,7 @@ class RunTrioTrain:
                     _input_json = Files(
                         path_to_file = _input_path,
                         logger = self.itr.logger,
-                        logger_msg = self.itr._mode_string,
+                        logger_msg = f"{self.itr._mode_string} - [find_all_outputs] - [{self.genome}]",
                         debug_mode = self.itr.debug_mode,
                         dryrun_mode = self.itr.dryrun_mode,
                     )
@@ -888,7 +888,7 @@ class RunTrioTrain:
                     _output_json = Files(
                         path_to_file = _output_path,
                         logger = self.itr.logger,
-                        logger_msg = self.itr._mode_string,
+                        logger_msg = f"{self.itr._mode_string} - [find_all_outputs] - [{self.genome}]",
                         debug_mode = self.itr.debug_mode,
                         dryrun_mode = self.itr.dryrun_mode,
                     )
