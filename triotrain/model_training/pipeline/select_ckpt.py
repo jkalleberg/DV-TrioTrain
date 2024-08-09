@@ -124,7 +124,7 @@ class SelectCheckpoint:
             )
 
     def find_outputs(
-        self, number_outputs_expected: int = 3, phase: Union[str, None] = None
+        self, number_outputs_expected: int = 4, phase: Union[str, None] = None
     ) -> None:
         """
         Determines if select_ckpt phase has completed successfully.
@@ -328,7 +328,7 @@ class SelectCheckpoint:
             self.itr.logger.info(
                 f"{logger_msg}: testing checkpoint variable does not exist"
             )
-
+        
         self._outputs_exist = self.ckpt_selected
 
     def find_selected_ckpt_files(self, msg: Union[str, None] = None) -> None:

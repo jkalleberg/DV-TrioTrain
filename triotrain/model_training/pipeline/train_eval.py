@@ -582,6 +582,7 @@ class TrainEval:
             # to the SLURM queue was skipped completely,
             # then there is no dependency for selecting a ckpt
             self._select_ckpt_dependency = [None]
+            return
         else:
             self.itr.logger.warning(
                 f"{self.logger_msg}: expected SLURM jobs to be submitted, but they were not",
