@@ -643,9 +643,8 @@ class CallVariants:
             track_resources=self.track_resources,
             benchmarking_file=self.benchmarking_file,
             overwrite=self.overwrite,
-        )
-
-        convert_results.find_outputs(phase=phase, find_all=True)
+        )        
+        convert_results.find_outputs(phase=phase, find_all=True, outputs_per_test=3)
 
         if convert_results._outputs_exist:
             compare_results = CompareHappy(

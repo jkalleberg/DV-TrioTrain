@@ -327,7 +327,7 @@ class ConvertHappy:
                     self.itr.total_num_tests * outputs_per_test
                 )
                 _regex = compile(
-                    r"^Test\d+.(converted\-|total\.)metrics(\.csv$|\.tsv$)"
+                    r"^Test\d+.(converted\-|processed\-|total\.)metrics(\.csv$|\.tsv$)"
                 )
         else:
             final_msg = self._output_type
@@ -343,7 +343,7 @@ class ConvertHappy:
             else:
                 self._expected_outputs = outputs_per_test
                 _regex = compile(
-                    rf"^{self.test_name}\.(converted\-|total\.)metrics(\.csv$|\.tsv$)"
+                    rf"^{self.test_name}\.(converted\-|processed\-|total\.)metrics(\.csv$|\.tsv$)"
                 )
             logging_msg = f"{logging_msg} - [{self.test_logger_msg}]"
 
@@ -575,7 +575,7 @@ class ConvertHappy:
                         f"{self.logger_msg}: max number of re-submission SLURM jobs is {self.itr.total_num_tests} but {self._num_to_run} were provided.\nExiting... ",
                     )
                     exit(1)
-
+                
                 for t in self._jobs_to_run:
                     if skip_re_runs:
                         test_index = t
@@ -601,6 +601,7 @@ class ConvertHappy:
 
         # Determine if we are submitting all tests
         else:
+            
             if self._outputs_exist:
                 return self._final_jobs
 
@@ -610,6 +611,9 @@ class ConvertHappy:
                 )  # THIS HAS TO BE +1 to avoid labeling files Test0
 
                 self.set_test_genome(current_test_num=self.job_num)
+                
+                self.find_outputs(outputs_per_test=3)
+                
                 if self.test_genome is None:
                     continue
                 else:
