@@ -200,7 +200,7 @@ class Plot:
         """
         Confirms if creating plot is necessary.
         """
-        _png_file = self._output_path / self.png_suffix
+        _png_file = self._output_path / f"{self.png_suffix}.png"
 
         self._plot = Files(
             path_to_file=_png_file,

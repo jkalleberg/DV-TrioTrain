@@ -812,12 +812,14 @@ class VariantCaller:
                         slurm_resources=self._resource_dict,
                         model_label=self._variant_caller,
                         call_variants_jobs=self._job_nums,
+                        create_plot=True,
                     )
                 else:
                     benchmark = CompareHappy(
                         itr=self._itr,
                         slurm_resources=self._resource_dict,
                         model_label=self._variant_caller,
+                        create_plot=True,
                     )
 
                 benchmark.set_genome()

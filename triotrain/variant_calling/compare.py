@@ -44,6 +44,7 @@ class CompareHappy:
     compare_happy_job_nums: List = field(default_factory=list)
     overwrite: bool = False
     track_resources: bool = False
+    create_plot: bool = False
 
     # internal, imutable values
     _convert_happy_dependencies: Union[List[Union[str, None]], None] = field(
@@ -334,6 +335,9 @@ class CompareHappy:
                 "conda activate miniconda_envs/beam_v2.30",
                 f"python3 -u triotrain/model_training/slurm/compare_hap.py --env-file {self.itr.env.env_file} --train-genome {self.genome} --test-num {self.test_num} --regions-file {regions.file}{additional_flag}",
             ]
+        
+        if self.create_plot:
+            self.command_list.append(f"python3 triotrain/visualize/plot_PR_ROC.py -I {str(self.outdir)} -O {str(self.outdir)}")
 
         slurm_job.create_slurm_job(
             self.handler_label,

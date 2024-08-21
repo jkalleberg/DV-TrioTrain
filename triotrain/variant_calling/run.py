@@ -86,7 +86,7 @@ def collect_args() -> argparse.Namespace:
             "triotrain/variant_calling/data/metadata/240805_benchmarking_metadata.csv",
             "-r",
             "triotrain/model_training/tutorial/resources_used_hellbender.json",
-            # "--dry-run",
+            "--dry-run",
         ]
     )
     # return parser.parse_args()
