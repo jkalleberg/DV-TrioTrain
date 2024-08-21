@@ -24,6 +24,7 @@ path.append(module_path)
 from helpers.utils import get_logger
 from helpers.files import Files
 from helpers.round import round_up, round_down
+from helpers.outputs import check_if_output_exists, check_expected_outputs
 
 def collect_args(
     ) -> argparse.Namespace:
@@ -72,18 +73,18 @@ def collect_args(
         action="store_true",
     )
 
-    return parser.parse_args(
-        [
-            "-O",
-            "/mnt/pixstor/schnabelr-drii/WORKING/jakth2/VARIANT_CALLING_OUTPUTS/240528_Benchmarking/DV1.4_default_human/UMCUSAM000000341496",
-            "-I",
-            "/mnt/pixstor/schnabelr-drii/WORKING/jakth2/VARIANT_CALLING_OUTPUTS/240528_Benchmarking/DV1.4_default_human/UMCUSAM000000341496",
-            "--dry-run",
-            # "--debug",
-            # "--overwrite",
-        ]
-    )
-    # return parser.parse_args()
+    # return parser.parse_args(
+    #     [
+    #         "-O",
+    #         "/mnt/pixstor/schnabelr-drii/WORKING/jakth2/VARIANT_CALLING_OUTPUTS/240528_Benchmarking/DV1.4_default_human/summary",
+    #         "-I",
+    #         "/mnt/pixstor/schnabelr-drii/WORKING/jakth2/VARIANT_CALLING_OUTPUTS/240528_Benchmarking/DV1.4_default_human/UMCUSAM000000341496",
+    #         "--dry-run",
+    #         # "--debug",
+    #         # "--overwrite",
+    #     ]
+    # )
+    return parser.parse_args()
 
 
 def check_args(
@@ -124,6 +125,8 @@ class Plot:
     plot_type: str = "PR_ROC"
 
     def __post_init__(self) -> None:
+        self._custom_palette = ["#d95f02", "#7570b3", "#e7298b", "#67a61e", "#e6a902"]
+
         # Create error log
         current_file = p.basename(__file__)
         module_name = p.splitext(current_file)[0]
@@ -132,34 +135,66 @@ class Plot:
         # Collect command line arguments
         self.args = collect_args()
         check_args(args=self.args, logger=self.logger)
-        self._output_path = Path(self.args.outpath)
-        
-        self._input_file = Files(path_to_file=self.args.input,
-                           logger=self.logger,
-                           debug_mode=self.args.debug,
-                           dryrun_mode=self.args.dry_run
-                           )
-        self._input_file.check_status(should_file_exist=True)
-        
-        if self._input_file.file_exists and self._input_file.path.is_file:
-            _prefix = self._input_file.path.parent.name
-        else:
-            print("FIX ME!")
-            breakpoint()
-
-        if self.plot_type == "PR_ROC":
-            self.png_suffix = f"{_prefix}.pr_roc_plot.png"
-            self.summary_suffix = f"{_prefix}_summary.csv"
-        elif self.plot_type == "AVG_COV":
-            self.png_suffix = f"average_coverage_plot.png"
-            self.summary_suffix = None
-        else:
-            pass
 
         if self.args.dry_run:
             self.logger_msg = f"[DRY_RUN] - [{self.plot_type}] - [visualize]"
         else:
             self.logger_msg = f"[{self.plot_type}] - [visualize]"
+
+        self._output_path = Path(self.args.outpath)
+        self._input_file = Files(path_to_file=self.args.input,
+                           logger=self.logger,
+                           logger_msg=self.logger_msg,
+                           debug_mode=self.args.debug,
+                           dryrun_mode=self.args.dry_run
+                           )
+        self._input_file.check_status(should_file_exist=True)
+
+        if self.plot_type == "PR_ROC":
+            if self._input_file.file_exists and self._input_file.path.is_file:
+                _prefix = self._input_file.path.parent.name
+            else:
+                _roc_pattern = r".*roc.all.csv.gz"
+                _input_exists, _n_found, _input_name = check_if_output_exists(
+                    match_pattern=_roc_pattern,
+                    file_type="hap.py ROC file",
+                    search_path=self._input_file.path,
+                    msg="visualize",
+                    logger=self.logger,
+                    debug_mode=self.args.debug,
+                    dryrun_mode=self.args.dry_run,
+                )
+                if _input_exists:
+                    _missing_input_file = check_expected_outputs(
+                        outputs_found=_n_found,
+                        outputs_expected=1,
+                        msg=self.logger_msg,
+                        file_type="hap.py ROC metrics",
+                        logger=self.logger,
+                    )
+                    if not _missing_input_file:
+                        _prefix = self._input_file.path.name
+                        _new_input = self._input_file.path / _input_name[0]
+                        self._input_file = Files(path_to_file=_new_input,
+                           logger=self.logger,
+                           logger_msg=self.logger_msg,
+                           debug_mode=self.args.debug,
+                           dryrun_mode=self.args.dry_run
+                           )
+                        self._input_file.check_status(should_file_exist=True)
+                    else:
+                        self.logger.error(f"{self.logger_msg}: missing an existing roc.all.csv.gz file from hap.py at input path | '{self._input_file.path_str}'\nPlease re-run after hap.py successfully completes.\nExiting...")
+                        exit(1)
+            self.png_suffix = f"{_prefix}.pr_roc_plot"
+            self.summary_suffix = f"{_prefix}_summary.csv"
+        elif self.plot_type == "AVG_COV":
+            self.png_suffix = "average_coverage_plot"
+            self.summary_suffix = None
+        elif self.plot_type == "TRAIN_F1":
+            self.png_suffix = "training_metrics"
+            self.summary_suffix = "training_metrics_summary.csv"
+        else:
+            pass
 
     def find_figure(self) -> None:
         """
@@ -181,7 +216,7 @@ class Plot:
 
         if self._plot.file_exists and self.args.overwrite is False:
             self.logger.error(
-                f"unable to overwrite an existing file | '{self._plot.path_str}'\nPlease add the --overwrite flag to discard previous plot.\nExiting..."
+                f"{self.logger_msg}: unable to overwrite an existing file | '{self._plot.path_str}'\nPlease add the --overwrite flag to discard previous plot.\nExiting..."
             )
             exit(1)
 
@@ -193,7 +228,7 @@ class Plot:
             self._input_file.load_csv()
         else:
             self.logger.error(
-                f"unable to find input file | '{self._input_file.file_name}'\nPlease update --input to include an existing file or directory.\nExiting..."
+                f"{self.logger_msg}: unable to find input file | '{self._input_file.file_name}'\nPlease update --input to include an existing file or directory.\nExiting..."
             )
             exit(1)
 
