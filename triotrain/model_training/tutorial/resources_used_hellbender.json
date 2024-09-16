@@ -44,12 +44,12 @@
         "email": "jakth2@mail.missouri.edu"
     },
     "call_variants": {
-        "partition": "general,schnabelr-umag",
+        "partition": "general,schnabelr-lab",
         "nodes": 1,
         "ntasks": 64,
         "mem": "490G",
         "time": "2-00:00:00",
-        "account": "schnabelr-umag",
+        "account": "schnabelr-lab",
         "email": "jakth2@mail.missouri.edu"
     },
     "compare_happy": {
