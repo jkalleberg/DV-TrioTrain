@@ -129,12 +129,12 @@ class Files:
                 print(line)
             print("---------------------------------------------")
         else:
-            with open(f"{self.path}/{self.file}", mode="a", encoding="UTF-8") as file:
+            with open(f"{self.path_str}", mode="a", encoding="UTF-8") as file:
                 file.writelines(f"{line}\n" for line in line_list)
 
             # confirm the expected number of lines were written
             with open(
-                f"{self.path}/{self.file}", mode="r", encoding="UTF-8"
+                f"{self.path_str}", mode="r", encoding="UTF-8"
             ) as filehandle:
                 self.file_lines = filehandle.readlines()
 
@@ -172,10 +172,10 @@ class Files:
                 print(line)
             print("---------------------------------------------")
         else:
-            with open(f"{self.path}/{self.file}", mode="a", encoding="UTF-8") as file:
+            with open(f"{self.path_str}", mode="a", encoding="UTF-8") as file:
                 dict_writer = DictWriter(file, fieldnames=keys, delimiter=_delim)
                 dict_writer.writeheader()
-                dict_writer.writerows()
+                dict_writer.writerows(line_list)
 
     def add_rows(self, col_names: List[str], data_dict: Dict[str, str]) -> None:
         """
