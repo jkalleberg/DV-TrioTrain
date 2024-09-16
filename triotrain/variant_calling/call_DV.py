@@ -190,7 +190,13 @@ class VariantCaller:
         self._test_logger_msg = (
             f"{self._logger_msg} - [{index+1}-of-{self._total_lines}]"
         )
-        self._output_path = self._data_list[index]["OutPath"]
+        self._output_path = Path(self._data_list[index]["OutPath"])
+        if not self._output_path.is_dir():
+            self.logger.info(
+                f"{self._logger_msg}: creating a new directory | '{self._output_path}'"
+            )
+            self._output_path.mkdir(parents=True)
+        
         self.create_environment(sample_num=(index + 1))
         self._env.add_to(
             key="RunOrder",
@@ -293,13 +299,17 @@ class VariantCaller:
         for k, v in self._data_list[index].items():
             if k in input_paths:
                 if v != "NA":
+                    
+                    # ensure user can't add extra white space
+                    _file_name = self._data_list[index][k].strip()
+                    
                     if k == "ModelCkpt":
                         testing_file = TestFile(
-                            f"{self._data_list[index][k]}.data-00000-of-00001",
+                            f"{_file_name}.data-00000-of-00001",
                             self.logger,
                         )
                     else:
-                        testing_file = TestFile(self._data_list[index][k], self.logger)
+                        testing_file = TestFile(_file_name, self.logger)
 
                     testing_file.check_existing(
                         logger_msg=self._test_logger_msg, debug_mode=self.args.debug
@@ -444,9 +454,9 @@ class VariantCaller:
                             )
                     else:
                         self.logger.warning(
-                            f"{self._test_logger_msg}: missing a file provided in {self._metadata_input} | {testing_file.file}... SKIPPING AHEAD"
+                            f"{self._test_logger_msg}: missing a file provided in '{self._metadata_input}' | '{testing_file.file}'"
                         )
-                        return
+                        raise FileNotFoundError(f"missing '{testing_file.file}'")
                 else:
                     if k == "PopVCF":
                         self._pop_path = None
@@ -477,7 +487,7 @@ class VariantCaller:
                         self.logger.warning(
                             f"{self._test_logger_msg}: missing a required item in metadata file | '{k}'... SKIPPING AHEAD"
                         )
-                        return
+                        raise FileNotFoundError(f"missing a required file '{testing_file.file}'")
 
     def set_iteration(self) -> None:
         """
@@ -791,7 +801,11 @@ class VariantCaller:
         Iterate through all lines in Metadata
         """
         if self.args.debug:
-            self.load_variables()
+            try:
+                self.load_variables()
+            except FileNotFoundError as E:
+                self.logger.error(f"{self._test_logger_msg}: {E}\nExiting...")
+                exit(1)
             self.set_iteration()
             self.submit_job(total_jobs=self._total_lines)
         else:
@@ -799,7 +813,13 @@ class VariantCaller:
             _run_happy_jobs = create_deps(self._total_lines)
             _convert_happy_jobs = create_deps(self._total_lines)
             for i in range(0, self._total_lines):
-                self.load_variables(index=i)
+                try:
+                    self.load_variables(index=i)
+                except FileNotFoundError as E:
+                    self.logger.error(f"{self._test_logger_msg}: {E}\nExiting...")
+                    exit(1)
+                    # continue
+                
                 self.set_iteration()
                 self.submit_job(index=i, total_jobs=self._total_lines)
                 
@@ -862,8 +882,8 @@ class VariantCaller:
                     benchmark.converting._final_jobs = _convert_happy_jobs
                     benchmark.converting.check_submissions()
                 
-                # if self.args.dry_run:
-                breakpoint()
+                if self.args.dry_run:
+                    breakpoint()
 
     def setup(self) -> None:
         """
