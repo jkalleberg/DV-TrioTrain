@@ -34,14 +34,15 @@ class Convert_VCF:
     dry_run: bool = False
     logger_msg: Union[str, None] = None
     output_format: str = field(
-        default="%CHROM\t%POS\t%REF\t%ALT\t%INFO/MCU\t%INFO/MCV[\t%GT\t%GQ]\n"
+        # default="%CHROM\t%POS\t%REF\t%ALT\t%INFO/MCU\t%INFO/MCV[\t%GT\t%GQ]\n"
+        default="%CHROM\t%POS\t%REF\t%ALT\t%INFO/MCU\t%INFO/MCV\t%QUAL[\t%GT\t%GQ\t%DP\t%AD\t%PL]\n"
     )
     tsv_column_names: List[str] = field(default_factory=list)
 
     # internal parameters
     _bcftools_query: run_sub = field(default=None, init=False, repr=False)
     _custom_header_list: List[str] = field(default_factory=list, init=False, repr=False)
-    _input_header: List[str] = field(default_factory=list, init=False, repr=False)
+    _input_col_names: List[str] = field(default_factory=list, init=False, repr=False)
     _intermediate_header: List[str] = field(
         default_factory=list, init=False, repr=False
     )
@@ -68,23 +69,36 @@ class Convert_VCF:
             self._input_file.file_exists
         ), f"non-existant file provided | '{self._input_file.file}'\nPlease provide a valid VCF file."
 
+        _model_used = self._input_file.path.parent.name
+        # print("Model Used:", _model_used)
+        # breakpoint()
         self._prefix_path = remove_suffixes(self._input_file.path)
-        self._prefix_name = self._prefix_path.name
+        
+        if "dv" in _model_used.lower() or "dt" in _model_used.lower():
+            self._prefix_name = f"{_model_used}.{self._prefix_path.name}"
+        else:
+            self._prefix_name = self._prefix_path.name
+        # print("PREFIX NAME:", self._prefix_name)
+        # breakpoint()
 
     def check_output(self) -> None:
         """
         Determine if intermediate TSV file exists.
         """
         if self.tsv_output and self.tsv_output != self._input_file.path.parent:
-            _output_path = self.tsv_output
+            _output_path = Path(self.tsv_output)
             if self.dry_run:
-                self.logger.info(f"{self._internal_msg}using new output directory...'")
+                self.logger.info(f"{self._internal_msg}using user-provide output directory...'")
         else:
-            _output_path = self._input_file.path.parent
+            _output_path = Path(self._input_file.path.parent)
             if self.dry_run:
                 self.logger.info(
                     f"{self._internal_msg}using existing output directory..."
                 )
+            
+        # print("OUTPUT PATH:", _output_path)
+        # breakpoint()
+        
         if self.dry_run:
             self.logger.info(
                 f"{self._internal_msg}output file | '{_output_path / self._prefix_name}.tsv'"
@@ -103,6 +117,7 @@ class Convert_VCF:
         self.logger.info(
             f"{self._internal_msg}identifying VCF headers | '{self._input_file.path.name}'"
         )
+        
         bcftools_view = run_sub(
             [
                 "bcftools",
@@ -117,8 +132,8 @@ class Convert_VCF:
         self.logger.info(
             f"{self._internal_msg}done identifying VCF headers | '{self._input_file.path.name}'"
         )
-        self._input_header = bcftools_view.stdout.splitlines()[-1].strip("#").split()
-        self._samples = self._input_header[9:]
+        self._input_col_names = bcftools_view.stdout.splitlines()[-1].strip("#").split()
+        self._samples = self._input_col_names[9:]
 
     def get_tsv_headers(self) -> None:
         """
@@ -261,7 +276,7 @@ class Convert_VCF:
                 self._custom_header_list = self.tsv_column_names
             else:
                 self.get_tsv_headers()
-
+            
             self.convert_to_tsv()
             self.test_output_headers()
             self.save_output()
