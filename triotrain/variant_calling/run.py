@@ -78,18 +78,19 @@ def collect_args() -> argparse.Namespace:
     #     action="store_true",
     #     default=False,
     # )
-    return parser.parse_args(
-        [
-            "-M",
-            # "triotrain/variant_calling/data/metadata/240528_benchmarking_metadata.csv",
-            # "triotrain/variant_calling/data/metadata/240715_benchmarking_metadata.csv",
-            "triotrain/variant_calling/data/metadata/240821_benchmarking_metadata.csv",
-            "-r",
-            "triotrain/model_training/tutorial/resources_used_hellbender.json",
-            # "--dry-run",
-        ]
-    )
-    # return parser.parse_args()
+    # return parser.parse_args(
+    #     [
+    #         "-M",
+    #         # "triotrain/variant_calling/data/metadata/240528_benchmarking_metadata.csv",
+    #         # "triotrain/variant_calling/data/metadata/240715_benchmarking_metadata.csv",
+    #         # "triotrain/variant_calling/data/metadata/240821_benchmarking_metadata.csv",
+    #         "triotrain/variant_calling/data/metadata/240916_benchmarking_metadata.csv", 
+    #         "-r",
+    #         "triotrain/model_training/tutorial/resources_used_hellbender.json",
+    #         "--dry-run",
+    #     ]
+    # )
+    return parser.parse_args()
 
 
 def check_args(args: argparse.Namespace, logger: Logger) -> None:
