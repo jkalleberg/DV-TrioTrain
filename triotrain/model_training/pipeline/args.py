@@ -384,8 +384,8 @@ def get_args(parser: argparse.ArgumentParser) -> argparse.Namespace:
         # '{"convert_happy": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]}',
         # '{"convert_happy": [2, 3, 4, 5, 6]}',
     ]
-    return parser.parse_args(manual_args_list)
-    # return parser.parse_args()
+    # return parser.parse_args(manual_args_list)
+    return parser.parse_args()
 
 
 def check_args(args: argparse.Namespace, logger: Logger, default_channels: str) -> None:
