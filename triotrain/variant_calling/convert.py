@@ -57,6 +57,7 @@ class ConvertHappy:
     _phase: str = field(default="convert_happy", init=False, repr=False)
     _skipped_counter: int = field(default=0, init=False, repr=False)
     _skip_phase: bool = field(default=False, init=False, repr=False)
+    _slurm_job: Union[None, SubmitSBATCH] = field(default=None, init=False, repr=False)
 
     def __post_init__(self) -> None:
         if self.track_resources:
@@ -80,6 +81,9 @@ class ConvertHappy:
             if self.itr.demo_mode:
                 self.genome = self.itr.train_genome
                 self.outdir = str(self.itr.env.contents[f"{self.genome}CompareDir"])
+            elif self.itr.current_trio_num is None:
+                self.genome = None
+                self.outdir = str(self.itr.env.contents["OutPath"])
             elif (
                 "baseline" in self.model_label.lower()
                 or self.itr.current_genome_num == 0
@@ -89,9 +93,6 @@ class ConvertHappy:
             elif self.itr.train_genome is not None:
                 self.genome = self.itr.train_genome
                 self.outdir = str(self.itr.env.contents[f"{self.genome}CompareDir"])
-            elif self.itr.current_trio_num is None:
-                self.genome = None
-                self.outdir = str(self.itr.env.contents["OutPath"])
             else:
                 self.genome = self.model_label.split("-")[1]
                 self.outdir = str(self.itr.env.contents[f"{self.genome}CompareDir"])
