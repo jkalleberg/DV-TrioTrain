@@ -168,7 +168,8 @@ class MakeRegions:
         if self._genome is not None:
             self._region_dir = Path(self._examples_dir) / "regions"
         else:
-            self._region_dir = Path(os.getcwd()) / "region_files"
+            # self._region_dir = Path(os.getcwd()) / "region_files"
+            return
 
         if self._region_dir.is_dir():
             if self.itr.debug_mode:
