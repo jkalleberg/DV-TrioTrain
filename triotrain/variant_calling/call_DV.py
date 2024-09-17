@@ -521,6 +521,7 @@ class VariantCaller:
                 env=self._env,
                 total_num_tests=self._total_lines,
             )
+            self._itr._mode_string = "[call_variants]"
         else:
             self.logger.warning(
                 f"{self._test_logger_msg}: missing a default region file located here | '{self._ref_path}'"
@@ -532,8 +533,9 @@ class VariantCaller:
                 env=self._env,
                 total_num_tests=self._total_lines,
             )
-
-            # --- Create Shuffling Regions for Non-Baseline Runs --- ##
+            self._itr._mode_string = "[call_variants]"
+            
+            # --- Create Autosome_withX BED file & Shuffling Regions for Non-Baseline Runs --- ##
             self.regions = MakeRegions(
                 self._itr,
                 ex_per_file=200000,
@@ -558,8 +560,8 @@ class VariantCaller:
                         logger=self.logger,
                         args=self.args,
                         default_region_file=default_region_file,
-                        
                     )
+                    
                 except Exception as ex:
                     self.logger.error(
                         f"{self._test_logger_msg} - [create_default_region]: unable to create a BED file from the reference Picard .dict file..."
@@ -808,6 +810,10 @@ class VariantCaller:
                 exit(1)
             self.set_iteration()
             self.submit_job(total_jobs=self._total_lines)
+            if self.args.dry_run:
+                self.logger.info(f"{self._test_logger_msg}: pretending to submit a single job to SLURM for debugging.")
+            else:
+                self.logger.debug(f"{self._test_logger_msg}: submitting a single job to debug.")
         else:
             self._job_nums = create_deps(self._total_lines)
             _run_happy_jobs = create_deps(self._total_lines)
@@ -824,6 +830,9 @@ class VariantCaller:
                 self.submit_job(index=i, total_jobs=self._total_lines)
                 
                 if self._run_happy is False:
+                    if self.args.dry_run and not self.args.debug:
+                        self.logger.info(f"{self._test_logger_msg}: pausing for manual review. Press (c) to continue to the next sample.")
+                        breakpoint()
                     continue
 
                 if self._job_nums:
@@ -882,8 +891,9 @@ class VariantCaller:
                     benchmark.converting._final_jobs = _convert_happy_jobs
                     benchmark.converting.check_submissions()
                 
-                if self.args.dry_run:
-                    breakpoint()
+                if self.args.dry_run and not self.args.debug:
+                        self.logger.info(f"{self._test_logger_msg}: pausing for manual review. Press (c) to continue to the next sample.")
+                        breakpoint()
 
     def setup(self) -> None:
         """
