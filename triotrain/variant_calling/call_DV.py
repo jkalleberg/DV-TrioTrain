@@ -578,7 +578,7 @@ class VariantCaller:
         output = Path(self._data_list[index]["OutPath"]) / f"{self._sampleID}.vcf.gz"
 
         testing_file = TestFile(str(output), self.logger)
-        testing_file.check_existing(
+        testing_file.check_missing(
             logger_msg=self._test_logger_msg, debug_mode=self.args.debug
         )
 
