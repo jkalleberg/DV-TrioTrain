@@ -801,103 +801,98 @@ class VariantCaller:
     def process_samples(self) -> None:
         """
         Iterate through all lines in Metadata
-        """
-        if self.args.debug:
+        """        
+        self._job_nums = create_deps(self._total_lines)
+        _run_happy_jobs = create_deps(self._total_lines)
+        _convert_happy_jobs = create_deps(self._total_lines)
+        
+        for i in range(0, self._total_lines):
             try:
-                self.load_variables()
+                self.load_variables(index=i)
             except FileNotFoundError as E:
                 self.logger.error(f"{self._test_logger_msg}: {E}\nExiting...")
                 exit(1)
+                
             self.set_iteration()
-            self.submit_job(total_jobs=self._total_lines)
-            if self.args.dry_run:
-                self.logger.info(f"{self._test_logger_msg}: pretending to submit a single job to SLURM for debugging.")
-            else:
-                self.logger.debug(f"{self._test_logger_msg}: submitting a single job to debug.")
-        else:
-            self._job_nums = create_deps(self._total_lines)
-            _run_happy_jobs = create_deps(self._total_lines)
-            _convert_happy_jobs = create_deps(self._total_lines)
-            for i in range(0, self._total_lines):
-                try:
-                    self.load_variables(index=i)
-                except FileNotFoundError as E:
-                    self.logger.error(f"{self._test_logger_msg}: {E}\nExiting...")
-                    exit(1)
-                    # continue
+            self.submit_job(index=i, total_jobs=self._total_lines)
                 
-                self.set_iteration()
-                self.submit_job(index=i, total_jobs=self._total_lines)
-                
-                if self._run_happy is False:
-                    if self.args.dry_run and not self.args.debug:
-                        self.logger.info(f"{self._test_logger_msg}: pausing for manual review. Press (c) to continue to the next sample.")
-                        breakpoint()
-                    continue
-
-                if self._job_nums:
-                    benchmark = CompareHappy(
-                        itr=self._itr,
-                        slurm_resources=self._resource_dict,
-                        model_label=self._variant_caller,
-                        call_variants_jobs=self._job_nums,
-                        create_plot=True,
-                    )
-                else:
-                    benchmark = CompareHappy(
-                        itr=self._itr,
-                        slurm_resources=self._resource_dict,
-                        model_label=self._variant_caller,
-                        create_plot=True,
-                    )
-
-                benchmark.set_genome()
-                benchmark.job_num = i + 1
-                # THIS HAS TO BE +1 to avoid labeling files Test0
-
-                benchmark.set_test_genome(current_test_num=(i+1))
-                benchmark.find_outputs()
-                benchmark.submit_job(
-                    dependency_index=i,
-                    total_jobs=int(self._total_lines),
-                )
-                
-                _run_happy_jobs[i] = benchmark._convert_happy_dependencies[i]
-                # _run_happy_jobs[i] = benchmark._slurm_job.job_number
-                
-                #--------- PROCESS HAP.PY RESULTS ----------------------#
-                benchmark.converting.job_num = i + 1
-                benchmark.converting.set_test_genome(current_test_num=(i+1))
-                benchmark.converting.find_outputs()
-                benchmark.converting.compare_happy_jobs = benchmark._convert_happy_dependencies
-                benchmark.converting.submit_job(
-                    dependency_index=i,
-                    total_jobs=int(self._total_lines))
-                
-                if benchmark.converting._slurm_job is None:
-                    _convert_happy_jobs[i] = None
-                else:
-                    _convert_happy_jobs[i] = benchmark.converting._slurm_job.job_number
-
-                if (i + 1) == self._total_lines:
-                    _skip_DV = check_if_all_same(self._job_nums, None)
-                    if not _skip_DV:
-                        if len(self._job_nums) == 1:
-                            print(
-                                f"============ {self._logger_msg} - Job Number - {self._job_nums} ============"
-                            )
-                        else:
-                            print(
-                                f"============ {self._logger_msg} - Job Numbers ============\n{self._job_nums}\n============================================================"
-                            )
-                    benchmark._convert_happy_dependencies = _run_happy_jobs
-                    benchmark.check_submissions()
-                    benchmark.converting._final_jobs = _convert_happy_jobs
-                    benchmark.converting.check_submissions()
-                
+            if self._run_happy is False:
                 if self.args.dry_run and not self.args.debug:
-                        self.logger.info(f"{self._test_logger_msg}: pausing for manual review. Press (c) to continue to the next sample.")
-                        breakpoint()
+                    self.logger.info(f"{self._test_logger_msg}: pausing for manual review. Press (c) to continue to the next sample.")
+                    breakpoint()
+                continue
+
+            if self._job_nums:
+                benchmark = CompareHappy(
+                    itr=self._itr,
+                    slurm_resources=self._resource_dict,
+                    model_label=self._variant_caller,
+                    call_variants_jobs=self._job_nums,
+                    create_plot=True,
+                )
+            else:
+                benchmark = CompareHappy(
+                    itr=self._itr,
+                    slurm_resources=self._resource_dict,
+                    model_label=self._variant_caller,
+                    create_plot=True,
+                )
+
+            benchmark.set_genome()
+            benchmark.job_num = i + 1
+            # THIS HAS TO BE +1 to avoid labeling files Test0
+
+            benchmark.set_test_genome(current_test_num=(i+1))
+            benchmark.find_outputs()
+            benchmark.submit_job(
+                dependency_index=i,
+                total_jobs=int(self._total_lines),
+            )
+                
+            _run_happy_jobs[i] = benchmark._convert_happy_dependencies[i]
+            # _run_happy_jobs[i] = benchmark._slurm_job.job_number
+                
+            #--------- PROCESS HAP.PY RESULTS ----------------------#
+            benchmark.converting.job_num = i + 1
+            benchmark.converting.set_test_genome(current_test_num=(i+1))
+            benchmark.converting.find_outputs()
+            benchmark.converting.compare_happy_jobs = benchmark._convert_happy_dependencies
+            benchmark.converting.submit_job(
+                dependency_index=i,
+                total_jobs=int(self._total_lines))
+                
+            if benchmark.converting._slurm_job is None:
+                _convert_happy_jobs[i] = None
+            else:
+                _convert_happy_jobs[i] = benchmark.converting._slurm_job.job_number
+
+            if (i + 1) == self._total_lines:
+                _skip_DV = check_if_all_same(self._job_nums, None)
+                if not _skip_DV:
+                    if len(self._job_nums) == 1:
+                        print(
+                            f"============ {self._logger_msg} - Job Number - {self._job_nums} ============"
+                        )
+                    else:
+                        print(
+                            f"============ {self._logger_msg} - Job Numbers ============\n{self._job_nums}\n============================================================"
+                        )
+                benchmark._convert_happy_dependencies = _run_happy_jobs
+                benchmark.check_submissions()
+                benchmark.converting._final_jobs = _convert_happy_jobs
+                benchmark.converting.check_submissions()
+                
+            if self.args.dry_run and not self.args.debug:
+                self.logger.info(f"{self._test_logger_msg}: pausing for manual review. Press (c) to continue to the next sample.")
+                breakpoint()
+            
+            if i == 0:
+                if self.args.dry_run and self.args.debug:
+                    self.logger.info(f"{self._test_logger_msg}: pretending to submit a single job to SLURM for debugging.")
+                    return
+                elif not self.args.dry_run and self.args.debug:
+                    self.logger.debug(f"{self._test_logger_msg}: submitting a single job to debug.")
+                    return
 
     def setup(self) -> None:
         """
