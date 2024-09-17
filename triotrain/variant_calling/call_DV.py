@@ -904,30 +904,3 @@ class VariantCaller:
             return
         self.load_slurm_resources()
         self.load_metadata()
-        # self.process_samples()
-
-
-def __init__() -> None:
-    from helpers.utils import get_logger
-    from helpers.wrapper import Wrapper, timestamp
-
-    # Collect command line arguments
-    # args = collect_args()
-    # Collect start time
-    Wrapper(__file__, "start").wrap_script(timestamp())
-
-    # Create error log
-    current_file = p.basename(__file__)
-    module_name = p.splitext(current_file)[0]
-    logger = get_logger(module_name)
-
-    # check_args(args=args, logger=logger)
-
-    # VariantCaller(args=args, logger=logger).setup()
-
-    Wrapper(__file__, "end").wrap_script(timestamp())
-
-
-# Execute functions created
-if __name__ == "__main__":
-    __init__()
