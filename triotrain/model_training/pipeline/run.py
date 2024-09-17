@@ -15,7 +15,7 @@ from typing import List, TextIO, Union
 from helpers.files import Files
 from helpers.iteration import Iteration
 from helpers.jobs import is_job_index, is_jobid
-from helpers.outputs import check_expected_outputs
+from helpers.outputs import check_expected_outputs, check_if_output_exists
 from helpers.utils import check_if_all_same, generate_job_id
 from model_training.pipeline.select_ckpt import SelectCheckpoint
 from model_training.pipeline.train_eval import TrainEval
@@ -870,9 +870,29 @@ class RunTrioTrain:
                     
                     # Collect the selected checkpoint name
                     _ckpt_name = self.itr.env.contents[f"{self.itr.train_genome}TestCkptName"]
-                
+                    
+                    _regex = rf"{self.genome}\.region\d+\.labeled\.tfrecords-\d+-of-\d+\.gz\.example_info\.json"
+                    
+                    (
+                        json_exists,
+                        outputs_found,
+                        files,
+                    ) = check_if_output_exists(
+                        match_pattern=_regex,
+                        file_type="example info file",
+                        search_path=self.itr.examples_dir,
+                        msg=f"{self.itr._mode_string} - [find_all_outputs] - [{self.genome}]",
+                        logger=self.itr.logger,
+                        debug_mode=self.itr.debug_mode,
+                        dryrun_mode=self.itr.dryrun_mode,
+                    )
+
+                    if not json_exists:
+                        self.itr.logger.error(f"{self.itr._mode_string} - [find_all_outputs] - [{self.genome}]: missing an 'example_info.json' file.") 
+                        return
+                    
                     # Open up a previous example_info.json file from make_examples
-                    _input_path = self.itr.examples_dir / f"{self.genome}.region1.labeled.tfrecords-00001-of-000{self.n_parts}.gz.example_info.json"
+                    _input_path = self.itr.examples_dir / files[0] 
                     
                     _input_json = Files(
                         path_to_file = _input_path,
