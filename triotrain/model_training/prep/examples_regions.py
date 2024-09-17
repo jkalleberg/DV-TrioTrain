@@ -122,7 +122,7 @@ class MakeRegions:
             if not ref_dict_exists.file_exists:
                 try:
                     self.itr.logger.info(
-                        f"{self.itr._mode_string} - [{self._phase}]: missing the reference .dict file; creating one now...",
+                        f"{self.itr._mode_string} - [setup]: missing the reference .dict file; creating one now...",
                     )
                     # Creating a .dict file with Picard
                     picard = subprocess.run(
@@ -149,7 +149,7 @@ class MakeRegions:
                     self._input_exists = ref_dict_exists
                 else:
                     raise FileNotFoundError(
-                        f"{self.itr._mode_string} - [{self._phase}]: missing a dictionary file for the reference genome | '{ref_dict_exists.file}'"
+                        f"{self.itr._mode_string} - [setup]: missing a dictionary file for the reference genome | '{ref_dict_exists.file}'"
                     )
             else:
                 self._input = input_file
@@ -157,7 +157,7 @@ class MakeRegions:
         else:
             self._input_exists = False
             raise FileNotFoundError(
-                f"{self.itr._mode_string} - [{self._phase}]: missing the reference genome | '{ref_genome_exists.file}'"
+                f"{self.itr._mode_string} - [setup]: missing the reference genome | '{ref_genome_exists.file}'"
             )
 
     def check_output(self) -> None:
@@ -307,11 +307,11 @@ class MakeRegions:
             output_file.check_missing()
             if output_file.file_exists:
                 self.itr.logger.info(
-                    f"{self.itr._mode_string} - [setup]: created a default BED file | '{output_file.file_path}'"
+                    f"{self.itr._mode_string} - [setup]: created a default BED file | '{output_file.path}'"
                 )
         else:
             self.itr.logger.info(
-                f"{self.itr._mode_string} - [setup]: found default BED file | '{output_file.file_path}'"
+                f"{self.itr._mode_string} - [setup]: found default BED file | '{output_file.path}'"
             )
 
     def set_genome(
