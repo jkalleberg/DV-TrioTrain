@@ -304,7 +304,7 @@ class MakeRegions:
             self._autosome_BED_data.to_csv(
                 output_file.path, sep="\t", index=False, header=False
             )
-            output_file.check_missing()
+            output_file.check_status()
             if output_file.file_exists:
                 self.itr.logger.info(
                     f"{self.itr._mode_string} - [setup]: created a default BED file | '{output_file.path}'"
