@@ -32,7 +32,7 @@ class TestFile:
         if self.path.is_file():
             if debug_mode:
                 self.logger.debug(
-                    f"{msg}'{self.file}' already exists... SKIPPING AHEAD"
+                    f"{msg}existing file found | '{self.file}'"
                 )
             self.file_exists = True
         else:
@@ -54,7 +54,7 @@ class TestFile:
         if self.path.is_file() and self.path.stat().st_size != 0:
             if debug_mode:
                 self.logger.debug(
-                    f"{msg}'{self.file}' already exists... SKIPPING AHEAD"
+                    f"{msg}existing file found | '{self.file}'"
                 )
             self.file_exists = True
         else:
