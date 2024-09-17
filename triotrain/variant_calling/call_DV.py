@@ -873,7 +873,11 @@ class VariantCaller:
                 benchmark.converting.submit_job(
                     dependency_index=i,
                     total_jobs=int(self._total_lines))
-                _convert_happy_jobs[i] = benchmark.converting._slurm_job.job_number
+                
+                if benchmark.converting._slurm_job is None:
+                    _convert_happy_jobs[i] = None
+                else:
+                    _convert_happy_jobs[i] = benchmark.converting._slurm_job.job_number
 
                 if (i + 1) == self._total_lines:
                     _skip_DV = check_if_all_same(self._job_nums, None)
