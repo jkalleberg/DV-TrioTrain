@@ -218,34 +218,44 @@ class Files:
 
                 self.file_dict = data_dict
 
-    def write_csv(self, write_dict: Dict[str, str]) -> None:
+    def write_dict(self, write_dict: Dict[str, str], delim: str = ",") -> None:
         """
         Save or display counts from [run_name]-[iteration]-[test_number] only.
+        
+        NOTE: THIS CREATES A WEIRD CSV IN THE FOLLOWING FORMAT:
+        key,value1A,value1B
+        key,value2A,value2B
+        ...
         """
+        if delim == "\t":
+            _file_type = "TSV"
+        else:
+            _file_type = "CSV"
+        
         # If only testing, display to screen
         if self.dryrun_mode:
             if self.logger_msg is None:
                 self.logger.info(
-                    f"[DRY_RUN]: pretending to write CSV file | '{self.path_str}'"
+                    f"[DRY_RUN]: pretending to write {_file_type} file | '{self.path_str}'"
                 )
             else:
                 self.logger.info(
-                    f"{self.logger_msg}: pretending to write CSV file | '{self.path_str}'"
+                    f"{self.logger_msg}: pretending to write {_file_type} file | '{self.path_str}'"
                 )
 
             print("---------------------------------------------")
             for key, value in write_dict.items():
                 if type(value) is list:
-                    v = ",".join(value)
+                    v = f"{delim}".join(value)
                 else:
                     v = value
-                print(f"{key},{v}")
+                print(f"{key}{delim}{v}")
             print("---------------------------------------------")
 
         # Otherwise, write an intermediate CSV output file
         else:
             with open(self.path_str, mode="w") as file:
-                write_file = writer(file)
+                write_file = writer(file, delimiter=delim)
                 for key, value in write_dict.items():
                     if type(value) is list:
                         write_file.writerow([key] + value)
@@ -253,16 +263,20 @@ class Files:
                         write_file.writerow([key, value])
 
             if self.path.is_file():
-                logging_msg = f"created intermediate CSV file | '{self.file_name}'"
+                logging_msg = f"created intermediate {_file_type} file | '{self.file_name}'"
                 if self.logger_msg is None:
                     self.logger.info(logging_msg)
                 else:
                     self.logger.info(f"{self.logger_msg}: {logging_msg}")
     
-    def write_dataframe(self, df: pd.DataFrame, keep_index: bool = False) -> None:
+    def write_dataframe(self, df: pd.DataFrame, keep_index: bool = False, delim=",") -> None:
+        if delim == "\t":
+            _file_type = "TSV"
+        else:
+            _file_type = "CSV"
         if self.dryrun_mode:
             self.logger.info(
-                f"{self.logger_msg}: pretending to write CSV file | '{self.path_str}'"
+                f"{self.logger_msg}: pretending to write {_file_type} file | '{self.path_str}'"
             )
 
             print("---------------------------------------------")
@@ -270,13 +284,14 @@ class Files:
             print("---------------------------------------------")
         else:
             self.logger.info(
-                f"{self.logger_msg}: writing a CSV file | '{self.path_str}'"
+                f"{self.logger_msg}: writing a {_file_type} file | '{self.path_str}'"
             )
             df.to_csv(
                 self.path_str,
                 doublequote=False,
                 quoting=QUOTE_NONE,
                 index=keep_index,
+                sep=delim,
             )
     
     def write_json_file(self) -> None:

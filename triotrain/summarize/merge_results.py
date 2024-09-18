@@ -511,7 +511,7 @@ class MergedTests:
         #     self.logger.info(f"{self._logger_msg}: writing the final CSV file |  '{str(output.path)}'")
         #     self._final_csv.to_csv(output.file_path, index=False)
         # else:
-        output.write_csv(write_dict=self._output_dict)
+        output.write_dict(write_dict=self._output_dict)
 
     def merge_tests(self) -> None:
         """

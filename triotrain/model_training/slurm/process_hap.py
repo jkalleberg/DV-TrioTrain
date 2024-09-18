@@ -741,7 +741,7 @@ class Process:
             logger_msg=self._logger_msg,
         )
         file.check_status()
-        file.write_csv(write_dict=out_dict)
+        file.write_dict(write_dict=out_dict)
 
     def run(self) -> None:
         """
