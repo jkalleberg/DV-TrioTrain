@@ -15,7 +15,7 @@ from pathlib import Path
 from os import environ
 
 # Parsing command line inputs function
-def collect_args():
+def collect_args() -> argparse.Namespace:
     """
     Process command line argument to execute script.
     """

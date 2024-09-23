@@ -129,7 +129,7 @@ class Convert:
             f"{self._test_name}TruthVCF_Path",
             f"{self._test_name}TruthVCF_File",
         ]
-
+        
         if self._custom_model:
             if self._train_genome is None:
                 extra_vars = ["RunDir", "RunDir"]
@@ -139,7 +139,10 @@ class Convert:
                     f"{self._train_genome}CompareDir",
                 ]
         else:
-            extra_vars = ["BaselineModelResultsDir", "BaselineModelResultsDir"]
+            if "BaselineModelResultsDir" in self.env.contents.keys(): 
+                extra_vars = ["BaselineModelResultsDir", "BaselineModelResultsDir"]
+            else:
+                extra_vars = ["ResultsDir", "ResultsDir"] 
 
         var_list = env_vars + extra_vars
 
