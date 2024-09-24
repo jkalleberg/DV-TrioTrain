@@ -1,0 +1,167 @@
+{
+    "NA24385": {
+        "label": "Trio1_Child",
+        "ancestry_info": "AshkenaziJewish",
+        "ancestry_code": "AJ",
+        "mean_coverage": "62.65",
+        "biosample_ID": "NA24385",
+        "UMAG_labID": "HG002",
+        "paternal_biosample_ID": "NA24149",
+        "maternal_biosample_ID": "NA24143",
+        "sex": "1"
+    },
+    "NA24149": {
+        "label": "Trio1_Father",
+        "ancestry_info": "AshkenaziJewish",
+        "ancestry_code": "AJ",
+        "mean_coverage": "54.88",
+        "biosample_ID": "NA24149",
+        "UMAG_labID": "HG003",
+        "paternal_biosample_ID": "0",
+        "maternal_biosample_ID": "0",
+        "sex": "1"
+    },
+    "NA24143": {
+        "label": "Trio1_Mother",
+        "ancestry_info": "AshkenaziJewish",
+        "ancestry_code": "AJ",
+        "mean_coverage": "61.18",
+        "biosample_ID": "NA24143",
+        "UMAG_labID": "HG004",
+        "paternal_biosample_ID": "0",
+        "maternal_biosample_ID": "0",
+        "sex": "2"
+    },
+    "NA24631": {
+        "label": "Trio2_Child",
+        "ancestry_info": "HanChinese",
+        "ancestry_code": "HC",
+        "mean_coverage": "294.32",
+        "biosample_ID": "NA24631",
+        "UMAG_labID": "HG005",
+        "paternal_biosample_ID": "NA24694",
+        "maternal_biosample_ID": "NA24695",
+        "sex": "1"
+    },
+    "NA24694": {
+        "label": "Trio2_Father",
+        "ancestry_info": "HanChinese",
+        "ancestry_code": "HC",
+        "mean_coverage": "99.08",
+        "biosample_ID": "NA24694",
+        "UMAG_labID": "HG006",
+        "paternal_biosample_ID": "0",
+        "maternal_biosample_ID": "0",
+        "sex": "1"
+    },
+    "NA24695": {
+        "label": "Trio2_Mother",
+        "ancestry_info": "HanChinese",
+        "ancestry_code": "HC",
+        "mean_coverage": "100.36",
+        "biosample_ID": "NA24695",
+        "UMAG_labID": "HG007",
+        "paternal_biosample_ID": "0",
+        "maternal_biosample_ID": "0",
+        "sex": "2"
+    },
+    "UMCUSAM000000341496": {
+        "label": "Trio12_Child",
+        "ancestry_info": "AngusBrahmanF1",
+        "ancestry_code": "F1X",
+        "mean_coverage": "50.01",
+        "biosample_ID": "SAMN08473802",
+        "UMAG_labID": "341496",
+        "paternal_biosample_ID": "SAMN08473804",
+        "maternal_biosample_ID": "SAMN08473803",
+        "sex": "1"
+    },
+    "UMCUSAU000000194551": {
+        "label": "Trio12_Father",
+        "ancestry_info": "Angus",
+        "ancestry_code": "AA",
+        "mean_coverage": "36.99387",
+        "biosample_ID": "SAMN08473804",
+        "UMAG_labID": "194551",
+        "paternal_biosample_ID": "0",
+        "maternal_biosample_ID": "0",
+        "sex": "1"
+    },
+    "UMCUSAU000000194550": {
+        "label": "Trio12_Mother",
+        "ancestry_info": "Brahman",
+        "ancestry_code": "BR",
+        "mean_coverage": "43.31936",
+        "biosample_ID": "SAMN08473803",
+        "UMAG_labID": "194550",
+        "paternal_biosample_ID": "0",
+        "maternal_biosample_ID": "0",
+        "sex": "2"
+    },
+    "UMCUSAF000000341497": {
+        "label": "Trio13_Child",
+        "ancestry_info": "YakHighlanderF1",
+        "ancestry_code": "F1X",
+        "mean_coverage": "50.01",
+        "biosample_ID": "SAMN12153487",
+        "UMAG_labID": "341497",
+        "paternal_biosample_ID": "SAMN12153485",
+        "maternal_biosample_ID": "SAMN12153486",
+        "sex": "2"
+    },
+    "UMCUSAM000000204543": {
+        "label": "Trio13_Father",
+        "ancestry_info": "ScottishHighlander",
+        "ancestry_code": "HI",
+        "mean_coverage": "34.69484",
+        "biosample_ID": "SAMN12153485",
+        "UMAG_labID": "204543",
+        "paternal_biosample_ID": "0",
+        "maternal_biosample_ID": "0",
+        "sex": "1"
+    },
+    "UMCUSAF000000204544": {
+        "label": "Trio13_Mother",
+        "ancestry_info": "Yak",
+        "ancestry_code": "YK",
+        "mean_coverage": "10.65936",
+        "biosample_ID": "SAMN12153486",
+        "UMAG_labID": "204544",
+        "paternal_biosample_ID": "0",
+        "maternal_biosample_ID": "0",
+        "sex": "2"
+    },
+    "UMCUSAM000000341713": {
+        "label": "Trio14_Child",
+        "ancestry_info": "BisonSimmentalF1",
+        "ancestry_code": "F1X",
+        "mean_coverage": "14.45935",
+        "biosample_ID": "SAMN16780309",
+        "UMAG_labID": "341713",
+        "paternal_biosample_ID": "SAMN16823422",
+        "maternal_biosample_ID": "SAMN16825967",
+        "sex": "1"
+    },
+    "UMCUSAM000000341714": {
+        "label": "Trio14_Father",
+        "ancestry_info": "Bison",
+        "ancestry_code": "BI",
+        "mean_coverage": "27.43871",
+        "biosample_ID": "SAMN16823422",
+        "UMAG_labID": "341714",
+        "paternal_biosample_ID": "0",
+        "maternal_biosample_ID": "0",
+        "sex": "1"
+    },
+    "UMCUSAF000000339207": {
+        "label": "Trio14_Mother",
+        "ancestry_info": "Simmental",
+        "ancestry_code": "SI",
+        "mean_coverage": "35.42226",
+        "biosample_ID": "SAMN16825967",
+        "UMAG_labID": "339207",
+        "paternal_biosample_ID": "0",
+        "maternal_biosample_ID": "0",
+        "sex": "2"
+    }
+}
