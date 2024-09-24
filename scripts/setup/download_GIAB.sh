@@ -8,7 +8,10 @@ echo -e "=== scripts/setup/download_GIAB.sh > start $(date)"
 # 2) Benchmark Sample: HGOO3 [AshkenazimTrio-Father], typically only Chr20.
 # 3) PopVCF (without genotypes): v3_missing2ref
 
-# However, for a direct comparision between our cattle model and previous models, we need to calculate Mendelian Inheritance Errors (MIE). Therefore, we will be downloading the parents in this trio. We'll also need to download the reference PopVCF used to build the humanWGS_AF model.
+# However, for a direct comparision between our cattle model and previous models, 
+# we need to calculate Mendelian Inheritance Errors (MIE). Therefore, we will be 
+# downloading the parents in this trio. We'll also need to download the reference 
+# PopVCF used to build the humanWGS_AF model.
 
 #-------------------------------------------------------------------#
 #                            GIAB Trio1                             #
@@ -28,7 +31,10 @@ echo -e "=== scripts/setup/download_GIAB.sh > start $(date)"
 # Chinese Father = HG006_NA24694_father
 # Chinese Mother = HG007_NA24695_mother
 
-# A preprint describing these calls is at https://doi.org/10.1101/2020.07.24.212712.  The paper(s) above can be cited for use of the benchmark, and please cite http://www.nature.com/articles/sdata201625 (doi:10.1038/sdata.2016.25) when using the corresponding sequencing data.
+# A preprint describing these calls is at https://doi.org/10.1101/2020.07.24.212712.  
+# The paper(s) above can be cited for use of the benchmark, and please 
+# cite http://www.nature.com/articles/sdata201625 (doi:10.1038/sdata.2016.25) 
+# when using the corresponding sequencing data.
 
 cd triotrain/variant_calling/data/GIAB
 
@@ -91,7 +97,8 @@ fi
 ## 2. Allele-frequencies index [TBI]
 ## These data are ~940GiB to download completly.
 ## THERE ARE TWO PAGES OF FILES! (v)
-## The newest version of WGS_AF model can be viewed on GCP here: https://console.cloud.google.com/storage/browser/brain-genomics-public/research/cohort/1KGP/cohort_dv_glnexus_opt/v3_missing2ref?pageState=(%22StorageObjectListTable%22:(%22f%22:%22%255B%255D%22))&prefix=&forceOnObjectsSortingFiltering=false
+## The newest version of WGS_AF model can be viewed on GCP 
+## here: https://console.cloud.google.com/storage/browser/brain-genomics-public/research/cohort/1KGP/cohort_dv_glnexus_opt/v3_missing2ref?pageState=(%22StorageObjectListTable%22:(%22f%22:%22%255B%255D%22))&prefix=&forceOnObjectsSortingFiltering=false
 
 # Create the output dir
 mkdir -p allele_freq
