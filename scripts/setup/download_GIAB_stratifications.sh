@@ -25,6 +25,15 @@ echo -e "=== scripts/setup/download_GIAB_stratifications.sh > start $(date)"
 
 ## 'gt10kb' = filtered for regions > 10,000 base pairs
 
+## Usage with hap.py
+# ```
+# export HGREF=path/to/GRCh38.fa
+# hap.py path/to/benchmark.vcf path/to/query.vcf \
+#   -f path/to/benchmark_regions.vcf \
+#   -o <output_prefix> \
+#   --stratification GRCh38-all-stratifications.tsv
+# ```
+
 # Change to the correct directory
 cd triotrain/variant_calling/data/GIAB/
 
@@ -84,5 +93,11 @@ if [ ! -f "./stratifications/SegmentalDuplications/GRCh38_segdups.bed.gz" ]; the
         fi
     done
 fi
+
+# Create a 'stratifications.tsv' file to give to hap.py
+# Resolve relative paths:
+CWD=$(pwd)
+echo -e "notinsegdups\t${CWD}/stratifications/SegmentalDuplications/GRCh38_notinsegdups.bed.gz" >> ./stratifications/SegmentalDuplications/stratification_inputs.tsv
+echo -e "segdups\t${CWD}/stratifications/SegmentalDuplications/GRCh38_segdups.bed.gz" >> ./stratifications/SegmentalDuplications/stratification_inputs.tsv
 
 echo -e "=== scripts/setup/download_GIAB_stratifications.sh > end $(date)"
