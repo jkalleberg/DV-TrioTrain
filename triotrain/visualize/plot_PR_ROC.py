@@ -10,11 +10,13 @@ import matplotlib.ticker as mtick
 import seaborn as sns
 import argparse
 from logging import Logger
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import pandas as pd
 from pathlib import Path
 from sys import path
 from os import path as p
+from typing import Union
+from regex import search
 
 
 abs_path = Path(__file__).resolve()
@@ -123,6 +125,9 @@ class Plot:
     """
     # optional parameters
     plot_type: str = "PR_ROC"
+    
+    # internal parameters 
+    _annotate: Union[str, None] = field(default=None, init=False, repr=False)
 
     def __post_init__(self) -> None:
         self._custom_palette = ["#d95f02", "#7570b3", "#e7298b", "#67a61e", "#e6a902"]
@@ -152,7 +157,19 @@ class Plot:
 
         if self.plot_type == "PR_ROC":
             if self._input_file.file_exists and self._input_file.path.is_file:
-                _prefix = self._input_file.path.parent.name
+                _sample_prefix = self._input_file.path.parent.name
+                
+                # Determine if there is a file annotation
+                # This says get the first word before '.roc.all.csv.gz' when it does NOT equal 'flags'
+                # AKA whenever there's something between happy#-no-flags and file suffix!
+                _annotation_pattern = r"\w+(?=\.roc\.all\.csv\.gz)(?<!flags)"
+                
+                match = search(_annotation_pattern, self._input_file.file_name)
+                if match:
+                    self._annotate = str(match.group())
+                    _prefix = f"{_sample_prefix}.{self._annotate}"
+                else:
+                    _prefix = _sample_prefix
             else:
                 _roc_pattern = r".*roc.all.csv.gz"
                 _input_exists, _n_found, _input_name = check_if_output_exists(
@@ -239,15 +256,23 @@ class Plot:
         """
         Clean the Precision-Recall results from Hap.py.
         """
-        # Drop unecessary rows (keep PASS only)
-        # Retains values for SNPs and INDEls!
-        _filtered_df = self._df[
-            (self._df["Subtype"] == "*") & (self._df["Subset"] == "*") & (self._df["Filter"] == "PASS")
-        ]
+        if self._annotate is None:
+            # Drop unecessary rows (keep PASS only)
+            # Retains values for SNPs and INDEls!
+            _filtered_df = self._df[
+                (self._df["Subtype"] == "*") & (self._df["Subset"] == "*") & (self._df["Filter"] == "PASS")
+            ]
+        else:
+            # Keep the SNPs/INDELs metrics for that stratification
+            _subset = self._annotate.lower()
+            _filtered_df = self._df[
+                (self._df["Subtype"] == "*") & (self._df["Subset"].str.contains(_subset)) & (self._df["Filter"] == "PASS")
+            ]
 
         # Convert object values to categories or numeric values
         _clean_df = _filtered_df.copy()
         _clean_df["Type"] = _clean_df["Type"].astype("category")
+        _clean_df["Subset"] = _clean_df["Subset"].astype("category") 
         _numerical_columns = ["METRIC.Recall", "METRIC.Precision"] 
         for c in _numerical_columns:
             _clean_df[[c]] = _clean_df[[c]].apply(pd.to_numeric)
@@ -318,17 +343,35 @@ class Plot:
         x_lower_bound = _summary["METRIC.Recall"]["25%"]
         y_lower_bound = _summary["METRIC.Precision"]["25%"]
 
-        # Create a seaborn plot
-        plot = sns.relplot(
-            data=self._df,
-            x="METRIC.Recall",
-            y="METRIC.Precision",
-            kind="line",
-            markers=True,
-            hue="Type",
-            hue_order=["SNP", "INDEL"],
-            aspect=0.65,
-        )
+        if self._annotate is None:
+            # Create a seaborn plot
+            plot = sns.relplot(
+                data=self._df,
+                x="METRIC.Recall",
+                y="METRIC.Precision",
+                kind="line",
+                markers=True,
+                hue="Type",
+                hue_order=["SNP", "INDEL"],
+                aspect=0.65,
+            )
+        else:
+            _unique_values = self._df["Subset"].unique()
+            _stratification = self._annotate.lower()
+            _not_stratification = [val for val in _unique_values if val != _stratification][0]
+                    
+            plot = sns.relplot(
+                data=self._df,
+                x="METRIC.Recall",
+                y="METRIC.Precision",
+                kind="line",
+                markers=True,
+                hue="Type",
+                hue_order=["SNP", "INDEL"],
+                col="Subset",
+                col_order=[_stratification, _not_stratification],
+                aspect=0.65,
+            )
 
         # Remove the unecessary Seaborn legend
         plot._legend.remove()
@@ -336,19 +379,44 @@ class Plot:
         # Define boundaries for axes
         plot.set(xlim=(x_lower_bound, 1), ylim=(y_lower_bound, 1))
 
-        # Format the axes labels
-        for ax in plot.axes.flat:
-            ax.yaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0,
-                                                                decimals=2,
-                                                                ))
-            ax.xaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0,
-                                                                decimals=0,
-                                                                ))
-        plot.set_axis_labels(x_var="Recall", y_var="Precision")
-        plot.set_titles(col_template="{col_name}")
+        if self._annotate is None:
+            # Format the axes labels
+            for ax in plot.axes.flat:
+                ax.yaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0,
+                                                                    decimals=2,
+                                                                    ))
+                ax.xaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0,
+                                                                    decimals=0,
+                                                                    ))
+            plot.set_titles(col_template="{col_name}")
+            plt.legend(loc="lower left", title=None)
+        elif "segdup" in self._annotate.lower():
+            # Format the axes labels
+            titles = ["Within SegDups", "Outside SegDups"]
+            for ax,title in zip(plot.axes.flat,titles):
+                ax.set_title(title)
+                ax.yaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0,
+                                                                    decimals=2,
+                                                                    ))
+                ax.xaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0,
+                                                                    decimals=0,
+                                                                    ))
+            plot.set_axis_labels(x_var="Recall", y_var="Precision")
+            
+            # Manually adjust the legend to improve interpretation
+            children = plt.gca().get_children()
+            
+            plt.legend(
+                [children[0], children[2]],
+                ["SNV", "INDEL"],
+                loc="lower left", 
+                title=None,
+            )
+        else:
+            print("FIX ME!")
+            breakpoint()
 
         # Edit the matplotlib figure
-        plt.legend(loc="lower left", title=None)
         plt.tight_layout()
 
     def build_avg_cov(self) -> None:
