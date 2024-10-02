@@ -856,7 +856,7 @@ class MIE:
 
             if self._existing_metrics_log_file:
                 if self._mie_metrics.file_exists:
-                    with open(self._mie_metrics.file_path, "r") as data:
+                    with open(self._mie_metrics.path_str, "r") as data:
                         self.handle_mie_data(input=data)
             else:
                 self.find_pedigree_file()
@@ -971,7 +971,7 @@ class MIE:
             if self.args.dry_run:
                 self.logger.info(f"{self._summary._logger_msg}: pausing for manual review. Press (c) to continue to the next trio.")
                 breakpoint()
-
+            
         self._summary.check_submission()
 
     def run(self) -> None:

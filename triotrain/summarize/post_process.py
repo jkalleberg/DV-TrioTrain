@@ -40,12 +40,12 @@ class Stats:
         Check for an existing .STATS file.
         """
         if self.pickled_data._contains_valid_trio:
-            _logging_dir = self.pickled_data._input_file.path_to_file.parent / "TRIOS"
+            _stats_dir = self.pickled_data._input_file.path_to_file.parent
         else:
-            _logging_dir = self.pickled_data._input_file._test_file.path.parent
+            _stats_dir = self.pickled_data._input_file._test_file.path.parent
 
         _sample_name = Path(self.pickled_data._input_file._test_file.clean_filename).name
-        _new_file = _logging_dir / "logs" / f"stats-{_sample_name}.log"
+        _new_file = _stats_dir / f"{_sample_name}.PASS.stats"
 
         if self.pickled_data.output_file.debug_mode:
             self.pickled_data.output_file.logger.debug(
@@ -179,22 +179,22 @@ class Stats:
         self.find_stats_output()
 
         if self._output.file_exists:
-            with open(self._output.file_path, "r") as stats_data:
+            with open(self._output.path_str, "r") as stats_data:
                 self.process_stats(data=stats_data)
             self.test_process_stats()
         else:
-            if not self._output.file_path.parent.exists():
+            if not self._output.path.parent.exists():
                 if self.pickled_data.args.dry_run:
                     self.pickled_data._input_file.logger.info(
-                        f"{self.pickled_data.output_file.logger_msg}: pretending to create a new directory | '{self._output.file_path.parent}'"
+                        f"{self.pickled_data.output_file.logger_msg}: pretending to create a new directory | '{self._output.path.parent}'"
                     )
                 else:
                     self.pickled_data._input_file.logger.info(
-                        f"{self.pickled_data.output_file.logger_msg}: creating a new directory | '{self._output.file_path.parent}'"
+                        f"{self.pickled_data.output_file.logger_msg}: creating a new directory | '{self._output.path.parent}'"
                     )
-                    self._output.file_path.parent.mkdir(parents=True, exist_ok=True)
+                    self._output.path.parent.mkdir(parents=True, exist_ok=True)
             self.pickled_data._input_file.logger.info(
-                f"{self.pickled_data.output_file.logger_msg}: missing 'stats' logging file | '{self._output.file}'"
+                f"{self.pickled_data.output_file.logger_msg}: missing '.stats' file | '{self._output.file_name}'"
             )
             self.get_sample_stats()
 

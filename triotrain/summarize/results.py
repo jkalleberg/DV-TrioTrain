@@ -265,7 +265,7 @@ class SummarizeResults:
                 self._merged_data = list(combined.values())
 
             else:
-                _sample_path = remove_suffixes(self._input_file.file_path)
+                _sample_path = remove_suffixes(self._input_file.path)
                 _sample_name = Path(_sample_path).stem
 
                 for d in clean_metadata:
@@ -284,9 +284,9 @@ class SummarizeResults:
         """
 
         if data_type != "mie":
-            _new_output = self.output_file.file.replace("mie", data_type)
+            _new_output = self.output_file.path_str.replace("mie", data_type)
             self.output_file = Files(
-                path_to_file=self.output_file.path / _new_output,
+                path_to_file=_new_output,
                 logger=self._input_file.logger,
                 logger_msg=self.output_file.logger_msg,
                 debug_mode=self._input_file.debug_mode,
@@ -329,7 +329,7 @@ class SummarizeResults:
         
         # _current_sample = self._merged_data[0]["sampleID"]
         self._input_file.logger.info(
-            f"{self.output_file.logger_msg}: saving summary stats data | '{self.output_file.file_path}'"
+            f"{self.output_file.logger_msg}: saving summary stats data | '{self.output_file.path_str}'"
         )
 
         # Ensure that output doesn't have duplicate sampleID column
