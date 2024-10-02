@@ -185,7 +185,7 @@ class MIE:
         Identify the Family VCF, and confirm it exists.
         """
         self._trio_path = (
-            Path(self._summary._pickled_data._input_file.path.parent) / "TRIOS"
+            Path(self._summary._pickled_data._input_file.path.parent.parent) / "TRIOS"
         )
         if not self._trio_path.exists():
             if self.args.dry_run:
@@ -646,7 +646,9 @@ class MIE:
 
     def merge_trio_bcfs(self) -> None:
         """
-        Combine the child:father:mother bcfs into a TRIO.VCF.GZ file for RTG-tools.
+        Use BCFtools to combine the child:father:mother bcfs into a TRIO.VCF.GZ file for RTG-tools.
+        
+        Not using GLNexus because it adds yet another docker container, and also a 'CaptureBED' file?
         """
         if not self._trio_vcf.file_exists:
             self.logger.info(
@@ -816,6 +818,12 @@ class MIE:
             self._summary._data = row_data
         else:
             self._summary._data = self._summary._pickled_data.sample_metadata
+        
+        if self._summary._pickled_data._total_samples < 3:
+            self.logger.info(
+                f"{self._summary._logger_msg}: not a trio... SKIPPING AHEAD"
+            )
+            return
 
         if self._summary._pickled_data._missing_merged_vcf:
             self._merge_inputs = True
@@ -851,11 +859,6 @@ class MIE:
                     with open(self._mie_metrics.file_path, "r") as data:
                         self.handle_mie_data(input=data)
             else:
-                if self.args.debug:
-                    self.logger.debug(
-                        f"{self._summary._logger_msg}: SUFFIX | '{self._filetype}'"
-                    )
-
                 self.find_pedigree_file()
                 self.find_input_vcfs()
 
@@ -882,6 +885,7 @@ class MIE:
         """
         if self.args.debug:
             itr_list = self._summary._data_list[:4]
+            self._summary._data_list = itr_list
         else:
             itr_list = self._summary._data_list
 
@@ -906,7 +910,10 @@ class MIE:
                 ]
 
             self._summary.check_sample()
+            
             _counter += int(self._summary._pickled_data._contains_valid_trio)
+            
+            # print("COUNTER:", _counter)
 
             if self._summary._pickled_data._trio_num is not None:
                 _trio_name = f"Trio{self._summary._pickled_data._trio_num}"
@@ -923,6 +930,7 @@ class MIE:
                 self._summary.process_sample(pkl_suffix=_trio_name, store_data=True)
                 _counter += 1
 
+            
             # Submit to SLURM after all 3 samples processed
             if _counter == 4:
                 _counter = 0
@@ -960,7 +968,9 @@ class MIE:
                 # Don't submit jobs while iterating through a trio
                 continue
             print("-------------------------------------------------")
-            # breakpoint()
+            if self.args.dry_run:
+                self.logger.info(f"{self._summary._logger_msg}: pausing for manual review. Press (c) to continue to the next trio.")
+                breakpoint()
 
         self._summary.check_submission()
 
@@ -969,7 +979,6 @@ class MIE:
         Combine all the steps into a single command.
         """
         self._summary.load_variables()
-        self._summary.load_metadata()
         self.set_threshold()
         self.find_default_region_file()
         self.find_reference_SDF()

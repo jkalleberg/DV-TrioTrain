@@ -59,6 +59,32 @@ class Summary:
             self._logger_msg = f"[DRY_RUN] - [{self._phase}]"
         else:
             self._logger_msg = f"[{self._phase}]"
+    
+    def load_metadata(self) -> None:
+        """
+        Read in and save the metadata file as a dictionary.
+        """
+        # Confirm data input is an existing file
+        metadata = TestFile(str(self._metadata_input), self.logger)
+        metadata.check_existing(logger_msg=self._logger_msg, debug_mode=self.args.debug)
+        if metadata.file_exists:
+            # Read in the csv file
+            with open(
+                metadata.file, mode="r", encoding="utf-8-sig"
+            ) as data:
+                dict_reader = DictReader(data)
+
+                # Remove whitespace within the CSV input
+                self._data_list = [
+                    dict((k.strip(), v.strip()) for k, v in row.items() if v)
+                    for row in dict_reader
+                ]
+                self._total_samples = len(self._data_list)
+        else:
+            self.logger.error(
+                f"{self._logger_msg}: unable to load metadata file | '{metadata.file}'"
+            )
+            raise ValueError("Invalid Input File")
 
     def load_variables(self) -> None:
         """
@@ -95,33 +121,7 @@ class Summary:
         self._csv_output.check_status()
 
         # Initalize an empty Iteration() to store paths
-        self._itr = Iteration(logger=self.logger, args=self.args)
-
-    def load_metadata(self) -> None:
-        """
-        Read in and save the metadata file as a dictionary.
-        """
-        # Confirm data input is an existing file
-        metadata = TestFile(str(self._metadata_input), self.logger)
-        metadata.check_existing(logger_msg=self._logger_msg, debug_mode=self.args.debug)
-        if metadata.file_exists:
-            # Read in the csv file
-            with open(
-                metadata.file, mode="r", encoding="utf-8-sig"
-            ) as data:
-                dict_reader = DictReader(data)
-
-                # Remove whitespace within the CSV input
-                self._data_list = [
-                    dict((k.strip(), v.strip()) for k, v in row.items() if v)
-                    for row in dict_reader
-                ]
-                self._total_samples = len(self._data_list)
-        else:
-            self.logger.error(
-                f"{self._logger_msg}: unable to load metadata file | '{metadata.file}'"
-            )
-            raise ValueError("Invalid Input File")
+        self._itr = Iteration(logger=self.logger, args=self.args)    
 
     def check_sample(self) -> None:
         self._pickled_data = SummarizeResults(
@@ -130,8 +130,9 @@ class Summary:
             args=self.args,
         )
         self._pickled_data.get_sample_info()
-        if not self._pickled_data._contains_valid_trio:
-            if self.args.debug:
+        
+        if self.args.debug:
+            if not self._pickled_data._parent_record and not self._pickled_data._contains_valid_trio:
                 self.logger.debug(
                     f"{self._logger_msg}: not a valid trio... SKIPPING AHEAD"
                 )
@@ -326,54 +327,3 @@ class Summary:
                 f"{self._logger_msg}: fatal error encountered, unable to proceed further with pipeline.\nExiting... ",
             )
             exit(1)
-
-    # def run(self) -> None:
-    #     """
-    #     Combine all the steps into a single command.
-    #     """
-    #     self.load_variables()
-
-    #     # Process all samples
-    #     self.process_multiple_samples()
-    #     self.check_submission()
-    #     if self._num_processed != 0:
-    #         self.logger.info(
-    #             f"{self._logger_msg}: processed {self._num_processed}-of-{self._total_samples} VCFs"
-    #         )
-
-    #     if self._num_skipped != 0:
-    #         self.logger.info(
-    #             f"{self._logger_msg}: skipped {self._num_skipped}-of-{self._total_samples} VCFs"
-    #         )
-
-
-# def __init__() -> None:
-#     from os import path as p
-#     from _args import check_args, collect_args
-#     from helpers.utils import get_logger
-#     from helpers.wrapper import Wrapper, timestamp
-
-#     # Collect command line arguments
-#     args = collect_args()
-
-#     # Collect start time
-#     Wrapper(__file__, "start").wrap_script(timestamp())
-
-#     # Create error log
-#     current_file = p.basename(__file__)
-#     module_name = p.splitext(current_file)[0]
-#     logger = get_logger(module_name)
-
-#     try:
-#         # Check command line args
-#         check_args(args, logger)
-#         Summary(args, logger).run()
-#     except AssertionError as E:
-#         logger.error(E)
-
-#     Wrapper(__file__, "end").wrap_script(timestamp())
-
-
-# # Execute functions created
-# if __name__ == "__main__":
-#     __init__()

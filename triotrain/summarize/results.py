@@ -151,15 +151,19 @@ class SummarizeResults:
         # Determine if any TrioNumber was found in the existing sample label
         self.find_trio_num(self._sample_label)
 
-        # Create pedigree dictionary
-        self._pedigree = {
-            key: value
-            for key, value in _metadata_dict.items()
-            if key in ["sampleID", "paternalID", "maternalID", "sex"]
-        }
+        # Ignore pedigree selection if a list of metadata rows is found 
+        if isinstance(_metadata_dict, list):
+            self._missing_pedigree_data = True
+        else: 
+            # Create pedigree dictionary
+            self._pedigree = {
+                key: value
+                for key, value in _metadata_dict.items()
+                if key in ["sampleID", "paternalID", "maternalID", "sex"]
+            }
 
-        # Samples with any blank columns in pedigree will be ignored
-        self._missing_pedigree_data = not any(self._pedigree.values())
+            # Samples with any blank columns in pedigree will be ignored
+            self._missing_pedigree_data = not any(self._pedigree.values())
 
     def validate_trio(self) -> None:
         """
@@ -179,12 +183,14 @@ class SummarizeResults:
             self.output_file.logger.info(
                 f"{self.output_file.logger_msg}: missing sex info for 'child | {self._childID}'... SKIPPING AHEAD"
             )
+            self._parent_record = False
             self._contains_valid_trio = False
         elif self._motherID == "0" and self._fatherID == "0":
             if self.output_file.debug_mode:
                 self.output_file.logger.debug(
                     f"{self.output_file.logger_msg}: trio parent line... SKIPPING AHEAD"
                 )
+            self._parent_record = True
             self._contains_valid_trio = False
         elif (
             len(self._child_sex) == 0
@@ -195,8 +201,10 @@ class SummarizeResults:
                 self.output_file.logger.debug(
                     f"{self.output_file.logger_msg}: not a Trio... SKIPPING AHEAD"
                 )
+            self._parent_record = False
             self._contains_valid_trio = False
         else:
+            self._parent_record = False
             self._contains_valid_trio = True
 
     def get_sample_info(self) -> None:

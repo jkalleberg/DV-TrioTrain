@@ -1,6 +1,6 @@
 #!/bin/python3
 """
-description: 
+description: given a CSV file
 
 """
 from __future__ import annotations
@@ -83,9 +83,16 @@ class Stats:
                 f"{self.pickled_data.output_file.logger_msg}: done running 'bcftools +smpl-stats' | '{self.pickled_data._input_file.file_name}'"
             )
         else:
+            # NOTE: DeepVariant uses the DefaultRegions file to restrict to autosomes and X chr only
+            #       so don't need to include here!
+            
+            # NOTE: hap.py metrics (& figures) + rtg-tools mendelain are all constrained to 
+            #       'PASS' variants only. Therefore, stats should be as well. 
             self._smpl_stats = [
                 "bcftools",
                 "+smpl-stats",
+                "-i",
+                "FILTER=\"PASS\"",
                 "--output",
                 self._output.path_str,
                 self.pickled_data._input_file._test_file.file,
