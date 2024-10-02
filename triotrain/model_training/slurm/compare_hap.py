@@ -352,6 +352,11 @@ class Happy:
     def build_command(self) -> None:
         """
         Build the Apptainer 'Exectute' Command using variables.
+        
+        Note: 'callableBED' defines the FP regions in a BED file
+              'target-regions' restricts the anlaysis to within a BED file
+              'locations' is only for a list of chr names (no BED)
+              'restrict-regions' is not used because it's slow for many regions
         """
         if self.args.demo_mode:
             self._command = [
@@ -365,7 +370,6 @@ class Happy:
                 "-o",
                 f"/output/{self._output_prefix}",
                 "--write-counts",
-                # "--output-vtc",  # test to see what this does?
                 "--keep-scratch",
                 "--scratch-prefix",
                 "/output/scratch",
@@ -389,7 +393,6 @@ class Happy:
                 "-o",
                 f"/output/{self._output_prefix}",
                 "--write-counts",
-                # "--output-vtc",  # test to see what this does?
                 "--keep-scratch",
                 "--scratch-prefix",
                 "/output/scratch",
