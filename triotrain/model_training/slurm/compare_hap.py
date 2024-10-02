@@ -357,6 +357,9 @@ class Happy:
               'target-regions' restricts the anlaysis to within a BED file
               'locations' is only for a list of chr names (no BED)
               'restrict-regions' is not used because it's slow for many regions
+              
+              Did not include --pass-only; however, metrics files (extended.csv & all.roc.csv)
+              are processed to restrict to 'PASS' only.
         """
         if self.args.demo_mode:
             self._command = [

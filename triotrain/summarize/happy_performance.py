@@ -199,6 +199,16 @@ class Performance:
     def check_input(self) -> None:
         """
         Confirm the VCF input file exists.
+        
+        Collect summary metrics for variants labeled 'PASS' only!
+        
+        Hap.py Nomenclature for Stratification:
+        I#_# or I#_PLUS = Insertion and length buckets
+        D#_# or D#_PLUS = Deletion and length buckets 
+        C#_# or C#_PLUS = Complex variant and length buckets
+        TS_boundary = all variants that overlap with but aren't fully contained within the ConfidentRegions.
+        TS_contained = all variants that are fully contained within the ConfidentRegions.
+            For insertions, the variant region includes both the preceding and the following position of the inserted sequence (padding left and right). 
         """
         self._input_file = Files(path_to_file=Path(self.csv_input), logger=self.logger)
         self._input_file.check_status(should_file_exist=True)
