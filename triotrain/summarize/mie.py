@@ -680,6 +680,9 @@ class MIE:
     def run_mendelian_errors(self, pass_only: bool = True) -> Union[List[str], None]:
         """
         Use the family VCF file to calculate the number of violations to Mendelian inheritance.
+        
+        Per the manual: 'By default, only VCF records with the FILTER field set to PASS or missing are processed. 
+                        All variant records can be examined by specifying the --all-records parameter.'
         """
         mendelian_cmd = [
             "rtg",
