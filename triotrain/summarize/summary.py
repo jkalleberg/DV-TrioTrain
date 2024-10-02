@@ -184,6 +184,7 @@ class Summary:
                     item=self._pickled_data,
                     pickled_path=self._pickle_file,
                     overwrite=self.args.overwrite,
+                    msg=f"{self._logger_msg}: ",
                 )
 
     def make_job(self, job_name: str) -> Union[SBATCH, None]:
