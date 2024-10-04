@@ -143,7 +143,7 @@ class Summary:
         """
         self._pickled_data._index = self._index
         self._clean_file_path = self._pickled_data._input_file._test_file.clean_filename
-
+        
         if pkl_suffix is None:
             self._pickle_file = TestFile(
                 Path(f"{self._clean_file_path}.pkl"),
@@ -168,7 +168,32 @@ class Summary:
             self._pickle_file.file,
         ]
         cmd_string = " ".join(slurm_cmd)
-
+        
+        self._pickle_file.check_existing(logger_msg=self._logger_msg)
+        
+        if self._pickle_file.file_exists:
+            from post_process import Stats
+            self._check_stats = Stats(pickled_data=self._pickled_data)
+            self._check_stats.find_stats_output()
+            # if self._check_stats._output.file_exists:
+            #     print("STATS EXISTS!")
+            # breakpoint()
+            if self.args.overwrite is False or self._check_stats._output.file_exists:
+                if self.args.debug:
+                    self.logger.debug(
+                            f"{self._logger_msg}: --overwrite=False; unable to replace an exisiting file... SKIPPING AHEAD"
+                        )
+                return
+            else:
+                if self.args.overwrite and self._check_stats._output.file_exists:
+                    self.logger.info(
+                        f"{self._logger_msg}: --overwrite=True; replacing an exisiting file | '{_sample_name}.stats'"
+                    )
+        
+        self.logger.info(
+            f"{self._logger_msg}: missing summary stats file\t\t| '{self._check_stats._output.file_name}'"
+            )
+        
         if self._command_list:
             self._command_list.append(cmd_string)
         else:
@@ -176,7 +201,7 @@ class Summary:
 
         if self.args.dry_run:
             self.logger.info(
-                f"{self._logger_msg}: pretending to create pickle file | '{self._pickle_file.file}'"
+                f"{self._logger_msg}: pretending to create pickle file\t| '{self._pickle_file.path.name}'"
             )
         else:
             if store_data:
@@ -185,12 +210,16 @@ class Summary:
                     pickled_path=self._pickle_file,
                     overwrite=self.args.overwrite,
                     msg=f"{self._logger_msg}: ",
-                )
+                    )
 
     def make_job(self, job_name: str) -> Union[SBATCH, None]:
         """
         Define the contents of the SLURM job for the rtg-mendelian phase for TrioTrain Pipeline.
         """
+        # Skip jobs whenever there is nothing to execute
+        if len(self._command_list) < 1:
+            return
+        
         self._itr.job_dir = self._pickle_file.path.parent 
         self._itr.log_dir = self._pickle_file.path.parent / "logs"
         if not self._itr.log_dir.exists():
@@ -229,7 +258,7 @@ class Summary:
         else:
             if self._itr.debug_mode:
                 self._itr.logger.debug(f"{self._logger_msg}: creating file job now... ")
-
+        
         slurm_cmd = (
             slurm_job._start_conda
             + ["conda activate miniconda_envs/beam_v2.30"]

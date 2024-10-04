@@ -63,22 +63,34 @@ class Stats:
         )
         self._output.file_exists = self._output._test_file.file_exists
 
-    def get_sample_stats(self) -> None:
+    def get_sample_stats(self, pass_only: bool = False) -> None:
         """
-        Produce bcftools +smpl-stats for each sample in metadata file, if missing the .STATS file.
+        Produce bcftools +smpl-stats for each sample in metadata file, if missing the .stats file.
         """
         if self.run_iteractively:
             self.pickled_data.output_file.logger.info(
                 f"{self.pickled_data.output_file.logger_msg}: running 'bcftools +smpl-stats' | '{self.pickled_data._input_file.file_name}'"
             )
-            self._smpl_stats = count_variants(
-                self.pickled_data._input_file.path,
-                self.pickled_data.output_file.logger_msg,
-                logger=self.pickled_data._input_file.logger,
-                count_pass=False,
-                count_ref=False,
-                debug_mode=self.pickled_data._input_file.debug_mode,
-            )
+            if pass_only: 
+                self._smpl_stats = count_variants(
+                    self.pickled_data._input_file.path,
+                    self.pickled_data.output_file.logger_msg,
+                    logger=self.pickled_data._input_file.logger,
+                    count_pass=False,
+                    count_ref=False,
+                    # debug_mode=self.pickled_data._input_file.debug_mode,
+                    debug_mode=True,
+                    stats_filter=["-i", "FILTER=\"PASS\""]
+                )
+            else:
+                self._smpl_stats = count_variants(
+                    self.pickled_data._input_file.path,
+                    self.pickled_data.output_file.logger_msg,
+                    logger=self.pickled_data._input_file.logger,
+                    count_pass=False,
+                    count_ref=False,
+                    debug_mode=self.pickled_data._input_file.debug_mode,
+                )
             self.pickled_data.output_file.logger.info(
                 f"{self.pickled_data.output_file.logger_msg}: done running 'bcftools +smpl-stats' | '{self.pickled_data._input_file.file_name}'"
             )
@@ -88,17 +100,26 @@ class Stats:
             
             # NOTE: hap.py metrics (& figures) + rtg-tools mendelain are all constrained to 
             #       'PASS' variants only. Therefore, stats should be as well. 
-            self._smpl_stats = [
-                "bcftools",
-                "+smpl-stats",
-                "-i",
-                "FILTER=\"PASS\"",
-                "--output",
-                self._output.path_str,
-                self.pickled_data._input_file._test_file.file,
-            ]
+            if pass_only:
+                self._smpl_stats = [
+                    "bcftools",
+                    "+smpl-stats",
+                    "-i",
+                    "FILTER=\"PASS\"",
+                    "--output",
+                    self._output.path_str,
+                    self.pickled_data._input_file._test_file.file,
+                ]
+            else:
+                self._smpl_stats = [
+                    "bcftools",
+                    "+smpl-stats",
+                    "--output",
+                    self._output.path_str,
+                    self.pickled_data._input_file._test_file.file,
+                ] 
 
-    def process_stats(self, data: Union[list, TextIO]) -> None:
+    def process_stats(self, data: Union[list, TextIO], pass_only: bool = False) -> None:
         """
         Save only the FLT0 line values as a dictionary.
         """
@@ -125,6 +146,11 @@ class Stats:
                 _data_dict = {}
                 line_values = line.split()[1:]  # Excludes the FLT0 field
                 for i, v in enumerate(line_values):
+                    if i > 0 and i < 2:
+                        if pass_only:
+                            _data_dict["filter"] = "PASS"
+                        else:
+                            _data_dict["filter"] = "ALL"
                     _data_dict[self._header_keys[i]] = v
 
                 # Make sure no sampleID values are 'default'
@@ -152,7 +178,20 @@ class Stats:
             else:
                 # Skip any unnecessary lines in output
                 pass
-
+    
+    def test_output(self, pass_only: bool = False) -> None:
+        """
+        Determine if the number PASS equals the number NonRef
+        """
+        num_pass = int(self._stats[0]["num_pass_filter"])
+        num_non_ref = int(self._stats[0]["num_non_ref"])
+        num_hom_ref = int(self._stats[0]["num_hom_ref"])
+        total = num_non_ref + num_hom_ref
+        if pass_only:
+            assert num_pass == total, f"PASS != TOTAL | '{num_pass:,}' != '{total:,}'"
+        else:
+            assert num_pass != total, f"PASS == TOTAL | '{num_pass:,}' == '{total:,}'" 
+            
     def test_process_stats(self) -> None:
         """
         Confirm that at least one sample was processed.
@@ -170,7 +209,7 @@ class Stats:
                 f"{self.pickled_data.output_file.logger_msg}: {self._num_samples} files processed"
             )
 
-    def save_stats(self) -> None:
+    def save_stats(self, pass_only: bool = False) -> None:
         """
         If sample stats data was created, save the new format.
 
@@ -180,7 +219,13 @@ class Stats:
 
         if self._output.file_exists:
             with open(self._output.path_str, "r") as stats_data:
-                self.process_stats(data=stats_data)
+                self.process_stats(data=stats_data, pass_only=pass_only)
+            
+            try:
+                self.test_output(pass_only=pass_only)
+            except AssertionError as e:
+                self.pickled_data._input_file.logger.error(f"{self.pickled_data.output_file.logger_msg}: math error\n{e}\nExiting...")
+                exit(1)
             self.test_process_stats()
         else:
             if not self._output.path.parent.exists():
@@ -196,15 +241,20 @@ class Stats:
             self.pickled_data._input_file.logger.info(
                 f"{self.pickled_data.output_file.logger_msg}: missing '.stats' file | '{self._output.file_name}'"
             )
-            self.get_sample_stats()
-
+            self.get_sample_stats(pass_only=pass_only)
+            
             if self.run_iteractively:
                 if (
                     self._output.file_exists is False
                     and self.pickled_data._input_file.dryrun_mode is False
                 ):
                     self._output.write_list(line_list=self._smpl_stats)
-                self.process_stats(data=self._smpl_stats)  # type: ignore
+                self.process_stats(data=self._smpl_stats, pass_only=pass_only)  # type: ignore
+                try:
+                    self.test_output(pass_only=pass_only)
+                except AssertionError as e:
+                    self.pickled_data._input_file.logger.error(f"{self.pickled_data.output_file.logger_msg}: math error\n{e}\nExiting...")
+                    exit(1)
                 self.test_process_stats()
             else:
                 return
@@ -291,7 +341,7 @@ def __init__() -> None:
         else:
             _run_stats.pickled_data.output_file.logger_msg = f"[stats]"
 
-        _run_stats.save_stats()
+        _run_stats.save_stats(pass_only=True)
         
     except AssertionError as E:
         logger.error(E)

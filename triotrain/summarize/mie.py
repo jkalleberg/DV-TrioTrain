@@ -49,7 +49,7 @@ class MIE:
     run_iteractively: bool = False
 
     # Internal, imutable values
-    _job_nums: List = field(default_factory=list, repr=False, init=False)
+    # _job_nums: List = field(default_factory=list, repr=False, init=False)
     _num_processed: int = field(default=0, init=False, repr=False)
     _num_skipped: int = field(default=0, init=False, repr=False)
     _num_submitted: int = field(default=0, init=False, repr=False)
@@ -938,11 +938,18 @@ class MIE:
                 if (
                     self._existing_metrics_log_file
                     and not self.args.overwrite
-                    and len(self._summary._command_list) == 0
-                ):
+                    and self._summary._check_stats._output.file_exists
+                ):  
+                    self._num_skipped += 1
+                    self._summary._job_nums.append(None)
                     continue
                 else:
-                    if self._existing_metrics_log_file and self.args.overwrite:
+                    if len(self._summary._command_list) < 1:
+                        self._num_skipped += 1
+                        self._summary._job_nums.append(None)
+                        continue
+                    
+                    if self._existing_metrics_log_file and self._summary._check_stats._output.file_exists and self.args.overwrite:
                         self.logger.info(
                             f"{self._summary._logger_msg}: --overwrite=True; re-submitting SLURM job"
                         )
