@@ -283,9 +283,10 @@ class Files:
             print(df)
             print("---------------------------------------------")
         else:
-            self.logger.info(
-                f"{self.logger_msg}: writing a {_file_type} file | '{self.path_str}'"
-            )
+            if self.debug_mode:
+                self.logger.debug(
+                    f"{self.logger_msg}: writing a {_file_type} file | '{self.path_str}'"
+                )
             df.to_csv(
                 self.path_str,
                 doublequote=False,
