@@ -17,6 +17,7 @@ from typing import Union, Dict
 from dataclasses import dataclass, field
 from regex import compile
 from natsort import natsorted
+from datetime import datetime
 
 
 abs_path = Path(__file__).resolve()
@@ -72,17 +73,18 @@ def collect_args() -> argparse.Namespace:
         help="if True, display commands to the screen",
         action="store_true",
     )
-    # return parser.parse_args()
-    return parser.parse_args(
-        [
-            "--input-path",
-            "/mnt/pixstor/schnabelr-drii/WORKING/jakth2/VARIANT_CALLING_OUTPUTS/240528_Benchmarking/",
-            "--output-path",
-            "/mnt/pixstor/schnabelr-drii/WORKING/jakth2/VARIANT_CALLING_OUTPUTS/240528_Benchmarking/summary/",
-            # "--debug",
-            "--dry-run",
-        ]
-    )
+    return parser.parse_args()
+    # return parser.parse_args(
+    #     [
+    #         "--input-path",
+    #         "/mnt/pixstor/schnabelr-drii/WORKING/jakth2/VARIANT_CALLING_OUTPUTS/240528_Benchmarking/",
+    #         "--output-path",
+    #         "/mnt/pixstor/schnabelr-drii/WORKING/jakth2/VARIANT_CALLING_OUTPUTS/240528_Benchmarking/summary/",
+    #         # "--debug",
+    #         # "--dry-run",
+    #         # "--overwrite",
+    #     ]
+    # )
 
 def check_args(args: argparse.Namespace, logger: Logger) -> ModuleNotFoundError:
     """
@@ -210,7 +212,7 @@ class Performance:
         TS_contained = all variants that are fully contained within the ConfidentRegions.
             For insertions, the variant region includes both the preceding and the following position of the inserted sequence (padding left and right). 
         """
-        self._input_file = Files(path_to_file=Path(self.csv_input), logger=self.logger)
+        self._input_file = Files(path_to_file=Path(self.csv_input), logger=self.logger, dryrun_mode = self.dry_run, debug_mode = self.debug)
         self._input_file.check_status(should_file_exist=True)
         assert (
             self._input_file.file_exists
@@ -326,7 +328,14 @@ def __init__() -> None:
     Wrapper(__file__, "start").wrap_script(timestamp())
     
     # Check for an existing output file:
-    _output_csv = Files(path_to_file=f"{args.outpath}/240923_benchmarking_results.csv", logger=logger)
+    _file_date = datetime.now().strftime("%y%m%d")
+    _output_csv = Files(
+        path_to_file=f"{args.outpath}/{_file_date}_benchmarking_results.csv",
+        logger=logger,
+        dryrun_mode = args.dry_run,
+        debug_mode = args.debug,
+        overwrite = args.overwrite,
+        )
     _output_csv.check_status()
     
     if _output_csv.file_exists and not args.overwrite:
@@ -379,11 +388,18 @@ def __init__() -> None:
                     _extended_metrics_files_list.append(Path(sample) / _files_list[0] )
 
     _num_records = len(_extended_metrics_files_list)
-    logger.info(f"{logger_msg}: number of metric files | {_num_records}")
-    breakpoint()
     
     for itr,_input in enumerate(natsorted(_extended_metrics_files_list)):
-        logger.info(f"{logger_msg}: processing input {itr+1}-of-{_num_records}")
+        _file_itr = itr + 1
+        if _num_records < 200:
+            _modelo = 20
+        elif _num_records > 200:
+            _modelo = 50
+        else:
+            _modelo = 10
+        
+        if _file_itr % _modelo == 0 or _file_itr == _num_records:
+            logger.info(f"{logger_msg}: processing input {_file_itr}-of-{_num_records}")
         
         # Transform the Trio VCF output from RTG mendelian into a TSV file
         _summary = Performance(

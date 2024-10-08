@@ -81,6 +81,7 @@ class Files:
     logger_msg: Union[str, None] = None
     debug_mode: bool = False
     dryrun_mode: bool = False
+    overwrite: bool = False
 
     # internal parameters
     file_exists: bool = field(default=False, init=False, repr=False)
@@ -172,7 +173,13 @@ class Files:
                 print(line)
             print("---------------------------------------------")
         else:
-            with open(f"{self.path_str}", mode="a", encoding="UTF-8") as file:
+            if self.overwrite: 
+                _mode = "w"
+            else:
+                # NOTE: this will append the file with new records!
+                _mode = "a"
+            
+            with open(f"{self.path_str}", mode=_mode, encoding="UTF-8") as file:
                 dict_writer = DictWriter(file, fieldnames=keys, delimiter=_delim)
                 dict_writer.writeheader()
                 dict_writer.writerows(line_list)
