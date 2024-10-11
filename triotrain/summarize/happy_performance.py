@@ -26,7 +26,6 @@ path.append(module_path)
 
 from helpers.files import Files
 from helpers.outputs import check_if_output_exists
-# from model_training.slurm.suffix import remove_suffixes
 
 def collect_args() -> argparse.Namespace:
     """

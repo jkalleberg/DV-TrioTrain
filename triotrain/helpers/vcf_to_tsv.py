@@ -127,7 +127,7 @@ class Convert_VCF:
         Run 'bcftools view' as a Python Subprocess to identify the header row only. Transform into a list, and identify sample names.
         """
         self.logger.info(
-            f"{self._internal_msg}identifying VCF headers\t\t| '{self._input_file.path.name}'"
+            f"{self._internal_msg}identifying VCF headers\t\t\t| '{self._input_file.path.name}'"
         )
         
         bcftools_view = run_sub(
@@ -298,9 +298,9 @@ class Convert_VCF:
                 with open(str(self._output_file.path), mode="r") as data:
                     # Open the file as read only
                     for itr, line in enumerate(DictReader(data, delimiter="\t")):
-                        if self.debug and itr % 15000 == 0:
+                        if self.debug and itr % 30000 == 0:
                             self.logger.info(
-                                f"{self._internal_msg}completed {itr} records..."
+                                f"{self._internal_msg}completed {itr:,} records..."
                             )
                         self._tsv_dict_array.insert(itr, line)
                 self.logger.info(
