@@ -75,18 +75,19 @@ def collect_args(
         action="store_true",
     )
 
-    # return parser.parse_args(
-    #     [
-    #         "-O",
-    #         "/mnt/pixstor/schnabelr-drii/WORKING/jakth2/VARIANT_CALLING_OUTPUTS/240528_Benchmarking/DV1.4_default_human/summary",
-    #         "-I",
-    #         "/mnt/pixstor/schnabelr-drii/WORKING/jakth2/VARIANT_CALLING_OUTPUTS/240528_Benchmarking/DV1.4_default_human/UMCUSAM000000341496",
-    #         "--dry-run",
-    #         # "--debug",
-    #         # "--overwrite",
-    #     ]
-    # )
-    return parser.parse_args()
+    return parser.parse_args(
+        [
+            "-O",
+            "/mnt/pixstor/schnabelr-drii/WORKING/jakth2/VARIANT_CALLING_OUTPUTS/240528_Benchmarking/summary",
+            "-I",
+            # "/mnt/pixstor/schnabelr-drii/WORKING/jakth2/VARIANT_CALLING_OUTPUTS/240528_Benchmarking/DV1.4_default_human/UMCUSAM000000341496",
+            "/mnt/pixstor/schnabelr-drii/WORKING/jakth2/VARIANT_CALLING_OUTPUTS/240528_Benchmarking/summary/MIE_Ranked/NA24385",
+            "--dry-run",
+            # "--debug",
+            # "--overwrite",
+        ]
+    )
+    # return parser.parse_args()
 
 
 def check_args(
@@ -205,11 +206,17 @@ class Plot:
             self.png_suffix = f"{_prefix}.pr_roc_plot"
             self.summary_suffix = f"{_prefix}_summary.csv"
         elif self.plot_type == "AVG_COV":
-            self.png_suffix = "average_coverage_plot"
+            self.png_suffix = "Kalleberg_Fig1"
             self.summary_suffix = None
         elif self.plot_type == "TRAIN_F1":
-            self.png_suffix = "training_metrics"
+            self.png_suffix = "Kalleberg_Fig2"
             self.summary_suffix = "training_metrics_summary.csv"
+        elif self.plot_type == "IMPACTS":
+            self._suffix = "Kalleberg_Fig3"
+            self.summary_suffix = None
+        elif self.plot_type == "CALIBRATION":
+            self._suffix = "Kalleberg_Fig5"
+            self.summary_suffix = None
         else:
             pass
 
@@ -241,16 +248,114 @@ class Plot:
         """
         Load in the Precision-Recall results from Hap.py.
         """
-        if self._input_file.file_exists:
-            self._input_file.load_csv()
-        else:
-            self.logger.error(
-                f"{self.logger_msg}: unable to find input file | '{self._input_file.file_name}'\nPlease update --input to include an existing file or directory.\nExiting..."
+        if self.plot_type == "TRAIN_F1":
+            _regex = r".*best_checkpoint.metrics"
+            (
+                inputs_exist,
+                inputs_found,
+                files,
+            ) = check_if_output_exists(
+                match_pattern=_regex,
+                file_type="best checkpoint files",
+                search_path=self._input_file.path,
+                msg=self.logger_msg,
+                logger=self.logger,
+                debug_mode=self.args.debug,
+                dryrun_mode=self.args.dry_run,
             )
-            exit(1)
 
-        # Convert to pd.DataFrame
-        self._df = pd.DataFrame.from_records(data=self._input_file._existing_data)
+            if inputs_exist:
+                _all_metrics = list()
+                self.logger.info(
+                    f"{self.logger_msg}: number of JSON training metrics identified | '{inputs_found}'"
+                )
+                for file in files:
+                    _ckpt_name = Path(Path(file).stem).stem
+                    _metrics_dict = {"CheckpointUsed": _ckpt_name}
+                    _json_file = Files(
+                        path_to_file=self._input_file.path / file,
+                        logger=self.logger,
+                        logger_msg=self.logger_msg,
+                        debug_mode=self.args.debug,
+                        dryrun_mode=self.args.dry_run,
+                    )
+                    _json_file.check_status(should_file_exist=True)
+                    _json_file.load_json_file()
+                    _metrics_dict.update(_json_file.file_dict)
+                    _all_metrics.append(_metrics_dict)
+
+                # Convert to pd.DataFrame
+                _df = pd.DataFrame.from_records(data=_all_metrics)
+
+            else:
+                self.logger.error(
+                    f"{self.logger_msg}: missing JSON training metric files | '{self._input_file.path}'\nPlease update --input with a path to exisiting best_checkpoint.metrics JSON files.\nExiting..."
+                )
+                exit(1)
+        elif self.plot_type == "CALIBRATION":
+            _regex = r".*MIE.sorted.csv"
+            (
+                inputs_exist,
+                inputs_found,
+                files,
+            ) = check_if_output_exists(
+                match_pattern=_regex,
+                file_type="sorted MIE files",
+                search_path=self._input_file.path,
+                msg=self.logger_msg,
+                logger=self.logger,
+                debug_mode=self.args.debug,
+                dryrun_mode=self.args.dry_run,
+            )
+            if inputs_exist:
+                self.logger.info(
+                    f"{self.logger_msg}: number of CSV files identified | '{inputs_found}'"
+                )
+                self._data_list = list()
+                for i,file in enumerate(files):
+                    _file = self._input_file.path / file
+
+                    # Load in the csv file
+                    _input_file = Files(path_to_file=_file,
+                                    logger=self.logger,
+                                    logger_msg=self.logger_msg,
+                                    debug_mode=self.args.debug,
+                                    dryrun_mode=self.args.dry_run
+                                    )
+                    _input_file.check_status()
+                    self.logger.info(
+                        f"{self.logger_msg}: loading in {i+1}-of-{inputs_found} CSV files..."
+                    )
+                    _input_file.load_csv()
+
+                    # Convert to pd.DataFrame
+                    _df = pd.DataFrame.from_records(data=_input_file._existing_data)
+                    
+                    # Make the 'variant_Caller' column a categorical variable
+                    _df["Variant_Caller"] = _df["Variant_Caller"].astype("category")
+                    self._data_list.append(_df)
+                
+                # Concatinate all DataFrames...
+                self.logger.info(
+                        f"{self.logger_msg}: concatinating {inputs_found} CSV files..."
+                    )
+                self._df = pd.concat(self._data_list, ignore_index=True)
+                return
+        else:       
+            if "csv" in self._input_file.path.name and self._input_file.file_exists:
+                self._input_file.load_csv()
+            else:
+                self.logger.error(
+                    f"unable to find input file | '{self._input_file.file_name}'\nPlease update --input to include an existing file or directory.\nExiting..."
+                )
+                exit(1)
+
+            # Convert to pd.DataFrame
+            _df = pd.DataFrame.from_records(data=self._input_file._existing_data)
+
+        # apply strip() method to remove whitespace from all strings in DataFrame
+        _df = _df.rename(columns=lambda x: x.strip())
+        self._df = _df.map(lambda x: x.strip() if isinstance(x, str) else x)
 
     def clean_pr_roc_data(self) -> None:
         """
@@ -536,14 +641,46 @@ def __init__() -> None:
     # Collect start time
     Wrapper(__file__, "start").wrap_script(timestamp())
 
-    pr_plot = Plot()
-    pr_plot.find_figure()
-    pr_plot.find_data()
-    pr_plot.clean_pr_roc_data()
-    pr_plot.save_cleaned_data()
-    pr_plot.build_pr_roc()
-    pr_plot.generate_figure()
+    # pr_plot = Plot()
+    # pr_plot.find_figure()
+    # pr_plot.find_data()
+    # pr_plot.clean_pr_roc_data()
+    # pr_plot.save_cleaned_data()
+    # pr_plot.build_pr_roc()
+    # pr_plot.generate_figure()
+    
+    # print(sns.color_palette("tab10").as_hex())
+    # breakpoint()
+    
+    calibrate_MIE = Plot(plot_type="CALIBRATION")
+    calibrate_MIE.find_data()
+    calibrate_MIE.find_figure()
+    
+    # GATK = 
+    _palette = {
+        "DT1.4_default_human": "#1f77b4",
+        "DV1.4_WGS.AF_human": "#d62728",
+        "DV1.4_default_human": "#2ca02c",
+        "DV1.4_WGS.AF_cattle1": "#d95f02",
+        "DV1.4_WGS.AF_cattle2": "#7570b3",
+        "DV1.4_WGS.AF_cattle3": "#e7298b",
+        "DV1.4_WGS.AF_cattle4": "#67a61e",
+        "DV1.4_WGS.AF_cattle5": "#e6a902",
+        "DV1.4_WGS.AF_OneTrio": "#7f7f7f",
+        "DV1.4_WGS.AF_OneTrio_AA_BR": "#bcbd22",
+        "DV1.4_WGS.AF_OneTrio_YK_HI": "#17becf",
+        }
 
+    print("CREATE PLOT")
+    fig, ax = plt.subplots(figsize=(5, 5))
+    _plot = sns.lineplot(data=calibrate_MIE._df,
+                 x="Num_Variants",
+                 y="Cumulative_MIE%",
+                 hue="Variant_Caller"
+                 )
+    print("GENERATE FIGURE!")
+    calibrate_MIE.generate_figure()
+    
     Wrapper(__file__, "end").wrap_script(timestamp())
 
 # Execute functions created
