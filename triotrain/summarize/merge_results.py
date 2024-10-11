@@ -27,6 +27,7 @@ path.append(module_path)
 
 from helpers.environment import Env
 from helpers.files import TestFile, Files
+from collections import OrderedDict
 # from helpers.outputs import check_if_output_exists
 
 
@@ -92,7 +93,20 @@ def collect_args() -> argparse.Namespace:
         help="input file (.csv)\nprovide unique descriptions for the test genome(s)",
         metavar="</path/file>",
     )
-    return parser.parse_args()
+    # return parser.parse_args()
+    return parser.parse_args([
+        "--env-file",
+        # "/mnt/pixstor/schnabelr-drii/WORKING/jakth2/TRIO_TRAINING_OUTPUTS/240724_AA_BR_Only/envs/run1.env",
+        "/mnt/pixstor/schnabelr-drii/WORKING/jakth2/TRIO_TRAINING_OUTPUTS/240724_YK_HI_Only/envs/run1.env",
+        "-g",
+        "Father",
+        "-o",
+        # "/mnt/pixstor/schnabelr-drii/WORKING/jakth2/TRIO_TRAINING_OUTPUTS/240724_AA_BR_Only/summary/Trio1.AllTests.total.metrics.csv",
+        "/mnt/pixstor/schnabelr-drii/WORKING/jakth2/TRIO_TRAINING_OUTPUTS/240724_YK_HI_Only/summary/Trio1.AllTests.total.metrics.csv",
+        "--metadata",
+        "triotrain/summarize/data/240520_cow_summary_metadata.csv",
+        # "--dry-run",
+        ])
 
 
 def check_args(args: argparse.Namespace, logger: Logger):
@@ -380,7 +394,7 @@ class MergedTests:
 
             input_name = Path(self._input_files[index]).parent.name
 
-            test_dict = {}
+            test_dict = OrderedDict()
             csv_reader = reader(results_csv)
 
             keep_these = [
@@ -397,7 +411,9 @@ class MergedTests:
                 key, value = row
                 if "testname" in key.lower():
                     K = value.lower()
-                    test_dict["test_name"] = K
+                    test_dict["test_name"] = f"{self._model_name}.{K}"
+                    # Move 'test_name' to the beginning
+                    test_dict.move_to_end("test_name", last=False)
                 elif "modelused" in key.lower():
                     if "default" in value:
                         if self._custom_model:
@@ -413,7 +429,7 @@ class MergedTests:
                         genome = value.split("-")[1]
                         self._model_name = f"Trio{self._run_num}-{genome}"
 
-                    test_dict["model_name"] = self._model_name
+                    # test_dict["model_name"] = self._model_name
 
                 else:
                     if self.args.metadata:
