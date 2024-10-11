@@ -76,9 +76,12 @@ def collect_args() -> argparse.Namespace:
     # return parser.parse_args(
     #     [
     #         "--input-path",
-    #         "/mnt/pixstor/schnabelr-drii/WORKING/jakth2/VARIANT_CALLING_OUTPUTS/240528_Benchmarking/",
+    #         # "/mnt/pixstor/schnabelr-drii/WORKING/jakth2/VARIANT_CALLING_OUTPUTS/240528_Benchmarking/",
+    #         "/mnt/pixstor/schnabelr-drii/WORKING/jakth2/TRIO_TRAINING_OUTPUTS/220913_NewTrios/summary/generalization/",
+    #         # "/mnt/pixstor/schnabelr-drii/WORKING/jakth2/TRIO_TRAINING_OUTPUTS/final_results/generalization/",
     #         "--output-path",
-    #         "/mnt/pixstor/schnabelr-drii/WORKING/jakth2/VARIANT_CALLING_OUTPUTS/240528_Benchmarking/summary/",
+    #         "/mnt/pixstor/schnabelr-drii/WORKING/jakth2/TRIO_TRAINING_OUTPUTS/final_results/generalization/",
+    #         # "/mnt/pixstor/schnabelr-drii/WORKING/jakth2/VARIANT_CALLING_OUTPUTS/240528_Benchmarking/summary/",
     #         # "--debug",
     #         # "--dry-run",
     #         # "--overwrite",
@@ -186,13 +189,17 @@ class Performance:
                 self._metrics[_label] = 0
         
         # load in metadata
-        _sample_metadata_file = Files(path_to_file="/mnt/pixstor/schnabelr-drii/WORKING/jakth2/DV-TrioTrain/triotrain/summarize/data/benchmarking_metadata.json",
+        _file1 = "benchmarking_metadata.json"
+        # _file1 = "generalization_metadata.json"
+        _sample_metadata_file = Files(path_to_file=f"/mnt/pixstor/schnabelr-drii/WORKING/jakth2/DV-TrioTrain/triotrain/summarize/data/{_file1}",
                                       logger=self.logger)
         _sample_metadata_file.check_status(should_file_exist=True)
         _sample_metadata_file.load_json_file()
         self._sample_metadta = _sample_metadata_file.file_dict
         
-        _ckpt_metadata_file = Files(path_to_file="/mnt/pixstor/schnabelr-drii/WORKING/jakth2/DV-TrioTrain/triotrain/summarize/data/model_ckpt_metadata.json", logger=self.logger)
+        _file2 = "model_ckpt_metadata.json"
+        # _file2 = "generalization_ckpt_metadata.json"
+        _ckpt_metadata_file = Files(path_to_file=f"/mnt/pixstor/schnabelr-drii/WORKING/jakth2/DV-TrioTrain/triotrain/summarize/data/{_file2}", logger=self.logger)
         _ckpt_metadata_file.check_status(should_file_exist=True)
         _ckpt_metadata_file.load_json_file()
         self._ckpt_metadata = _ckpt_metadata_file.file_dict
@@ -246,17 +253,20 @@ class Performance:
         _model_used = self._input_file.path.parent.parent.name
         _sample_id = self._input_file.path.parent.name
         
+        self._clean_data["model_name"] = _model_used
+        
+        if _sample_id in self._sample_metadta.keys():
+            self._keep_metrics = True
+            for k,v in self._sample_metadta[_sample_id].items():
+                self._clean_data[k] = v
+        else:
+            self._keep_metrics = False
+        
         _cols_to_keep = ["training_iteration_number", "training_phase", "checkpoint_name", "version"]
         if _model_used in self._ckpt_metadata.keys():
             for k,v in self._ckpt_metadata[_model_used].items():
                 if k in _cols_to_keep:
                     self._clean_data[k] = v
-        
-        self._clean_data["model_name"] = _model_used
-        
-        if _sample_id in self._sample_metadta.keys():
-            for k,v in self._sample_metadta[_sample_id].items():
-                self._clean_data[k] = v
     
     def calculate_homref(self) -> None:
         self._data["TRUTH.TOTAL.homref"] = self._data.apply(calculate_total_hom_ref, subset="TRUTH", axis=1)
@@ -328,8 +338,11 @@ def __init__() -> None:
     
     # Check for an existing output file:
     _file_date = datetime.now().strftime("%y%m%d")
+    _suffix="_benchmarking_results.csv"
+    # _suffix="_triotrain_generalization.csv"
+    # _suffix="_DV_generalization.csv"
     _output_csv = Files(
-        path_to_file=f"{args.outpath}/{_file_date}_benchmarking_results.csv",
+        path_to_file=f"{args.outpath}/{_file_date}{_suffix}",
         logger=logger,
         dryrun_mode = args.dry_run,
         debug_mode = args.debug,
@@ -387,6 +400,8 @@ def __init__() -> None:
                     _extended_metrics_files_list.append(Path(sample) / _files_list[0] )
 
     _num_records = len(_extended_metrics_files_list)
+    # print("INPUTS:", _extended_metrics_files_list[0])
+    # breakpoint()
     
     for itr,_input in enumerate(natsorted(_extended_metrics_files_list)):
         _file_itr = itr + 1
@@ -410,9 +425,10 @@ def __init__() -> None:
         )
         _summary.check_input()
         _summary.find_metadata()
-        _summary.calculate_homref()
-        _summary.update_data()
-        _records.append(_summary._clean_data)
+        if _summary._keep_metrics:
+            _summary.calculate_homref()
+            _summary.update_data()
+            _records.append(_summary._clean_data)
     
     # Write output file:
     _output_csv.write_list_of_dicts(line_list=_records, delim=",")
