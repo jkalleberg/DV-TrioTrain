@@ -51,7 +51,7 @@ for model in "${TRIO_TRAIN_MODELS[@]}"; do
     echo "--- MODEL NAME: ${model}"
     
     SEARCH_PATH="${INPUT_PATH}/${model}"
-    OUTPUT_DIR="${SEARCH_PATH}/summary"
+    OUTPUT_DIR="${SEARCH_PATH}/summary/generalization"
     echo "--- SEARCH_PATH: $SEARCH_PATH" 
     # echo "--- OUTPUT_PATH: $OUTPUT_DIR"
     # Look for exisiting sub-directories, 
@@ -68,9 +68,9 @@ for model in "${TRIO_TRAIN_MODELS[@]}"; do
                 echo "--------- PARENT: ${parent}"
                 METRICS_DIR="${dir}/compare_${parent}"
                 ((count+=1))
-                if [ $count -eq 2 ]; then
-                    break
-                fi
+                # if [ $count -eq 2 ]; then
+                #     break
+                # fi
                 echo "--------- ITERATION NUMBER: ${count}" 
                 CHECKPOINT_DIR="${OUTPUT_DIR}/${count}"
                 for file in $(ls $METRICS_DIR | grep extended | sort -V); do
@@ -99,7 +99,7 @@ done
 # Baseline/Default DV models
 ## These have all files in one directory
 DEFAULT_MODELS=("baseline-v1.4.0-withIS-noPop" "baseline-v1.4.0-withIS-withPop")
-OUTPUT_DIR="${INPUT_PATH}/final_results/summary"
+OUTPUT_DIR="${INPUT_PATH}/final_results/generalization"
 echo "--- OUTPUT_PATH: $OUTPUT_DIR"
 
 for model in "${DEFAULT_MODELS[@]}"; do
