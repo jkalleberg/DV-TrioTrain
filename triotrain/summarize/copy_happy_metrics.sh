@@ -49,6 +49,14 @@ TRIO_TRAIN_MODELS=("220913_NewTrios" "240724_AA_BR_Only" "240724_YK_HI_Only")
 
 for model in "${TRIO_TRAIN_MODELS[@]}"; do
     echo "--- MODEL NAME: ${model}"
+
+    if [[ $model =~ "AA_BR" ]]; then
+        _suffix="B"
+    elif [[ $model =~ "YK_HI" ]]; then
+        _suffix="C"
+    else
+        _suffix=""
+    fi
     
     SEARCH_PATH="${INPUT_PATH}/${model}"
     OUTPUT_DIR="${SEARCH_PATH}/summary/generalization"
@@ -72,7 +80,7 @@ for model in "${TRIO_TRAIN_MODELS[@]}"; do
                 #     break
                 # fi
                 echo "--------- ITERATION NUMBER: ${count}" 
-                CHECKPOINT_DIR="${OUTPUT_DIR}/${count}"
+                CHECKPOINT_DIR="${OUTPUT_DIR}/${count}${_suffix}"
                 for file in $(ls $METRICS_DIR | grep extended | sort -V); do
                     # echo "------------ FILE: $file"
                     _file_array=(${file//-/ })
