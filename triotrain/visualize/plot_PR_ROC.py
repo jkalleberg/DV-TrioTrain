@@ -82,7 +82,7 @@ def collect_args(
             "-I",
             # "/mnt/pixstor/schnabelr-drii/WORKING/jakth2/VARIANT_CALLING_OUTPUTS/240528_Benchmarking/DV1.4_default_human/UMCUSAM000000341496",
             "/mnt/pixstor/schnabelr-drii/WORKING/jakth2/VARIANT_CALLING_OUTPUTS/240528_Benchmarking/summary/MIE_Ranked/NA24385",
-            "--dry-run",
+            # "--dry-run",
             # "--debug",
             # "--overwrite",
         ]
@@ -132,6 +132,35 @@ class Plot:
 
     def __post_init__(self) -> None:
         self._custom_palette = ["#d95f02", "#7570b3", "#e7298b", "#67a61e", "#e6a902"]
+        
+        self._alias = {
+            "DT1.4_default_human": "DT",
+            "DV1.4_WGS.AF_human": "DV-AF",
+            "DV1.4_default_human": "DV",
+            "DV1.4_WGS.AF_cattle1": "12",
+            "DV1.4_WGS.AF_cattle2": "18",
+            "DV1.4_WGS.AF_cattle3": "22",
+            "DV1.4_WGS.AF_cattle4": "28",
+            "DV1.4_WGS.AF_cattle5": "30",
+            "DV1.4_WGS.AF_OneTrio": "2",
+            "DV1.4_WGS.AF_OneTrio_AA_BR": "2B",
+            "DV1.4_WGS.AF_OneTrio_YK_HI": "2C",
+            }
+        
+        self._palette_dict = {
+            "DT": "#1f77b4",
+            "DV-AF": "#d62728",
+            "DV": "#000000",
+            "12": "#d95f02",
+            "18": "#7570b3",
+            "22": "#e7298b",
+            "28": "#67a61e",
+            "30": "#e6a902",
+            "2": "#7f7f7f",
+            "2B": "#bcbd22",
+            "2C": "#17becf",
+        }
+        # GATK =
 
         # Create error log
         current_file = p.basename(__file__)
@@ -203,13 +232,13 @@ class Plot:
                     else:
                         self.logger.error(f"{self.logger_msg}: missing an existing roc.all.csv.gz file from hap.py at input path | '{self._input_file.path_str}'\nPlease re-run after hap.py successfully completes.\nExiting...")
                         exit(1)
-            self.png_suffix = f"{_prefix}.pr_roc_plot"
+            self._suffix = f"{_prefix}.pr_roc_plot"
             self.summary_suffix = f"{_prefix}_summary.csv"
         elif self.plot_type == "AVG_COV":
-            self.png_suffix = "Kalleberg_Fig1"
+            self._suffix = "Kalleberg_Fig1"
             self.summary_suffix = None
         elif self.plot_type == "TRAIN_F1":
-            self.png_suffix = "Kalleberg_Fig2"
+            self._suffix = "Kalleberg_Fig2"
             self.summary_suffix = "training_metrics_summary.csv"
         elif self.plot_type == "IMPACTS":
             self._suffix = "Kalleberg_Fig3"
@@ -224,10 +253,11 @@ class Plot:
         """
         Confirms if creating plot is necessary.
         """
-        _png_file = self._output_path / f"{self.png_suffix}.png"
+        # _figure_file = self._output_path / f"{self._suffix}.pdf"
+        _figure_file = self._output_path / f"{self._suffix}.png" 
 
         self._plot = Files(
-            path_to_file=_png_file,
+            path_to_file=_figure_file,
             logger=self.logger,
             logger_msg=self.logger_msg,
             debug_mode=self.args.debug,
@@ -327,12 +357,27 @@ class Plot:
                         f"{self.logger_msg}: loading in {i+1}-of-{inputs_found} CSV files..."
                     )
                     _input_file.load_csv()
+                    
+                    _updated_records = list()
+                    for line in _input_file._existing_data:
+                        _variant_caller = line["Variant_Caller"]
+                        line["Variant_Caller"] = self._alias[_variant_caller]
+                        _updated_records.append(line)
 
                     # Convert to pd.DataFrame
-                    _df = pd.DataFrame.from_records(data=_input_file._existing_data)
+                    _df = pd.DataFrame.from_records(data=_updated_records)
                     
                     # Make the 'variant_Caller' column a categorical variable
                     _df["Variant_Caller"] = _df["Variant_Caller"].astype("category")
+                    
+                    _num_variants = len(_df)
+                    _sample_ID = self._input_file.path.name
+                    _file_prefix = _file.stem.split(".")
+                    _model_name = ".".join(_file_prefix[0:2])
+
+                    self.logger.info(
+                        f"{self.logger_msg}: processing '{_model_name}' | '{_sample_ID}' | #Variants = {_num_variants:,}"
+                    )
                     self._data_list.append(_df)
                 
                 # Concatinate all DataFrames...
@@ -655,30 +700,25 @@ def __init__() -> None:
     calibrate_MIE = Plot(plot_type="CALIBRATION")
     calibrate_MIE.find_data()
     calibrate_MIE.find_figure()
-    
-    # GATK = 
-    _palette = {
-        "DT1.4_default_human": "#1f77b4",
-        "DV1.4_WGS.AF_human": "#d62728",
-        "DV1.4_default_human": "#2ca02c",
-        "DV1.4_WGS.AF_cattle1": "#d95f02",
-        "DV1.4_WGS.AF_cattle2": "#7570b3",
-        "DV1.4_WGS.AF_cattle3": "#e7298b",
-        "DV1.4_WGS.AF_cattle4": "#67a61e",
-        "DV1.4_WGS.AF_cattle5": "#e6a902",
-        "DV1.4_WGS.AF_OneTrio": "#7f7f7f",
-        "DV1.4_WGS.AF_OneTrio_AA_BR": "#bcbd22",
-        "DV1.4_WGS.AF_OneTrio_YK_HI": "#17becf",
-        }
 
-    print("CREATE PLOT")
-    fig, ax = plt.subplots(figsize=(5, 5))
-    _plot = sns.lineplot(data=calibrate_MIE._df,
-                 x="Num_Variants",
-                 y="Cumulative_MIE%",
-                 hue="Variant_Caller"
-                 )
+    print("CREATE PLOT!")
+    _plot = sns.lineplot(
+        data=calibrate_MIE._df,
+        x="Num_SNVs",
+        y="Cumulative_MIE%",
+        hue="Variant_Caller",
+        hue_order=["DT", "DV", "DV-AF", "28"],
+        palette=calibrate_MIE._palette_dict,
+        )
+    _legend = _plot.legend(loc="upper left",
+                 title="Checkpoint:")
+    for line in _legend.get_lines():
+        line.set_linewidth(2)
+    _plot.set_xlabel("Cumulative Variants: low -> high GQ")
+    _plot.set_ylabel("Cumulative MIE")
+    
     print("GENERATE FIGURE!")
+    calibrate_MIE._description = "Cumulative MIE Rate In HG002"
     calibrate_MIE.generate_figure()
     
     Wrapper(__file__, "end").wrap_script(timestamp())

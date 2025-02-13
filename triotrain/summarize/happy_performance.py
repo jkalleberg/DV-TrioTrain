@@ -72,21 +72,23 @@ def collect_args() -> argparse.Namespace:
         help="if True, display commands to the screen",
         action="store_true",
     )
-    return parser.parse_args()
-    # return parser.parse_args(
-    #     [
-    #         "--input-path",
-    #         # "/mnt/pixstor/schnabelr-drii/WORKING/jakth2/VARIANT_CALLING_OUTPUTS/240528_Benchmarking/",
-    #         "/mnt/pixstor/schnabelr-drii/WORKING/jakth2/TRIO_TRAINING_OUTPUTS/220913_NewTrios/summary/generalization/",
-    #         # "/mnt/pixstor/schnabelr-drii/WORKING/jakth2/TRIO_TRAINING_OUTPUTS/final_results/generalization/",
-    #         "--output-path",
-    #         "/mnt/pixstor/schnabelr-drii/WORKING/jakth2/TRIO_TRAINING_OUTPUTS/final_results/generalization/",
-    #         # "/mnt/pixstor/schnabelr-drii/WORKING/jakth2/VARIANT_CALLING_OUTPUTS/240528_Benchmarking/summary/",
-    #         # "--debug",
-    #         # "--dry-run",
-    #         # "--overwrite",
-    #     ]
-    # )
+    # return parser.parse_args()
+    return parser.parse_args(
+        [
+            "--input-path",
+            # "/mnt/pixstor/schnabelr-drii/WORKING/jakth2/VARIANT_CALLING_OUTPUTS/240528_Benchmarking/",
+            # "/mnt/pixstor/schnabelr-drii/WORKING/jakth2/TRIO_TRAINING_OUTPUTS/220913_NewTrios/summary/generalization/",
+            # "/mnt/pixstor/schnabelr-drii/WORKING/jakth2/TRIO_TRAINING_OUTPUTS/240724_AA_BR_Only/summary/generalization",
+            "/mnt/pixstor/schnabelr-drii/WORKING/jakth2/TRIO_TRAINING_OUTPUTS/240724_YK_HI_Only/summary/generalization",
+            # "/mnt/pixstor/schnabelr-drii/WORKING/jakth2/TRIO_TRAINING_OUTPUTS/final_results/generalization/",
+            "--output-path",
+            "/mnt/pixstor/schnabelr-drii/WORKING/jakth2/TRIO_TRAINING_OUTPUTS/final_results/generalization/",
+            # "/mnt/pixstor/schnabelr-drii/WORKING/jakth2/VARIANT_CALLING_OUTPUTS/240528_Benchmarking/summary/",
+            # "--debug",
+            # "--dry-run",
+            "--overwrite",
+        ]
+    )
 
 def check_args(args: argparse.Namespace, logger: Logger) -> ModuleNotFoundError:
     """
@@ -189,16 +191,16 @@ class Performance:
                 self._metrics[_label] = 0
         
         # load in metadata
-        _file1 = "benchmarking_metadata.json"
-        # _file1 = "generalization_metadata.json"
+        # _file1 = "benchmarking_metadata.json"
+        _file1 = "generalization_metadata.json"
         _sample_metadata_file = Files(path_to_file=f"/mnt/pixstor/schnabelr-drii/WORKING/jakth2/DV-TrioTrain/triotrain/summarize/data/{_file1}",
                                       logger=self.logger)
         _sample_metadata_file.check_status(should_file_exist=True)
         _sample_metadata_file.load_json_file()
         self._sample_metadta = _sample_metadata_file.file_dict
         
-        _file2 = "model_ckpt_metadata.json"
-        # _file2 = "generalization_ckpt_metadata.json"
+        # _file2 = "model_ckpt_metadata.json"
+        _file2 = "generalization_ckpt_metadata.json"
         _ckpt_metadata_file = Files(path_to_file=f"/mnt/pixstor/schnabelr-drii/WORKING/jakth2/DV-TrioTrain/triotrain/summarize/data/{_file2}", logger=self.logger)
         _ckpt_metadata_file.check_status(should_file_exist=True)
         _ckpt_metadata_file.load_json_file()
@@ -338,11 +340,15 @@ def __init__() -> None:
     
     # Check for an existing output file:
     _file_date = datetime.now().strftime("%y%m%d")
-    _suffix="_benchmarking_results.csv"
-    # _suffix="_triotrain_generalization.csv"
+    # _suffix="_benchmarking_results.csv"
+    # _suffix="_NewTrios_generalization.csv"
+    # _suffix="_NewTrios_N19_generalization.csv"
+    # _suffix="_AA_BR_Only_N19_generalization.csv"
+    _suffix="_YK_HI_Only_N19_generalization.csv"
     # _suffix="_DV_generalization.csv"
+    # _suffix="_DV_N19_generalization.csv"
     _output_csv = Files(
-        path_to_file=f"{args.outpath}/{_file_date}{_suffix}",
+        path_to_file=Path(f"{args.outpath}/{_file_date}{_suffix}"),
         logger=logger,
         dryrun_mode = args.dry_run,
         debug_mode = args.debug,

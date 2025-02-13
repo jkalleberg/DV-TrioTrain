@@ -141,5 +141,71 @@
         "paternal_biosample_ID": "0",
         "maternal_biosample_ID": "0",
         "sex": "1"
+    },
+    "UMCUSAM000000341496": {
+        "label": "Test14",
+        "ancestry_info": "AAxBR",
+        "ancestry_code": "F1X",
+        "mean_coverage": "50.01",
+        "biosample_ID": "SAMN08473802",
+        "UMAG_labID": "341496",
+        "paternal_biosample_ID": "0",
+        "maternal_biosample_ID": "0",
+        "sex": "1" 
+    },
+    "UMCUSAF000000341497": {
+        "label": "Test15",
+        "ancestry_info": "YKxHI",
+        "ancestry_code": "F1X",
+        "mean_coverage": "17.91839",
+        "biosample_ID": "SAMN12153487",
+        "UMAG_labID": "341497",
+        "paternal_biosample_ID": "0",
+        "maternal_biosample_ID": "0",
+        "sex": "2"
+    },
+    "UMCUSAM000000341713": {
+        "label": "Test16",
+        "ancestry_info": "BIxSI",
+        "ancestry_code": "F1X",
+        "mean_coverage": "14.45935",
+        "biosample_ID": "SAMN16780309",
+        "UMAG_labID": "341713",
+        "paternal_biosample_ID": "0",
+        "maternal_biosample_ID": "0",
+        "sex": "1"
+    },
+    "UMCUSAM000009341496": {
+        "label": "Test17",
+        "ancestry_info": "AAxBR",
+        "ancestry_code": "SYN_F1X",
+        "mean_coverage": "26.20161",
+        "biosample_ID": "NA",
+        "UMAG_labID": "9341496",
+        "paternal_biosample_ID": "0",
+        "maternal_biosample_ID": "0",
+        "sex": "1"
+    },
+    "UMCUSAF000009341497": {
+        "label": "Test18",
+        "ancestry_info": "YKxHI",
+        "ancestry_code": "SYN_F1X",
+        "mean_coverage": "25.78742",
+        "biosample_ID": "NA",
+        "UMAG_labID": "9341497",
+        "paternal_biosample_ID": "0",
+        "maternal_biosample_ID": "0",
+        "sex": "2"
+    },
+    "UMCUSAM000009341713": {
+        "label": "Test19",
+        "ancestry_info": "BIxSI",
+        "ancestry_code": "SYN_F1X",
+        "mean_coverage": "25.84871",
+        "biosample_ID": "NA",
+        "UMAG_labID": "9341713",
+        "paternal_biosample_ID": "0",
+        "maternal_biosample_ID": "0",
+        "sex": "1"
     }
 }

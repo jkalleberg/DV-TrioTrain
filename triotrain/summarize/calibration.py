@@ -69,14 +69,23 @@ def collect_args() -> argparse.Namespace:
         action="store_true",
     )
     # return parser.parse_args()
+    
+   
+    
     return parser.parse_args(
         [
             "--input",
-            # "/mnt/pixstor/schnabelr-drii/WORKING/jakth2/VARIANT_CALLING_OUTPUTS/240528_Benchmarking/DV1.4_default_human/TRIOS/Trio1.PASS.MIE.vcf.gz",
-            "/mnt/pixstor/schnabelr-drii/WORKING/jakth2/VARIANT_CALLING_OUTPUTS/240528_Benchmarking/DT1.4_default_human/TRIOS/Trio1.PASS.MIE.vcf.gz",
+            "/mnt/pixstor/schnabelr-drii/WORKING/jakth2/TRIOS_220704/TRIO_RAW/Trio14.RAW.sorted.PASS.MIE.exclude_mis.vcf.gz", 
+            # "/mnt/pixstor/schnabelr-drii/WORKING/jakth2/VARIANT_CALLING_OUTPUTS/240528_Benchmarking/DV1.4_default_human/TRIOS/Trio14.PASS.MIE.vcf.gz",
+            # "/mnt/pixstor/schnabelr-drii/WORKING/jakth2/VARIANT_CALLING_OUTPUTS/240528_Benchmarking/DT1.4_default_human/TRIOS/Trio14.PASS.MIE.vcf.gz",
+            # "/mnt/pixstor/schnabelr-drii/WORKING/jakth2/VARIANT_CALLING_OUTPUTS/240528_Benchmarking/DV1.4_WGS.AF_human/TRIOS/Trio14.PASS.MIE.vcf.gz",
+            # "/mnt/pixstor/schnabelr-drii/WORKING/jakth2/VARIANT_CALLING_OUTPUTS/240528_Benchmarking/DV1.4_WGS.AF_cattle1/TRIOS/Trio14.PASS.MIE.vcf.gz",
+            # "/mnt/pixstor/schnabelr-drii/WORKING/jakth2/VARIANT_CALLING_OUTPUTS/240528_Benchmarking/DV1.4_WGS.AF_OneTrio/TRIOS/Trio14.PASS.MIE.vcf.gz",
+            # "/mnt/pixstor/schnabelr-drii/WORKING/jakth2/VARIANT_CALLING_OUTPUTS/240528_Benchmarking/DV1.4_WGS.AF_OneTrio_AA_BR/TRIOS/Trio14.PASS.MIE.vcf.gz",
+            # "/mnt/pixstor/schnabelr-drii/WORKING/jakth2/VARIANT_CALLING_OUTPUTS/240528_Benchmarking/DV1.4_WGS.AF_OneTrio_YK_HI/TRIOS/Trio14.PASS.MIE.vcf.gz",
             "--output-path",
-            "/mnt/pixstor/schnabelr-drii/WORKING/jakth2/VARIANT_CALLING_OUTPUTS/240528_Benchmarking/summary",
-            # "--debug",
+            "/mnt/pixstor/schnabelr-drii/WORKING/jakth2/VARIANT_CALLING_OUTPUTS/240528_Benchmarking/summary/MIE_Ranked/UMCUSAM000000341713",
+            "--debug",
             # "--dry-run",
         ]
     )
@@ -140,6 +149,8 @@ def __init__() -> None:
     _tsv_path = _input_path.parent
     _trio_name = _labels[0]
     _model_name = _input_path.parent.parent.name
+    if "dv" not in _model_name.lower() and "dt" not in _model_name.lower():
+        _model_name = "GATK4_PostVQSR_UMAGv1"
 
     try:
         # Transform the Trio VCF output from RTG mendelian into a TSV file
@@ -169,8 +180,13 @@ def __init__() -> None:
             dict_reader = DictReader(data, delimiter="\t")
             _tsv_dict_array = list(dict_reader)
 
-        # Sort the Min. GQ from smallest to largest
-        sorted_dict_array = sorted(_tsv_dict_array, key=lambda x: x["INFO/MIN_GQ"])
+        # Sort the GQ from smallest to largest
+        # USING THE CHILD'S GQ VALUE!
+        print("FIX ME!")
+        breakpoint()
+        sorted_dict_array = sorted(
+            _variable_within_trio, key=lambda x: int(x[f"GQ_{_offspring}"]), reverse=True
+        )
         logger.info(
             f"{logger_msg}: done loading in processed CSV | '{_processed_file.path.name}'"
         )
@@ -199,6 +215,8 @@ def __init__() -> None:
             gt_values = [val for key, val in row.items() if key.startswith("GT")]
 
             # First, skip uncalled in offspring
+            # For the GATK (UMAGv1) VCF, did the following manually:
+            # bcftools view -e 'GT[0]="mis"' Trio14.RAW.sorted.PASS.MIE.vcf.gz | bcftools view -e 'GT[1]="mis" && GT[2]="miss"' -o Trio14.RAW.sorted.PASS.MIE.exclude_mis.vcf.gz -O z 
             if gt_values[0] == "./.":
                 _num_MissingRef_Records += 1
                 _uncalled_in_offspring.append(row)
