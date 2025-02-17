@@ -26,11 +26,12 @@ module_path = str(abs_path.parent.parent)
 path.append(module_path)
 
 from helpers.environment import Env
-from helpers.files import TestFile, WriteFiles
-from helpers.outputs import check_if_output_exists
+from helpers.files import TestFile, Files
+from collections import OrderedDict
+# from helpers.outputs import check_if_output_exists
 
 
-def collect_args():
+def collect_args() -> argparse.Namespace:
     """
     Process command line argument to execute script.
     """
@@ -92,7 +93,20 @@ def collect_args():
         help="input file (.csv)\nprovide unique descriptions for the test genome(s)",
         metavar="</path/file>",
     )
-    return parser.parse_args()
+    # return parser.parse_args()
+    return parser.parse_args([
+        "--env-file",
+        # "/mnt/pixstor/schnabelr-drii/WORKING/jakth2/TRIO_TRAINING_OUTPUTS/240724_AA_BR_Only/envs/run1.env",
+        "/mnt/pixstor/schnabelr-drii/WORKING/jakth2/TRIO_TRAINING_OUTPUTS/240724_YK_HI_Only/envs/run1.env",
+        "-g",
+        "Father",
+        "-o",
+        # "/mnt/pixstor/schnabelr-drii/WORKING/jakth2/TRIO_TRAINING_OUTPUTS/240724_AA_BR_Only/summary/Trio1.AllTests.total.metrics.csv",
+        "/mnt/pixstor/schnabelr-drii/WORKING/jakth2/TRIO_TRAINING_OUTPUTS/240724_YK_HI_Only/summary/Trio1.AllTests.total.metrics.csv",
+        "--metadata",
+        "triotrain/summarize/data/240520_cow_summary_metadata.csv",
+        # "--dry-run",
+        ])
 
 
 def check_args(args: argparse.Namespace, logger: Logger):
@@ -292,7 +306,7 @@ class MergedTests:
             ), f"missing {num_missing} lines in metadata | '{str(self.metadata.path.name)}'"
         else:
             self.logger.error(
-                f"{self._logger_msg}: unable to load metadata file | '{str(self.metadata.path)}'"
+                f"{self._logger_msg}: unable to load metadata file | '{self.metadata.file}'"
             )
             raise ValueError("Invalid Input File")
 
@@ -380,7 +394,7 @@ class MergedTests:
 
             input_name = Path(self._input_files[index]).parent.name
 
-            test_dict = {}
+            test_dict = OrderedDict()
             csv_reader = reader(results_csv)
 
             keep_these = [
@@ -397,7 +411,9 @@ class MergedTests:
                 key, value = row
                 if "testname" in key.lower():
                     K = value.lower()
-                    test_dict["test_name"] = K
+                    test_dict["test_name"] = f"{self._model_name}.{K}"
+                    # Move 'test_name' to the beginning
+                    test_dict.move_to_end("test_name", last=False)
                 elif "modelused" in key.lower():
                     if "default" in value:
                         if self._custom_model:
@@ -413,7 +429,7 @@ class MergedTests:
                         genome = value.split("-")[1]
                         self._model_name = f"Trio{self._run_num}-{genome}"
 
-                    test_dict["model_name"] = self._model_name
+                    # test_dict["model_name"] = self._model_name
 
                 else:
                     if self.args.metadata:
@@ -491,14 +507,13 @@ class MergedTests:
         else:
             name = ".".join([str(self._model_name), "AllTests"] + input_label[1:])
 
-        output = WriteFiles(
-            str(self._output_path),
-            name,
+        output = Files(
+            self._output_path / name,
             self.logger,
             logger_msg=self._logger_msg,
             dryrun_mode=self.args.dry_run,
         )
-        output.check_missing()
+        output.check_status()
 
         # if self.args.merge_all:
         # if self.args.dry_run:
@@ -512,11 +527,11 @@ class MergedTests:
         #     self.logger.info(f"{self._logger_msg}: writing the final CSV file |  '{str(output.path)}'")
         #     self._final_csv.to_csv(output.file_path, index=False)
         # else:
-        output.write_csv(write_dict=self._output_dict)
+        output.write_dict(write_dict=self._output_dict)
 
     def merge_tests(self) -> None:
         """
-        merge the processed hap.py results from each test into a single file called 'AllTests'
+        Merge the processed hap.py results from each test into a single file called 'AllTests'
         """
         for i, c in enumerate(self._search_paths):
             self.find_tests(search_path=c)
@@ -551,7 +566,9 @@ class MergedTests:
             )
 
     def add_metadata(self) -> None:
-        """combine metadata with columns"""
+        """
+        Combine metadata with columns.
+        """
         metadata_csv = pd.read_csv(self.metadata.file)
 
         # transpose columns and rows, remove a duplicate row

@@ -11,7 +11,7 @@ from pathlib import Path
 from sys import exit
 from typing import List, Union
 
-from helpers.files import WriteFiles
+from helpers.files import Files
 from helpers.iteration import Iteration
 from helpers.jobs import is_job_index, is_jobid
 from helpers.outputs import check_expected_outputs, check_if_output_exists
@@ -40,7 +40,7 @@ class CallVariants:
     model_label: str
 
     # optional values
-    benchmarking_file: Union[WriteFiles, None] = None
+    benchmarking_file: Union[Files, None] = None
     call_variants_job_nums: List = field(default_factory=list)
     overwrite: bool = False
     track_resources: bool = False
@@ -77,7 +77,7 @@ class CallVariants:
         if self.track_resources:
             assert (
                 self.benchmarking_file is not None
-            ), "missing a WriteFiles() object to save SLURM job numbers"
+            ), "missing a Files() object to save SLURM job numbers"
 
     def set_genome(self) -> None:
         """
@@ -317,16 +317,20 @@ class CallVariants:
                 self.pop_vcf = Path(self.pop_path) / self.pop_file
                 assert self.pop_vcf.exists(), "missing the population VCF file"
                 self.use_pop = True
-                self.itr.logger.info(
-                    f"{self.logger_msg}: using both [8: 'allele_frequency', 19: 'insert_size'] channels in test genome examples"
-                )
+                channels_used = "{8: 'allele_frequency', 19: 'insert_size'}"
+                msg = f"custom channels '{channels_used}'"
             elif "PopVCF" in self.itr.env.contents:
                 self.use_pop = False
-                self.itr.logger.info(
-                    f"{self.logger_msg}: using default [19: 'insert_size'] channel in test genome examples"
-                )
+                channel_used = "{19: 'insert_size'}"
+                msg = f"default channel '{channel_used}'"
+
             else:
                 self.use_pop = False
+                msg = "default channel(s)"
+
+            self.itr.logger.info(
+                f"{self.logger_msg}: using {msg} in test genome examples"
+            )
 
     def set_test_genome(self, current_test_num: Union[int, None] = None) -> None:
         """
@@ -405,7 +409,7 @@ class CallVariants:
                 )
             self.benchmarking_file.add_rows(headers, data_dict=data)
         else:
-            self.itr.logger.info(f"{self.logger_msg}: benchmarking is active")
+            self.itr.logger.info(f"{self.logger_msg}: --keep-jobids=True")
 
     def build_apptainer_command(self, normalize_reads: bool = False) -> None:
         """
@@ -528,7 +532,7 @@ class CallVariants:
                 )
             else:
                 self.itr.logger.info(
-                    f"{self.test_logger_msg}: --overwrite=False; SLURM job file already exists... SKIPPING AHEAD"
+                    f"{self.test_logger_msg}: --overwrite=False; SLURM job file already exists."
                 )
                 return
         else:
@@ -639,9 +643,8 @@ class CallVariants:
             track_resources=self.track_resources,
             benchmarking_file=self.benchmarking_file,
             overwrite=self.overwrite,
-        )
-
-        convert_results.find_outputs(phase=phase, find_all=True)
+        )        
+        convert_results.find_outputs(phase=phase, find_all=True, outputs_per_test=3)
 
         if convert_results._outputs_exist:
             compare_results = CompareHappy(
@@ -819,17 +822,13 @@ class CallVariants:
                 else:
                     self._compare_dependencies = None
             else:
-                
+
                 if not self._ignoring_select_ckpt:
                     self.itr.logger.info(
                         f"{self.logger_msg}: 'select_ckpt' job was submitted...",
                     )
 
-                if self._num_to_run <= self.itr.total_num_tests:
-                    self.itr.logger.info(
-                        f"{self.logger_msg}: attempting to {msg}mit {self._num_to_run}-of-{self.itr.total_num_tests} SLURM jobs to the queue",
-                    )
-                else:
+                if self._num_to_run > self.itr.total_num_tests:
                     self.itr.logger.error(
                         f"{self.logger_msg}: max number of {msg}mission SLURM jobs is {self._total_regions} but {self._num_to_run} were provided.\nExiting... ",
                     )

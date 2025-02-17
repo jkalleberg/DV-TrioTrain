@@ -1,7 +1,7 @@
 from logging import Logger
 from os import listdir
 from pathlib import Path
-from typing import List, Match, Tuple
+from typing import List, Tuple
 
 import regex
 from natsort import natsorted
@@ -78,7 +78,8 @@ def check_if_output_exists(
         unique_files_list = []
 
     if n_matches == 0:
-        logger.info(f"{msg}: missing {file_type}")
+        if debug_mode:
+            logger.info(f"{msg}: missing {file_type}")
         output_exists = False
         num_unique_files = 0
         unique_files_list = []

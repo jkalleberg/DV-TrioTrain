@@ -18,7 +18,7 @@ example:
 from os import path
 from sys import exit
 
-from helpers.files import WriteFiles
+from helpers.files import Files
 from helpers.iteration import Iteration
 from helpers.utils import create_deps, get_logger
 from helpers.wrapper import Wrapper, timestamp
@@ -227,11 +227,11 @@ def run_trio_train(eval_genome="Child") -> None:
 
         if itr > 1:
             logger.info(
-                f"{logging_msg}: building a new model with {pipeline.meta.additional_channels} channels"
+                f"{logging_msg}: building a new model with '{pipeline.meta.additional_channels}' channels"
             )
         else:
             logger.info(
-                f"{logging_msg}: model includes the {pipeline.meta.additional_channels} channel(s)"
+                f"{logging_msg}: model includes the '{pipeline.meta.additional_channels}' channel(s)"
             )
 
         if current_itr.demo_mode:
@@ -240,9 +240,8 @@ def run_trio_train(eval_genome="Child") -> None:
         # If tracking resources used from SLURM jobs,
         # inialize a file to store metrics
         if pipeline.args.benchmark:
-            output_file = WriteFiles(
-                path_to_file=str(current_itr.results_dir),
-                file=f"{current_itr.model_label}.SLURM.job_numbers.csv",
+            output_file = Files(
+                path_to_file=current_itr.results_dir / f"{current_itr.model_label}.SLURM.job_numbers.csv",
                 logger=logger,
                 logger_msg=logging_msg,
                 debug_mode=pipeline.args.debug,

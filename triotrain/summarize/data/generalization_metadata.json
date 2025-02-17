@@ -1,0 +1,211 @@
+{
+    "AANUSAM000011750711": {
+        "label": "Test1",
+        "ancestry_info": "Angus",
+        "ancestry_code": "AA",
+        "mean_coverage": "31.44",
+        "biosample_ID": "SAMN05788479",
+        "UMAG_labID": "186",
+        "paternal_biosample_ID": "0",
+        "maternal_biosample_ID": "0",
+        "sex": "1"
+    },
+    "BSHUSAM000004081869": {
+        "label": "Test2",
+        "ancestry_info": "Shorthorn",
+        "ancestry_code": "SH",
+        "mean_coverage": "25.65581",
+        "biosample_ID": "SAMN13655878",
+        "UMAG_labID": "71941",
+        "paternal_biosample_ID": "0",
+        "maternal_biosample_ID": "0",
+        "sex": "1"
+    },
+    "CHAUSAM00000M246564": {
+        "label": "Test3",
+        "ancestry_info": "Charolais",
+        "ancestry_code": "CH",
+        "mean_coverage": "20.07258",
+        "biosample_ID": "SAMN10940546",
+        "UMAG_labID": "20809",
+        "paternal_biosample_ID": "0",
+        "maternal_biosample_ID": "0",
+        "sex": "1"
+    },
+    "GVHUSAM000000000038": {
+        "label": "Test4",
+        "ancestry_info": "Gelbvieh",
+        "ancestry_code": "GB",
+        "mean_coverage": "19.95129",
+        "biosample_ID": "SAMN10940570",
+        "UMAG_labID": "34095",
+        "paternal_biosample_ID": "0",
+        "maternal_biosample_ID": "0",
+        "sex": "1"
+    },
+    "HERUSAF000042190680": {
+        "label": "Test5",
+        "ancestry_info": "Hereford",
+        "ancestry_code": "HE",
+        "mean_coverage": "45.46806",
+        "biosample_ID": "SAMN03145444",
+        "UMAG_labID": "33604",
+        "paternal_biosample_ID": "0",
+        "maternal_biosample_ID": "0",
+        "sex": "2"
+    },
+    "JER116M003011609959": {
+        "label": "Test6",
+        "ancestry_info": "Jersey",
+        "ancestry_code": "JE",
+        "mean_coverage": "24.10806",
+        "biosample_ID": "SAMN10940696",
+        "UMAG_labID": "185699",
+        "paternal_biosample_ID": "0",
+        "maternal_biosample_ID": "0",
+        "sex": "1"
+    },
+    "LIMUSAM0000000CIM51": {
+        "label": "Test7",
+        "ancestry_info": "Limousin",
+        "ancestry_code": "LM",
+        "mean_coverage": "20.66484",
+        "biosample_ID": "SAMN10940544",
+        "UMAG_labID": "18336",
+        "paternal_biosample_ID": "0",
+        "maternal_biosample_ID": "0",
+        "sex": "1"
+    },
+    "RDPUSAM000000000011": {
+        "label": "Test8",
+        "ancestry_info": "MaineAnjou",
+        "ancestry_code": "MA",
+        "mean_coverage": "22.18032",
+        "biosample_ID": "SAMN05788560",
+        "UMAG_labID": "87957",
+        "paternal_biosample_ID": "0",
+        "maternal_biosample_ID": "0",
+        "sex": "1"
+    },
+    "SALUSAM000000P31309": {
+        "label": "Test9",
+        "ancestry_info": "Salers",
+        "ancestry_code": "SL",
+        "mean_coverage": "24.87677",
+        "biosample_ID": "SAMN13655862",
+        "UMAG_labID": "51124",
+        "paternal_biosample_ID": "0",
+        "maternal_biosample_ID": "0",
+        "sex": "1"
+    },
+    "SIMUSAM000000000001": {
+        "label": "Test10",
+        "ancestry_info": "Simmental",
+        "ancestry_code": "SI",
+        "mean_coverage": "24.48968",
+        "biosample_ID": "SAMN05788545",
+        "UMAG_labID": "71657",
+        "paternal_biosample_ID": "0",
+        "maternal_biosample_ID": "0",
+        "sex": "1"
+    },
+    "UMCUSAM000000196818": {
+        "label": "Test11",
+        "ancestry_info": "Holestein",
+        "ancestry_code": "HO",
+        "mean_coverage": "52.76451",
+        "biosample_ID": "SAMEA4780288",
+        "UMAG_labID": "196818",
+        "paternal_biosample_ID": "0",
+        "maternal_biosample_ID": "0",
+        "sex": "1"
+    },
+    "UMCUSAU000000194426": {
+        "label": "Test12",
+        "ancestry_info": "Chianina",
+        "ancestry_code": "CI",
+        "mean_coverage": "13.5429",
+        "biosample_ID": "SAMN05216092",
+        "UMAG_labID": "194426",
+        "paternal_biosample_ID": "0",
+        "maternal_biosample_ID": "0",
+        "sex": "1"
+    },
+    "UMCUSAU000000204654": {
+        "label": "Test13",
+        "ancestry_info": "BrownSwiss",
+        "ancestry_code": "BS",
+        "mean_coverage": "60.00968",
+        "biosample_ID": "SAMEA6272116",
+        "UMAG_labID": "204654",
+        "paternal_biosample_ID": "0",
+        "maternal_biosample_ID": "0",
+        "sex": "1"
+    },
+    "UMCUSAM000000341496": {
+        "label": "Test14",
+        "ancestry_info": "AAxBR",
+        "ancestry_code": "F1X",
+        "mean_coverage": "50.01",
+        "biosample_ID": "SAMN08473802",
+        "UMAG_labID": "341496",
+        "paternal_biosample_ID": "0",
+        "maternal_biosample_ID": "0",
+        "sex": "1" 
+    },
+    "UMCUSAF000000341497": {
+        "label": "Test15",
+        "ancestry_info": "YKxHI",
+        "ancestry_code": "F1X",
+        "mean_coverage": "17.91839",
+        "biosample_ID": "SAMN12153487",
+        "UMAG_labID": "341497",
+        "paternal_biosample_ID": "0",
+        "maternal_biosample_ID": "0",
+        "sex": "2"
+    },
+    "UMCUSAM000000341713": {
+        "label": "Test16",
+        "ancestry_info": "BIxSI",
+        "ancestry_code": "F1X",
+        "mean_coverage": "14.45935",
+        "biosample_ID": "SAMN16780309",
+        "UMAG_labID": "341713",
+        "paternal_biosample_ID": "0",
+        "maternal_biosample_ID": "0",
+        "sex": "1"
+    },
+    "UMCUSAM000009341496": {
+        "label": "Test17",
+        "ancestry_info": "AAxBR",
+        "ancestry_code": "SYN_F1X",
+        "mean_coverage": "26.20161",
+        "biosample_ID": "NA",
+        "UMAG_labID": "9341496",
+        "paternal_biosample_ID": "0",
+        "maternal_biosample_ID": "0",
+        "sex": "1"
+    },
+    "UMCUSAF000009341497": {
+        "label": "Test18",
+        "ancestry_info": "YKxHI",
+        "ancestry_code": "SYN_F1X",
+        "mean_coverage": "25.78742",
+        "biosample_ID": "NA",
+        "UMAG_labID": "9341497",
+        "paternal_biosample_ID": "0",
+        "maternal_biosample_ID": "0",
+        "sex": "2"
+    },
+    "UMCUSAM000009341713": {
+        "label": "Test19",
+        "ancestry_info": "BIxSI",
+        "ancestry_code": "SYN_F1X",
+        "mean_coverage": "25.84871",
+        "biosample_ID": "NA",
+        "UMAG_labID": "9341713",
+        "paternal_biosample_ID": "0",
+        "maternal_biosample_ID": "0",
+        "sex": "1"
+    }
+}

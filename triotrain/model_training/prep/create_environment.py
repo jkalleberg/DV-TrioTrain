@@ -527,9 +527,6 @@ class Environment:
             col_num = col_num + 1
             # Record column number working on
             value = self.data[col][self.index]
-            
-            # print(f"COL {col_num}: {value}")
-            # breakpoint()
 
             if col_num >= 10:
                 # Columns 10+ are paths. Confirm that the paths given exist
@@ -547,7 +544,11 @@ class Environment:
                             )
 
                         if col == "PopVCF":
-                            if self.use_allele_freq:
+                            
+                            if absolute_path.file_exists:
+                                self.use_allele_freq = True
+                            
+                            if self.use_allele_freq and self.trio_num > 0:
                                 # If adding PopVCF data to new model, update conditions accordingly...
                                 if 8 not in self.additional_channels.keys():
                                     self.additional_channels[8] = "allele_frequency"

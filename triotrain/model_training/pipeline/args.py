@@ -270,6 +270,7 @@ def collect_args() -> argparse.ArgumentParser:
         "--stop-itr",
         dest="terminate",
         help="end a pipeline at a specified genome iteration.\nEXAMPLE: to end @ Trio2-Parent2, set --end-itr=4",
+        help="end a pipeline at a specified genome iteration.\nEXAMPLE: to end @ Trio2-Parent2, set --end-itr=4",
         type=int,
         metavar="<int>",
     )
@@ -319,6 +320,9 @@ def get_args(parser: argparse.ArgumentParser) -> argparse.Namespace:
     """
     manual_args_list = [
         "-m",
+        # "triotrain/model_training/metadata/240724_SingleTrio_BI_SI.csv",
+        # "triotrain/model_training/metadata/240724_SingleTrio_YK_HI.csv",
+        # "triotrain/model_training/metadata/240724_SingleTrio_AA_BR.csv",
         # "triotrain/model_training/metadata/240429_DeepVariantTriosTRUTH_UMAG1_noPopVCF.csv",
         "triotrain/model_training/metadata/240429_DeepVariantTriosTRUTH_UMAG1_noPopVCF_hellbender.csv",
         # "triotrain/model_training/metadata/230313_benchmarking.csv",
@@ -329,6 +333,9 @@ def get_args(parser: argparse.ArgumentParser) -> argparse.Namespace:
         # "None",
         "--name",
         "240429_NoPopVCF",
+        # "240724_BI_SI_Only", 
+        # "240724_YK_HI_Only", 
+        # "240724_AA_BR_Only",
         # "230313_GIAB",
         # "220913_NewTrios",
         # "221118_NewTrios",
@@ -340,14 +347,14 @@ def get_args(parser: argparse.ArgumentParser) -> argparse.Namespace:
         # "region_files/DEMO_PASS1.show_regions.bed",
         "--num-tests",
         "19",
-        # "6",
         "--start-itr",
-        "9",
+        "1",
+        # "28",
         "--stop-itr",
-        # "11",
-        "17",
-        # "30",
-        # "--dry-run",
+        "3",
+        # "29",
+        # "31",
+        "--dry-run",
         # "--ignore",
         # "NKLS,MSY",
         # "--debug",
@@ -364,17 +371,23 @@ def get_args(parser: argparse.ArgumentParser) -> argparse.Namespace:
         # '{"channels": [1, 2, 3, 4, 5, 6, 8, 19]}',
         # "/storage/hpc/group/UMAG_test/WORKING/jakth2/TRIO_TRAINING_OUTPUTS/220913_NewTrios/PASS11/examples/Mother.example_info.json",
         # "--use-gpu",
-        # "--benchmark",
-        "--trio-dependencies",
-        "None,None,28935490,None",
+        "--keep-jobids",
+        # "--trio-dependencies",
+        # "None,None,3138271,None",
         # "--overwrite",
         # "--restart-jobs",
+        # '{"make_examples:Mother": [1,2,7,8,9,10,11,12,49,50,54,56,70,]}',
+        # '{"beam_shuffle:Father": [1,2,3,4,5,6,7,8,9]}'
+        # '{"train_eval": [2514687], "select_ckpt": [2514688]}',
+        # '{"train_eval": [1]}',
         # '{"train_eval": [1]}',
         # '{"re_shuffle:Father": [1]}',
         # '{"call_variants": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]}',
         # '{"convert_happy": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]}',
         # '{"convert_happy": [2, 3, 4, 5, 6]}',
     ]
+    # return parser.parse_args(manual_args_list)
+    return parser.parse_args()
     # return parser.parse_args(manual_args_list)
     return parser.parse_args()
 

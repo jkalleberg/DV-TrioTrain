@@ -1,0 +1,11 @@
+{
+    "call_variants": {
+        "partition": "general,schnabelr-lab",
+        "nodes": 1,
+        "ntasks": 64,
+        "mem": "490G",
+        "time": "2-00:00:00",
+        "account": "schnabelr-lab",
+        "email": "jakth2@mail.missouri.edu"
+    }
+}

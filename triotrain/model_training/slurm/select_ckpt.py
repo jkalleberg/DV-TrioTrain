@@ -29,6 +29,7 @@ abs_path = Path(__file__).resolve()
 module_path = str(abs_path.parent.parent.parent)
 path.append(module_path)
 from helpers.environment import Env
+from helpers.files import Files
 
 
 # Parsing command line inputs function
@@ -197,6 +198,9 @@ class MergeSelect:
             f"{self.current_genome}_Examples",
             "N_Epochs",
             "BatchSize",
+            "ExamplesDir",
+            "N_Parts",
+            f"{self.current_genome}TrainDir",
         ]
 
         (
@@ -205,6 +209,9 @@ class MergeSelect:
             self.num_examples,
             self.epochs,
             self.batch_size,
+            self.examples_dir,
+            self.n_parts,
+            self.train_dir,
         ) = self.env.load(*vars_list)
 
         # Calculate the number of training steps used
@@ -332,6 +339,33 @@ class MergeSelect:
             self.logger.info(
                 f"{self._logger_msg}: next starting ckpt identified\t\t| '{self.checkpoint}'",
             )
+    
+    def update_example_info(self) -> None:
+        """
+        Record the example format which is compatible with the new checkpoint.
+        """
+        _input_path = Path(self.examples_dir) / f"{self.current_genome}.region1.labeled.tfrecords-00001-of-000{self.n_parts}.gz.example_info.json"
+        _input_json = Files(
+            path_to_file = _input_path,
+            logger = self.logger,
+            logger_msg = self._logger_msg,
+            debug_mode = self._debug_mode,
+            dryrun_mode = self._dryrun_mode,
+        )
+        _input_json.check_status(should_file_exist=True)
+        _input_json.load_json_file()
+        
+        _output_path = Path(self.train_dir) / f"{self.checkpoint}.example_info.json"
+        _output_json = Files(
+            path_to_file = _output_path,
+            logger = self.logger,
+            logger_msg = self._logger_msg,
+            debug_mode = self._debug_mode,
+            dryrun_mode = self._dryrun_mode,
+        )
+        _output_json.check_status()
+        _output_json.file_dict = _input_json.file_dict        
+        _output_json.write_json_file()
 
     def record_results(self) -> None:
         """
@@ -391,6 +425,7 @@ class MergeSelect:
         self.count_log_lines()
         self.count_log_lines(train_mode=False)
         self.select_ckpt_name()
+        self.update_example_info()
         self.record_results()
 
 

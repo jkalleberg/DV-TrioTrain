@@ -24,7 +24,7 @@ from spython.main import Client
 abs_path = Path(__file__).resolve()
 module_path = str(abs_path.parent.parent.parent)
 path.append(module_path)
-from helpers.files import WriteFiles, TestFile
+from helpers.files import Files, TestFile
 from helpers.iteration import Iteration
 from helpers.utils import generate_job_id, check_if_all_same
 from model_training.slurm.sbatch import SBATCH, SubmitSBATCH
@@ -182,7 +182,7 @@ class DTVariantCaller:
         )
         if resources.file_exists:
             # read in the json file
-            with open(str(self._resource_input), mode="r") as file:
+            with open(resources.file, mode="r") as file:
                 resource_dict = load(file)
 
             if self._phase in resource_dict:
@@ -217,8 +217,7 @@ class DTVariantCaller:
         metadata.check_existing(logger_msg=self._logger_msg, debug_mode=self.args.debug)
         if metadata.file_exists:
             # read in the csv file
-            with open(
-                str(self._metadata_input), mode="r", encoding="utf-8-sig"
+            with open(metadata.file, mode="r", encoding="utf-8-sig"
             ) as data:
                 dict_reader = DictReader(data)
                 self._data_list = list(dict_reader)
@@ -229,7 +228,7 @@ class DTVariantCaller:
             )
         else:
             self.logger.error(
-                f"{self._logger_msg}: unable to load metadata file | '{self._metadata_input}'"
+                f"{self._logger_msg}: unable to load metadata file | '{metadata.file}'"
             )
             raise ValueError("Invalid Input File")
 
@@ -418,15 +417,14 @@ class DTVariantCaller:
                 f"{self._trio_name} {self._father_sampleID} {paternal} {maternal} {sex} 0"
             )
 
-        self._pedigree = WriteFiles(
-            path_to_file=str(self._output_path),
-            file=f"{self._trio_name}.PED",
+        self._pedigree = Files(
+            path_to_file=self._output_path / f"{self._trio_name}.PED",
             logger=self.logger,
             logger_msg=self._logger_msg,
             debug_mode=self.args.debug,
             dryrun_mode=self.args.dry_run,
         )
-        self._pedigree.check_missing()
+        self._pedigree.check_status()
         if not self._pedigree.file_exists:
             if self.args.dry_run:
                 self.logger.info(

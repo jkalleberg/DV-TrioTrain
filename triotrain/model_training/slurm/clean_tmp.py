@@ -212,20 +212,20 @@ class ClearTmp:
         keep.check_existing(logger_msg=logging_msg, debug_mode=self.debug_mode)
         if not keep.file_exists:
             self.logger.error(
-                f"{logging_msg} - [{self.genome}]: missing '{str(keep_file)}' to save example_info...\nExiting"
+                f"{logging_msg} - [{self.genome}]: missing '{keep.file}' to save example_info...\nExiting"
             )
             exit(1)
 
         if keep.file_exists and not new.file_exists:
             if self.dryrun_mode:
                 self.logger.info(
-                    f"{logging_msg}: pretending to copy '{keep_file.name}'..."
+                    f"{logging_msg}: pretending to copy '{keep.file}'..."
                 )
             else:
                 self.logger.info(
-                    f"{logging_msg}  - [{self.genome}]: copying '{keep_file.name}' now..."
+                    f"{logging_msg}  - [{self.genome}]: copying '{keep.file}' now..."
                 )
-                copy2(str(keep_file), new.file)
+                copy2(keep.file, new.file)
 
     def create_search_patterns(self) -> None:
         """

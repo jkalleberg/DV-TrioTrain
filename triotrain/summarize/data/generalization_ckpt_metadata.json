@@ -1,0 +1,757 @@
+{
+    "DV": {
+        "training_iteration_number": "NA",
+        "training_phase": "0",
+        "checkpoint_name": "model.ckpt",
+        "version": "1.4.0",
+        "shape": [
+            100,
+            221,
+            7
+        ],
+        "channels": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            19
+        ]
+    },
+    "DV-AF": {
+        "training_iteration_number": "NA",
+        "training_phase": "0",
+        "checkpoint_name": "wgs_af.model.ckpt",
+        "version": "1.4.0",
+        "shape": [
+            100,
+            221,
+            8
+        ],
+        "channels": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            8,
+            19
+        ]
+    },
+    "1": {
+        "training_iteration_number": "1",
+        "training_phase": "1",
+        "checkpoint_name": "model.ckpt-84518",
+        "version": "1.4.0",
+        "shape": [
+            100,
+            221,
+            8
+        ],
+        "channels": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            8,
+            19
+        ]
+    },
+    "2": {
+        "training_iteration_number": "2",
+        "training_phase": "1",
+        "checkpoint_name": "model.ckpt-201011",
+        "version": "1.4.0",
+        "shape": [
+            100,
+            221,
+            8
+        ],
+        "channels": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            8,
+            19
+        ]
+    },
+    "3": {
+        "training_iteration_number": "3",
+        "training_phase": "1",
+        "checkpoint_name": "model.ckpt-134175",
+        "version": "1.4.0",
+        "shape": [
+            100,
+            221,
+            8
+        ],
+        "channels": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            8,
+            19
+        ]
+    },
+    "4": {
+        "training_iteration_number": "4",
+        "training_phase": "1",
+        "checkpoint_name": "model.ckpt-77316",
+        "version": "1.4.0",
+        "shape": [
+            100,
+            221,
+            8
+        ],
+        "channels": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            8,
+            19
+        ]
+    },
+    "5": {
+        "training_iteration_number": "5",
+        "training_phase": "1",
+        "checkpoint_name": "model.ckpt-76110",
+        "version": "1.4.0",
+        "shape": [
+            100,
+            221,
+            8
+        ],
+        "channels": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            8,
+            19
+        ]
+    },
+    "6": {
+        "training_iteration_number": "6",
+        "training_phase": "1",
+        "checkpoint_name": "model.ckpt-99664",
+        "version": "1.4.0",
+        "shape": [
+            100,
+            221,
+            8
+        ],
+        "channels": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            8,
+            19
+        ]
+    },
+    "7": {
+        "training_iteration_number": "7",
+        "training_phase": "1",
+        "checkpoint_name": "model.ckpt-15507",
+        "version": "1.4.0",
+        "shape": [
+            100,
+            221,
+            8
+        ],
+        "channels": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            8,
+            19
+        ]
+    },
+    "8": {
+        "training_iteration_number": "8",
+        "training_phase": "1",
+        "checkpoint_name": "model.ckpt-113822",
+        "version": "1.4.0",
+        "shape": [
+            100,
+            221,
+            8
+        ],
+        "channels": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            8,
+            19
+        ]
+    },
+    "9": {
+        "training_iteration_number": "9",
+        "training_phase": "1",
+        "checkpoint_name": "model.ckpt-127591",
+        "version": "1.4.0",
+        "shape": [
+            100,
+            221,
+            8
+        ],
+        "channels": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            8,
+            19
+        ]
+    },
+    "10": {
+        "training_iteration_number": "10",
+        "training_phase": "1",
+        "checkpoint_name": "model.ckpt-63019",
+        "version": "1.4.0",
+        "shape": [
+            100,
+            221,
+            8
+        ],
+        "channels": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            8,
+            19
+        ]
+    },
+    "11": {
+        "training_iteration_number": "11",
+        "training_phase": "1",
+        "checkpoint_name": "model.ckpt-159745",
+        "version": "1.4.0",
+        "shape": [
+            100,
+            221,
+            8
+        ],
+        "channels": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            8,
+            19
+        ]
+    },
+    "12": {
+        "training_iteration_number": "12",
+        "training_phase": "1",
+        "checkpoint_name": "model.ckpt-203095",
+        "version": "1.4.0",
+        "shape": [
+            100,
+            221,
+            8
+        ],
+        "channels": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            8,
+            19
+        ]
+    },
+    "13": {
+        "training_iteration_number": "13",
+        "training_phase": "2",
+        "checkpoint_name": "model.ckpt-101101",
+        "version": "1.4.0",
+        "shape": [
+            100,
+            221,
+            8
+        ],
+        "channels": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            8,
+            19
+        ]
+    },
+    "14": {
+        "training_iteration_number": "14",
+        "training_phase": "2",
+        "checkpoint_name": "model.ckpt-120966",
+        "version": "1.4.0",
+        "shape": [
+            100,
+            221,
+            8
+        ],
+        "channels": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            8,
+            19
+        ]
+    },
+    "15": {
+        "training_iteration_number": "15",
+        "training_phase": "2",
+        "checkpoint_name": "model.ckpt-225421",
+        "version": "1.4.0",
+        "shape": [
+            100,
+            221,
+            8
+        ],
+        "channels": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            8,
+            19
+        ]
+    },
+    "16": {
+        "training_iteration_number": "16",
+        "training_phase": "2",
+        "checkpoint_name": "model.ckpt-116248",
+        "version": "1.4.0",
+        "shape": [
+            100,
+            221,
+            8
+        ],
+        "channels": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            8,
+            19
+        ]
+    },
+    "17": {
+        "training_iteration_number": "17",
+        "training_phase": "2",
+        "checkpoint_name": "model.ckpt-77464",
+        "version": "1.4.0",
+        "shape": [
+            100,
+            221,
+            8
+        ],
+        "channels": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            8,
+            19
+        ]
+    },
+    "18": {
+        "training_iteration_number": "18",
+        "training_phase": "2",
+        "checkpoint_name": "model.ckpt-120844",
+        "version": "1.4.0",
+        "shape": [
+            100,
+            221,
+            8
+        ],
+        "channels": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            8,
+            19
+        ]
+    },
+    "19": {
+        "training_iteration_number": "19",
+        "training_phase": "3",
+        "checkpoint_name": "model.ckpt-228738",
+        "version": "1.4.0",
+        "shape": [
+            100,
+            221,
+            8
+        ],
+        "channels": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            8,
+            19
+        ]
+    },
+    "20": {
+        "training_iteration_number": "20",
+        "training_phase": "3",
+        "checkpoint_name": "model.ckpt-892234",
+        "version": "1.4.0",
+        "shape": [
+            100,
+            221,
+            8
+        ],
+        "channels": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            8,
+            19
+        ]
+    },
+    "21": {
+        "training_iteration_number": "21",
+        "training_phase": "3",
+        "checkpoint_name": "model.ckpt-803481",
+        "version": "1.4.0",
+        "shape": [
+            100,
+            221,
+            8
+        ],
+        "channels": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            8,
+            19
+        ]
+    },
+    "22": {
+        "training_iteration_number": "22",
+        "training_phase": "3",
+        "checkpoint_name": "model.ckpt-935368",
+        "version": "1.4.0",
+        "shape": [
+            100,
+            221,
+            8
+        ],
+        "channels": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            8,
+            19
+        ]
+    },
+    "23": {
+        "training_iteration_number": "23",
+        "training_phase": "4",
+        "checkpoint_name": "model.ckpt-59354",
+        "version": "1.4.0",
+        "shape": [
+            100,
+            221,
+            8
+        ],
+        "channels": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            8,
+            19
+        ]
+    },
+    "24": {
+        "training_iteration_number": "24",
+        "training_phase": "4",
+        "checkpoint_name": "model.ckpt-217570",
+        "version": "1.4.0",
+        "shape": [
+            100,
+            221,
+            8
+        ],
+        "channels": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            8,
+            19
+        ]
+    },
+    "25": {
+        "training_iteration_number": "25",
+        "training_phase": "4",
+        "checkpoint_name": "model.ckpt-275488",
+        "version": "1.4.0",
+        "shape": [
+            100,
+            221,
+            8
+        ],
+        "channels": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            8,
+            19
+        ]
+    },
+    "26": {
+        "training_iteration_number": "26",
+        "training_phase": "4",
+        "checkpoint_name": "model.ckpt-432983",
+        "version": "1.4.0",
+        "shape": [
+            100,
+            221,
+            8
+        ],
+        "channels": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            8,
+            19
+        ]
+    },
+    "27": {
+        "training_iteration_number": "27",
+        "training_phase": "4",
+        "checkpoint_name": "model.ckpt-204026",
+        "version": "1.4.0",
+        "shape": [
+            100,
+            221,
+            8
+        ],
+        "channels": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            8,
+            19
+        ]
+    },
+    "28": {
+        "training_iteration_number": "28",
+        "training_phase": "4",
+        "checkpoint_name": "model.ckpt-282383",
+        "version": "1.4.0",
+        "shape": [
+            100,
+            221,
+            8
+        ],
+        "channels": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            8,
+            19
+        ]
+    },
+    "29": {
+        "training_iteration_number": "29",
+        "training_phase": "5",
+        "checkpoint_name": "model.ckpt-290765",
+        "version": "1.4.0",
+        "shape": [
+            100,
+            221,
+            8
+        ],
+        "channels": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            8,
+            19
+        ]
+    },
+    "30": {
+        "training_iteration_number": "30",
+        "training_phase": "1",
+        "checkpoint_name": "model.ckpt-336710",
+        "version": "1.4.0",
+        "shape": [
+            100,
+            221,
+            8
+        ],
+        "channels": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            8,
+            19
+        ]
+    },
+    "1B": {
+        "training_iteration_number": "1B",
+        "training_phase": "6",
+        "checkpoint_name": "model.ckpt-292290",
+        "version": "1.4.0",
+        "shape": [
+            100,
+            221,
+            8
+        ],
+        "channels": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            8,
+            19
+        ]
+    },
+    "2B": {
+        "training_iteration_number": "2B",
+        "training_phase": "1",
+        "checkpoint_name": "model.ckpt-598024",
+        "version": "1.4.0",
+        "shape": [
+            100,
+            221,
+            8
+        ],
+        "channels": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            8,
+            19
+        ]
+    },
+    "1C": {
+        "training_iteration_number": "1C",
+        "training_phase": "6",
+        "checkpoint_name": "model.ckpt-275488",
+        "version": "1.4.0",
+        "shape": [
+            100,
+            221,
+            8
+        ],
+        "channels": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            8,
+            19
+        ]
+    },
+    "2C": {
+        "training_iteration_number": "2C",
+        "training_phase": "6",
+        "checkpoint_name": "model.ckpt-804879",
+        "version": "1.4.0",
+        "shape": [
+            100,
+            221,
+            8
+        ],
+        "channels": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            8,
+            19
+        ]
+    }
+}

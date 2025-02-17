@@ -25,9 +25,7 @@ def initalize_weights(setup: Setup, itr: Iteration, logging_msg: str):
     # If running GIAB benchmarking, using a default model or a CL-arg ckpt,
     if setup.meta.checkpoint_name is not None:
         # define the complete path to the ckpt file.
-        current_starting_point = Path(
-            f"{str(setup.meta._checkpoint_path)}/{str(setup.meta.checkpoint_name)}"
-        )
+        current_starting_point = Path(setup.meta._checkpoint_path) / str(setup.meta.checkpoint_name)
 
     # Look for where the starting checkpoint could be:
     else:
@@ -40,9 +38,7 @@ def initalize_weights(setup: Setup, itr: Iteration, logging_msg: str):
             warm_starting_ckpt_path = itr.env.contents[path]
             warm_starting_ckpt_name = itr.env.contents[file]
 
-            current_starting_point = Path(
-                f"{str(warm_starting_ckpt_path)}/{str(warm_starting_ckpt_name)}"
-            )
+            current_starting_point = Path(warm_starting_ckpt_path) / str(warm_starting_ckpt_name)
         
         # Second, look a PRIOR ENV to define starting ckpt PATH only.
         if current_starting_point is None and itr.args.first_genome is not None:
@@ -124,6 +120,10 @@ def initalize_weights(setup: Setup, itr: Iteration, logging_msg: str):
                     dryrun_mode=setup.args.dry_run,
                     msg=logging_msg,
                 )
+            elif setup.args.dry_run:
+                itr.logger.info(
+                    f"{logging_msg}: pretending to initalize a starting ckpt | '{current_starting_point}'"
+                ) 
             else:
                 itr.logger.error(
                     f"{logging_msg}: unable to initalize model; missing starting ckpt | '{current_starting_point}'.\nExiting..."
@@ -192,11 +192,11 @@ def initalize_weights(setup: Setup, itr: Iteration, logging_msg: str):
                     )
             elif setup.meta.itr_num+1 == setup.meta.num_of_iterations:
                 itr.logger.info(
-                    f"{itr._mode_string} - [setup]: final iteration detected; unable to update next trio env file")
+                    f"{logging_msg}: final iteration detected; unable to update next trio env file.")
                 return
             else:
                 itr.logger.error(
-                    f"{itr._mode_string} - [setup]: next_trio_num can not be 'None', unable to update next trio env file.\nExiting..."
+                    f"{logging_msg}: next_trio_num can not be 'None', unable to update next trio env file.\nExiting..."
                 )
                 exit(1)
         # or if we can update the CURRENT ENV

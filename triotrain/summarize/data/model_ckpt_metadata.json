@@ -1,0 +1,219 @@
+{
+    "DV1.4_default_human": {
+        "training_iteration_number": "NA",
+        "training_phase": "0",
+        "checkpoint_name": "model.ckpt",
+        "version": "1.4.0",
+        "shape": [
+            100,
+            221,
+            7
+        ],
+        "channels": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            19
+        ]
+    },
+    "DV1.4_WGS.AF_human": {
+        "training_iteration_number": "NA",
+        "training_phase": "0",
+        "checkpoint_name": "wgs_af.model.ckpt",
+        "version": "1.4.0",
+        "shape": [
+            100,
+            221,
+            8
+        ],
+        "channels": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            8,
+            19
+        ]
+    },
+    "DT1.4_default_human": {
+        "training_iteration_number": "NA",
+        "training_phase": "0",
+        "checkpoint_name": "",
+        "version": "1.4.0",
+        "shape": "",
+        "channels": "" 
+    },
+    "DV1.4_WGS.AF_OneTrio": {
+        "training_iteration_number": "2",
+        "training_phase": "1",
+        "checkpoint_name": "model.ckpt-201011",
+        "version": "1.4.0",
+        "shape": [
+            100,
+            221,
+            8
+        ],
+        "channels": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            8,
+            19
+        ]
+    },
+    "DV1.4_WGS.AF_OneTrio_AA_BR": {
+        "training_iteration_number": "2",
+        "training_phase": "1",
+        "checkpoint_name": "model.ckpt-598024",
+        "version": "1.4.0",
+        "shape": [
+            100,
+            221,
+            8
+        ],
+        "channels": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            8,
+            19
+        ]
+    },
+    "DV1.4_WGS.AF_OneTrio_YK_HI": {
+        "training_iteration_number": "2",
+        "training_phase": "1",
+        "checkpoint_name": "model.ckpt-804879",
+        "version": "1.4.0",
+        "shape": [
+            100,
+            221,
+            8
+        ],
+        "channels": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            8,
+            19
+        ]
+    },
+    "DV1.4_WGS.AF_cattle1": {
+        "training_iteration_number": "12",
+        "training_phase": "1",
+        "checkpoint_name": "model.ckpt-203095",
+        "version": "1.4.0",
+        "shape": [
+            100,
+            221,
+            8
+        ],
+        "channels": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            8,
+            19
+        ]
+    },
+    "DV1.4_WGS.AF_cattle2": {
+        "training_iteration_number": "18",
+        "training_phase": "2",
+        "checkpoint_name": "model.ckpt-120844",
+        "version": "1.4.0",
+        "shape": [
+            100,
+            221,
+            8
+        ],
+        "channels": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            8,
+            19
+        ]
+    },
+    "DV1.4_WGS.AF_cattle3": {
+        "training_iteration_number": "22",
+        "training_phase": "3",
+        "checkpoint_name": "model.ckpt-935368",
+        "version": "1.4.0",
+        "shape": [
+            100,
+            221,
+            8
+        ],
+        "channels": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            8,
+            19
+        ]
+    },
+    "DV1.4_WGS.AF_cattle4": {
+        "training_iteration_number": "28",
+        "training_phase": "4",
+        "checkpoint_name": "model.ckpt-282383",
+        "version": "1.4.0",
+        "shape": [
+            100,
+            221,
+            8
+        ],
+        "channels": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            8,
+            19
+        ]
+    },
+    "DV1.4_WGS.AF_cattle5": {
+        "training_iteration_number": "30",
+        "training_phase": "5",
+        "checkpoint_name": "model.ckpt-336710",
+        "version": "1.4.0",
+        "shape": [
+            100,
+            221,
+            8
+        ],
+        "channels": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            8,
+            19
+        ]
+    }
+}

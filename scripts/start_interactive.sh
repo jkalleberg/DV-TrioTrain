@@ -1,13 +1,11 @@
 #!/bin/bash
 # scripts/start_interactive.sh
-# An example script of requesting interactive resources for the Lewis SLURM Cluster
+# An example script of requesting interactive resources for the Hellbender SLURM Cluster
 # NOTE: You will need to change this to match your own setup, such as 
 # altering the partition name  and qos (i.e. 'Interactive') or,
-# altering your account (i.e. 'schnabellab')
+# altering your account (i.e. 'schnabelr-lab')
 
-# srun --pty -p gpu3 --time=0-04:00:00 -A animalsci /bin/bash
-# srun --pty -p hpc6 --time=0-04:00:00 --mem=0 --exclusive -A animalsci /bin/bash
-# srun --pty -p Interactive --qos=Interactive --time=0-04:00:00 --mem=0 --exclusive -A animalsci /bin/bash
-# srun --pty -p Interactive --qos=Interactive --time=0-04:00:00 --mem=30G -A schnabellab /bin/bash
-srun --pty -p interactive --time=0-04:00:00 --mem=30G /bin/bash
-# srun --pty -p BioCompute --time=0-06:00:00 --exclusive --mem=0 -A schnabellab /bin/bash
+# srun --pty -p schnabelr-umag --time=0-08:00:00 --mem=30G -A schnabelr-umag /bin/bash
+# srun --pty -p schnabelr-lab --time=0-08:00:00 --mem=30G -A schnabelr-lab /bin/bash
+srun --pty -p schnabelr-umag -A schnabelr-umag -n 64 --time=0-08:00:00 --mem=150G /bin/bash
+# srun --pty -p requeue --time=0-06:00:00 --mem=10G /bin/bash

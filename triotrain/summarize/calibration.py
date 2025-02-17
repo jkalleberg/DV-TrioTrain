@@ -9,20 +9,17 @@ example:
 import argparse
 from csv import DictReader
 from logging import Logger
-from os import environ
 from os import path as p
 from pathlib import Path
 from sys import path
-from typing import Union
-
 import pandas as pd
+from typing import List
 
 abs_path = Path(__file__).resolve()
 module_path = str(abs_path.parent.parent)
 path.append(module_path)
 
-from helpers.collections import Bins
-from helpers.files import TestFile, WriteFiles
+from helpers.files import TestFile, Files
 from helpers.vcf_to_tsv import Convert_VCF
 
 
@@ -35,12 +32,27 @@ def collect_args() -> argparse.Namespace:
         formatter_class=argparse.RawTextHelpFormatter,
     )
     parser.add_argument(
-        "-i",
-        "--input",
-        dest="vcf_input",
+            "-I",
+            "--input",
+            dest="input",
+            type=str,
+            help="[REQUIRED]\ninput path\noutput file from rtg-tools mendelian (.VCF)",
+            metavar="</path/to/file>",
+        )
+    parser.add_argument(
+        "-O",
+        "--output-path",
+        dest="outpath",
         type=str,
-        help="[REQUIRED]\ninput file (.VCF)",
-        metavar="</path/file>",
+        help="[REQUIRED]\noutput path\nwhere to save the results",
+        metavar="</path/>",
+    )
+    parser.add_argument(
+        "--overwrite",
+        dest="overwrite",
+        help="if True, enable re-writing files",
+        default=False,
+        action="store_true",
     )
     parser.add_argument(
         "-d",
@@ -56,32 +68,30 @@ def collect_args() -> argparse.Namespace:
         help="if True, display commands to the screen",
         action="store_true",
     )
-    parser.add_argument(
-        "-o",
-        "--output",
-        dest="output",
-        type=str,
-        help="output path prefix; directory will be created if necessary",
-        metavar="</path/prefix>",
-    )
     # return parser.parse_args()
+    
+   
+    
     return parser.parse_args(
         [
             "--input",
-            "/storage/hpc/group/UMAG_test/WORKING/jakth2/VARIANT_CALLING_OUTPUTS/230313_GIAB/DT1.4_default_human/Human.Trio1.PASS.MIE.vcf.gzQ",
-            # "/storage/hpc/group/UMAG_test/WORKING/jakth2/VARIANT_CALLING_OUTPUTS/230313_GIAB/DV1.4_default_human/Human.Trio1.PASS.MIE.vcf.gz",
-            # "/storage/hpc/group/UMAG_test/WORKING/jakth2/VARIANT_CALLING_OUTPUTS/230313_GIAB/DV1.4_WGS.AF_cattle4/Human.Trio1.PASS.MIE.vcf.gz",
-            # "/storage/hpc/group/UMAG_test/WORKING/jakth2/VARIANT_CALLING_OUTPUTS/230313_GIAB/DT1.4_default_human/Cow.Trio12.PASS.MIE.vcf.gz",
-            # "/storage/hpc/group/UMAG_test/WORKING/jakth2/VARIANT_CALLING_OUTPUTS/230313_GIAB/DV1.4_WGS.AF_cattle4/Cow.Trio12.PASS.MIE.vcf.gz",
-            # "/storage/hpc/group/UMAG_test/WORKING/jakth2/VARIANT_CALLING_OUTPUTS/230313_GIAB/DV1.4_default_human/Cow.Trio12.PASS.MIE.vcf.gz",
-            # "/storage/hpc/group/UMAG_test/WORKING/jakth2/TRIOS_220704/TRIO_CLEAN/Trio12.TRUTH.PASS.MIE.vcf.gz",
-            # "--debug",
-            "--dry-run",
+            "/mnt/pixstor/schnabelr-drii/WORKING/jakth2/TRIOS_220704/TRIO_RAW/Trio14.RAW.sorted.PASS.MIE.exclude_mis.vcf.gz", 
+            # "/mnt/pixstor/schnabelr-drii/WORKING/jakth2/VARIANT_CALLING_OUTPUTS/240528_Benchmarking/DV1.4_default_human/TRIOS/Trio14.PASS.MIE.vcf.gz",
+            # "/mnt/pixstor/schnabelr-drii/WORKING/jakth2/VARIANT_CALLING_OUTPUTS/240528_Benchmarking/DT1.4_default_human/TRIOS/Trio14.PASS.MIE.vcf.gz",
+            # "/mnt/pixstor/schnabelr-drii/WORKING/jakth2/VARIANT_CALLING_OUTPUTS/240528_Benchmarking/DV1.4_WGS.AF_human/TRIOS/Trio14.PASS.MIE.vcf.gz",
+            # "/mnt/pixstor/schnabelr-drii/WORKING/jakth2/VARIANT_CALLING_OUTPUTS/240528_Benchmarking/DV1.4_WGS.AF_cattle1/TRIOS/Trio14.PASS.MIE.vcf.gz",
+            # "/mnt/pixstor/schnabelr-drii/WORKING/jakth2/VARIANT_CALLING_OUTPUTS/240528_Benchmarking/DV1.4_WGS.AF_OneTrio/TRIOS/Trio14.PASS.MIE.vcf.gz",
+            # "/mnt/pixstor/schnabelr-drii/WORKING/jakth2/VARIANT_CALLING_OUTPUTS/240528_Benchmarking/DV1.4_WGS.AF_OneTrio_AA_BR/TRIOS/Trio14.PASS.MIE.vcf.gz",
+            # "/mnt/pixstor/schnabelr-drii/WORKING/jakth2/VARIANT_CALLING_OUTPUTS/240528_Benchmarking/DV1.4_WGS.AF_OneTrio_YK_HI/TRIOS/Trio14.PASS.MIE.vcf.gz",
+            "--output-path",
+            "/mnt/pixstor/schnabelr-drii/WORKING/jakth2/VARIANT_CALLING_OUTPUTS/240528_Benchmarking/summary/MIE_Ranked/UMCUSAM000000341713",
+            "--debug",
+            # "--dry-run",
         ]
     )
 
 
-def check_args(args: argparse.Namespace, logger: Logger) -> Union[str, None]:
+def check_args(args: argparse.Namespace, logger: Logger) -> ModuleNotFoundError:
     """
     With "--debug", display command line args provided.
     With "--dry-run", display a msg.
@@ -93,113 +103,123 @@ def check_args(args: argparse.Namespace, logger: Logger) -> Union[str, None]:
             str_args += f"{key}={val} | "
 
         logger.debug(str_args)
-        _version = environ.get("BIN_VERSION_DV")
-        logger.debug(f"using DeepVariant version | {_version}")
 
     if args.dry_run:
-        _logger_msg = f"[DRY_RUN]"
         logger.info(
-            f"{_logger_msg}: output will display to screen and not write to a file"
+            f"[DRY_RUN]: output will display to screen and not write to a file"
         )
-    else:
-        _logger_msg = None
 
     assert (
-        args.vcf_input
-    ), "missing --input; Please provide a Trio VCF file produced by rtg-mendelian."
+        args.input
+    ), "missing --input; Please provide a Trio VCF file produced by 'rtg-tools mendelian'"
+    
+    assert args.outpath, "missing --output; Please provide an exisiting directory to save results."
 
-    return _logger_msg
 
+def sum2(l: List[int]) -> List[int]:
+    from numpy import cumsum
+
+    return list(cumsum(l))
 
 def __init__() -> None:
     from helpers.utils import get_logger
     from helpers.wrapper import Wrapper, timestamp
-
-    # Collect command line arguments
-    args = collect_args()
-
-    # Collect start time
-    Wrapper(__file__, "start").wrap_script(timestamp())
-
+     
     # Create error log
     current_file = p.basename(__file__)
     module_name = p.splitext(current_file)[0]
     logger = get_logger(module_name)
 
-    try:
-        # Check command line args
-        _log_msg = check_args(args, logger)
-        if _log_msg is None:
-            _logger_msg = ""
-            _internal_msg = ""
-        else:
-            _logger_msg = _log_msg
-            _internal_msg = f"{_log_msg}: "
+    # Collect command line arguments
+    args = collect_args()
+    
+    # Check command line args
+    check_args(args=args, logger=logger)
+    
+    if args.dry_run:
+        logger_msg = f"[DRY_RUN] - [calibrate_mie]"
+    else:
+        logger_msg = f"[calibrate_mie]"
 
+    # Collect start time
+    Wrapper(__file__, "start").wrap_script(timestamp())
+    
+    _input_path = Path(args.input)
+    _labels = _input_path.name.split(".")
+    _tsv_path = _input_path.parent
+    _trio_name = _labels[0]
+    _model_name = _input_path.parent.parent.name
+    if "dv" not in _model_name.lower() and "dt" not in _model_name.lower():
+        _model_name = "GATK4_PostVQSR_UMAGv1"
+
+    try:
         # Transform the Trio VCF output from RTG mendelian into a TSV file
         mie_vcf = Convert_VCF(
-            vcf_input=args.vcf_input,
-            tsv_output=args.output,
+            vcf_input=args.input,
+            tsv_output=_tsv_path,
             logger=logger,
             debug=args.debug,
             dry_run=args.dry_run,
-            logger_msg=_logger_msg,
+            logger_msg=logger_msg,
         )
         mie_vcf.check_files()
     except AssertionError as E:
         logger.error(E)
 
     # Check for exisiting output
-    _processed_file = TestFile(file=f"{mie_vcf._prefix_path}.sorted.tsv", logger=logger)
-    _processed_file.check_missing(logger_msg=_logger_msg, debug_mode=args.debug)
+    # _processed_file = TestFile(file=f"{args.outpath}/{mie_vcf._prefix_name}.SNPs.sorted.csv", logger=logger)
+    _processed_file = TestFile(file=f"{args.outpath}/{_model_name}.{mie_vcf._prefix_name}.sorted.csv", logger=logger)
+    _processed_file.check_missing(logger_msg=logger_msg, debug_mode=args.debug)
 
     if _processed_file.file_exists:
         logger.info(
-            f"{_internal_msg}loading in processed TSV | '{_processed_file.path.name}'"
+            f"{logger_msg}: loading in processed CSV | '{_processed_file.path}'"
         )
         
-        # print("STOPPING HERE!")
-        # breakpoint()
-        with open(str(_processed_file.path), mode="r", encoding="utf-8-sig") as data:
+        with open(_processed_file.file, mode="r", encoding="utf-8-sig") as data:
             dict_reader = DictReader(data, delimiter="\t")
             _tsv_dict_array = list(dict_reader)
 
-        # Sort the Min. GQ from smallest to largest
-        sorted_dict_array = sorted(_tsv_dict_array, key=lambda x: x["INFO/MIN_GQ"])
+        # Sort the GQ from smallest to largest
+        # USING THE CHILD'S GQ VALUE!
+        print("FIX ME!")
+        breakpoint()
+        sorted_dict_array = sorted(
+            _variable_within_trio, key=lambda x: int(x[f"GQ_{_offspring}"]), reverse=True
+        )
         logger.info(
-            f"{_internal_msg}done loading in processed TSV | '{_processed_file.path.name}'"
+            f"{logger_msg}: done loading in processed CSV | '{_processed_file.path.name}'"
         )
     else:
         # Process MIE TSV into usable format
         mie_vcf.run()
-
-        # for itr, row in enumerate(mie_vcf._tsv_dict_array):
-        #     # print(f"ROW {itr}: {row}")
-        #     for key, value in row.items():
-        #         print(f"ROW #{itr} | KEY:{key}=VALUE:{value}")
-        #         breakpoint()
-
-        logger.info(
-            f"{_internal_msg}processing contents from VCF -> TSV | '{mie_vcf._output_file.path.name}'"
-        )
-
-        _edited_tsv_dict_array = []
+        
+        _offspring = mie_vcf._samples[0]
+        
+        logger.info(f"{logger_msg}: --------------- processing {_model_name} | {_trio_name} | {_offspring} ---------------")       
+        
         _num_Non_Ref_Family_Records = 0
         # NOTE: This number (^) should match the value in the RTG-mendelian log file for
         #       the number of sites "checked for Mendelian constraints"
 
         _num_MissingRef_Records = 0
+        _uncalled_in_offspring = []
+        _non_variable_within_trio = []
+        _ignored_by_rtg_tools = []
+        _variable_within_trio = []
+        
         for itr, row in enumerate(mie_vcf._tsv_dict_array):
-            print(f"ROW {itr} | {row}")
-            breakpoint()
             if args.debug and itr % 5000 == 0:
-                logger.debug(f"{_internal_msg}processing row {itr}")
+                logger.debug(f"{logger_msg}: processing row {itr}")
 
             gt_values = [val for key, val in row.items() if key.startswith("GT")]
 
             # First, skip uncalled in offspring
+            # For the GATK (UMAGv1) VCF, did the following manually:
+            # bcftools view -e 'GT[0]="mis"' Trio14.RAW.sorted.PASS.MIE.vcf.gz | bcftools view -e 'GT[1]="mis" && GT[2]="miss"' -o Trio14.RAW.sorted.PASS.MIE.exclude_mis.vcf.gz -O z 
             if gt_values[0] == "./.":
                 _num_MissingRef_Records += 1
+                _uncalled_in_offspring.append(row)
                 continue
 
             # Remove sites where complete trio is either "./." or "0/0"
@@ -207,10 +227,15 @@ def __init__() -> None:
                 contains_gt = [s for s in gt_values if "." not in s and "0/0" not in s]
                 if len(contains_gt) == 0:
                     _num_MissingRef_Records += 1
+                    _non_variable_within_trio.append(row)
                     continue
                 else:
                     _num_Non_Ref_Family_Records += 1
-
+            
+            if row["INFO/MCU"] != ".":
+                _ignored_by_rtg_tools.insert(itr, row)
+                continue
+            
             # Calculate minimum GQ value per site for all samples
             _row_copy = row.copy()
             
@@ -233,104 +258,66 @@ def __init__() -> None:
                 _row_copy["IS_MIE"] = 0
 
             # Save transformations to the copy made
-            _edited_tsv_dict_array.insert(itr, _row_copy)
+            _variable_within_trio.insert(itr, _row_copy)
 
-        # Sort the Min. GQ from smallest to largest
+        # Sort the Min. GQ from largest to smallest
+        # USING THE CHILD'S GQ VALUE!
         sorted_dict_array = sorted(
-            _edited_tsv_dict_array, key=lambda x: x["INFO/MIN_GQ"]
+            _variable_within_trio, key=lambda x: int(x[f"GQ_{_offspring}"]), reverse=True
         )
+        
+        # Calculate a cumulative sum for the 'IS_MIE' column
+        # Convert to pd.DataFrame
+        _df = pd.DataFrame.from_records(data=sorted_dict_array)
+
+        # Subset the dataframe for plotting
+        _mie_only = _df["IS_MIE"].astype(int)
+        _offspring_gq_values = _df[f"GQ_{_offspring}"].astype(int)
+
+        num_variants = len(_mie_only)
+        
+        logger.info(f"{logger_msg}: ------------- done processing {_model_name} | {_trio_name} | {_offspring} -------------") 
+        logger.info(f"{logger_msg}: {_offspring} | Number of Variants: {num_variants:,}")
 
         logger.info(
-            f"{_internal_msg}done processing contents from VCF -> TSV | '{mie_vcf._output_file.path.name}'"
+            f"{logger_msg}: saving contents from TSV -> CSV\t| '{_processed_file.path}'"
         )
 
-        # Save output to disk
-        results = WriteFiles(
-            path_to_file=_processed_file.path.parent,
-            file=_processed_file.path.name,
+        # Create an index value of variants from largest GQ to smallest GQ score
+        idx = list(range(1, (num_variants+1)))
+
+        # Add metaddata
+        sample_used = [_offspring] * num_variants
+        hue_val = [_model_name] * num_variants
+
+        # Calculate cumulative error rate
+        cumulative_n_mie = sum2(_mie_only)
+        prop_mie = [(100 * x/num_variants) for x in cumulative_n_mie]
+
+        # Save data
+        data = {"Num_SNVs": idx,
+                "Sample_ID": sample_used,
+                "Variant_Caller": hue_val,
+                "GQ_value": _offspring_gq_values,
+                "Cumulative_MIE": cumulative_n_mie,
+                "Cumulative_MIE%": prop_mie
+                }      
+        _df = pd.DataFrame.from_dict(data=data)
+        
+        # Write output to disk
+        results = Files(
+            path_to_file=_processed_file.path.parent / _processed_file.path.name,
             logger=logger,
-            logger_msg=_log_msg,
+            logger_msg=logger_msg,
             dryrun_mode=args.dry_run,
         )
-        results.check_missing()
-        results.write_list_of_dicts(line_list=sorted_dict_array, delim="\t")
+        results.check_status()
+        results.write_dataframe(df=_df)
 
-    # Create bins without having to read the (very large)
-    #   processed TSV in as a pd.DataFrame
-    _bins = tuple(range(0, 105, 5))
-    _counts = Bins(_bins)
-    _counts.create_bins()
-    # print(f"COUNTS BINS: {_counts._sdict}")
-    # breakpoint()
-
-    _num_mie = Bins(_bins)
-    _num_mie.create_bins()
-    # print(f"NUM MIE BINS: {_num_mie._sdict}")
-
-    for itr, row in enumerate(sorted_dict_array):
-        _min_gq_value = int(row["INFO/MIN_GQ"])
-        _mie_value = int(row["IS_MIE"])
-        _counts[_min_gq_value] += 1
-        _num_mie[_min_gq_value] += _mie_value
-        # print(f"COUNTS BINS {itr}: {_counts._sdict}")
-        # print(f"NUM MIE BINS {itr}: {_num_mie._sdict}")
-        # breakpoint()
-
-    # Transform the two summary dicts into a pd.DataFrame
-    summary_data = {
-        "MIN_GQ_BIN": list(_counts._sdict.keys()),
-        "NUM_SITES": list(_counts._sdict.values()),
-        "NUM_MIE": list(_num_mie._sdict.values()),
-    }
-    # print("SUMMARY DF")
-    # print(summary_data)
-    # breakpoint()
-    summary_df = pd.DataFrame(summary_data)
-    # print("SUMMARY DF")
-    # print(summary_df)
-    # breakpoint()
-    _sum_sites = summary_df["NUM_SITES"].sum()
-    _sum_mie = summary_df["NUM_MIE"].sum()
-
-    summary_df["%NUM_SITES"] = (summary_df["NUM_SITES"] / _sum_sites) * 100
-    summary_df["%MIE"] = (summary_df["NUM_MIE"] / _sum_mie) * 100
-    summary_df["%MIE_Rate"] = (summary_df["NUM_MIE"] / _sum_sites) * 100
-
-    # Define the summary output CSV file to be created
-    summary_file = WriteFiles(
-        str(_processed_file.path.parent),
-        f"{_processed_file.path.stem}.calibration.csv",
-        logger,
-    )
-    summary_file.check_missing()
-
-    if args.dry_run:
         logger.info(
-            f"{_internal_msg}pretending to write calibration CSV | '{summary_file.file_path.name}'"
+            f"{logger_msg}: done saving contents from TSV -> CSV | '{_processed_file.path}'"
         )
-        print(summary_df)
-    else:
-        if summary_file.file_exists:
-            logger.info(
-                f"{_internal_msg}found exisiting calibration CSV | '{summary_file.file_path.name}'"
-            )
-        else:
-            logger.info(
-                f"{_internal_msg}writing calibration CSV | '{summary_file.file_path.name}'"
-            )
-            summary_df.to_csv(summary_file.file_path, index=False)
-            if args.debug:
-                summary_file.check_missing()
-                if summary_file.file_exists:
-                    logger.debug(
-                        f"{_internal_msg}{summary_file.file_path.name} written"
-                    )
-
-    logger.info(
-        f"{_internal_msg}total number of Mendelian Inheritance Errors (MIE): {_sum_mie:,}"
-    )
-    logger.info(f"{_internal_msg}total number of variants analyzed: {_sum_sites:,}")
-
+    
     Wrapper(__file__, "end").wrap_script(timestamp())
 
 

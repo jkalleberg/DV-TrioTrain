@@ -219,7 +219,11 @@ class Happy:
         elif self.args.benchmark_mode:
             self._test_dir = str(self.env.contents["RunDir"])
             self._out_dir = str(self.env.contents["RunDir"])
-            self._query_vcf_name = f"test{self.args.test_num}.vcf.gz"
+            if "SampleID" in self.env.contents:
+                _sample_id = str(self.env.contents["SampleID"])
+                self._query_vcf_name = f"{_sample_id}.vcf.gz"
+            else:
+                self._query_vcf_name = f"test{self.args.test_num}.vcf.gz"
             self._mode = "Benchmark"
             self._logger_msg = f"v{self._version}] - [test{self.args.test_num}"
         elif self.args.train_genome is None:
@@ -348,6 +352,14 @@ class Happy:
     def build_command(self) -> None:
         """
         Build the Apptainer 'Exectute' Command using variables.
+        
+        Note: 'callableBED' defines the FP regions in a BED file
+              'target-regions' restricts the anlaysis to within a BED file
+              'locations' is only for a list of chr names (no BED)
+              'restrict-regions' is not used because it's slow for many regions
+              
+              Did not include --pass-only; however, metrics files (extended.csv & all.roc.csv)
+              are processed to restrict to 'PASS' only.
         """
         if self.args.demo_mode:
             self._command = [
@@ -361,7 +373,6 @@ class Happy:
                 "-o",
                 f"/output/{self._output_prefix}",
                 "--write-counts",
-                # "--output-vtc",  # test to see what this does?
                 "--keep-scratch",
                 "--scratch-prefix",
                 "/output/scratch",
@@ -385,7 +396,6 @@ class Happy:
                 "-o",
                 f"/output/{self._output_prefix}",
                 "--write-counts",
-                # "--output-vtc",  # test to see what this does?
                 "--keep-scratch",
                 "--scratch-prefix",
                 "/output/scratch",
@@ -400,7 +410,7 @@ class Happy:
         command_str = "\n".join(self._command)
         if self.args.debug:
             self.logger.debug(
-                f"[{self._mode}] - [{self._phase}] - [{self._logger_msg}] : Command Used | \n{command_str}"
+                f"[{self._mode}] - [{self._phase}] - [{self._logger_msg}]: command | '{command_str}'"
             )
 
     def happy_help(self) -> None:
@@ -442,7 +452,7 @@ class Happy:
             self.build_command()
             print(f"----- Starting hap.py now @ {timestamp()} -----")
             self.logger.info(
-                f"[{self._mode}] - [{self._phase}] - [{self._logger_msg}] : Command Used |"
+                f"[{self._mode}] - [{self._phase}] - [{self._logger_msg}]: command |"
             )
             for line in Client.execute(  # type: ignore
                 self._image,

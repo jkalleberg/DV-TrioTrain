@@ -14,7 +14,7 @@ from sys import exit
 from typing import Dict, List, Union
 
 import pandas as pd
-from helpers.files import TestFile, WriteFiles
+from helpers.files import TestFile, Files
 from helpers.iteration import Iteration
 from helpers.outputs import check_expected_outputs, check_if_output_exists
 from model_training.prep.count import count_variants
@@ -122,7 +122,7 @@ class MakeRegions:
             if not ref_dict_exists.file_exists:
                 try:
                     self.itr.logger.info(
-                        f"{self.itr._mode_string} - [{self._phase}]: missing the reference .dict file; creating one now...",
+                        f"{self.itr._mode_string} - [setup]: missing the reference .dict file; creating one now...",
                     )
                     # Creating a .dict file with Picard
                     picard = subprocess.run(
@@ -130,7 +130,7 @@ class MakeRegions:
                             "picard",
                             "CreateSequenceDictionary",
                             "--REFERENCE",
-                            f"{ref_genome_exists.file}",
+                            f"{ref_genome_exists.path}",
                         ],
                         capture_output=True,
                         text=True,
@@ -149,7 +149,7 @@ class MakeRegions:
                     self._input_exists = ref_dict_exists
                 else:
                     raise FileNotFoundError(
-                        f"{self.itr._mode_string} - [{self._phase}]: missing a dictionary file for the reference genome | '{ref_dict_exists.file}'"
+                        f"{self.itr._mode_string} - [setup]: missing a dictionary file for the reference genome | '{ref_dict_exists.file}'"
                     )
             else:
                 self._input = input_file
@@ -157,7 +157,7 @@ class MakeRegions:
         else:
             self._input_exists = False
             raise FileNotFoundError(
-                f"{self.itr._mode_string} - [{self._phase}]: missing the reference genome | '{ref_genome_exists.file}'"
+                f"{self.itr._mode_string} - [setup]: missing the reference genome | '{ref_genome_exists.file}'"
             )
 
     def check_output(self) -> None:
@@ -168,7 +168,8 @@ class MakeRegions:
         if self._genome is not None:
             self._region_dir = Path(self._examples_dir) / "regions"
         else:
-            self._region_dir = Path(os.getcwd()) / "region_files"
+            # self._region_dir = Path(os.getcwd()) / "region_files"
+            return
 
         if self._region_dir.is_dir():
             if self.itr.debug_mode:
@@ -288,13 +289,12 @@ class MakeRegions:
         elif output_file_path is None:
             output_file_path = self._reference.parent
 
-        output_file = WriteFiles(
-            output_file_path,
-            output_file_name,
+        output_file = Files(
+            Path(output_file_path) / output_file_name,
             self.itr.logger,
             logger_msg=f"{self.itr._mode_string} - [setup]: default call_variants",
         )
-        output_file.check_missing()
+        output_file.check_status()
 
         if not output_file.file_exists:
             if self.itr.debug_mode:
@@ -303,16 +303,16 @@ class MakeRegions:
                 )
             self.transform_dictionary()
             self._autosome_BED_data.to_csv(
-                output_file.path / output_file.file, sep="\t", index=False, header=False
+                output_file.path, sep="\t", index=False, header=False
             )
-            output_file.check_missing()
+            output_file.check_status()
             if output_file.file_exists:
                 self.itr.logger.info(
-                    f"{self.itr._mode_string} - [setup]: created a default BED file | '{output_file.file_path}'"
+                    f"{self.itr._mode_string} - [setup]: created a default BED file | '{output_file.path}'"
                 )
         else:
             self.itr.logger.info(
-                f"{self.itr._mode_string} - [setup]: found default BED file | '{output_file.file_path}'"
+                f"{self.itr._mode_string} - [setup]: found default BED file | '{output_file.path}'"
             )
 
     def set_genome(

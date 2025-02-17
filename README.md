@@ -36,11 +36,19 @@ While the DV-TT pipeline assumes re-training data are from trio-binned samples, 
 
 Detailed user guides for installation, configuration, and a tutorial walk-through using the Human GIAB samples are available [here.](./docs/getting-started/getting-started.md)
 
+---
+
+Breeding Insight at Cornell University provided a recording from a brief presentation, which you can watch on YouTube by clicking [here](https://www.youtube.com/watch?v=u8lpZZrt9Zc&list=PLzNvw7rej-RsuMLCQfrH7EKJs7o2og1qp).
+
 <a name="citation"></a>
 
 ## How to cite
 
-> Citation to go here
+The TrioTrain manuscript is under review, but, in the meantime, our current pre-print is available on BioRxiv:
+
+> [Overcoming Limitations to Deep Learning in Domesticated Animals with TrioTrain](https://www.biorxiv.org/content/10.1101/2024.04.15.589602v1)
+Jenna Kalleberg, Jacob Rissman, Robert D. Schnabel
+bioRxiv 2024.04.15.589602; doi: https://doi.org/10.1101/2024.04.15.589602
 
 
 ### Please also cite:
@@ -67,4 +75,4 @@ Please [open a pull request](https://github.com/jkalleberg/DV-TrioTrain/pulls) i
 
 ### Acknowledgments
 
-Many thanks to the developers and contributors of the many open-source packages used by TrioTrain:
+Many thanks to the developers and contributors of the many open-source packages used by TrioTrain.

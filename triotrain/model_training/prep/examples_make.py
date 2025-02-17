@@ -9,7 +9,7 @@ from dataclasses import dataclass, field
 from sys import exit
 from typing import Dict, List, Union
 
-from helpers.files import WriteFiles
+from helpers.files import Files
 from helpers.iteration import Iteration
 from helpers.jobs import is_job_index, is_jobid
 from helpers.outputs import check_expected_outputs, check_if_output_exists
@@ -41,7 +41,7 @@ class MakeExamples:
     model_label: str
 
     # optional values
-    benchmarking_file: Union[WriteFiles, None] = None
+    benchmarking_file: Union[Files, None] = None
     make_examples_job_nums: List = field(default_factory=list)
     overwrite: bool = False
     total_shards: int = 1
@@ -65,7 +65,7 @@ class MakeExamples:
         if self.track_resources:
             assert (
                 self.benchmarking_file is not None
-            ), "unable to proceed, missing a WriteFiles object to save SLURM job numbers"
+            ), "unable to proceed, missing a Files object to save SLURM job numbers"
 
     def set_variables(self) -> None:
         """Add variables from SLURM config to ENV"""
@@ -157,12 +157,11 @@ class MakeExamples:
         self.set_variables()
         self.set_region()
 
-    def find_restart_jobs(self, resubmission: bool = False) -> None:
+    def find_restart_jobs(self) -> None:
         """Collect any SLURM job ids for running tests to avoid submitting duplicate jobs simultaneously"""
         self._ignoring_restart_jobs = check_if_all_same(
             self.make_examples_job_nums, None
         )
-
         if not self._ignoring_restart_jobs:
             self._jobs_to_run = find_not_NaN(self.make_examples_job_nums)
             self._num_to_run = len(self._jobs_to_run)
@@ -181,7 +180,9 @@ class MakeExamples:
                 updated_jobs_list = []
 
                 for index in self._jobs_to_run:
-                    if is_jobid(self.make_examples_job_nums[index]):
+                    if is_jobid(
+                        self.make_examples_job_nums[index], max_jobs=self._total_regions
+                    ):
                         self._num_to_run -= 1
                         self._num_to_ignore += 1
                         self._skipped_counter += 1
@@ -250,9 +251,7 @@ class MakeExamples:
                         data_dict=data,
                     )
                 else:
-                    self.itr.logger.info(
-                        f"{self.logger_msg}: benchmarking is active"
-                    )
+                    self.itr.logger.info(f"{self.logger_msg}: --keep-jobids=True")
 
     def make_job(self, index: int = 0) -> Union[SBATCH, None]:
         """Defines the SLURM job contents
@@ -283,13 +282,25 @@ class MakeExamples:
         )
 
         if slurm_job.check_sbatch_file():
-            if self.make_examples_job_nums and self.make_examples_job_nums[index] is not None and self.overwrite:
-                self.itr.logger.info(
-                    f"{self.logger_msg}: --overwrite=True, re-writing the existing SLURM job now..."
-                )
+            if self.overwrite:
+                if (
+                    self.make_examples_job_nums
+                    and self.make_examples_job_nums[index] is not None
+                    and is_jobid(
+                        self.make_examples_job_nums[index], max_jobs=self._total_regions
+                    )
+                ):
+                    self.itr.logger.info(
+                        f"{self.logger_msg}: --overwrite=True, but skipping re-writing SLURM job due to a currently running job | '{self.make_examples_job_nums[index]}'"
+                    )
+                    return
+                else:
+                    self.itr.logger.info(
+                        f"{self.logger_msg}: --overwrite=True, re-writing the existing SLURM job now..."
+                    )
             else:
                 self.itr.logger.info(
-                    f"{self.logger_msg}: --overwrite=False; SLURM job file already exists... SKIPPING AHEAD"
+                    f"{self.logger_msg}: --overwrite=False; SLURM job file already exists."
                 )
                 return
         else:
@@ -393,13 +404,19 @@ class MakeExamples:
             self._num_tfrecords_found = 0
 
     def submit_job(
-        self, msg: str = "sub", dependency_index: int = 0, resubmission: bool = False, total_jobs: int = 1
+        self,
+        msg: str = "sub",
+        dependency_index: int = 0,
+        resubmission: bool = False,
+        total_jobs: int = 1,
     ) -> None:
         """
         Submit SLURM jobs to queue.
         """
         if (self._outputs_exist and self.overwrite is False) or (
-            self._outputs_exist and self._ignoring_restart_jobs and self.overwrite is False
+            self._outputs_exist
+            and self._ignoring_restart_jobs
+            and self.overwrite is False
         ):
             self._skipped_counter += 1
             if resubmission:
@@ -425,7 +442,7 @@ class MakeExamples:
             self.itr.logger.info(
                 f"{self.logger_msg}: --overwrite=True; {msg}mitting job because replacing existing labeled.tfrecords"
             )
-            
+
         else:
             self.itr.logger.info(
                 f"{self.logger_msg}: {msg}mitting job to create labeled.tfrecords"
@@ -561,7 +578,7 @@ class MakeExamples:
             msg = "sub"
         else:
             msg = "re-sub"
-            
+
         self.find_restart_jobs()
 
         if self.itr.debug_mode:
@@ -589,11 +606,7 @@ class MakeExamples:
                 else:
                     self._beam_shuffle_dependencies = None
             else:
-                if self._num_to_run <= self._total_regions:
-                    self.itr.logger.info(
-                        f"{self.logger_msg}: attempting to {msg}mit {self._num_to_run}-of-{self._total_regions} SLURM jobs to the queue",
-                    )
-                else:
+                if self._num_to_run > self._total_regions:
                     self.itr.logger.error(
                         f"{self.logger_msg}: max number of {msg}mission SLURM jobs is {self._total_regions} but {self._num_to_run} were provided.\nExiting... ",
                     )
@@ -606,8 +619,9 @@ class MakeExamples:
                     )  # THIS HAS TO BE +1 to avoid starting with a region0
 
                     self.set_region(current_region=self.job_num)
-                    # if not self.itr.demo_mode:
-                    #     self.find_outputs()
+                    if not self.itr.demo_mode:
+                        self.find_outputs()
+
                     if skip_re_runs or not self._outputs_exist:
                         self.submit_job(
                             msg=msg,
@@ -633,12 +647,20 @@ class MakeExamples:
                     r + 1
                 )  # THIS HAS TO BE +1 to avoid starting with a region0
                 self.set_region(current_region=self.job_num)
-                # if not self.itr.demo_mode:
-                #     self.find_outputs()
-                self.submit_job(
-                    msg=msg,
-                    dependency_index=r, total_jobs=int(self._total_regions)
-                )  # THIS HAS TO BE r because indexing of the list of job ids starts with 3
+                if not self.itr.demo_mode:
+                    self.find_outputs()
+
+                if self.overwrite and self._outputs_exist:
+                    self.submit_job(
+                        msg=msg,
+                        dependency_index=r,
+                        total_jobs=int(self._total_regions),
+                        resubmission=True,
+                    )
+                else:
+                    self.submit_job(
+                        msg=msg, dependency_index=r, total_jobs=int(self._total_regions)
+                    )  # THIS HAS TO BE r because indexing of the list of job ids starts with 3
 
         self.check_submissions()
 

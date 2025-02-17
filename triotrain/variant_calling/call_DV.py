@@ -18,7 +18,7 @@ from os import environ, getcwd
 from os import path as p
 from pathlib import Path
 from sys import exit, path
-from typing import List, Union
+from typing import Dict, List, Union
 
 from spython.main import Client
 
@@ -27,96 +27,13 @@ dv_path = Path(abs_path.parent.parent.parent)
 module_path = str(dv_path / "triotrain")
 path.append(module_path)
 
+from helpers.environment import Env
 from helpers.files import TestFile
 from helpers.iteration import Iteration
-from helpers.utils import generate_job_id
+from helpers.utils import generate_job_id, create_deps, check_if_all_same
 from model_training.prep.examples_regions import MakeRegions
 from model_training.slurm.sbatch import SBATCH, SubmitSBATCH
-
-
-def collect_args() -> argparse.Namespace:
-    """
-    Process command line argument to execute script.
-    """
-    parser = argparse.ArgumentParser(
-        description=__doc__,
-        formatter_class=argparse.RawTextHelpFormatter,
-    )
-    parser.add_argument(
-        "-M",
-        "--metadata",
-        dest="metadata",
-        type=str,
-        help="[REQUIRED]\ninput file (.csv)\ndescribes each sample to produce VCFs",
-        metavar="</path/file>",
-    )
-    parser.add_argument(
-        "-r",
-        "--resources",
-        dest="resource_config",
-        help="[REQUIRED]\ninput file (.json)\ndefines HPC cluster resources for SLURM",
-        type=str,
-        metavar="</path/file>",
-    )
-    parser.add_argument(
-        "-d",
-        "--debug",
-        dest="debug",
-        help="if True, enables printing detailed messages",
-        default=False,
-        action="store_true",
-    )
-    parser.add_argument(
-        "--dry-run",
-        dest="dry_run",
-        help="if True, display commands to the screen",
-        action="store_true",
-    )
-    parser.add_argument(
-        "--get-help",
-        dest="get_help",
-        help="if True, display DV 'run_deepvariant' man page to the screen",
-        action="store_true",
-        default=False,
-    )
-    return parser.parse_args(
-        [
-            "-M",
-            "triotrain/variant_calling/data/metadata/240528_benchmarking_metadata.csv",
-            "-r",
-            "triotrain/model_training/tutorial/resources_used.json",
-            # "--dry-run",
-        ]
-    )
-    # return parser.parse_args()
-
-
-def check_args(args: argparse.Namespace, logger: Logger) -> None:
-    """
-    With "--debug", display command line args provided.
-    With "--dry-run", display a msg.
-    Then, check to make sure all required flags are provided.
-    """
-    if args.debug:
-        str_args = "COMMAND LINE ARGS USED: "
-        for key, val in vars(args).items():
-            str_args += f"{key}={val} | "
-
-        logger.debug(str_args)
-        _version = environ.get("BIN_VERSION_DV")
-        logger.debug(f"using DeepVariant version | {_version}")
-
-    if args.dry_run:
-        logger.info("[DRY_RUN]: output will display to screen and not write to a file")
-
-    if args.get_help is False:
-        assert (
-            args.metadata
-        ), "Missing --metadata; Please provide the path to variant calling run parameters in CSV format"
-        assert (
-            args.resource_config
-        ), "Missing --resources; Please designate a path to pipeline compute resources in JSON format"
-
+from compare import CompareHappy
 
 @dataclass
 class VariantCaller:
@@ -133,26 +50,31 @@ class VariantCaller:
     overwrite: bool = False
 
     # imutable, interal variables
-    _reads_path: Union[Path, None] = None
-    _reads_name: Union[str, None] = None
+    _env_vars: Dict[str, str] = field(default_factory=dict, init=False, repr=False)
+    _reads_path: Union[Path, None] = field(default=None, init=False, repr=False)
+    _reads_name: Union[str, None] = field(default=None, init=False, repr=False)
     _base_binding: str = field(
         default="/usr/lib/locale/:/usr/lib/locale/", init=False, repr=False
     )
-    _ckpt_path: Union[Path, None] = None
-    _ckpt_name: Union[str, None] = None
+    _bed_path: Union[Path, None] = field(default=None, init=False, repr=False)
+    _bed_name: Union[Path, None] = field(default=None, init=False, repr=False)
+    _ckpt_path: Union[Path, None] = field(default=None, init=False, repr=False)
+    _ckpt_name: Union[str, None] = field(default=None, init=False, repr=False)
     _job_nums: Union[List[Union[str, None]], None] = field(
         default_factory=list, repr=False, init=False
     )
-    _output_path: Union[Path, None] = None
-    _output_name: Union[str, None] = None
+    _output_path: Union[Path, None] = field(default=None, init=False, repr=False)
+    _output_name: Union[str, None] = field(default=None, init=False, repr=False)
     _phase: str = "call_variants"
-    _pop_path: Union[Path, None] = None
-    _pop_name: Union[str, None] = None
-    _ref_path: Union[Path, None] = None
-    _ref_name: Union[str, None] = None
-    _region_path: Union[Path, None] = None
+    _pop_path: Union[Path, None] = field(default=None, init=False, repr=False)
+    _pop_name: Union[str, None] = field(default=None, init=False, repr=False)
+    _ref_path: Union[Path, None] = field(default=None, init=False, repr=False)
+    _ref_name: Union[str, None] = field(default=None, init=False, repr=False)
+    _region_path: Union[Path, None] = field(default=None, init=False, repr=False)
+    _truth_vcf_path: Union[Path, None] = field(default=None, init=False, repr=False)
+    _truth_vcf_name: Union[Path, None] = field(default=None, init=False, repr=False)
     _skipped_counter: int = 0
-    _region_name: Union[str, None] = None
+    _region_name: Union[str, None] = field(default=None, init=False, repr=False)
     _version: str = field(
         default=str(environ.get("BIN_VERSION_DV")), init=False, repr=False
     )
@@ -161,7 +83,11 @@ class VariantCaller:
         if not self.args.get_help:
             self._metadata_input = Path(self.args.metadata)
             self._resource_input = Path(self.args.resource_config)
-        self._logger_msg = f"[{self._phase}]"
+        
+        if self.args.dry_run:
+            self._logger_msg = f"[DRY_RUN] - [{self._phase}]"
+        else:
+            self._logger_msg = f"[{self._phase}]"
 
     def set_container(self) -> None:
         """
@@ -202,18 +128,18 @@ class VariantCaller:
         )
         if resources.file_exists:
             # read in the json file
-            with open(str(self._resource_input), mode="r") as file:
-                resource_dict = load(file)
+            with open(resources.file, mode="r") as file:
+                self._resource_dict = load(file)
 
-            if self._phase in resource_dict:
-                self._resources = resource_dict[self._phase]
+            if self._phase in self._resource_dict:
+                self._resources = self._resource_dict[self._phase]
                 self._n_parts = self._resources["ntasks"]
             else:
                 self.logger.error(
                     f"{self._logger_msg}: unable to load SLURM resources as the current phase '{self._phase}' is not a key in '{self._resource_input}'"
                 )
                 self.logger.error(
-                    f"{self._logger_msg}: contents include | {resource_dict.keys()}"
+                    f"{self._logger_msg}: contents include | {self._resource_dict.keys()}"
                 )
                 self.logger.error(
                     f"{self._logger_msg}: please update --resources to include '{self._phase}'\nExiting..."
@@ -234,41 +160,156 @@ class VariantCaller:
         metadata.check_existing(logger_msg=self._logger_msg, debug_mode=self.args.debug)
         if metadata.file_exists:
             # read in the csv file
-            with open(
-                str(self._metadata_input), mode="r", encoding="utf-8-sig"
+            with open(metadata.file, mode="r", encoding="utf-8-sig"
             ) as data:
                 dict_reader = DictReader(data)
                 self._data_list = list(dict_reader)
                 self._total_lines = len(self._data_list)
         else:
             self.logger.error(
-                f"{self._logger_msg}: unable to load metadata file | '{self._metadata_input}'"
+                f"{self._logger_msg}: unable to load metadata file | '{metadata.file}'\nExiting..."
             )
-            raise ValueError("Invalid Input File")
+            exit(1)
+
+    def create_environment(self, sample_num: int = 0) -> None:
+        _env_file = f"{self._output_path}/run{sample_num}.env"
+        self.logger.info(
+            f"{self._logger_msg}: creating a new environment file | '{_env_file}'"
+        )
+        self._env = Env(
+            _env_file,
+            self.logger,
+            logger_msg=self._logger_msg,
+            dryrun_mode=self.args.dry_run,
+        )
 
     def load_variables(self, index: int = 0) -> None:
         """
         Define python variables.
         """
+        self._test_logger_msg = (
+            f"{self._logger_msg} - [{index+1}-of-{self._total_lines}]"
+        )
+        self._output_path = Path(self._data_list[index]["OutPath"])
+        if not self._output_path.is_dir():
+            self.logger.info(
+                f"{self._logger_msg}: creating a new directory | '{self._output_path}'"
+            )
+            self._output_path.mkdir(parents=True)
+        
+        self.create_environment(sample_num=(index + 1))
+        self._env.add_to(
+            key="RunOrder",
+            value=f"{index + 1}",
+            dryrun_mode=self.args.dry_run,
+            msg=self._test_logger_msg,
+        )
+        self._env.add_to(
+            key="RunName",
+            value=f"Run{index + 1}",
+            dryrun_mode=self.args.dry_run,
+            msg=self._test_logger_msg,
+        )
+        self._env.add_to(
+            key="CodePath",
+            value=f"{getcwd()}",
+            dryrun_mode=self.args.dry_run,
+            msg=self._test_logger_msg,
+        )
+        self._env.add_to(
+            key="OutPath",
+            value=self._output_path,
+            dryrun_mode=self.args.dry_run,
+            msg=self._test_logger_msg,
+        )
+        self._env.add_to(
+            key="RunDir",
+            value=self._output_path,
+            dryrun_mode=self.args.dry_run,
+            msg=self._test_logger_msg,
+        )
+        self._env.add_to(
+            key="ResultsDir",
+            value=self._output_path,
+            dryrun_mode=self.args.dry_run,
+            msg=self._test_logger_msg,
+        )
+        self._env.add_to(
+            key="JobDir",
+            value=self._output_path,
+            dryrun_mode=self.args.dry_run,
+            msg=self._test_logger_msg,
+        )
+        self._env.add_to(
+            key="LogDir",
+            value=self._output_path,
+            dryrun_mode=self.args.dry_run,
+            msg=self._test_logger_msg,
+        )
+
         self._variant_caller = self._data_list[index]["VariantCaller"]
         self._sampleID = self._data_list[index]["SampleID"]
+        self._env.add_to(
+            key="SampleID",
+            value=self._sampleID,
+            dryrun_mode=self.args.dry_run,
+            msg=self._test_logger_msg,
+        )
         self._labID = self._data_list[index]["LabID"]
+        self._env.add_to(
+            key="LabID",
+            value=self._labID,
+            dryrun_mode=self.args.dry_run,
+            msg=self._test_logger_msg,
+        )
         self._species = self._data_list[index]["Species"]
+        self._env.add_to(
+            key="Species",
+            value=self._species,
+            dryrun_mode=self.args.dry_run,
+            msg=self._test_logger_msg,
+        )
         self._label = self._data_list[index]["Info"]
-        self._test_logger_msg = f"{self._logger_msg} - [{self._variant_caller}] - [{index+1}-of-{self._total_lines}]"
+        self._env.add_to(
+            key="Info",
+            value=self._label,
+            dryrun_mode=self.args.dry_run,
+            msg=self._test_logger_msg,
+        )
 
-        input_paths = ["RefFASTA", "PopVCF", "RegionsFile", "ReadsBAM", "ModelCkpt"]
+        if "TruthVCF" in self._data_list[index].keys():
+            self._run_happy = True
+            self._truth_VCF = self._data_list[index]["TruthVCF"]
+            self._truth_BED = self._data_list[index]["CallableBED"]
+            input_paths = [
+                "RefFASTA",
+                "PopVCF",
+                "RegionsFile",
+                "ReadsBAM",
+                "ModelCkpt",
+                "TruthVCF",
+                "CallableBED",
+            ]
+        else:
+            self._run_happy = False
+            self._truth_VCF = "NA"
+            self._truth_BED = "NA"
+            input_paths = ["RefFASTA", "PopVCF", "RegionsFile", "ReadsBAM", "ModelCkpt"]
 
         for k, v in self._data_list[index].items():
             if k in input_paths:
                 if v != "NA":
+                    
+                    # ensure user can't add extra white space
+                    _file_name = self._data_list[index][k].strip()
+                    
                     if k == "ModelCkpt":
                         testing_file = TestFile(
-                            f"{self._data_list[index][k]}.data-00000-of-00001",
+                            f"{_file_name}.data-00000-of-00001",
                             self.logger,
                         )
                     else:
-                        testing_file = TestFile(self._data_list[index][k], self.logger)
+                        testing_file = TestFile(_file_name, self.logger)
 
                     testing_file.check_existing(
                         logger_msg=self._test_logger_msg, debug_mode=self.args.debug
@@ -278,91 +319,180 @@ class VariantCaller:
                         if k == "RefFASTA":
                             if self._ref_path != testing_file.path.parent:
                                 self._ref_path = testing_file.path.parent
-                                self.logger.info(
-                                    f"{self._test_logger_msg}: reference path has changed | '{self._ref_path}'"
-                                )
 
                             if self._ref_name != testing_file.path.name:
                                 self._ref_name = testing_file.path.name
-                                self.logger.info(
-                                    f"{self._test_logger_msg}: reference name has changed | '{self._ref_name}'"
-                                )
+
+                            self._env.add_to(
+                                key="RefFASTA_Path",
+                                value=self._ref_path,
+                                dryrun_mode=self.args.dry_run,
+                                msg=self._test_logger_msg,
+                            )
+                            self._env.add_to(
+                                key="RefFASTA_File",
+                                value=self._ref_name,
+                                dryrun_mode=self.args.dry_run,
+                                msg=self._test_logger_msg,
+                            )
 
                         elif k == "PopVCF":
                             if self._pop_path != testing_file.path.parent:
                                 self._pop_path = testing_file.path.parent
-                                self.logger.info(
-                                    f"{self._test_logger_msg}: pop path has changed | '{self._pop_path}'"
-                                )
 
                             if self._pop_name != testing_file.path.name:
                                 self._pop_name = testing_file.path.name
-                                self.logger.info(
-                                    f"{self._test_logger_msg}: pop name has changed | '{self._pop_name}'"
-                                )
+
+                            self._env.add_to(
+                                key="PopVCF_Path",
+                                value=self._pop_path,
+                                dryrun_mode=self.args.dry_run,
+                                msg=self._test_logger_msg,
+                            )
+
+                            self._env.add_to(
+                                key="PopVCF_File",
+                                value=self._ref_path,
+                                dryrun_mode=self.args.dry_run,
+                                msg=self._test_logger_msg,
+                            )
 
                         elif k == "RegionsFile":
                             if self._region_path != testing_file.path.parent:
                                 self._region_path = testing_file.path.parent
-                                self.logger.info(
-                                    f"{self._test_logger_msg}: region path has changed | '{self._region_path}'"
-                                )
 
                             if self._region_name != testing_file.path.name:
                                 self._region_name = testing_file.path.name
-                                self.logger.info(
-                                    f"{self._test_logger_msg}: region name has changed | '{self._region_name}'"
-                                )
+
+                            self._env.add_to(
+                                key="RegionsFile_Path",
+                                value=self._region_path,
+                                dryrun_mode=self.args.dry_run,
+                                msg=self._test_logger_msg,
+                            )
+                            self._env.add_to(
+                                key="RegionsFile_File",
+                                value=self._ref_path,
+                                dryrun_mode=self.args.dry_run,
+                                msg=self._test_logger_msg,
+                            )
 
                         elif k == "ReadsBAM":
                             if self._reads_path != testing_file.path.parent:
                                 self._reads_path = testing_file.path.parent
-                                self.logger.info(
-                                    f"{self._test_logger_msg}: bam path has changed | '{self._reads_path}'"
-                                )
+                            self._env.add_to(
+                                key=f"Test{index+1}ReadsBAM_Path",
+                                value=self._reads_path,
+                                dryrun_mode=self.args.dry_run,
+                                msg=self._test_logger_msg,
+                            )
 
                             if self._reads_name != testing_file.path.name:
                                 self._reads_name = testing_file.path.name
-                                self.logger.info(
-                                    f"{self._test_logger_msg}: bam name has changed | '{self._reads_name}'"
-                                )
+                            self._env.add_to(
+                                key=f"Test{index+1}ReadsBAM_File",
+                                value=self._reads_name,
+                                dryrun_mode=self.args.dry_run,
+                                msg=self._test_logger_msg,
+                            )
+
+                        elif k == "TruthVCF":
+                            if self._truth_vcf_path != testing_file.path.parent:
+                                self._truth_vcf_path = testing_file.path.parent
+                            self._env.add_to(
+                                key=f"Test{index+1}TruthVCF_Path",
+                                value=self._truth_vcf_path,
+                                dryrun_mode=self.args.dry_run,
+                                msg=self._test_logger_msg,
+                            )
+
+                            if self._truth_vcf_name != testing_file.path.name:
+                                self._truth_vcf_name = testing_file.path.name
+                            self._env.add_to(
+                                key=f"Test{index+1}TruthVCF_File",
+                                value=self._truth_vcf_name,
+                                dryrun_mode=self.args.dry_run,
+                                msg=self._test_logger_msg,
+                            )
+
+                        elif k == "CallableBED":
+                            if self._bed_path != testing_file.path.parent:
+                                self._bed_path = testing_file.path.parent
+                            self._env.add_to(
+                                key=f"Test{index+1}CallableBED_Path",
+                                value=self._bed_path,
+                                dryrun_mode=self.args.dry_run,
+                                msg=self._test_logger_msg,
+                            )
+
+                            if self._bed_name != testing_file.path.name:
+                                self._bed_name = testing_file.path.name
+                            self._env.add_to(
+                                key=f"Test{index+1}CallableBED_File",
+                                value=self._bed_name,
+                                dryrun_mode=self.args.dry_run,
+                                msg=self._test_logger_msg,
+                            )
+
                         else:
                             if self._ckpt_path != testing_file.path.parent:
                                 self._ckpt_path = testing_file.path.parent
-                                self.logger.info(
-                                    f"{self._test_logger_msg}: ckpt path has changed | '{self._ckpt_path}'"
-                                )
+                            self._env.add_to(
+                                key="Ckpt_Path",
+                                value=self._ckpt_path,
+                                dryrun_mode=self.args.dry_run,
+                                msg=self._test_logger_msg,
+                            )
 
                             if self._ckpt_name != testing_file.path.stem:
                                 self._ckpt_name = testing_file.path.stem
-                                self.logger.info(
-                                    f"{self._test_logger_msg}: ckpt name has changed | '{self._ckpt_name}'"
-                                )
+                            self._env.add_to(
+                                key="Ckpt_File",
+                                value=self._ckpt_name,
+                                dryrun_mode=self.args.dry_run,
+                                msg=self._test_logger_msg,
+                            )
                     else:
                         self.logger.warning(
-                            f"{self._test_logger_msg}: missing a file provided in {self._metadata_input} | {testing_file.file}... SKIPPING AHEAD"
+                            f"{self._test_logger_msg}: missing a file provided in '{self._metadata_input}' | '{testing_file.file}'"
                         )
-                        return
+                        raise FileNotFoundError(f"missing '{testing_file.file}'")
                 else:
                     if k == "PopVCF":
                         self._pop_path = None
                         self._pop_name = None
-                        self.logger.info(f"{self._test_logger_msg}: SKIPPING | {k}:{v}")
+                        self._env.add_to(
+                            key="PopVCF",
+                            value="None",
+                            dryrun_mode=self.args.dry_run,
+                            msg=self._test_logger_msg,
+                        )
                     elif k == "RegionsFile":
                         self._region_path = None
                         self._region_name = None
-                        self.logger.info(f"{self._test_logger_msg}: SKIPPING | {k}:{v}")
+
+                        self._env.add_to(
+                            key="RegionsFile_Path",
+                            value="None",
+                            dryrun_mode=self.args.dry_run,
+                            msg=self._test_logger_msg,
+                        )
+                        self._env.add_to(
+                            key="RegionsFile_File",
+                            value="None",
+                            dryrun_mode=self.args.dry_run,
+                            msg=self._test_logger_msg,
+                        )
                     else:
                         self.logger.warning(
                             f"{self._test_logger_msg}: missing a required item in metadata file | '{k}'... SKIPPING AHEAD"
                         )
-                        return
+                        raise FileNotFoundError(f"missing a required file '{testing_file.file}'")
 
     def set_iteration(self) -> None:
         """
         Create an iteration object for downstream modules
         """
-
         _prefix = Path(self._ref_name).stem
         default_region_file = Path(f"{self._ref_path}/{_prefix}_autosomes_withX.bed")
 
@@ -370,11 +500,28 @@ class VariantCaller:
             self.logger.info(
                 f"{self._test_logger_msg}: using the default region file | '{default_region_file}'"
             )
+            self._env.add_to(
+                key="RegionsFile_Path",
+                value=self._ref_path,
+                dryrun_mode=self.args.dry_run,
+                msg=self._test_logger_msg,
+                update=True,
+            )
+            self._env.add_to(
+                key="RegionsFile_File",
+                value=f"{_prefix}_autosomes_withX.bed",
+                dryrun_mode=self.args.dry_run,
+                msg=self._test_logger_msg,
+                update=True,
+            )
             self._itr = Iteration(
                 logger=self.logger,
                 args=self.args,
                 default_region_file=default_region_file,
+                env=self._env,
+                total_num_tests=self._total_lines,
             )
+            self._itr._mode_string = "[call_variants]"
         else:
             self.logger.warning(
                 f"{self._test_logger_msg}: missing a default region file located here | '{self._ref_path}'"
@@ -383,9 +530,12 @@ class VariantCaller:
             self._itr = Iteration(
                 logger=self.logger,
                 args=self.args,
+                env=self._env,
+                total_num_tests=self._total_lines,
             )
-
-            # --- Create Shuffling Regions for Non-Baseline Runs --- ##
+            self._itr._mode_string = "[call_variants]"
+            
+            # --- Create Autosome_withX BED file & Shuffling Regions for Non-Baseline Runs --- ##
             self.regions = MakeRegions(
                 self._itr,
                 ex_per_file=200000,
@@ -411,6 +561,7 @@ class VariantCaller:
                         args=self.args,
                         default_region_file=default_region_file,
                     )
+                    
                 except Exception as ex:
                     self.logger.error(
                         f"{self._test_logger_msg} - [create_default_region]: unable to create a BED file from the reference Picard .dict file..."
@@ -427,7 +578,7 @@ class VariantCaller:
         output = Path(self._data_list[index]["OutPath"]) / f"{self._sampleID}.vcf.gz"
 
         testing_file = TestFile(str(output), self.logger)
-        testing_file.check_existing(
+        testing_file.check_missing(
             logger_msg=self._test_logger_msg, debug_mode=self.args.debug
         )
 
@@ -441,17 +592,11 @@ class VariantCaller:
             self._output_exists = False
             if self._output_path != testing_file.path.parent:
                 self._output_path = testing_file.path.parent
-                self.logger.info(
-                    f"{self._test_logger_msg}: output path has changed | '{self._output_path}'"
-                )
                 if not self._output_path.is_dir():
                     self._output_path.mkdir(parents=True)
 
             if self._output_name != testing_file.path.name:
                 self._output_name = testing_file.path.name
-                self.logger.info(
-                    f"{self._test_logger_msg}: output name has changed | '{self._output_name}'"
-                )
 
             if self._output_path is not None:
                 self._itr.job_dir = self._output_path
@@ -487,10 +632,10 @@ class VariantCaller:
             if self._itr.default_region_file.exists():
                 bindings.append(f"{self._itr.default_region_file.parent}/:/region_dir/")
             else:
-                self.logger.warning(
-                    f"{self._test_logger_msg}: missing the default BED file | {self._itr.default_region_file}... SKIPPING AHEAD"
+                self.logger.error(
+                    f"{self._test_logger_msg}: missing the default BED file | {self._itr.default_region_file}.\nExiting..."
                 )
-                return
+                exit(1)
 
         self._bindings = ",".join(bindings)
 
@@ -594,7 +739,9 @@ class VariantCaller:
         if self._output_exists:
             self._skipped_counter += 1
             if self._job_nums:
-                self._job_nums.insert(index,None)
+                self._job_nums[index] = None
+            else:
+                self._job_nums.insert(index, None)
         else:
             slurm_job = self.make_job()
 
@@ -609,7 +756,7 @@ class VariantCaller:
                 else:
                     slurm_job.write_job()
 
-            submit_slurm_job = SubmitSBATCH(
+            self._slurm_job = SubmitSBATCH(
                 self._itr.job_dir,
                 f"{self._job_name}.sh",
                 self._job_name,
@@ -621,29 +768,29 @@ class VariantCaller:
                 self.logger.debug(
                     f"{self._test_logger_msg}: submitting without a SLURM dependency"
                 )
-            submit_slurm_job.build_command(None)
+            self._slurm_job.build_command(None)
 
             if self.args.dry_run:
-                submit_slurm_job.display_command(
+                self._slurm_job.display_command(
                     current_job=(index + 1),
                     total_jobs=total_jobs,
                     display_mode=self.args.dry_run,
                 )
                 if self._job_nums:
-                    self._job_nums.insert(index,generate_job_id())
+                    self._job_nums.insert(index, generate_job_id())
             else:
-                submit_slurm_job.display_command(
+                self._slurm_job.display_command(
                     current_job=(index + 1),
                     total_jobs=total_jobs,
                     debug_mode=self.args.debug,
                 )
-                submit_slurm_job.get_status(
+                self._slurm_job.get_status(
                     current_job=(index + 1),
                     total_jobs=total_jobs,
                     debug_mode=self.args.debug,
                 )
-                if submit_slurm_job.status == 0:
-                    self._job_nums.insert(index, str(submit_slurm_job.job_number))
+                if self._slurm_job.status == 0:
+                    self._job_nums.insert(index, str(self._slurm_job.job_number))
                 else:
                     self.logger.warning(
                         f"{self._test_logger_msg}: unable to submit SLURM job",
@@ -654,18 +801,100 @@ class VariantCaller:
     def process_samples(self) -> None:
         """
         Iterate through all lines in Metadata
-        """
-        if self.args.debug:
-            self.load_variables()
-            self.set_iteration()
-            self.submit_job(total_jobs=self._total_lines)
-        else:
-            for i in range(0, self._total_lines):
+        """        
+        self._job_nums = create_deps(self._total_lines)
+        _run_happy_jobs = create_deps(self._total_lines)
+        _convert_happy_jobs = create_deps(self._total_lines)
+        
+        for i in range(0, self._total_lines):
+            try:
                 self.load_variables(index=i)
-                self.set_iteration()
-                self.submit_job(index=i, total_jobs=self._total_lines)
+            except FileNotFoundError as E:
+                self.logger.error(f"{self._test_logger_msg}: {E}\nExiting...")
+                exit(1)
+                
+            self.set_iteration()
+            self.submit_job(index=i, total_jobs=self._total_lines)
+                
+            if self._run_happy is False:
+                if self.args.dry_run and not self.args.debug:
+                    self.logger.info(f"{self._test_logger_msg}: pausing for manual review. Press (c) to continue to the next sample.")
+                    breakpoint()
+                continue
 
-    def run(self) -> None:
+            if self._job_nums:
+                benchmark = CompareHappy(
+                    itr=self._itr,
+                    slurm_resources=self._resource_dict,
+                    model_label=self._variant_caller,
+                    call_variants_jobs=self._job_nums,
+                    create_plot=True,
+                )
+            else:
+                benchmark = CompareHappy(
+                    itr=self._itr,
+                    slurm_resources=self._resource_dict,
+                    model_label=self._variant_caller,
+                    create_plot=True,
+                )
+
+            benchmark.set_genome()
+            benchmark.job_num = i + 1
+            # THIS HAS TO BE +1 to avoid labeling files Test0
+
+            benchmark.set_test_genome(current_test_num=(i+1))
+            benchmark.find_outputs()
+            benchmark.submit_job(
+                dependency_index=i,
+                total_jobs=int(self._total_lines),
+            )
+                
+            _run_happy_jobs[i] = benchmark._convert_happy_dependencies[i]
+            # _run_happy_jobs[i] = benchmark._slurm_job.job_number
+                
+            #--------- PROCESS HAP.PY RESULTS ----------------------#
+            benchmark.converting.job_num = i + 1
+            benchmark.converting.set_test_genome(current_test_num=(i+1))
+            benchmark.converting.find_outputs()
+            benchmark.converting.compare_happy_jobs = benchmark._convert_happy_dependencies
+            benchmark.converting.submit_job(
+                dependency_index=i,
+                total_jobs=int(self._total_lines))
+                
+            if benchmark.converting._slurm_job is None:
+                _convert_happy_jobs[i] = None
+            else:
+                _convert_happy_jobs[i] = benchmark.converting._slurm_job.job_number
+
+            if (i + 1) == self._total_lines:
+                _skip_DV = check_if_all_same(self._job_nums, None)
+                if not _skip_DV:
+                    if len(self._job_nums) == 1:
+                        print(
+                            f"============ {self._logger_msg} - Job Number - {self._job_nums} ============"
+                        )
+                    else:
+                        print(
+                            f"============ {self._logger_msg} - Job Numbers ============\n{self._job_nums}\n============================================================"
+                        )
+                benchmark._convert_happy_dependencies = _run_happy_jobs
+                benchmark.check_submissions()
+                benchmark.converting._final_jobs = _convert_happy_jobs
+                benchmark.converting.check_submissions()
+                
+            if self.args.dry_run and not self.args.debug:
+                self.logger.info(f"{self._test_logger_msg}: pausing for manual review. Press (c) to continue to the next sample.")
+                breakpoint()
+            
+            if i == 0:
+                if self.args.dry_run and self.args.debug:
+                    self.logger.info(f"{self._test_logger_msg}: pretending to submit a single job to SLURM for debugging.")
+                    return
+                elif not self.args.dry_run and self.args.debug:
+                    self.logger.debug(f"{self._test_logger_msg}: submitting a single job to debug.")
+                    return
+
+    def setup(self) -> None:
         """
         Combine the entire steps into one command
         """
@@ -675,31 +904,3 @@ class VariantCaller:
             return
         self.load_slurm_resources()
         self.load_metadata()
-        self.process_samples()
-
-
-def __init__() -> None:
-    from helpers.utils import get_logger
-    from helpers.wrapper import Wrapper, timestamp
-
-    # Collect command line arguments
-    args = collect_args()
-
-    # Collect start time
-    Wrapper(__file__, "start").wrap_script(timestamp())
-
-    # Create error log
-    current_file = p.basename(__file__)
-    module_name = p.splitext(current_file)[0]
-    logger = get_logger(module_name)
-
-    check_args(args=args, logger=logger)
-
-    VariantCaller(args=args, logger=logger).run()
-
-    Wrapper(__file__, "end").wrap_script(timestamp())
-
-
-# Execute functions created
-if __name__ == "__main__":
-    __init__()

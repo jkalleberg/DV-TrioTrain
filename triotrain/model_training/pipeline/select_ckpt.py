@@ -10,7 +10,7 @@ from sys import exit
 from typing import List, Union
 
 from helpers.environment import Env
-from helpers.files import WriteFiles
+from helpers.files import Files
 from helpers.iteration import Iteration
 from helpers.jobs import is_job_index, is_jobid
 from helpers.outputs import check_expected_outputs, check_if_output_exists
@@ -37,7 +37,7 @@ class SelectCheckpoint:
     model_label: str
 
     # optional values
-    benchmarking_file: Union[WriteFiles, None] = None
+    benchmarking_file: Union[Files, None] = None
     overwrite: bool = False
     select_ckpt_job_num: List = field(default_factory=list)
     track_resources: bool = False
@@ -59,7 +59,7 @@ class SelectCheckpoint:
         if self.track_resources:
             assert (
                 self.benchmarking_file is not None
-            ), "unable to proceed, missing a WriteFiles object to save SLURM job numbers"
+            ), "unable to proceed, missing a Files object to save SLURM job numbers"
 
         self._model_testing_dependency = create_deps(1)
 
@@ -124,7 +124,7 @@ class SelectCheckpoint:
             )
 
     def find_outputs(
-        self, number_outputs_expected: int = 3, phase: Union[str, None] = None
+        self, number_outputs_expected: int = 4, phase: Union[str, None] = None
     ) -> None:
         """
         Determines if select_ckpt phase has completed successfully.
@@ -139,21 +139,34 @@ class SelectCheckpoint:
         self.find_selected_ckpt_vars(phase=phase)
 
         if self.ckpt_selected:
-            self.find_selected_ckpt_files(phase=phase)
-            missing_files = check_expected_outputs(
-                self.num_model_files_found,
-                number_outputs_expected,
-                logging_msg,
-                "new model weights files",
-                self.itr.logger,
+            self.find_selected_ckpt_files(msg=logging_msg)
+            
+            missing_ckpt_files = check_expected_outputs(
+                outputs_found=self._num_model_files_found,
+                outputs_expected=number_outputs_expected,
+                msg=logging_msg,
+                file_type="new model weights files",
+                logger=self.itr.logger,
             )
-            if missing_files:
-                self._outputs_exist = False
-            else:
-                self._outputs_exist = True
+            
+            missing_info_file = check_expected_outputs(
+                outputs_found=self._num_info_files_found,
+                outputs_expected=1,
+                msg=logging_msg,
+                file_type="example_info.json file",
+                logger=self.itr.logger,
+            )
         else:
+            self._existing_model_weights = False
+            self._existing_info_file = False
+            missing_ckpt_files = True
+            missing_info_file = True
+        
+        if missing_ckpt_files is True or missing_info_file is True:
             self._outputs_exist = False
-
+        else:
+            self._outputs_exist = True
+    
     def benchmark(self) -> None:
         """
         Save the SLURM job numbers to a file for future resource usage metrics.
@@ -176,7 +189,7 @@ class SelectCheckpoint:
                 self.benchmarking_file.add_rows(headers, data_dict=data)
             else:
                 self.itr.logger.info(
-                    f"{self.logger_msg} - [{self.itr.train_genome}]: benchmarking is active"
+                    f"{self.logger_msg} - [{self.itr.train_genome}]: --keep-jobids=True"
                 )
 
     def make_job(self) -> Union[SBATCH, None]:
@@ -210,7 +223,7 @@ class SelectCheckpoint:
                 )
             else:
                 self.itr.logger.info(
-                    f"{self.logger_msg}: --overwrite=False; SLURM job file already exists... SKIPPING AHEAD"
+                    f"{self.logger_msg}: --overwrite=False; SLURM job file already exists."
                 )
                 return
         else:
@@ -315,28 +328,46 @@ class SelectCheckpoint:
             self.itr.logger.info(
                 f"{logger_msg}: testing checkpoint variable does not exist"
             )
-
+        
         self._outputs_exist = self.ckpt_selected
 
-    def find_selected_ckpt_files(self, phase: Union[str, None] = None) -> None:
+    def find_selected_ckpt_files(self, msg: Union[str, None] = None) -> None:
         """
         Determine if the new model weight files exist
         """
-        if phase is None:
+        if msg is None:
             logger_msg = self.logger_msg
         else:
-            logger_msg = f"{self.itr._mode_string} - [{phase}]"
-        # confirm model weights files are present
+            logger_msg = msg
+        
+        # Confirm model weights files are present
         model_weights_pattern = compile(f"{self.ckpt_name}.*")
 
         # Confirm if files do not already exist
         (
-            self.existing_model_weights,
-            self.num_model_files_found,
+            self._existing_model_weights,
+            self._num_model_files_found,
             model_weights_files,
         ) = check_if_output_exists(
             model_weights_pattern,
             "new model weights files",
+            self.itr.train_dir,
+            logger_msg,
+            self.itr.logger,
+            debug_mode=self.itr.debug_mode,
+            dryrun_mode=self.itr.dryrun_mode,
+        )
+        
+        example_info_pattern = compile(r"model.ckpt-\d+.example_info.json")
+        
+        # Confirm example metadata file does not already exist
+        (
+            self._existing_info_file,
+            self._num_info_files_found,
+            info_file,
+        ) = check_if_output_exists(
+            example_info_pattern,
+            "the final example_info.json file",
             self.itr.train_dir,
             logger_msg,
             self.itr.logger,
@@ -401,6 +432,9 @@ class SelectCheckpoint:
             if self.itr.dryrun_mode:
                 slurm_job.display_command(display_mode=self.itr.dryrun_mode)
                 self._model_testing_dependency[0] = generate_job_id()
+                self.itr.current_genome_dependencies[3] = (
+                    self._model_testing_dependency[0]
+                )
                 self.itr.current_genome_dependencies[3] = (
                     self._model_testing_dependency[0]
                 )
@@ -497,11 +531,7 @@ class SelectCheckpoint:
                         f"{self.logger_msg}: 'train_eval' job was submitted...",
                     )
 
-                if self._num_to_run == 1:
-                    self.itr.logger.info(
-                        f"{self.logger_msg}: attempting to {msg}mit {self._num_to_run}-of-1 SLURM jobs to the queue",
-                    )
-                else:
+                if self._num_to_run != 1:
                     self.itr.logger.error(
                         f"{self.logger_msg}: max number of SLURM jobs for {msg}mission is 1 but {self._num_to_run} were provided.\nExiting... ",
                     )

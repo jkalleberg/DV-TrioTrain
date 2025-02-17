@@ -144,7 +144,7 @@ class SBATCH:
         if self.itr.debug_mode:
             self.itr.logger.debug(f"{self.logger_msg}: adding error handler... ")
         last_line = self._line_list[error_handler_index]
-        errors = f' && success_exit "{message}" {status_tracker_file} || error_exit "{message}" {status_tracker_file}'
+        errors = f' && capture_status "{message}" {status_tracker_file}'
         if error_handler_index != -1:
             errors = errors + " &"
         error_handler = last_line + errors
@@ -307,14 +307,14 @@ class SubmitSBATCH:
         Prints the sbatch command used to submit a job.
         """
         if display_mode:
-            self.logger.info(f"{self.logger_msg}: command used | {' '.join(self.cmd)}"
-            )
             self.logger.info(
                 f"{self.logger_msg}: pretending to submit SLURM job {current_job}-of-{total_jobs}"
             )
+            self.logger.info(f"{self.logger_msg}: command | '{' '.join(self.cmd)}'"
+            )
         elif debug_mode:
             self.logger.debug(
-                f"{self.logger_msg}: submitting SLURM job with command: {' '.join(self.cmd)}"
+                f"{self.logger_msg}: submitting SLURM job command | '{' '.join(self.cmd)}'"
             )
 
     def get_status(self, current_job: int = 1, total_jobs: int = 1, debug_mode=False) -> None:

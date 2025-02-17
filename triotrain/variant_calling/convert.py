@@ -10,7 +10,7 @@ from pathlib import Path
 from sys import exit
 from typing import List, Union
 
-from helpers.files import WriteFiles
+from helpers.files import Files
 from helpers.iteration import Iteration
 from helpers.jobs import is_job_index, is_jobid
 from helpers.outputs import check_expected_outputs, check_if_output_exists
@@ -37,7 +37,7 @@ class ConvertHappy:
     model_label: str
 
     # optional values
-    benchmarking_file: Union[WriteFiles, None] = None
+    benchmarking_file: Union[Files, None] = None
     compare_happy_jobs: Union[List[Union[str, None]], None] = field(
         default_factory=list
     )
@@ -50,18 +50,20 @@ class ConvertHappy:
     _final_jobs: Union[List[Union[str, None]], None] = field(
         default_factory=list, init=False, repr=False
     )
+    _ignoring_compare_happy: bool = field(default=True, init=False,repr=False)
     _jobs_to_run: List[int] = field(default_factory=list, init=False, repr=False)
     _num_to_ignore: int = field(default=0, init=False, repr=False)
     _num_to_run: int = field(default=0, init=False, repr=False)
     _phase: str = field(default="convert_happy", init=False, repr=False)
     _skipped_counter: int = field(default=0, init=False, repr=False)
     _skip_phase: bool = field(default=False, init=False, repr=False)
+    _slurm_job: Union[None, SubmitSBATCH] = field(default=None, init=False, repr=False)
 
     def __post_init__(self) -> None:
         if self.track_resources:
             assert (
                 self.benchmarking_file is not None
-            ), "missing a WriteFiles object to save SLURM job numbers"
+            ), "missing a Files object to save SLURM job numbers"
 
         self._final_jobs = create_deps(self.itr.total_num_tests)
         if self.itr.train_genome is None:
@@ -79,6 +81,9 @@ class ConvertHappy:
             if self.itr.demo_mode:
                 self.genome = self.itr.train_genome
                 self.outdir = str(self.itr.env.contents[f"{self.genome}CompareDir"])
+            elif self.itr.current_trio_num is None:
+                self.genome = None
+                self.outdir = str(self.itr.env.contents["OutPath"])
             elif (
                 "baseline" in self.model_label.lower()
                 or self.itr.current_genome_num == 0
@@ -88,9 +93,6 @@ class ConvertHappy:
             elif self.itr.train_genome is not None:
                 self.genome = self.itr.train_genome
                 self.outdir = str(self.itr.env.contents[f"{self.genome}CompareDir"])
-            elif self.itr.current_trio_num is None:
-                self.genome = None
-                self.outdir = str(self.itr.env.contents["RunDir"])
             else:
                 self.genome = self.model_label.split("-")[1]
                 self.outdir = str(self.itr.env.contents[f"{self.genome}CompareDir"])
@@ -210,7 +212,7 @@ class ConvertHappy:
                 )
             self.benchmarking_file.add_rows(headers, data_dict=data)
         else:
-            self.itr.logger.info(f"{self.logger_msg}: benchmarking is active")
+            self.itr.logger.info(f"{self.logger_msg}: --keep-jobids=True")
 
     def make_job(self, index: int = 0) -> Union[SBATCH, None]:
         """
@@ -249,7 +251,7 @@ class ConvertHappy:
                 )
             else:
                 self.itr.logger.info(
-                    f"{self.logger_msg} - [{self.test_logger_msg}]: --overwrite=False; SLURM job file already exists... SKIPPING AHEAD"
+                    f"{self.logger_msg} - [{self.test_logger_msg}]: --overwrite=False; SLURM job file already exists."
                 )
                 return
         else:
@@ -326,7 +328,7 @@ class ConvertHappy:
                     self.itr.total_num_tests * outputs_per_test
                 )
                 _regex = compile(
-                    r"^Test\d+.(converted\-|total\.)metrics(\.csv$|\.tsv$)"
+                    r"^Test\d+.(converted\-|processed\-|total\.)metrics(\.csv$|\.tsv$)"
                 )
         else:
             final_msg = self._output_type
@@ -342,7 +344,7 @@ class ConvertHappy:
             else:
                 self._expected_outputs = outputs_per_test
                 _regex = compile(
-                    rf"^{self.test_name}\.(converted\-|total\.)metrics(\.csv$|\.tsv$)"
+                    rf"^{self.test_name}\.(converted\-|processed\-|total\.)metrics(\.csv$|\.tsv$)"
                 )
             logging_msg = f"{logging_msg} - [{self.test_logger_msg}]"
 
@@ -430,7 +432,7 @@ class ConvertHappy:
                 f"{self.logger_msg} - [{self.test_logger_msg}]: {msg}mitting job to process hap.py outputs"
             )
 
-        slurm_job = SubmitSBATCH(
+        self._slurm_job = SubmitSBATCH(
             self.itr.job_dir,
             f"{self.job_name}.sh",
             self.handler_label,
@@ -441,27 +443,28 @@ class ConvertHappy:
         # If there is a running job...
         if self.compare_happy_jobs and len(self.compare_happy_jobs) > 0:
             # ...include it as a dependency
-            slurm_job.build_command(self.compare_happy_jobs[dependency_index])
+            self._slurm_job.build_command(self.compare_happy_jobs[dependency_index])
         else:
-            slurm_job.build_command(None)
+            self._slurm_job.build_command(None)
 
-        slurm_job.display_command(
+        self._slurm_job.display_command(
             current_job=self.job_num,
             total_jobs=total_jobs,
             display_mode=self.itr.dryrun_mode,
         )
 
         if self.itr.dryrun_mode:
-            self._final_jobs[dependency_index] = generate_job_id()
+            self._slurm_job.job_number = generate_job_id()
+            self._final_jobs[dependency_index] = self._slurm_job.job_number
         else:
-            slurm_job.get_status(
+            self._slurm_job.get_status(
                 current_job=self.job_num,
                 total_jobs=total_jobs,
                 debug_mode=self.itr.debug_mode,
             )
 
-            if slurm_job.status == 0:
-                self._final_jobs[dependency_index] = str(slurm_job.job_number)
+            if self._slurm_job.status == 0:
+                self._final_jobs[dependency_index] = str(self._slurm_job.job_number)
             else:
                 self._final_jobs[dependency_index] = None
 
@@ -478,7 +481,7 @@ class ConvertHappy:
                 )
             else:
                 print(
-                    f"============ {self.logger_msg}- Job Numbers ============\n{self._final_jobs}\n============================================================"
+                    f"============ {self.logger_msg} - Job Numbers ============\n{self._final_jobs}\n============================================================"
                 )
 
             if self.track_resources and self.benchmarking_file is not None:
@@ -568,16 +571,12 @@ class ConvertHappy:
                         f"{self.logger_msg}: 'compare_happy' jobs were submitted...",
                     )
 
-                if self._num_to_run <= self.itr.total_num_tests:
-                    self.itr.logger.info(
-                        f"{self.logger_msg}: attempting to {msg}mit {self._num_to_run}-of-{self.itr.total_num_tests} SLURM jobs to the queue",
-                    )
-                else:
+                if self._num_to_run > self.itr.total_num_tests:
                     self.itr.logger.error(
                         f"{self.logger_msg}: max number of re-submission SLURM jobs is {self.itr.total_num_tests} but {self._num_to_run} were provided.\nExiting... ",
                     )
                     exit(1)
-
+                
                 for t in self._jobs_to_run:
                     if skip_re_runs:
                         test_index = t
@@ -603,6 +602,7 @@ class ConvertHappy:
 
         # Determine if we are submitting all tests
         else:
+            
             if self._outputs_exist:
                 return self._final_jobs
 
@@ -612,6 +612,9 @@ class ConvertHappy:
                 )  # THIS HAS TO BE +1 to avoid labeling files Test0
 
                 self.set_test_genome(current_test_num=self.job_num)
+                
+                self.find_outputs(outputs_per_test=3)
+                
                 if self.test_genome is None:
                     continue
                 else:

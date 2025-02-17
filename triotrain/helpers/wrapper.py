@@ -13,7 +13,7 @@ class Wrapper:
     """Displays whenever a script begins or finishes, creates boundaries for debugging.
     """
 
-    def __init__(self, name: str, message: str):
+    def __init__(self, name: str, message: str) -> None:
         """Create a boundary for the current script
 
         Parameters
@@ -26,7 +26,7 @@ class Wrapper:
         self.name = name
         self.message = message
 
-    def wrap_script(self, time: timestamp):
+    def wrap_script(self, time: timestamp) -> None:
         """Create a script boundary with the current timestamp
 
         Parameters

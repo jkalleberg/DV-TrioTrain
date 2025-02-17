@@ -12,7 +12,7 @@ from pathlib import Path
 from sys import exit
 from typing import List, Union
 
-from helpers.files import WriteFiles
+from helpers.files import Files
 from helpers.iteration import Iteration
 from helpers.jobs import is_job_index, is_jobid
 from helpers.outputs import check_expected_outputs, check_if_output_exists
@@ -41,7 +41,7 @@ class TrainEval:
     model_label: str
 
     # optional values
-    benchmarking_file: Union[WriteFiles, None] = None
+    benchmarking_file: Union[Files, None] = None
     constrain_training_regions: bool = False
     overwrite: bool = False
     track_resources: bool = False
@@ -57,6 +57,28 @@ class TrainEval:
     def __post_init__(self) -> None:
         if self.itr.env is None:
             return
+
+        self.logger_msg = (
+            f"{self.itr._mode_string} - [{self._phase}] - [{self.itr.train_genome}]"
+        )
+
+        ### HANDLE CPUS
+        if "ntasks" in self.slurm_resources["train_eval"]:
+            self._total_ntasks = self.slurm_resources["train_eval"]["ntasks"]
+            self._ntasks_per_gpu = 1
+            if int(self._total_ntasks) % 2 != 0:
+                self.itr.logger.warning(f"{self.logger_msg}: odd number detected")
+                self._cpus_per_task = int((self._total_ntasks - 1) / 2)
+            else:
+                self._cpus_per_task = int(self._total_ntasks / 2)
+
+        else:
+            self.itr.logger.error(
+                f"{self.logger_msg}: missing 'ntasks' key in --slurm-resources file for 'train_eval'\nExiting..."
+            )
+            exit(1)
+
+        ### HANDLE CPU MEM
         if "mem" in self.slurm_resources["train_eval"]:
             self._gpu_mem = self.slurm_resources["train_eval"]["mem"]
             self._cpu_mem = None
@@ -65,13 +87,24 @@ class TrainEval:
         else:
             self._cpu_mem = None
 
-        self.logger_msg = (
-            f"{self.itr._mode_string} - [{self._phase}] - [{self.itr.train_genome}]"
-        )
+        ### HANDLE GPUS
+        if "gres" in self.slurm_resources["train_eval"]:
+            _gres_input = self.slurm_resources["train_eval"]["gres"]
+            _gres_items = _gres_input.split(":")
+            if len(_gres_items) == 3:
+                _total_gpus = int(_gres_items[2])
+                _gres_string = ":".join(_gres_items[0:2])
+            else:
+                _total_gpus = int(_gres_items[1])
+                _gres_string = _gres_items[0]
+
+            _gpus_per_task = int(_total_gpus / 2)
+            self._gres = f"{_gres_string}:{_gpus_per_task}"
+        else:
+            self._gres = None
+
         self.epochs = self.itr.env.contents["N_Epochs"]
         self.batches = self.itr.env.contents["BatchSize"]
-        self._total_ntasks = self.slurm_resources["train_eval"]["ntasks"]
-        self._ntasks_per_gpu = 1
 
         if f"{self.itr.train_genome}_Examples" in self.itr.env.contents:
             self.train_examples = self.itr.env.contents[
@@ -94,7 +127,7 @@ class TrainEval:
         if self.track_resources:
             assert (
                 self.benchmarking_file is not None
-            ), "unable to proceed, missing a WriteFiles object to save SLURM job numbers"
+            ), "unable to proceed, missing a Files object to save SLURM job numbers"
 
         self._select_ckpt_dependency = create_deps(1)
 
@@ -182,7 +215,7 @@ class TrainEval:
             # NOTE: these will start being created at the
             best_ckpt_pattern = compile(r"best_checkpoint.*")
 
-            # Confirm examples do not already exist
+            # Confirm best_ckpt files do not already exist
             (
                 self.existing_best_ckpt_file,
                 self.best_ckpt_files_found,
@@ -202,19 +235,20 @@ class TrainEval:
             self.existing_best_ckpt_file = False
 
         if self.existing_best_ckpt_file:
-            missing_files = check_expected_outputs(
+            missing_ckpt_files = check_expected_outputs(
                 self.best_ckpt_files_found,
                 number_outputs_expected,
                 logging_msg,
                 "best_checkpoint files",
                 self.itr.logger,
             )
-            if missing_files is True:
-                self._outputs_exist = False
-            else:
-                self._outputs_exist = True
         else:
+            missing_ckpt_files = True
+        
+        if missing_ckpt_files is True:
             self._outputs_exist = False
+        else:
+            self._outputs_exist = True
 
     def find_all_outputs(
         self, phase: str = "find_outputs", verbose: bool = False
@@ -222,7 +256,7 @@ class TrainEval:
         """
         Determine if re-shuffle or beam outputs already exist, skip ahead if they do.
         """
-        selecting_ckpt = SelectCheckpoint(
+        self._selecting_ckpt = SelectCheckpoint(
             itr=self.itr,
             slurm_resources=self.slurm_resources,
             model_label=self.model_label,
@@ -231,13 +265,13 @@ class TrainEval:
             overwrite=self.overwrite,
         )
         if verbose:
-            selecting_ckpt.find_outputs(phase=phase)
+            self._selecting_ckpt.find_outputs(phase=phase)
             self.find_outputs(phase=phase)
         else:
-            selecting_ckpt.find_selected_ckpt_vars(phase=phase)
+            self._selecting_ckpt.find_selected_ckpt_vars(phase=phase)
             self._outputs_exist = False
-
-        self._select_ckpt_outputs_exist = selecting_ckpt._outputs_exist
+        
+        self._select_ckpt_outputs_exist = self._selecting_ckpt._outputs_exist
 
     def benchmark(self) -> None:
         """
@@ -260,7 +294,7 @@ class TrainEval:
                 )
             self.benchmarking_file.add_rows(headers, data_dict=data)
         else:
-            self.itr.logger.info(f"{self.logger_msg}: benchmarking is active")
+            self.itr.logger.info(f"{self.logger_msg}: --keep-jobids=True")
 
     def process_mem(self) -> None:
         """
@@ -368,7 +402,7 @@ class TrainEval:
                 )
             else:
                 self.itr.logger.info(
-                    f"{self.logger_msg}: --overwrite=False; SLURM job file already exists... SKIPPING AHEAD"
+                    f"{self.logger_msg}: --overwrite=False; SLURM job file already exists."
                 )
                 return
         else:
@@ -408,14 +442,14 @@ class TrainEval:
         if self._per_gpu_mem is None and self._per_cpu_mem is None:
             training_command_list.extend(
                 [
-                    f"srun -l --gres=gpu:1 --ntasks={self._ntasks_per_gpu} bash ./scripts/run/train_model.sh {self.itr.train_genome} >& \"{self.itr.log_dir}/train-{self.itr.train_genome}-{'${NUM_STEPS}'}steps.log\"",
+                    f"srun -l --gres={self._gres} --ntasks={self._ntasks_per_gpu} --cpus-per-task={self._cpus_per_task} bash ./scripts/run/train_model.sh {self.itr.train_genome} >& \"{self.itr.log_dir}/train-{self.itr.train_genome}-{'${NUM_STEPS}'}steps.log\"",
                 ]
             )
 
         else:
             training_command_list.extend(
                 [
-                    f"srun -l --gres=gpu:1 --ntasks={self._ntasks_per_gpu} {self._srun_mem} bash ./scripts/run/train_model.sh {self.itr.train_genome} >& \"{self.itr.log_dir}/train-{self.itr.train_genome}-{'${NUM_STEPS}'}steps.log\"",
+                    f"srun -l --gres={self._gres} --ntasks={self._ntasks_per_gpu} --cpus-per-task={self._cpus_per_task} {self._srun_mem} bash ./scripts/run/train_model.sh {self.itr.train_genome} >& \"{self.itr.log_dir}/train-{self.itr.train_genome}-{'${NUM_STEPS}'}steps.log\"",
                 ]
             )
 
@@ -435,11 +469,11 @@ class TrainEval:
         # link training with evaluation
         if self._per_gpu_mem is None and self._per_cpu_mem is None:
             evaluation_command_list = [
-                f"srun -l --gres=gpu:1 --ntasks={self._ntasks_per_gpu} bash ./scripts/run/eval_model.sh {self.itr.eval_genome} >& \"{self.itr.log_dir}/train-{self.itr.train_genome}-eval-{self.itr.eval_genome}-{'${NUM_STEPS}'}steps.log\""
+                f"srun -l --gres={self._gres} --ntasks={self._ntasks_per_gpu} --cpus-per-task={self._cpus_per_task} bash ./scripts/run/eval_model.sh {self.itr.eval_genome} >& \"{self.itr.log_dir}/train-{self.itr.train_genome}-eval-{self.itr.eval_genome}-{'${NUM_STEPS}'}steps.log\""
             ]
         else:
             evaluation_command_list = [
-                f"srun -l --gres=gpu:1 --ntasks={self._ntasks_per_gpu} {self._srun_mem} bash ./scripts/run/eval_model.sh {self.itr.eval_genome} >& \"{self.itr.log_dir}/train-{self.itr.train_genome}-eval-{self.itr.eval_genome}-{'${NUM_STEPS}'}steps.log\""
+                f"srun -l --gres={self._gres} --ntasks={self._ntasks_per_gpu} --cpus-per-task={self._cpus_per_task} {self._srun_mem} bash ./scripts/run/eval_model.sh {self.itr.eval_genome} >& \"{self.itr.log_dir}/train-{self.itr.train_genome}-eval-{self.itr.eval_genome}-{'${NUM_STEPS}'}steps.log\""
             ]
 
         group_srun_commands = f"{slurm_job._line_list[-1]} &"
@@ -548,6 +582,7 @@ class TrainEval:
             # to the SLURM queue was skipped completely,
             # then there is no dependency for selecting a ckpt
             self._select_ckpt_dependency = [None]
+            return
         else:
             self.itr.logger.warning(
                 f"{self.logger_msg}: expected SLURM jobs to be submitted, but they were not",
@@ -592,11 +627,7 @@ class TrainEval:
                         f"{self.logger_msg}: re_shuffle job(s) were submitted...",
                     )
 
-                if self._num_to_run == 1:
-                    self.itr.logger.info(
-                        f"{self.logger_msg}: attempting to {msg}mit {self._num_to_run}-of-1 SLURM jobs to the queue",
-                    )
-                else:
+                if self._num_to_run != 1:
                     self.itr.logger.error(
                         f"{self.logger_msg}: max number of SLURM jobs for {msg}mission is 1 but {self._num_to_run} were provided.\nExiting... ",
                     )

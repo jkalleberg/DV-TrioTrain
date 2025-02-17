@@ -19,38 +19,62 @@ def count_variants(
     logger: Logger,
     count_pass: bool = True,
     count_ref: bool = False,
-    use_bcftools: bool = True,
     debug_mode: bool = False,
+    use_bcftools: bool = True,
+    stats_filter: Union[List[str], str, None] = None,
+    
 ) -> Union[List[str], int, Dict[str, int], None]:
     """
     Use 'bcftools +smpl-stats' to count either REF/REF or PASS positions.
     """
     if count_pass and count_ref:
-        filter = "BOTH"
-        command = '$1=="FLT0"{hom_ref=$5}$1=="SITE0"{pass=$2}END{print hom_ref,pass}'
+        awk_filter = "BOTH"
+        awk_command = '$1=="FLT0"{hom_ref=$5}$1=="SITE0"{pass=$2}END{print hom_ref,pass}'
     elif count_pass and not count_ref:
-        filter = "PASS"
-        command = '$1=="SITE0" {print $2}'
+        awk_filter = "PASS"
+        awk_command = '$1=="SITE0" {print $2}'
     elif not count_pass and count_ref:
-        filter = "REF/REF"
-        command = '$1=="FLT0" {print $5}'
+        awk_filter = "REF/REF"
+        awk_command = '$1=="FLT0" {print $5}'
     else:
-        filter = None
-        command = None
+        awk_filter = None
+        awk_command = None
 
     if debug_mode and filter is not None:
         logger.debug(
-            f"{logger_msg}: applying a filter  | '{filter}'",
+            f"{logger_msg}: applying a filter with awk | '{awk_filter}'",
         )
+    
+    if stats_filter is None:
+        logger.info(
+            f"{logger_msg}: all variants included with bcftools | stats_filter='None'",
+        )
+        _bcftools_cmd = ["bcftools", "+smpl-stats", str(truth_vcf)]
+    else:
+        if isinstance(stats_filter, list):
+            _stats_filter_str = " ".join(stats_filter)
+            _stats_filter_list = stats_filter
+        elif isinstance(stats_filter, str):
+            _stats_filter_str = stats_filter
+            _stats_filter_list = stats_filter.split(" ")    
+        
+        logger.info(
+            f"{logger_msg}: applying a filter with bcftools | stats_filter='{_stats_filter_str}'",
+        )
+        _bcftools_cmd = ["bcftools", "+smpl-stats"] + _stats_filter_list + [str(truth_vcf)]
+    
+    if debug_mode:
+        _cmd_str = " ".join(_bcftools_cmd)
+        logger.debug(f"{logger_msg}: bcftools command | '{_cmd_str}'")
 
     if use_bcftools:
         if debug_mode:
             logger.debug(
                 f"{logger_msg}: using 'bcftools +smpl-stats' to count records | '{truth_vcf.name}'",
             )
-        if command is None:
+        if awk_command is None:
             bcftools_smpl_stats = run(
-                ["bcftools", "+smpl-stats", str(truth_vcf)],
+                _bcftools_cmd,
                 check=True,
                 capture_output=True,
                 text=True,
@@ -68,7 +92,7 @@ def count_variants(
             # return return_code
 
             if debug_mode:
-                logger.debug(f"{logger_msg}: done with bcftools +smpl-stats")
+                logger.debug(f"{logger_msg}: done with 'bcftools +smpl-stats'")
             if bcftools_smpl_stats.returncode == 0:
                 return str(bcftools_smpl_stats.stdout).split("\n")
             else:
@@ -76,11 +100,11 @@ def count_variants(
 
         else:
             bcftools_smpl_stats = Popen(
-                ["bcftools", "+smpl-stats", str(truth_vcf)],
+                _bcftools_cmd,
                 stdout=PIPE,
             )
             bcftools_awk = run(
-                ["awk", str(command)],
+                ["awk", str(awk_command)],
                 stdin=bcftools_smpl_stats.stdout,
                 capture_output=True,
                 text=True,
@@ -89,8 +113,9 @@ def count_variants(
 
             if bcftools_awk:
                 if debug_mode:
-                    logger.debug(f"{logger_msg}: done with bcftools +smpl-stats")
-                if filter is not None and "both" in filter.lower():
+                    logger.debug(f"{logger_msg}: done with 'bcftools +smpl-stats'")
+                    logger.debug(f"{logger_msg}: extracting counts with awk")
+                if awk_filter is not None and "both" in awk_filter.lower():
                     multiple_results = bcftools_awk.stdout.split()
                     if len(multiple_results) != 2:
                         logger.error(
@@ -104,9 +129,11 @@ def count_variants(
                             "ref/ref": num_RR_found,
                             "pass": num_pass_found,
                         }
-                elif filter is not None and "pass" in filter.lower():
+                    if debug_mode:
+                        logger.debug(f"{logger_msg}: done extracting counts with awk")
+                elif awk_filter is not None and "pass" in awk_filter.lower():
                     num_variants_found = int(bcftools_awk.stdout.strip())
-                elif filter is not None and "ref" in filter.lower():
+                elif awk_filter is not None and "ref" in awk_filter.lower():
                     num_variants_found = int(bcftools_awk.stdout.strip())
                 else:
                     num_variants_found = None

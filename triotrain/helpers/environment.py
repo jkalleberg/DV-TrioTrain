@@ -114,19 +114,23 @@ class Env:
         msg : Union[str, None], optional
             label for logging, by default None
         """
-        if msg is not None:
-            logging_msg = f"{msg}: "
-        else:
+        if msg is None:
             logging_msg = f"{self._logger_msg}: "
+        else:
+            logging_msg = f"{msg}: "
+
         if update and key in self.contents:
-            old_value = get_key(self.env_file, key)
+            if dryrun_mode:
+                old_value = self.contents[key]
+            else:
+                old_value = get_key(self.env_file, key)
             if old_value == value:
                 if self.debug_mode:
                     self.logger.debug(f"{logging_msg}SKIPPING {key}='{value}'")
                 return
             else:
                 self.updated_keys[key] = value
-                description = f"updating {key}='{old_value}' to '{value}'"
+                description = f"updating {key} | '{old_value}' -> '{value}'"
         elif key not in self.contents:
             if value is None:
                 description = f"adding a comment: '{key}'"
@@ -137,12 +141,13 @@ class Env:
 
         # Either save the variable within the Env object,
         # Or write it to the .env file
-        self.logger.info(f"{logging_msg}{description}")
         if dryrun_mode:
             self.contents[key] = value
         else:            
             set_key(self.env_path, str(key), str(value), export=True)
             self.contents = dotenv_values(self.env_path)
+
+        self.logger.info(f"{logging_msg}{description}")
 
         # Test to confirm variable was added correctly
         if value is not None:
