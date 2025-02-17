@@ -435,6 +435,9 @@ class SelectCheckpoint:
                 self.itr.current_genome_dependencies[3] = (
                     self._model_testing_dependency[0]
                 )
+                self.itr.current_genome_dependencies[3] = (
+                    self._model_testing_dependency[0]
+                )
                 self.itr.next_genome_dependencies[2] = self._model_testing_dependency[0]
 
             else:

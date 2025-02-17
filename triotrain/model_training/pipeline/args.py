@@ -270,6 +270,7 @@ def collect_args() -> argparse.ArgumentParser:
         "--stop-itr",
         dest="terminate",
         help="end a pipeline at a specified genome iteration.\nEXAMPLE: to end @ Trio2-Parent2, set --end-itr=4",
+        help="end a pipeline at a specified genome iteration.\nEXAMPLE: to end @ Trio2-Parent2, set --end-itr=4",
         type=int,
         metavar="<int>",
     )
@@ -379,11 +380,14 @@ def get_args(parser: argparse.ArgumentParser) -> argparse.Namespace:
         # '{"beam_shuffle:Father": [1,2,3,4,5,6,7,8,9]}'
         # '{"train_eval": [2514687], "select_ckpt": [2514688]}',
         # '{"train_eval": [1]}',
+        # '{"train_eval": [1]}',
         # '{"re_shuffle:Father": [1]}',
         # '{"call_variants": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]}',
         # '{"convert_happy": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]}',
         # '{"convert_happy": [2, 3, 4, 5, 6]}',
     ]
+    # return parser.parse_args(manual_args_list)
+    return parser.parse_args()
     # return parser.parse_args(manual_args_list)
     return parser.parse_args()
 

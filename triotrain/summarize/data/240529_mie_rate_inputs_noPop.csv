@@ -1,4 +1,4 @@
-﻿label,info, average_coverage ,variant_caller,sampleID,labID,paternalID,maternalID,sex,file_path
+label,info, average_coverage ,variant_caller,sampleID,labID,paternalID,maternalID,sex,file_path
 Trio12_Child,Cow_AngusBrahmanF1, 50.01 ,DV1.4_cattle1,UMCUSAM000000341496,341496,UMCUSAU000000194551,UMCUSAU000000194550,1,/mnt/pixstor/schnabelr-drii/WORKING/jakth2/VARIANT_CALLING_OUTPUTS/240528_Benchmarking/DV1.4_cattle1/UMCUSAM000000341496.vcf.gz
 Trio12_Father,Cow_Angus, 36.99 ,DV1.4_cattle1,UMCUSAU000000194551,194551,0,0,1,/mnt/pixstor/schnabelr-drii/WORKING/jakth2/VARIANT_CALLING_OUTPUTS/240528_Benchmarking/DV1.4_cattle1/UMCUSAU000000194551.vcf.gz
 Trio12_Mother,Cow_Brahman, 43.32 ,DV1.4_cattle1,UMCUSAU000000194550,194550,0,0,2,/mnt/pixstor/schnabelr-drii/WORKING/jakth2/VARIANT_CALLING_OUTPUTS/240528_Benchmarking/DV1.4_cattle1/UMCUSAU000000194550.vcf.gz

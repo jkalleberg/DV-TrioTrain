@@ -666,7 +666,7 @@ class VariantCaller:
             flags.append(
                 f'--make_examples_extra_args="use_allele_frequency=true,population_vcfs=/popVCF_dir/{self._pop_name}"'
             )
-
+        
         if self._region_name is not None:
             flags.append(f"--region_file=/region_dir/{self._region_name}")
         elif self._itr.default_region_file is not None:

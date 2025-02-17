@@ -217,8 +217,8 @@ class TrainEval:
 
             # Confirm best_ckpt files do not already exist
             (
-                _existing_best_ckpt_file,
-                _best_ckpt_files_found,
+                self.existing_best_ckpt_file,
+                self.best_ckpt_files_found,
                 best_ckpt_files,
             ) = check_if_output_exists(
                 best_ckpt_pattern,
@@ -232,11 +232,11 @@ class TrainEval:
 
         # if eval dir doesn't exist, then...
         else:
-            _existing_best_ckpt_file = False
+            self.existing_best_ckpt_file = False
 
-        if _existing_best_ckpt_file:
+        if self.existing_best_ckpt_file:
             missing_ckpt_files = check_expected_outputs(
-                _best_ckpt_files_found,
+                self.best_ckpt_files_found,
                 number_outputs_expected,
                 logging_msg,
                 "best_checkpoint files",

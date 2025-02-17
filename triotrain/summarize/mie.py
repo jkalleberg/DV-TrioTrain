@@ -476,6 +476,9 @@ class MIE:
         Add unique sampleIDs to GIAB vcf files.
         Returns the new file name, if reheader is being used.
         Otherwise, returnts the old file name.
+        Add unique sampleIDs to GIAB vcf files.
+        Returns the new file name, if reheader is being used.
+        Otherwise, returnts the old file name.
         """
         # Requiring re-naming to work correctly!
         giab_samples = {
