@@ -22,7 +22,7 @@ Currently, TrioTrain supports initializing training using an existing DV model. 
 
 Specifically, TrioTrain builds upon the existing DV model for short-read (Illumina) Whole Genome Sequence (WGS) data and, optionally, adds population-level allele frequency data from published samples. During model development, DV-TrioTrain iteratively feeds labeled examples from parent-offspring duos. Intuitively, a model trained on both parents should better predict inherited variants in the offspring; therefore, two training rounds are performed for each trio. After re-training, any models built with DV-TrioTrain become an alternative checkpoint with DeepVariant's one-step, single-sample variant caller.
 
-**Assuming the necessary training data for your favorite species already exist, TrioTrain automatically enables customizing the DeepVariant model.** [Additional details about the required data can be found here.](./docs/user-guide/usage_guide.md)
+**Assuming the necessary training data for your favorite species already exist, TrioTrain automatically enables customizing the DeepVariant model.** [Additional details about the required data can be found here.](https://jkalleberg.github.io/DV-TrioTrain/user-guide/usage_guide/)
 
 ### Why TrioTrain?
 
